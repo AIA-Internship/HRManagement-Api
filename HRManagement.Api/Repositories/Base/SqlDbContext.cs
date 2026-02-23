@@ -1,5 +1,5 @@
 ﻿using HRManagement.Api.Domain.Models.Table;
-
+using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using Microsoft.EntityFrameworkCore;
 
 using System.Reflection;
@@ -27,6 +27,8 @@ namespace HRManagement.Api.Repositories.Base
             modelBuilder.Entity<LoginActivityModel>().HasKey(p => p.Id);
 
             //modelBuilder.Entity<ViewMemberModel>().ToView("vw_members").HasNoKey();
+            modelBuilder.Entity<LeaveRequestModel>().ToTable("LeaveRequest");
+            modelBuilder.Entity<LeaveRequestModel>().HasKey(p => p.LeaveId);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -35,5 +37,6 @@ namespace HRManagement.Api.Repositories.Base
         public virtual DbSet<RoleModel> Role { get; set; }
         public virtual DbSet<EmployeeModel> Employee { get; set; }
         public virtual DbSet<LoginActivityModel> LoginActivity { get; set; }
+        public virtual DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     }
 }
