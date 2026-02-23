@@ -1,4 +1,3 @@
 <Solution>
   <Project Path="HRManagement.Api/HRManagement.Api.csproj" />
-  <Project Path="LeaveManagement.Api/LeaveManagement.Api.csproj" Id="a9e9b479-3034-4a10-9399-29d5e405c82c" />
 </Solution>
