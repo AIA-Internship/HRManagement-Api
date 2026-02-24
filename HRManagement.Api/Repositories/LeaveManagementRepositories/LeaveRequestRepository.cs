@@ -2,6 +2,7 @@
 using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 
 namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 {
@@ -32,47 +33,24 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 
         public async Task<LeaveRequestModel> getLeaveRequestById(int id)
         {
-            try
-            {
+           return  await _dbContext.LeaveRequest
+                .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0);
 
-                var request = await _dbContext.LeaveRequest.FirstOrDefaultAsync(leave => leave.leaveId == id && leave.IsDeleted == false);
-                var leaveRequest = new LeaveRequestModel
-                {
-                    leaveId = request.leaveId,
-                    requesterId = request.requesterId,
-                    supervisorId = request.supervisorId,
-                    leaveDescription = request.leaveDescription,
-                    leaveStatus = request.leaveStatus,
-                    leaveStartDate = request.leaveStartDate,
-                    dayAmount = request.dayAmount,
-                    leaveType = request.leaveType,
-                    initialRequestDate = request.initialRequestDate,
-                    lastUpdated = request.lastUpdated,
-                    isDeleted = request.isDeleted,
-                    isCompleted = request.isCompleted,
-                    isEdit = request.isEdit,
-                    initialRequestId = request.initialRequestId,
-                    attachmentPath = request.attachmentPath
-                };
-
-                return leaveRequest;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return null;
-            }
-            
         }
 
-        public Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId)
+        public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId)
         {
-            throw new NotImplementedException();
+            return await _dbContext.LeaveRequest
+            .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0)
+            .ToListAsync();
         }
 
-        public Task updateLeaveRequest(int requestId, LeaveRequestModel leaveRequest)
+        public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
         {
-            throw new NotImplementedException();
+             _dbContext.LeaveRequest.Update(data);
+
+            return true;
         }
+
     }
 }

@@ -1,56 +1,61 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest
+namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+
+public partial class LeaveRequestModel
 {
-    public class LeaveRequestModel : BaseTableModel
-    {
-        [Key]
-        public int leaveId { get; set; }
-        public int requesterId { get; set; }
-        public int supervisorId { get; set; }
-        public string leaveDescription { get; set; } = string.Empty;
-        public int leaveStatus { get; set; }
-        public string leaveStartDate { get; set; } = string.Empty;
-        public int dayAmount { get; set; }
-        public int? leaveType { get; set; }
-        public DateTime initialRequestDate { get; set; }
-        public DateTime? lastUpdated { get; set; }
-        public int isDeleted { get; set; }
-        public int isCompleted { get; set; }
-        public int isEdit { get; set; }
-        public int initialRequestId { get; set; }
-        public string attachmentPath { get; set; } = string.Empty;
+    [Key]
+    [Column("leave_id")]
+    public int LeaveId { get; set; }
 
-        public LeaveRequestModel() { }
+    [Column("requester_id")]
+    public int RequesterId { get; set; }
 
-        public LeaveRequestModel(
-            int requesterId,
-            int supervisorId,
-            string leaveDescription,
-            int leaveStatus,
-            string leaveStartDate,
-            int dayAmount,
-            int? leaveType,
-            long actioner)
-        {
-            this.requesterId = requesterId;
-            this.supervisorId = supervisorId;
-            this.leaveDescription = leaveDescription;
-            this.leaveStatus = leaveStatus;
-            this.leaveStartDate = leaveStartDate;
-            this.dayAmount = dayAmount;
-            this.leaveType = leaveType;
+    [Column("supervisor_id")]
+    public int SupervisorId { get; set; }
 
-            initialRequestDate = DateTime.UtcNow;
-            isDeleted = 0;
-            isCompleted = 0;
-            isEdit = 0;
+    [Column("leave_description")]
+    public string LeaveDescription { get; set; } = null!;
 
-            CreatedBy = actioner;
-            CreatedUtcDate = DateTime.UtcNow;
-            ModifiedBy = actioner;
-            ModifiedUtcDate = DateTime.UtcNow;
-        }
-    }
+    [Column("leave_status")]
+    public int LeaveStatus { get; set; }
+
+    [Column("leave_start_date")]
+    public string LeaveStartDate { get; set; } = null!;
+
+    [Column("day_amount")]
+    public int DayAmount { get; set; }
+
+    [Column("leave_type")]
+    public int? LeaveType { get; set; }
+
+    [Column("is_deleted")]
+    public int IsDeleted { get; set; }
+
+    [Column("is_completed")]
+    public int IsCompleted { get; set; }
+
+    [Column("is_edit")]
+    public int IsEdit { get; set; }
+
+    [Column("initial_request_id")]
+    public int InitialRequestId { get; set; }
+
+    [Column("attachment_path")]
+    public string? AttachmentPath { get; set; }
+
+    [Column("created_by")]
+    public int CreatedBy { get; set; }
+
+    [Column("created_utc_date")]
+    public DateTime CreatedUtcDate { get; set; }
+
+    [Column("modified_by")]
+    public int ModifiedBy { get; set; }
+
+    [Column("modified_utc_date")]
+    public DateTime ModifiedUtcDate { get; set; }
 }

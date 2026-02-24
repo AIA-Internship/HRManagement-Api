@@ -1,57 +1,60 @@
-﻿namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest
+﻿
+namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest
 {
     public class LeaveRequestMapping
     {
-            public static LeaveRequestModel MapToLeaveRequest(LeaveRequestDto updateLeaveRequestDto)
+        public static ReadLeaveRequestDto mapToReadDto(LeaveRequestModel model)
+        {   
+
+
+            return new ReadLeaveRequestDto
             {
-            return new LeaveRequestModel
-            {
-                leaveId = updateLeaveRequestDto.leaveId ?? 0,
-                supervisorId = updateLeaveRequestDto.supervisorId ?? 0,
-                leaveDescription = updateLeaveRequestDto.leaveDescription ?? string.Empty,
-                leaveStatus = updateLeaveRequestDto.leaveStatus ?? 0,
-                leaveStartDate = updateLeaveRequestDto.leaveStartDate ?? string.Empty,
-                dayAmount = updateLeaveRequestDto.dayAmount ?? 0,
-                leaveType = updateLeaveRequestDto.leaveType ?? 0,
-                isCompleted = updateLeaveRequestDto.isCompleted ?? 0,
-                isEdit = updateLeaveRequestDto.isEdit ?? 0
+                leaveId = model.LeaveId,
+                requesterId = model.RequesterId,
+                supervisorId = model.SupervisorId,
+                leaveDescription = model.LeaveDescription,
+                leaveStatus = leaveStatusFromInt(model.LeaveStatus),
+                leaveStartDate = model.LeaveStartDate,
+                dayAmount = model.DayAmount,
+                leaveType = leaveTypeFromInt(model.LeaveType ?? 0),
+                isCompleted = model.IsCompleted,
+                isEdit = model.IsEdit,
+                initialRequestId = model.InitialRequestId,
+                attachmentPath = model.AttachmentPath != null
+                    ? model.AttachmentPath.Split(';')
+                    : null,
+                createdUtcDate = model.CreatedUtcDate
             };
-            }
-    
-            public static void MapToExistingLeaveRequest(LeaveRequestModel existingLeaveRequest, LeaveRequestDto updateLeaveRequestDto)
-            {
-                if (updateLeaveRequestDto.supervisorId.HasValue)
-                {
-                    existingLeaveRequest.supervisorId = updateLeaveRequestDto.supervisorId.Value;
-                }
-                if (!string.IsNullOrEmpty(updateLeaveRequestDto.leaveDescription))
-                {
-                    existingLeaveRequest.leaveDescription = updateLeaveRequestDto.leaveDescription;
-                }
-                if (updateLeaveRequestDto.leaveStatus.HasValue)
-                {
-                    existingLeaveRequest.leaveStatus = updateLeaveRequestDto.leaveStatus.Value;
-                }
-                if (!string.IsNullOrEmpty(updateLeaveRequestDto.leaveStartDate))
-                {
-                    existingLeaveRequest.leaveStartDate = updateLeaveRequestDto.leaveStartDate;
-                }
-                if (updateLeaveRequestDto.dayAmount.HasValue)
-                {
-                    existingLeaveRequest.dayAmount= updateLeaveRequestDto.dayAmount.Value;
-                }
-                if (updateLeaveRequestDto.leaveType.HasValue)
-                {
-                    existingLeaveRequest.leaveType = updateLeaveRequestDto.leaveType.Value;
-                }
-                if (updateLeaveRequestDto.isCompleted.HasValue)
-                {
-                    existingLeaveRequest.isCompleted = updateLeaveRequestDto.isCompleted.Value;
-                }
-                if (updateLeaveRequestDto.isEdit.HasValue)
-                {
-                    existingLeaveRequest.isEdit = updateLeaveRequestDto.isEdit.Value;
-                }
         }
+
+
+        //helper
+
+        private string[] splitAttachmentPath(string attachmentPath)
+        {
+            return attachmentPath.Split(";");
+        }
+        public static LeaveType leaveTypeFromInt(int num)
+        {
+            if (Enum.IsDefined(typeof(LeaveType), num))
+            {
+                return (LeaveType)num;
+            }
+
+            throw new ArgumentException("Invalid LeaveType value");
+        }
+
+        public static LeaveStatus leaveStatusFromInt(int num)
+        {
+            if (Enum.IsDefined(typeof(LeaveType), num))
+            {
+                return (LeaveStatus)num;
+            }
+
+            throw new ArgumentException("Invalid LeaveType value");
+        }
+
+
+
     }
 }
