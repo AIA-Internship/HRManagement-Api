@@ -1,5 +1,5 @@
 ﻿using HRManagement.Api.Domain.Models.Table;
-
+using HRManagement.Api.Domain.Models.Table.ELearningModels;
 using Microsoft.EntityFrameworkCore;
 
 using System.Reflection;
@@ -26,6 +26,18 @@ namespace HRManagement.Api.Repositories.Base
             modelBuilder.Entity<LoginActivityModel>().ToTable("LoginActivity");
             modelBuilder.Entity<LoginActivityModel>().HasKey(p => p.Id);
 
+
+            modelBuilder.Entity<ModuleModel>().ToTable("ELearningModules");
+            modelBuilder.Entity<ModuleModel>().HasKey(p => p.ModuleId);
+
+            modelBuilder.Entity<ModuleContentModel>().ToTable("ELearningModuleContents");
+            modelBuilder.Entity<ModuleContentModel>().HasKey(p => p.ContentId);
+
+            modelBuilder.Entity<ProgressModel>().ToTable("ELearningProgress");
+            modelBuilder.Entity<ProgressModel>().HasKey(p => p.ProgressId);
+
+            modelBuilder.Entity<QuizSubmissionModel>().ToTable("ELearningQuizSubmissions");
+            modelBuilder.Entity<QuizSubmissionModel>().HasKey(p => p.SubmissionId);
             //modelBuilder.Entity<ViewMemberModel>().ToView("vw_members").HasNoKey();
 
             base.OnModelCreating(modelBuilder);
@@ -35,5 +47,10 @@ namespace HRManagement.Api.Repositories.Base
         public virtual DbSet<RoleModel> Role { get; set; }
         public virtual DbSet<EmployeeModel> Employee { get; set; }
         public virtual DbSet<LoginActivityModel> LoginActivity { get; set; }
+
+        public virtual DbSet<ModuleModel> ELearningModules { get; set; }
+        public virtual DbSet<ModuleContentModel> ELearningModuleContents { get; set; }
+        public virtual DbSet<ProgressModel> ELearningProgress { get; set; }
+        public virtual DbSet<QuizSubmissionModel> ELearningQuizSubmissions { get; set; }
     }
 }

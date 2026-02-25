@@ -2,6 +2,8 @@ using HRManagement.Api.Domain.Models.Config;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
+using HRManagement.Api.Domain.Interfaces;
+using HRManagement.Api.Infrastructure.Repositories;
 
 using MediatR;
 
@@ -18,6 +20,7 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 var apiName = "HR Management API";
+
 
 // 1. Config Setup
 var _appsetting = builder.Configuration.GetSection("AppSetting");
@@ -91,7 +94,7 @@ builder.Services.RegisterServices(configuration);
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehaviour<,>));
-
+builder.Services.AddScoped<IELearningRepository, ELearningRepository>();
 // 4. Controllers & JSON
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

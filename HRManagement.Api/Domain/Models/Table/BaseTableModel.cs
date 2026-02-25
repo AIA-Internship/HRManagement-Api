@@ -1,20 +1,31 @@
-﻿namespace HRManagement.Api.Domain.Models.Table
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace HRManagement.Api.Domain.Models.Table
 {
     public class BaseTableModel
     {
+        [Column("is_deleted")]
         public bool IsDeleted { get; set; }
-        public long CreatedBy { get; set; }
+
+        [Column("created_by")]
+        public string? CreatedBy { get; set; }
+
+        [Column("CreatedUtcDate")]
         public DateTime CreatedUtcDate { get; set; }
-        public long ModifiedBy { get; set; }
-        public DateTime ModifiedUtcDate { get; set; }
+
+        [Column("modified_by")]
+        public string? ModifiedBy { get; set; }
+
+        [Column("ModifiedUtcDate")]
+        public DateTime? ModifiedUtcDate { get; set; }
 
         public BaseTableModel()
         {
             IsDeleted = false;
-            CreatedBy = 0;
             CreatedUtcDate = DateTime.UtcNow;
-            ModifiedBy = 0;
             ModifiedUtcDate = DateTime.UtcNow;
+            CreatedBy = "0";
+            ModifiedBy = "0";
         }
     }
 }

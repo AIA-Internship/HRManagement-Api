@@ -8,6 +8,9 @@ namespace HRManagement.Api.Domain.Models.Table
         public int UserId { get; set; }
         public Guid? MemberId { get; set; }
         public string? UserMobile { get; set; }
+
+        public string? FullName { get; set; }
+
         public string? UserEmail { get; set; }
         public string? PasswordHash { get; set; }
         public int? RoleId { get; set; }
@@ -16,7 +19,7 @@ namespace HRManagement.Api.Domain.Models.Table
 
         public UserModel() { }
 
-        public UserModel(string? userEmail, string? passwordHash, long actioner)
+        public UserModel(string? userEmail, string? passwordHash, string actioner)
         {
             UserEmail = userEmail;
             PasswordHash = passwordHash;
@@ -27,7 +30,7 @@ namespace HRManagement.Api.Domain.Models.Table
             ModifiedUtcDate = DateTime.UtcNow;
         }
 
-        public UserModel(string? userEmail, string? passwordHash, int? roleId, long actioner)
+        public UserModel(string? userEmail, string? passwordHash, int? roleId, string actioner)
         {
             UserEmail = userEmail;
             PasswordHash = passwordHash;
@@ -47,7 +50,7 @@ namespace HRManagement.Api.Domain.Models.Table
             ModifiedUtcDate = DateTime.UtcNow;
         }
 
-        public void UpdateData(string? userEmail, int? roleId, long actioner)
+        public void UpdateData(string? userEmail, int? roleId, string actioner)
         {
             UserEmail = userEmail;
             RoleId = roleId;
@@ -61,7 +64,7 @@ namespace HRManagement.Api.Domain.Models.Table
             ModifiedUtcDate = DateTime.UtcNow;
         }
 
-        public void ChangePassword(string? passwordHash, long actioner)
+        public void ChangePassword(string? passwordHash, string actioner)
         {
             PasswordHash = passwordHash;
             IsDeleted = false;
@@ -76,7 +79,7 @@ namespace HRManagement.Api.Domain.Models.Table
             //ModifiedUtcDate = DateTime.UtcNow;
         }
 
-        public void SetDelete(long actioner)
+        public void SetDelete(string actioner)
         {
             IsDeleted = true;
             ModifiedBy = actioner;
