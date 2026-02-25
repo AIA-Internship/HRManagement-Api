@@ -1,14 +1,12 @@
-﻿using System.Threading.Tasks;
-using FluentValidation;
-
-using HRManagement.Api.Application.Queries;
+﻿using FluentValidation;
 using HRManagement.Api.Application;
+using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
-
+using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
 using MediatR;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 [ApiController]
 [Route("api/[controller]")]
 public class ELearningController : ControllerBase
@@ -41,9 +39,24 @@ public class ELearningController : ControllerBase
 
     //Supervisor
 
+    //[HttpPost("add-module")]
+    //public async Task<IActionResult> AddModule([FromBody] CreateModuleCommand command)
+    //{
+    //    var moduleId = await _mediator.Send(command);
+    //    return Ok(new { id = moduleId, message = "Module created successfully" });
+    //}
+
     [HttpPost("add-module")]
-    public async Task<IActionResult> AddModule([FromBody] CreateModuleCommand command)
+    public async Task<IActionResult> AddModule([FromBody] CreateModuleDto dto)
     {
+        var command = new CreateModuleCommand(
+            dto.title,
+            dto.description,
+            dto.role,
+            dto.isPriority,
+            dto.CurrentUserId
+        );
+
         var moduleId = await _mediator.Send(command);
         return Ok(new { id = moduleId, message = "Module created successfully" });
     }

@@ -31,7 +31,7 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels
         [Column("score")]
         public decimal? Score { get; set; }
 
-        [Column("graded_utc_date")] // Matches image_620a11.png
+        [Column("graded_utc_date")] 
         public DateTime? GradedUtcDate { get; set; }
     }
 }

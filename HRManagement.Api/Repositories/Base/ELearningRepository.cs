@@ -175,12 +175,46 @@ namespace HRManagement.Api.Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<bool> SubmitQuizAsync(QuizSubmissionModel entity)
+        public async Task<bool> SubmitQuizAsync(QuizSubmissionModel entity)
         {
-            throw new NotImplementedException();
+            using var transaction = await Context.Database.BeginTransactionAsync();
+            try
+            {
+                Context.ELearningQuizSubmissions.Add(entity);
+
+                var progress = await Context.ELearningProgress
+                    .FirstOrDefaultAsync(p => p.UserId == entity.UserId && p.ContentId == entity.ContentId);
+
+                if (progress == null)
+                {
+                    Context.ELearningProgress.Add(new ProgressModel
+                    {
+                        UserId = entity.UserId,
+                        ContentId = entity.ContentId,
+                        IsCompleted = true,
+                        CreatedUtcDate = DateTime.UtcNow,
+                        CreatedBy = entity.UserId.ToString()
+                    });
+                }
+                else
+                {
+                    progress.IsCompleted = true;
+                    progress.ModifiedUtcDate = DateTime.UtcNow;
+                    progress.ModifiedBy = entity.UserId.ToString();
+                }
+
+                await Context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
 
 
-       
+
     }
 }

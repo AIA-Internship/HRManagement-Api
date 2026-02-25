@@ -52,5 +52,6 @@ namespace HRManagement.Api.Repositories.Base
         public virtual DbSet<ModuleContentModel> ELearningModuleContents { get; set; }
         public virtual DbSet<ProgressModel> ELearningProgress { get; set; }
         public virtual DbSet<QuizSubmissionModel> ELearningQuizSubmissions { get; set; }
+        public DbSet<InternProfileModel> InternProfiles { get; set; }
     }
 }
