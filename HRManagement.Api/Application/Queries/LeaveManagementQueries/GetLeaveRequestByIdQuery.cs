@@ -1,66 +1,50 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.Interfaces.NewFolder;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
-using HRManagement.Api.Domain.SeedWork;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
 {
-    public class GetLeaveRequestByRequesterQuery(int requsterId, int max): IRequest<Result<ApiResponse>>
-    {
-        public int RequesterId { get; set; } = requsterId;
-        public int Max { get; set; } = max;
-
-
+    public class GetLeaveRequestByIdQuery : IRequest<Result<ApiResponse>>
+     {
+        public int RequestId { get; set; }
+        public GetLeaveRequestByIdQuery(int requestId)
+        {
+            RequestId = requestId;
+        }
     }
-    internal class GetLeaveRequestByRequesterQueryHandler: IRequestHandler<GetLeaveRequestByRequesterQuery, Result<ApiResponse>>
+    internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse>>
     {
-        private readonly ILogger<LoginQueryHandler> _logger;
+        private readonly ILogger<GetLeaveRequestByIdQuery> _logger;
         private readonly ILeaveRequestRepository _repo;
-
-        public GetLeaveRequestByRequesterQueryHandler(
+        public GetLeaveRequestByIdQueryHandler(
             ILeaveRequestRepository repo
-            , ILogger<LoginQueryHandler> logger
-            , IUnitOfWork unitOfWork)
+            , ILogger<GetLeaveRequestByIdQuery> logger
+            )
         {
             _repo = repo;
             _logger = logger;
         }
-        public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByRequesterQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByIdQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogTrace("Executing handler for request : {request}", nameof(LoginQueryHandler));
-
             try
             {
-                var entity = await _repo.getLeaveRequestsByRequesterId(request.RequesterId, request.Max);
-
-                if (entity == null) return ApiHelperResponse.Failed("data not found in system");
-
-
-                List<ReadLeaveRequestDto> data = new List<ReadLeaveRequestDto>();
-
-                foreach(var d in entity)
-                {
-                    data.Add(mapToReadDto(d));
-                }
+                var result = await _repo.getLeaveRequestById(request.RequestId);
+                if(result == null) return ApiHelperResponse.Failed("Leave request not found");
 
 
-                return ApiHelperResponse.Success("data retrieved successfully", data);
+                return ApiHelperResponse.Success("read leave request successfully", mapToReadDto(result));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return null;
+                return ApiHelperResponse.Failed("Failed to delete leave request");
             }
         }
 
         public ReadLeaveRequestDto mapToReadDto(LeaveRequestModel model)
         {
-
 
             return new ReadLeaveRequestDto
             {
@@ -81,5 +65,5 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
                 createdUtcDate = model.CreatedUtcDate
             };
         }
-    }   
+    }
 }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 
-public partial class LeaveRequestModel
+public partial class    LeaveRequestModel
 {
     [Key]
     [Column("leave_id")]
@@ -24,7 +24,7 @@ public partial class LeaveRequestModel
     public int LeaveStatus { get; set; }
 
     [Column("leave_start_date")]
-    public string LeaveStartDate { get; set; } = null!;
+    public DateTime LeaveStartDate { get; set; }
 
     [Column("day_amount")]
     public int DayAmount { get; set; }

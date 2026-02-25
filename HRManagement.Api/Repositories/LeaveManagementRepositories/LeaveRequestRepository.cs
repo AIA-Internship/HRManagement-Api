@@ -33,24 +33,55 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 
         public async Task<LeaveRequestModel> getLeaveRequestById(int id)
         {
-           return  await _dbContext.LeaveRequest
-                .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0);
+            return await _dbContext.LeaveRequest
+                 .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0 && x.IsEdit == 0);
 
         }
 
-        public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId)
+        public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max)
         {
             return await _dbContext.LeaveRequest
-            .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0)
+            .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0 && x.IsEdit == 0)
+            .OrderByDescending(x => x.CreatedUtcDate)
+            .Take(max)
             .ToListAsync();
         }
 
         public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
         {
-             _dbContext.LeaveRequest.Update(data);
-
-            return true;
+            _dbContext.LeaveRequest.Update(data);
+            return await _dbContext.SaveChangesAsync() > 0;
         }
 
+        public async Task<List<LeaveRequestModel>> getAllEditById(int leaveId)
+        {
+            return await _dbContext.LeaveRequest
+                .Where(x => x.InitialRequestId == leaveId && x.IsDeleted == 0 && x.IsEdit == 0)
+                .ToListAsync();
+        }
+
+
+        public async Task<bool> softDelete(int id)
+        {
+            var entity = await _dbContext.LeaveRequest.FindAsync(id);
+            if (entity == null) return false;
+
+            entity.IsDeleted = 1;
+
+            return await _dbContext.SaveChangesAsync() > 0;
+        }
+
+        //public async Task<List<LeaveRequestModel>> getLeaveRequestByMonthRage(int year, int month)
+        //{
+        //    var startDate = new DateTime(year, month, 1);
+        //    var endDate = startDate.AddMonths(1);
+
+        //    return await _dbContext.LeaveRequest
+        //        .Where(x => x.LeaveStartDate >= startDate
+        //            && x.LeaveStartDate < endDate
+        //            && x.IsDeleted == 0
+        //            )
+        //        .ToListAsync();
+        //}
     }
 }
