@@ -1,20 +1,15 @@
-﻿using CSharpFunctionalExtensions;
-
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Contracts;
+using CSharpFunctionalExtensions;
 using FluentValidation;
+using ValidationContext = FluentValidation.ValidationContext<object>;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 
-using MediatR;
-
-using Microsoft.AspNetCore.Mvc;
-
-using System.Diagnostics.Contracts;
-
-using ValidationContext = FluentValidation.ValidationContext<object>;
-
 namespace HRManagement.Api.Controllers
 {
-    public class ValidationController<TController> : ControllerBase
+    public class ValidateController<TController> : ControllerBase
     {
         /// <summary>
         /// The validation helpers.
@@ -27,11 +22,11 @@ namespace HRManagement.Api.Controllers
         private readonly ILogger<TController> logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValidationController{TController}"/> class.
+        /// Initializes a new instance of the <see cref="validators"/> class.
         /// </summary>
-        /// <param name="validators">The validation helpers.</param>
+        /// <param name="logger">The validation helpers.</param>
         /// <param name="logger">The logger.</param>
-        public ValidationController(IEnumerable<IValidator> validators, ILogger<TController> logger)
+        public ValidateController(IEnumerable<IValidator> validators, ILogger<TController> logger)
         {
             this.validators = validators;
             this.logger = logger;

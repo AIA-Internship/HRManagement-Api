@@ -1,17 +1,16 @@
-﻿using FluentValidation;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 
-using System.Text.Json;
-
 namespace HRManagement.Api.Extensions
 {
-    public class ExceptionHandlingMiddleware
+    public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        private readonly ILogger<ExceptionMiddleware> _logger;
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
@@ -33,6 +32,8 @@ namespace HRManagement.Api.Extensions
         {
             context.Response.ContentType = "application/json";
             var response = context.Response;
+            var correlationId = GetOrCreateCorrelationId(context);
+            response.Headers["X-Correlation-ID"] = correlationId;
 
             var errorResponse = new ApiResponse
             {
@@ -40,7 +41,7 @@ namespace HRManagement.Api.Extensions
                 StatusCode = GetStatusCode(exception),
                 StatusMessage = exception.Message,
                 IsError = true,
-                Content = exception.Data
+                Content = new { correlationId }
             };
 
             if (exception.Message.Contains("No authenticationScheme was specified"))
@@ -49,16 +50,28 @@ namespace HRManagement.Api.Extensions
                 errorResponse.StatusMessage = ExceptionConstants.NotAuthorizedExcepction;
             }
 
+            _logger.LogError(exception, "Unhandled exception. CorrelationId={CorrelationId}", correlationId);
+            response.StatusCode = errorResponse.StatusCode;
 
-            _logger.LogError(exception.Message);
             var result = JsonSerializer.Serialize(errorResponse);
             await context.Response.WriteAsync(result);
+        }
+
+        private static string GetOrCreateCorrelationId(HttpContext context)
+        {
+            if (context.Request.Headers.TryGetValue("X-Correlation-ID", out var existing) && !string.IsNullOrWhiteSpace(existing))
+            {
+                return existing!;
+            }
+
+            return context.TraceIdentifier;
         }
 
 
         public static int GetStatusCode(Exception exception) =>
             exception switch
             {
+                ApiException apiException => apiException.StatusCode,
                 ApplicationException => StatusCodes.Status400BadRequest,
                 KeyNotFoundException => StatusCodes.Status404NotFound,
                 ValidationException => StatusCodes.Status400BadRequest,

@@ -1,4 +1,4 @@
-﻿namespace HRManagement.Api.Domain.Models.Table
+namespace HRManagement.Api.Domain.Models.Tables
 {
     public class BaseTableModel
     {
@@ -15,6 +15,18 @@
             CreatedUtcDate = DateTime.UtcNow;
             ModifiedBy = 0;
             ModifiedUtcDate = DateTime.UtcNow;
+        }
+        
+        public void MarkAsModified(long actionerId)
+        {
+            this.ModifiedBy = actionerId;
+            this.ModifiedUtcDate = DateTime.UtcNow.AddHours(7);
+        }
+
+        public void MarkAsCreated(long actionerId)
+        {
+            this.CreatedBy = actionerId;
+            this.CreatedUtcDate = DateTime.UtcNow.AddHours(7);
         }
     }
 }

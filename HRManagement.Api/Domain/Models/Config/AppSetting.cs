@@ -5,7 +5,7 @@
         public bool SwaggerEnabled { get; set; }
         public bool UseHttpsRedirection { get; set; }
         public string? CorsOrigin { get; set; }
-        public string? DBConnectionString { get; set; }
+        public string? DbConnectionString { get; set; }
         public string? FileLogPath { get; set; }
         public string? FileStoragePath { get; set; }
         public string? AuthenticationCookiePath { get; set; }

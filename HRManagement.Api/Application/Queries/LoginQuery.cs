@@ -1,97 +1,88 @@
-﻿using CSharpFunctionalExtensions;
-
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table;
-using HRManagement.Api.Domain.SeedWork;
-
 using MediatR;
-
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-using Newtonsoft.Json;
-
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mime;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using HRManagement.Api.Application.Auth.DTOs;
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Domain.Models.Tables;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Api.Application.Queries;
+
+public class LoginQuery(string email, string password, bool rememberMe) : IRequest<ApiResponse<TokenResponseDto>>
 {
-    public class LoginQuery(string userMobile) : IRequest<Result<ApiResponse>>
+    public string Email { get; } = email;
+    public string Password { get; } = password;
+    public bool RememberMe { get; set; } = rememberMe;
+
+    public class Handler(
+        IApplicationDbContext dbContext, 
+        IConfiguration configuration,  
+        IPasswordHasher passwordHasher) : IRequestHandler<LoginQuery, ApiResponse<TokenResponseDto>>
     {
-        public string UserMobile { get; set; } = userMobile;
-    }
-
-    internal class LoginQueryHandler : IRequestHandler<LoginQuery, Result<ApiResponse>>
-    {
-        private readonly IAuthorizationRepository _authorizationRepository;
-        private readonly ILogger<LoginQueryHandler> _logger;
-        private readonly IConfiguration _configuration;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public LoginQueryHandler(IAuthorizationRepository authorizationRepository
-            , IConfiguration configuration
-            , IHttpClientFactory httpClientFactory
-            , ILogger<LoginQueryHandler> logger
-            , IUnitOfWork unitOfWork)
+        public async Task<ApiResponse<TokenResponseDto>> Handle(LoginQuery request, CancellationToken cancellationToken)
         {
-            _authorizationRepository = authorizationRepository;
-            _configuration = configuration;
-            _httpClientFactory = httpClientFactory;
-            _logger = logger;
-            _unitOfWork = unitOfWork;
-        }
+            var user = await dbContext.Users
+                .AsNoTracking() 
+                .FirstOrDefaultAsync(u => u.EmployeeEmail == request.Email, cancellationToken);
 
-        public async Task<Result<ApiResponse>> Handle(LoginQuery request, CancellationToken cancellationToken)
-        {
-            _logger.LogTrace("Executing handler for request : {request}", nameof(LoginQueryHandler));
+            if (user == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "User not found");
+            
+            bool isValid = passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!isValid) throw new ApiException("Unauthorized", (int)System.Net.HttpStatusCode.Unauthorized, "Invalid email or password");
 
-            try
+            var roleName = await dbContext.SystemLookups
+                .AsNoTracking()
+                .Where(x => x.Category == "ROLE" && x.Value == user.Role && x.IsActive)
+                .Select(x => x.DisplayName)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(roleName))
             {
-                var data = await _authorizationRepository.GetUserByPhoneAsync(request.UserMobile);
-                if (data.UserId > 0)
+                roleName = user.Role switch
                 {
-                    var token = GenerateToken(data);
-
-                    return ApiHelperResponse.Success(token);
-                }
-                else
-                {
-                    return ApiHelperResponse.Failed("Invalid user id and/or password");
-                }
+                    0 => "Supervisor",
+                    1 => "Employee",
+                    _ => user.Role.ToString()
+                };
             }
-            catch (Exception ex)
-            {
-                return ApiHelperResponse.Failed(ex.Message);
-            }
+            
+            var token = GenerateToken(user, request.RememberMe, roleName);
+            
+            return ApiHelperResponse.Success("Login successful", new TokenResponseDto { Token = token });
         }
-
-        private string GenerateToken(UserModel user)
+        
+        private string GenerateToken(User user, bool rememberMe, string roleName)
         {
-            var jwtSettings = _configuration.GetSection("AppSetting");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Jwt:Key"]!));
-
-            // Claims berisi informasi tentang user
+            var jwtKey = configuration["AppSetting:Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing");
+            var jwtIssuer = configuration["AppSetting:Jwt:Issuer"];
+            var jwtAudience = configuration["AppSetting:Jwt:AudienceWeb"];
+            
+            var durationString = configuration["AppSetting:Jwt:DurationInMinutes"] ?? "60";
+            var durationInMinutes = int.Parse(durationString);
+            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Name, user.MemberId.ToString()!),
-                new Claim(ClaimTypes.Email, user.UserEmail!),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString()!)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.EmployeeEmail),
+                new Claim(ClaimTypes.Role, roleName),
+                new Claim("role_id", user.Role.ToString())
             };
+            
+            var expirationTime = rememberMe ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddHours(durationInMinutes);
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
-                issuer: jwtSettings["Jwt:Issuer"],
-                audience: jwtSettings["Jwt:AudienceWeb"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToInt16(jwtSettings["Jwt:DurationInMinutes"])), // Token berlaku selama 1 jam
+                expires: expirationTime, 
                 signingCredentials: creds
             );
 

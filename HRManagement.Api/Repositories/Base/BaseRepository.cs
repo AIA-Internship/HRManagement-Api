@@ -4,13 +4,13 @@ namespace HRManagement.Api.Repositories.Base
 {
     public abstract class BaseRepository : IRepository
     {
-        private SqlDbContext _sqldbContext;
+        private AppDbContext _appDbContext;
 
         private bool _disposed = false;
 
-        public BaseRepository(SqlDbContext sqldbContext)
+        public BaseRepository(AppDbContext appDbContext)
         {
-            _sqldbContext = sqldbContext;
+            _appDbContext = appDbContext;
         }
 
         public void Dispose()
@@ -28,7 +28,7 @@ namespace HRManagement.Api.Repositories.Base
 
             if (disposing)
             {
-                _sqldbContext?.Dispose();
+                _appDbContext?.Dispose();
                 _disposed = true;
             }
         }

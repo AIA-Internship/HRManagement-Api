@@ -1,61 +1,66 @@
-using HRManagement.Api.Domain.Models.Config;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Extensions;
-using HRManagement.Api.Repositories.Base;
-
-using MediatR;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-
 using System.Net;
 using System.Text;
 using System.Text.Json;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Config;
+using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Extensions;
+using HRManagement.Api.Repositories.Base;
+using HRManagement.Api.Repositories.Seeder;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
-var apiName = "HR Management API";
+var apiName = "Mini Project HR Management API";
 
+// ==========================================
 // 1. Config Setup
-var _appsetting = builder.Configuration.GetSection("AppSetting");
-builder.Services.Configure<AppSetting>(_appsetting);
+// ==========================================
+var appSettingSection = builder.Configuration.GetSection("AppSetting");
+builder.Services.Configure<AppSetting>(appSettingSection);
 
-ConfigurationManager configuration = builder.Configuration;
-var setting = _appsetting.Get<AppSetting>()!; ;
+var appSetting = appSettingSection.Get<AppSetting>() ?? throw new InvalidOperationException("AppSetting section is missing.");
+var jwtSettings = appSetting.Jwt ?? throw new InvalidOperationException("Jwt settings are missing.");
+var jwtKey = jwtSettings.Key ?? throw new InvalidOperationException("JWT Key is missing.");
+var jwtIssuer = jwtSettings.Issuer ?? throw new InvalidOperationException("JWT Issuer is missing.");
+var validAudiences = new[]
+{
+    jwtSettings.AudienceWeb,
+    jwtSettings.Audience1,
+    jwtSettings.Audience2,
+    jwtSettings.Audience3,
+    jwtSettings.Audience4
+}.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray();
 
+
+// ==========================================
 // 2. JWT Configuration
+// ==========================================
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-    if (string.IsNullOrEmpty(setting.Jwt.Key))
-        throw new ArgumentNullException("JWT key is not configured.");
-
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     options.SaveToken = true;
 
-    // SETUP VALIDASI
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        // Debugging: Matikan Issuer & Audience dulu untuk memastikan Signature Valid
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(setting.Jwt.Key)),
-
-        ValidateIssuer = true, // Set ke true nanti jika Signature sudah valid
-        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateIssuer = true, 
+        ValidateAudience = true,
         ValidateLifetime = true,
-
-
-        ClockSkew = TimeSpan.Zero, // Toleransi waktu server
-
-        ValidIssuer = setting.Jwt.Issuer,
-        // Audience tidak perlu dicek karena ValidateAudience = false
-        ValidAudiences = new[] { setting.Jwt.Audience1, setting.Jwt.Audience2, setting.Jwt.Audience3, setting.Jwt.Audience4 },
+        ClockSkew = TimeSpan.FromMinutes(2), 
+        ValidIssuer = jwtIssuer,
+        ValidAudiences = validAudiences,
     };
 
     // DEBUGGING EVENT (PENTING UNTUK MELIHAT ERROR DI SWAGGER)
@@ -65,7 +70,6 @@ builder.Services.AddAuthentication(options =>
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "text/plain";
-            // Pesan error ini akan muncul di Response Body Swagger
             return context.Response.WriteAsync("DEBUG ERROR: " + context.Exception.Message);
         },
         OnChallenge = context =>
@@ -73,39 +77,37 @@ builder.Services.AddAuthentication(options =>
             if (!context.Response.HasStarted && context.AuthenticateFailure == null)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return context.Response.WriteAsync("Token Missing or Invalid (No Exception details)");
+                return context.Response.WriteAsync("Token Missing or Invalid");
             }
             return Task.CompletedTask;
         }
     };
 });
-
 builder.Services.AddAuthorization();
 
+
+// ==========================================
 // 3. Database & Services
-builder.Services.AddDbContext<SqlDbContext>(options =>
-    options.UseSqlServer(setting.DBConnectionString, providerOptions => providerOptions.EnableRetryOnFailure()));
-
+// ==========================================
+builder.Services.RegisterServices(builder.Configuration);
 builder.Services.AddMemoryCache();
-builder.Services.RegisterServices(configuration);
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehaviour<,>));
 
-// 4. Controllers & JSON
+// ==========================================
+// 5. Controllers, JSON & Validation Response
+// ==========================================
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
 });
 
-// 5. Validation Response
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = actionContext =>
     {
         var errors = actionContext.ModelState.Where(e => e.Value.Errors.Count > 0)
             .Select(e => e.Value.Errors.First().ErrorMessage).ToList();
+            
         return new BadRequestObjectResult(new ApiResponse()
         {
             Title = "Error",
@@ -117,17 +119,23 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
+
+// ==========================================
 // 6. Swagger Setup
+// ==========================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = apiName, Version = "v1" });
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Description = "JWT Authorization header using the Bearer scheme.",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -140,14 +148,7 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
-
-    // XML Comments (Optional, bungkus try-catch biar gak error kalau file xml hilang)
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
 });
-
-builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -155,19 +156,24 @@ var app = builder.Build();
 // URUTAN MIDDLEWARE YANG BENAR (PIPELINE)
 // ==========================================
 
-// 1. Exception Handling & HSTS
+// 1. Exception Handling
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
-else
-    app.UseDeveloperExceptionPage();
+}
 
 // 2. Swagger
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+if (app.Environment.IsDevelopment())
 {
-    c.DefaultModelsExpandDepth(-1);
-    // c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.DefaultModelsExpandDepth(-1);
+    });
+}
 
 // 3. HTTPS Redirection
 app.UseHttpsRedirection();
@@ -175,11 +181,29 @@ app.UseHttpsRedirection();
 // 4. Routing
 app.UseRouting();
 
-// 6. Authentication & Authorization
+// 5. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Endpoints
+// 6. Endpoints
 app.MapControllers();
+
+// 7. Database Seeding
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        var passwordHasher = services.GetRequiredService<IPasswordHasher>();
+
+        context.Database.Migrate();
+        await DbSeeder.SeedAsync(context, passwordHasher);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while seeding the database: {ex.Message}");
+    }
+}
 
 app.Run();

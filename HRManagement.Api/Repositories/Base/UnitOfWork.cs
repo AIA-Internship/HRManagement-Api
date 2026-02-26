@@ -6,12 +6,12 @@ namespace HRManagement.Api.Repositories.Base
     {
         private bool disposed = false;
 
-        public UnitOfWork(SqlDbContext context)
+        public UnitOfWork(AppDbContext context)
         {
             Context = context;
         }
 
-        public SqlDbContext Context { get; }
+        public AppDbContext Context { get; }
 
         public void Dispose()
         {

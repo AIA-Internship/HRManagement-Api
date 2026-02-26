@@ -1,9 +1,15 @@
-﻿using HRManagement.Api.Domain.Interfaces;
+﻿using FluentValidation;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Application.Mappings;
+using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.SeedWork;
 using HRManagement.Api.Repositories;
+using HRManagement.Api.Repositories.Authentications;
 using HRManagement.Api.Repositories.Base;
-
-using System.Diagnostics.Contracts;
+using HRManagement.Api.Repositories.Services;
 
 namespace HRManagement.Api.Extensions
 {
@@ -11,23 +17,35 @@ namespace HRManagement.Api.Extensions
     {
         public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
-            Contract.Assert(configuration != null);
+            // 1. Database Setup
+            var connectionString = configuration["AppSetting:DbConnectionString"] ?? throw new InvalidOperationException("Database Connection String is missing!");
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(connectionString));
+            
+            services.AddScoped<IApplicationDbContext>(provider => 
+                provider.GetRequiredService<AppDbContext>());
 
-            var applicationAssembly = typeof(Application.AssemblyReference).Assembly;
+            // 2. Unit of Work & Repositories
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IRequestRepository, RequestRepository>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
+            services.AddHttpContextAccessor();
 
+            // 3. MediatR, AutoMapper & FluentValidation
+            var applicationAssembly = typeof(LoginQuery).Assembly; 
+            services.AddValidatorsFromAssembly(applicationAssembly);
+            
             services.AddMediatR(cfg =>
             {
-                cfg.RegisterServicesFromAssemblies(applicationAssembly);
+                cfg.RegisterServicesFromAssembly(applicationAssembly);
             });
 
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            services.AddScoped(typeof(IAuthorizationRepository), typeof(AuthorizationRepository));
-
-            services.AddScoped<JwtTokenHandler>();
+            services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
 
             return services;
-
         }
     }
 }

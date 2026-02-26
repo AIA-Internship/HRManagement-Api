@@ -1,9 +1,7 @@
-﻿using HRManagement.Api.Domain.Models.Config;
-
+﻿using System.Data;
+using HRManagement.Api.Domain.Models.Config;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-
-using System.Data;
 
 namespace HRManagement.Api.Repositories.Base
 {
@@ -12,7 +10,7 @@ namespace HRManagement.Api.Repositories.Base
         private readonly IConfiguration configuration;
         private readonly AppSetting appSetting;
 
-        protected IDbConnection SqlConnDB => new SqlConnection(appSetting.DBConnectionString);
+        protected IDbConnection SqlConnDB => new SqlConnection(appSetting.DbConnectionString);
 
         public BaseQueryRepository(IConfiguration configuration, IOptions<AppSetting> _appSetting)
         {
