@@ -6,7 +6,6 @@
         public string? description { get; set; }
         public string role { get; set; } = null!; 
         public bool isPriority { get; set; }
-
         public long CurrentUserId { get; set; }
     }
 }

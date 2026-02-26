@@ -13,7 +13,7 @@ namespace HRManagement.Api.Infrastructure.Repositories
         private readonly SqlDbContext _context;
 
         public SqlDbContext Context => _context;
-
+        
         public ELearningRepository(SqlDbContext context)
         {
             _context = context;
@@ -138,17 +138,18 @@ namespace HRManagement.Api.Infrastructure.Repositories
                 .FirstOrDefaultAsync(m => m.ModuleId == moduleId && !m.IsDeleted);
         }
 
-        public async Task<int> AddContentAsync(ModuleContentModel entity)
+        public async Task<int> AddContentAsync(CreateModuleContentDto entity)
         {
-            var lastOrder = await Context.ELearningModuleContents
-                .Where(c => c.ModuleId == entity.ModuleId)
-                .MaxAsync(c => (int?)c.SortOrder) ?? 0;
-
-            entity.SortOrder = lastOrder + 1;
-
             Context.ELearningModuleContents.Add(entity);
             await Context.SaveChangesAsync();
             return entity.ContentId;
+        }
+
+        public async Task<IEnumerable<CreateModuleContentDto>> GetContentsByModuleIdAsync(int moduleId)
+        {
+            return await Context.ELearningModuleContents
+                .Where(c => c.ModuleId == moduleId && !c.IsDeleted)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<ModuleModel>> GetAvailableModulesAsync(string role, string search)

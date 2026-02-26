@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace HRManagement.Api.Domain.Models.Table.ELearningModels
 {
     [Table("ELearningModuleContents")]
-    public class ModuleContentModel : BaseTableModel
+    public class CreateModuleContentDto : BaseTableModel
     {
         [Column("content_id")]
         public int ContentId { get; set; }
@@ -29,9 +29,6 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels
 
         [Column("file_ext")]
         public string? FileExt { get; set; }
-
-        [Column("sort_order")]
-        public int SortOrder { get; set; }
 
         public virtual ModuleModel Module { get; set; } = null!;
     }

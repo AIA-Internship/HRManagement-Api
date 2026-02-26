@@ -65,10 +65,30 @@ public class ELearningController : ControllerBase
     }
 
     [HttpPost("add-content")]
-    public async Task<IActionResult> AddContent([FromBody] AddContentCommand command)
+    public async Task<IActionResult> AddContent([FromBody] CreateModuleContentDto dto)
     {
-        var id = await _mediator.Send(command);
-        return Ok(new { contentId = id, message = "Content added successfully" });
+        var command = new CreateContentCommand(dto, dto.ModuleId);
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Value);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("get-all-module-contents")]
+    public async Task<IActionResult> GetAllModuleContents([FromQuery] int moduleId)
+    {
+        var query = new GetAllModuleContentsQuery(moduleId);
+        var result = await _mediator.Send(query);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Value);
+        }
+        return Ok(result.Value);
     }
 
     [HttpGet("interns")]
