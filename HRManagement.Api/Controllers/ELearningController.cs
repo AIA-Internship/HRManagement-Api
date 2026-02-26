@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using HRManagement.Api.Application;
+using HRManagement.Api.Application.Commands;
+using HRManagement.Api.Application.Commands.ELearningCommands;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
@@ -39,26 +41,20 @@ public class ELearningController : ControllerBase
 
     //Supervisor
 
-    //[HttpPost("add-module")]
-    //public async Task<IActionResult> AddModule([FromBody] CreateModuleCommand command)
-    //{
-    //    var moduleId = await _mediator.Send(command);
-    //    return Ok(new { id = moduleId, message = "Module created successfully" });
-    //}
 
     [HttpPost("add-module")]
     public async Task<IActionResult> AddModule([FromBody] CreateModuleDto dto)
     {
-        var command = new CreateModuleCommand(
-            dto.title,
-            dto.description,
-            dto.role,
-            dto.isPriority,
-            dto.CurrentUserId
-        );
+        var command = new CreateModuleCommand(dto);
 
-        var moduleId = await _mediator.Send(command);
-        return Ok(new { id = moduleId, message = "Module created successfully" });
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Value);
+        }
+
+        return Ok(result.Value);
     }
 
     [HttpPut("update-module")]

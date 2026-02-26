@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application
+namespace HRManagement.Api.Application.Commands
 {
     public record AddContentCommand(
         int ModuleId,
@@ -17,10 +17,10 @@ namespace HRManagement.Api.Application
         long CurrentUserId
     ) : IRequest<int>;
 
-    public class AddContentHandler : IRequestHandler<AddContentCommand, int>
+    public class CreateContentCommand : IRequestHandler<AddContentCommand, int>
     {
         private readonly IELearningRepository _repo;
-        public AddContentHandler(IELearningRepository repo) => _repo = repo;
+        public CreateContentCommand(IELearningRepository repo) => _repo = repo;
 
         public async Task<int> Handle(AddContentCommand request, CancellationToken ct)
         {
