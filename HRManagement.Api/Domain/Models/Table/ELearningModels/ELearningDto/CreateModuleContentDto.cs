@@ -2,10 +2,10 @@
 {
     public class CreateModuleContentDto
     {
-        public int ModuleId { get; set; }
-        public string Title { get; set; } = null!;
-        public bool IsQuiz { get; set; }
-        public string? FileName { get; set; }
-        public string? FilePath { get; set; }
+        public int moduleId { get; set; }
+        public string title { get; set; } = null!;
+        public bool isQuiz { get; set; }
+        public string? fileName { get; set; }
+        public string? filePath { get; set; }
     }
 }

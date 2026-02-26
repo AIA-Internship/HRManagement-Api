@@ -30,8 +30,8 @@ namespace HRManagement.Api.Repositories.Base
             modelBuilder.Entity<ModuleModel>().ToTable("ELearningModules");
             modelBuilder.Entity<ModuleModel>().HasKey(p => p.ModuleId);
 
-            modelBuilder.Entity<CreateModuleContentDto>().ToTable("ELearningModuleContents");
-            modelBuilder.Entity<CreateModuleContentDto>().HasKey(p => p.ContentId);
+            modelBuilder.Entity<ModuleContentModel>().ToTable("ELearningModuleContents");
+            modelBuilder.Entity<ModuleContentModel>().HasKey(p => p.ContentId);
 
             modelBuilder.Entity<ProgressModel>().ToTable("ELearningProgress");
             modelBuilder.Entity<ProgressModel>().HasKey(p => p.ProgressId);
@@ -49,7 +49,7 @@ namespace HRManagement.Api.Repositories.Base
         public virtual DbSet<LoginActivityModel> LoginActivity { get; set; }
 
         public virtual DbSet<ModuleModel> ELearningModules { get; set; }
-        public virtual DbSet<CreateModuleContentDto> ELearningModuleContents { get; set; }
+        public virtual DbSet<ModuleContentModel> ELearningModuleContents { get; set; }
         public virtual DbSet<ProgressModel> ELearningProgress { get; set; }
         public virtual DbSet<QuizSubmissionModel> ELearningQuizSubmissions { get; set; }
         public DbSet<InternProfileModel> InternProfiles { get; set; }

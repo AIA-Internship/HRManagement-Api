@@ -12,8 +12,7 @@ namespace HRManagement.Api.Domain.Interfaces
         Task<bool> DeleteModuleAsync(int moduleId);
         Task<ModuleModel> GetModuleByIdAsync(int moduleId);
 
-        Task<int> AddContentAsync(CreateModuleContentDto entity);
-        Task<IEnumerable<CreateModuleContentDto>> GetContentsByModuleIdAsync(int moduleId);
+        Task<int> AddContentAsync(ModuleContentModel entity);
         Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByContentIdAsync(int contentId);
         Task<bool> GradeSubmissionAsync(int submissionId, decimal score, long graderId);
 

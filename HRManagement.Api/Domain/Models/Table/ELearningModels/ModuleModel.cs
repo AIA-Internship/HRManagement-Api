@@ -22,6 +22,6 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels
         [Column("is_priority")]
         public bool IsPriority { get; set; }
 
-        public virtual ICollection<CreateModuleContentDto> Contents { get; set; } = new List<CreateModuleContentDto>();
+        public virtual ICollection<ModuleContentModel> Contents { get; set; } = new List<ModuleContentModel>();
     }
 }

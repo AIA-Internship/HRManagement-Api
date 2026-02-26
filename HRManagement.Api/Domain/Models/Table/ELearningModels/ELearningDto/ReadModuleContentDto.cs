@@ -8,5 +8,6 @@
         public bool isQuiz { get; set; }
         public string? fileName { get; set; }
         public string? filePath { get; set; }
+        public int sortOrder { get; set; }
     }
 }
