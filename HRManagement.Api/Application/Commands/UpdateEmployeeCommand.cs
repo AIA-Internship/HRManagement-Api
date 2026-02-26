@@ -28,11 +28,6 @@ public class UpdateEmployeeCommand(UpdateEmployeeRequestDto commandDto) : IReque
             await requestRepository.SubmitUpdateRequestAsync(request);
             
             var response = mapper.Map<EmployeeProfileResponseDto>(employee);
-            
-            // 4. (Optional) If you want the response to show the newly requested data 
-            // instead of the old approved data, you can overwrite it manually here:
-            response.FullName = string.IsNullOrWhiteSpace(request.NewFullName) ? response.FullName : request.NewFullName;
-            
             return ApiHelperResponse.Success("Update request submitted successfully. Pending HR Approval.", response);
         }
     }
