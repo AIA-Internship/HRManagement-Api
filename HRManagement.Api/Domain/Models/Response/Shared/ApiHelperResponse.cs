@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace HRManagement.Api.Domain.Models.Responses.Shared
+namespace HRManagement.Api.Domain.Models.Response.Shared
 {
     public class ApiHelperResponse
     {

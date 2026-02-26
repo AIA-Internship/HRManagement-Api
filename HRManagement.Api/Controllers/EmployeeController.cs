@@ -8,7 +8,7 @@ using HRManagement.Api.Application.Commands;
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Controllers;
 

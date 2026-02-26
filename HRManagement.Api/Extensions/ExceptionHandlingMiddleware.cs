@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 using HRManagement.Api.Domain.Models.Constants;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Extensions
 {

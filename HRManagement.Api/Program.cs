@@ -10,7 +10,7 @@ using Microsoft.OpenApi.Models;
 
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Config;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Seeder;

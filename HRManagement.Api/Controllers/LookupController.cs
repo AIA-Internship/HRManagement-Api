@@ -2,7 +2,7 @@ using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using MediatR;
 
 using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagement.Api.Controllers;

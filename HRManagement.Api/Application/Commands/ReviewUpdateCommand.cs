@@ -1,6 +1,6 @@
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;

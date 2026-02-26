@@ -8,7 +8,7 @@ using System.Text;
 
 using HRManagement.Api.Application.Auth.DTOs;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 
 namespace HRManagement.Api.Application.Queries;

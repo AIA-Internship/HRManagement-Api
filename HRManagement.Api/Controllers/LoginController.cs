@@ -4,19 +4,19 @@ using CSharpFunctionalExtensions;
 using FluentValidation;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Application.Auth.DTOs;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ValidateController<AuthController>
+public class LoginController : ValidateController<LoginController>
 {
-    private readonly ILogger<AuthController> _logger;
+    private readonly ILogger<LoginController> _logger;
     private readonly IMediator _mediator;
     
-    public AuthController(
-        ILogger<AuthController> logger,
+    public LoginController(
+        ILogger<LoginController> logger,
         IMediator mediator,
         IEnumerable<IValidator> validators) : base(validators, logger)
     {

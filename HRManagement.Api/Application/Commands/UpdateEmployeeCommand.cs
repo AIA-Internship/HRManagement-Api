@@ -3,7 +3,7 @@ using HRManagement.Api.Domain.Models.Tables;
 using AutoMapper;
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;

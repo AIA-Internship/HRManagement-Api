@@ -3,7 +3,7 @@ using MediatR;
 
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Responses.Shared;
+using HRManagement.Api.Domain.Models.Response.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Application.Queries;
