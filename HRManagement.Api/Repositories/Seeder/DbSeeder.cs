@@ -52,10 +52,10 @@ public static class DbSeeder
         // ==========================================
         // 2. CHECK IF EMPLOYEES ALREADY EXIST
         // ==========================================
-        // if (context.Users.Any() || context.Employees.Any())
-        // {
-        //     return; 
-        // }
+        if (context.Users.Any() || context.Employees.Any())
+        {
+            return; 
+        }
 
         // ==========================================
         // 3. SEED THE ADMIN / SUPERVISOR
