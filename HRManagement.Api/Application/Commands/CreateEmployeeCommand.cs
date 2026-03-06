@@ -28,6 +28,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     dto.EmploymentInformation.Department,
                     dto.EmploymentInformation.Position,
                     dto.EmploymentInformation.SupervisorName,
+                    dto.EmploymentInformation.EmployeeDisplayId,
                     actionerId
                 );
             }

@@ -26,6 +26,7 @@ public class EmployeeProfileResponseDto
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
     public string SupervisorName { get; set; } = string.Empty;
+    public string EmployeeDisplayId { get; set; } = string.Empty;
     
     //Emergency Contact
     public string EmergencyContactName { get; set; } = string.Empty;

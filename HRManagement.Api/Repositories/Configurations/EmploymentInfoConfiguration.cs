@@ -42,6 +42,14 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
             .HasColumnName("employment_supervisor_name")
             .HasMaxLength(100)
             .IsRequired();
+
+        builder.Property(e => e.EmployeeDisplayId)
+            .HasColumnName("employee_display_id")
+            .HasMaxLength(10)
+            .IsRequired();
+        
+        builder.HasIndex(e => e.EmployeeDisplayId)
+            .IsUnique();
         
         builder.HasOne(e => e.Employee)
             .WithOne(emp => emp.EmploymentInformation)

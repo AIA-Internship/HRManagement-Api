@@ -52,7 +52,7 @@ public static class DbSeeder
         // ==========================================
         // 2. CHECK IF EMPLOYEES ALREADY EXIST
         // ==========================================
-        if (context.Users.Any() || context.Employees.Any())
+        if (context.Employees.Any())
         {
             return; 
         }
@@ -84,7 +84,8 @@ public static class DbSeeder
                 EmploymentType = 1, // Fulltime
                 Department = "Human Resources",
                 Position = "HR Manager",
-                SupervisorName = "System Director"
+                SupervisorName = "System Director",
+                EmployeeDisplayId = "E150529"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
             {
@@ -127,7 +128,8 @@ public static class DbSeeder
                 EmploymentType = 3, // Intern
                 Department = "Development",
                 Position = "Software Engineering Intern",
-                SupervisorName = "Brandon Admin"
+                SupervisorName = "Brandon Admin",
+                EmployeeDisplayId = "E150530"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
             {
@@ -163,7 +165,8 @@ public static class DbSeeder
                 EmploymentType = dto.EmploymentInformation.EmploymentType,
                 Department = dto.EmploymentInformation.Department,
                 Position = dto.EmploymentInformation.Position,
-                SupervisorName = dto.EmploymentInformation.SupervisorName
+                SupervisorName = dto.EmploymentInformation.SupervisorName,
+                EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
             };
 
         var emergencyContacts = dto.EmergencyContacts

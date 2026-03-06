@@ -50,6 +50,9 @@ public class CreateEmploymentInfoDto
     public string Position { get; set; } =  string.Empty;
     /// <example>Jane Smith</example>
     public string SupervisorName { get; set; } = string.Empty;
+
+    /// <example>E150529</example>
+    public string EmployeeDisplayId { get; set; } = string.Empty;
 }
 
 public class CreateEmergencyContactDto

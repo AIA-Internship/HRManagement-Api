@@ -37,4 +37,7 @@ public class UpdateEmploymentInfoRequestDto
     /// </summary>
     /// <example>John Doe</example>
     public string SupervisorName { get; set; } = string.Empty;
+
+    /// <example>E150529</example>
+    public string EmployeeDisplayId { get; set; } = string.Empty;
 }
