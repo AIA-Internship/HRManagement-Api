@@ -1,15 +1,18 @@
-﻿namespace HRManagement.Api.Domain.Models.Response.Shared
+﻿using System.Text.Json.Serialization;
+
+namespace HRManagement.Api.Domain.Models.Response.Shared;
+
+public class ApiResponse
 {
-    public class ApiResponse
-    {
-        public string Title { get; set; } = string.Empty;
+    public string Title { get; set; } = "Success";
+    public int StatusCode { get; set; } = 200;
+    public string StatusMessage { get; set; } = string.Empty;
+    public bool IsError { get; set; }
+    public object? Content { get; set; }
+}
 
-        public int StatusCode { get; set; }
-
-        public string StatusMessage { get; set; } = string.Empty;
-
-        public bool IsError { get; set; }
-
-        public dynamic Content { get; set; } = string.Empty;
-    }
+public class ApiResponse<T> : ApiResponse
+{
+    [JsonPropertyOrder(99)]
+    public new T? Content { get; set; }
 }

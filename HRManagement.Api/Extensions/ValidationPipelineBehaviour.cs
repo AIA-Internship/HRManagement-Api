@@ -1,34 +1,32 @@
 ﻿using FluentValidation;
-
 using MediatR;
 
 namespace HRManagement.Api.Extensions
 {
-    public class ValidationPipelineBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    public class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
         private readonly IEnumerable<IValidator<TRequest>> _validators;
 
-        public ValidationPipelineBehaviour(IEnumerable<IValidator<TRequest>> validators)
+        public ValidationPipelineBehavior(IEnumerable<IValidator<TRequest>> validators)
         {
             _validators = validators;
         }
 
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
-            var context = new ValidationContext<TRequest>(request);
+            if (_validators.Any())
+            {
+                var context = new ValidationContext<TRequest>(request);
+                var validationResults = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+                var failures = validationResults.SelectMany(r => r.Errors).Where(f => f != null).ToList();
 
-            var failures = _validators
-                .Select(v => v.Validate(context))
-                .SelectMany(result => result.Errors)
-                .Where(f => f != null)
-                .ToList();
-
-            //Get Error Message 
-            var errorMessage = string.Join("\n", failures.Select(e => e.ErrorMessage));
-
-            if (failures.Count > 0)
-                throw new ApplicationException(errorMessage);
+                if (failures.Count > 0)
+                {
+                    var errorMessage = string.Join("\n", failures.Select(e => e.ErrorMessage));
+                    throw new ApplicationException(errorMessage);
+                }
+            }
 
             return await next();
         }

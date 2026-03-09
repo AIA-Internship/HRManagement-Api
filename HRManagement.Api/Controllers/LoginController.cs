@@ -1,63 +1,51 @@
-﻿using FluentValidation;
-
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using CSharpFunctionalExtensions;
+using FluentValidation;
 using HRManagement.Api.Application.Queries;
+using HRManagement.Api.Application.Auth.DTOs;
 using HRManagement.Api.Domain.Models.Response.Shared;
 
-using MediatR;
+namespace HRManagement.Api.Controllers;
 
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-namespace HRManagement.Api.Controllers
+[ApiController]
+[Route("api/auth")]
+public class LoginController : ValidateController<LoginController>
 {
-    [Route("api/login")]
-    [ApiController]
-    public class LoginController : ValidationController<LoginController>
+    private readonly ILogger<LoginController> _logger;
+    private readonly IMediator _mediator;
+    
+    public LoginController(
+        ILogger<LoginController> logger,
+        IMediator mediator,
+        IEnumerable<IValidator> validators) : base(validators, logger)
     {
-        private readonly ILogger<LoginController> _logger;
-
-        private readonly IMediator _mediator;
-
-        public LoginController(
-            ILogger<LoginController> logger,
-            IMediator mediator,
-            IEnumerable<IValidator> validators) : base(validators, logger)
-
+        _logger = logger;
+        _mediator = mediator;
+    }
+    
+    [HttpPost("login")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponseDto>), 200)]
+    public async Task<ActionResult<ApiResponse<TokenResponseDto>>> Login([FromBody] LoginRequestDto request)
+    {
+        string methodName = nameof(Login);
+        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
+        
+        var query = new LoginQuery(request.Email, request.Password, request.RememberMe);
+        var response = await ValidateAndExecute<ApiResponse<TokenResponseDto>>(query, async (q) => 
         {
-            _logger = logger;
-            _mediator = mediator;
-        }
+            var apiResponse = await _mediator.Send((LoginQuery)q);
+            return Result.Success(apiResponse);
 
-        [AllowAnonymous]
-        [HttpPost]
-        [Route("sign-in")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(500)]
-        public async Task<ActionResult<ApiResponse>> LoginAsync([FromBody] string userMobile)
-        {
+        }).ConfigureAwait(false);
 
-            string objectName = nameof(LoginAsync).ToString();
-
-            try
-            {
-                //_telemetryClient?.TrackEvent($"{objectName}", _trackProperties);
-                _logger.LogInformation("Start {Service}.", objectName);
-
-                var query = new LoginQuery(userMobile);
-                var response = await this.ValidateAndExecute(query, (c) => _mediator.Send(query)).ConfigureAwait(false);
-
-                _logger.LogInformation("End {Service}.", objectName);
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                //_telemetryClient.TrackException(ex, _trackProperties);
-                _logger.LogError(ex, "Error in {Service}.", objectName);
-                return BadRequest(ex.Message);
-            }
-        }
+        _logger.LogInformation("End {Service}.", methodName);
+        return response;
+        
     }
 }

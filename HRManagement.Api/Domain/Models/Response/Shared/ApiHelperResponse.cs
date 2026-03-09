@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 
 namespace HRManagement.Api.Domain.Models.Response.Shared
 {
@@ -17,9 +14,9 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
             };
         }
 
-        public static ApiResponse Success(dynamic data)
+        public static ApiResponse<T> Success<T>(T data)
         {
-            return new ApiResponse()
+            return new ApiResponse<T>()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
@@ -28,9 +25,9 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
             };
         }
 
-        public static ApiResponse Success(string message, dynamic data)
+        public static ApiResponse<T> Success<T>(string message, T data)
         {
-            return new ApiResponse()
+            return new ApiResponse<T>()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
