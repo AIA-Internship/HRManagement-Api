@@ -1,4 +1,5 @@
 ﻿using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.Models.Tables;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
+    public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

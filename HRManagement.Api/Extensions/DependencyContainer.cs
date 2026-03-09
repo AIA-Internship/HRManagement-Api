@@ -1,10 +1,17 @@
-﻿using HRManagement.Api.Domain.Interfaces;
+﻿using FluentValidation;
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Mappings;
+using HRManagement.Api.Application.Queries;
+using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.SeedWork;
 using HRManagement.Api.Repositories;
 using HRManagement.Api.Repositories.Authentications;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.LeaveManagementRepositories;
 using HRManagement.Api.Repositories.Services;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Extensions
 {
@@ -41,6 +48,7 @@ namespace HRManagement.Api.Extensions
             services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
 
             services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+
 
             return services;
         }

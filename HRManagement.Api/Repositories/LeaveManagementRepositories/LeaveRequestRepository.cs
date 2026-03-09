@@ -1,4 +1,4 @@
-﻿using HRManagement.Api.Domain.Interfaces.NewFolder;
+﻿using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +8,8 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 {
     public class LeaveRequestRepository : BaseRepository, ILeaveRequestRepository
     {
-        private readonly SqlDbContext _dbContext;
-        public LeaveRequestRepository(SqlDbContext dbContext) : base(dbContext)
+        private readonly AppDbContext _dbContext;
+        public LeaveRequestRepository(AppDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
@@ -71,17 +71,17 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        //public async Task<List<LeaveRequestModel>> getLeaveRequestByMonthRage(int year, int month)
-        //{
-        //    var startDate = new DateTime(year, month, 1);
-        //    var endDate = startDate.AddMonths(1);
+        public async Task<List<LeaveRequestModel>> getLeaveRequestByMonthRage(int year, int month)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1);
 
-        //    return await _dbContext.LeaveRequest
-        //        .Where(x => x.LeaveStartDate >= startDate
-        //            && x.LeaveStartDate < endDate
-        //            && x.IsDeleted == 0
-        //            )
-        //        .ToListAsync();
-        //}
+            return await _dbContext.LeaveRequest
+                .Where(x => x.LeaveStartDate >= startDate
+                    && x.LeaveStartDate < endDate
+                    && x.IsDeleted == 0
+                    )
+                .ToListAsync();
+        }
     }
 }

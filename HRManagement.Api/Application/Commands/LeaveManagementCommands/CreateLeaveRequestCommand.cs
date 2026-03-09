@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Interfaces.NewFolder;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.SeedWork;
@@ -19,12 +19,12 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     
     internal class CreateLeaveRequestCommandHandler : IRequestHandler<CreateLeaveRequestCommand, Result<ApiResponse>>
     {
-        private readonly ILogger<LoginQueryHandler> _logger;
+        private readonly ILogger<CreateLeaveRequestCommandHandler> _logger;
         private readonly ILeaveRequestRepository _repo;
 
         public CreateLeaveRequestCommandHandler(
             ILeaveRequestRepository repo
-            , ILogger<LoginQueryHandler> logger
+            , ILogger<CreateLeaveRequestCommandHandler> logger
         )
         {
             _repo = repo;
@@ -32,7 +32,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
         }
         public async Task<Result<ApiResponse>> Handle(CreateLeaveRequestCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogTrace("Executing handler for request : {request}", nameof(LoginQueryHandler));
+            _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
 
             try
             {

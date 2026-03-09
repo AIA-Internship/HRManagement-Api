@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Interfaces.NewFolder;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.SeedWork;
@@ -19,12 +19,12 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
     }
     internal class GetLeaveRequestByRequesterQueryHandler: IRequestHandler<GetLeaveRequestByRequesterQuery, Result<ApiResponse>>
     {
-        private readonly ILogger<LoginQueryHandler> _logger;
+        private readonly ILogger<GetLeaveRequestByRequesterQueryHandler> _logger;
         private readonly ILeaveRequestRepository _repo;
 
         public GetLeaveRequestByRequesterQueryHandler(
             ILeaveRequestRepository repo
-            , ILogger<LoginQueryHandler> logger
+            , ILogger<GetLeaveRequestByRequesterQueryHandler> logger
             , IUnitOfWork unitOfWork)
         {
             _repo = repo;
@@ -32,7 +32,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
         }
         public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByRequesterQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogTrace("Executing handler for request : {request}", nameof(LoginQueryHandler));
+            _logger.LogTrace("Executing handler for request : {request}", nameof(GetLeaveRequestByRequesterQueryHandler));
 
             try
             {

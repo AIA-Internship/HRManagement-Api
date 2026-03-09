@@ -11,4 +11,5 @@ public interface IRequestRepository
     Task SubmitUpdateRequestAsync(EmployeeUpdateRequest request);
     
     Task<EmployeeUpdateRequest?> GetEmployeeUpdateRequestByIdAsync(int id);
+
 }

@@ -11,7 +11,7 @@ namespace HRManagement.Api.Controllers
 {
     [Route("api/leave")]
     [ApiController]
-    public class LeaveManagementController : ValidationController<LeaveManagementController>
+    public class LeaveManagementController : ValidateController<LeaveManagementController>
     {
         private readonly ILogger<LeaveManagementController> _logger;
 
