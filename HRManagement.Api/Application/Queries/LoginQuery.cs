@@ -75,7 +75,7 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 new Claim("role_id", user.Role.ToString())
             };
             
-            var expirationTime = rememberMe ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddHours(durationInMinutes);
+            var expirationTime = rememberMe ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddMinutes(durationInMinutes);
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
