@@ -116,14 +116,14 @@ public class Employee : BaseTableModel
     private static string UseIfProvided(string? newValue, string currentValue) =>
         string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
 
-    public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, string? supervisorName, long actionerId)
+    public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, string? supervisorName, string? employeeDisplayId, long actionerId)
     {
         if (EmploymentInformation == null)
         {
             EmploymentInformation = new EmploymentInformation(actionerId);
         }
         
-        EmploymentInformation.UpdateDetails(status, startDate, type, department, position, supervisorName, actionerId);
+        EmploymentInformation.UpdateDetails(status, startDate, type, department, position, supervisorName, employeeDisplayId, actionerId);
     
         MarkAsModified(actionerId);
     }

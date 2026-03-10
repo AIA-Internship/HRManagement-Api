@@ -31,5 +31,10 @@ public class UpdateEmploymentInfoValidator : AbstractValidator<UpdateEmployeeInf
         RuleFor(x => x.RequestDto.SupervisorName)
             .MaximumLength(100).WithMessage("Supervisor name cannot exceed 100 characters.")
             .When(x => x.RequestDto.SupervisorName != null);
+
+        RuleFor(x => x.RequestDto.EmployeeDisplayId)
+            .NotEmpty().WithMessage("Employee ID is required.")
+            .Matches(@"^E\d{6}$").WithMessage("Employee ID must be in the format EXXXXXX (e.g., E150529).")
+            .When(x => !string.IsNullOrEmpty(x.RequestDto.EmployeeDisplayId));
     }
 }

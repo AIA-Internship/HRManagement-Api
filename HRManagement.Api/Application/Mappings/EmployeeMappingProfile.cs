@@ -39,6 +39,9 @@ public class EmployeeMappingProfile : Profile
             .ForMember(dest => dest.SupervisorName,
                 opt => opt.MapFrom(src =>
                     src.EmploymentInformation != null ? src.EmploymentInformation.SupervisorName : string.Empty))
+            .ForMember(dest => dest.EmployeeDisplayId,
+                opt => opt.MapFrom(src =>
+                    src.EmploymentInformation != null ? src.EmploymentInformation.EmployeeDisplayId : string.Empty))
             .ForMember(dest => dest.EmergencyContactName,
                 opt => opt.MapFrom(src =>
                     src.EmergencyContacts.FirstOrDefault() != null
@@ -96,9 +99,18 @@ public class EmployeeMappingProfile : Profile
 
         // Maps employee entity to compact list item response.
         CreateMap<Employee, EmployeeListItemDto>()
-            .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.EmployeeDisplayId,
+                opt => opt.MapFrom(src =>
+                    src.EmploymentInformation != null ? src.EmploymentInformation.EmployeeDisplayId : string.Empty))
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
-            .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.EmploymentInformation != null ? src.EmploymentInformation.Department : string.Empty))
-            .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.EmploymentInformation != null ? src.EmploymentInformation.Position : string.Empty));
+            .ForMember(dest => dest.Department,
+                opt => opt.MapFrom(src =>
+                    src.EmploymentInformation != null ? src.EmploymentInformation.Department : string.Empty))
+            .ForMember(dest => dest.Position,
+                opt => opt.MapFrom(src =>
+                    src.EmploymentInformation != null ? src.EmploymentInformation.Position : string.Empty))
+            .ForMember(dest => dest.EmployeeStatus,
+                opt => opt.MapFrom(src =>
+                    src.EmploymentInformation != null ? src.EmploymentInformation.EmploymentStatus : 0));
     }
 }

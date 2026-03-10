@@ -27,6 +27,7 @@ public class UpdateEmployeeInfoCommand(int employeeId, UpdateEmploymentInfoReque
                 dto.Department,
                 dto.Position,
                 dto.SupervisorName,
+                dto.EmployeeDisplayId,
                 actionerId
             );
             

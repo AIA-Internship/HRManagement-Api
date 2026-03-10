@@ -27,5 +27,9 @@ public class CreateEmploymentInfoValidator : AbstractValidator<CreateEmploymentI
         RuleFor(x => x.SupervisorName)
             .NotEmpty().WithMessage("Supervisor name is required.")
             .MaximumLength(100).WithMessage("Supervisor name must not exceed 100 characters.");
+
+        RuleFor(x => x.EmployeeDisplayId)
+            .NotEmpty().WithMessage("Employee ID is required.")
+            .Matches(@"^E\d{6}$").WithMessage("Employee ID must be in the format EXXXXXX (e.g., E150529).");
     }
 }
