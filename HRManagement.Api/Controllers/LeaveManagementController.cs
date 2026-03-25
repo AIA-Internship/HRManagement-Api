@@ -158,5 +158,32 @@ namespace HRManagement.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost]
+        [Route("email")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<ApiResponse>> testEmail([FromBody] dtoTest dto) { 
+            string objectName = nameof(editLeaveRequest).ToString();
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var command = new SendEmailTestCommand(dto.message, dto.receiver);
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        public class dtoTest
+        {
+            public string message { get; set; }
+            public string receiver { get; set; }
+        }
     }
 }
