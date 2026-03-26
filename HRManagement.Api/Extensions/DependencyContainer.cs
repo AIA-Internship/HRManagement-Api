@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Mappings;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.SeedWork;
 using HRManagement.Api.Repositories;
@@ -34,7 +33,7 @@ namespace HRManagement.Api.Extensions
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
 
-            // 3. MediatR, AutoMapper & FluentValidation
+            // 3. MediatR & FluentValidation
             var applicationAssembly = typeof(LoginQuery).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             
@@ -42,8 +41,6 @@ namespace HRManagement.Api.Extensions
             {
                 cfg.RegisterServicesFromAssembly(applicationAssembly);
             });
-
-            services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
 
             return services;
         }
