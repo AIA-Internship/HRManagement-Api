@@ -12,7 +12,7 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
             StatusCode = statusCode;
         }
 
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public int StatusCode { get; set; }
         public ServiceResult? Result { get; set; }
     }

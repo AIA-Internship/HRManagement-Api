@@ -3,8 +3,8 @@ namespace HRManagement.Api.Domain.Models.Tables;
 public class SystemLookup
 {
     public int Id { get; set; }
-    public string Category { get; set; }
+    public string Category { get; set; } = string.Empty;
     public int Value { get; set; }
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
 }

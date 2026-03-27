@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 using System.ComponentModel.DataAnnotations;
-=======
-﻿using System.ComponentModel.DataAnnotations;
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 using System.Text.Json;
 
 using HRManagement.Api.Domain.Models.Constants;
@@ -34,15 +30,12 @@ namespace HRManagement.Api.Extensions
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-<<<<<<< HEAD
             if (context.Response.HasStarted)
             {
                 _logger.LogWarning("The response has already started, the error handler will not be executed.");
                 return;
             }
 
-=======
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
             context.Response.ContentType = "application/json";
             var response = context.Response;
             var correlationId = GetOrCreateCorrelationId(context);

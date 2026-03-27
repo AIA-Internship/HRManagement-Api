@@ -28,11 +28,7 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
         {
             var user = await dbContext.Users
                 .AsNoTracking() 
-<<<<<<< HEAD
                 .FirstOrDefaultAsync(u => u.EmployeeEmail.ToLower() == request.Email.ToLower(), cancellationToken);
-=======
-                .FirstOrDefaultAsync(u => u.EmployeeEmail == request.Email, cancellationToken);
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 
             if (user == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "User not found");
             

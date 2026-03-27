@@ -5,17 +5,17 @@ namespace HRManagement.Api.Domain.Models.Tables;
 public class Employee : BaseTableModel
 {
     public int Id { get; private set; } 
-    public string FullName { get; private set; }
+    public string FullName { get; private set; } = string.Empty;
     public int Gender { get; private set; }
-    public string PersonalEmail { get; private set; }
-    public string EmployeeEmail { get; private set; }
-    public string Nik { get; private set; }
-    public string PlaceOfBirth { get; private set; }
+    public string PersonalEmail { get; private set; } = string.Empty;
+    public string EmployeeEmail { get; private set; } = string.Empty;
+    public string Nik { get; private set; } = string.Empty;
+    public string PlaceOfBirth { get; private set; } = string.Empty;
     public DateTime DateOfBirth { get; private set; }
     public int MaritalStatus { get; private set; }
     public Address CurrentAddress { get; private set; } = new Address();
     public Address ResidentialAddress { get; private set; } = new Address();
-    public string PhoneNumber { get; private set; }
+    public string PhoneNumber { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
     public int Role { get; private set; }
     

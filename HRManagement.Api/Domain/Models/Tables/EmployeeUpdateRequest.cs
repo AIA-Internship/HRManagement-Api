@@ -38,7 +38,7 @@ public class EmployeeUpdateRequest : BaseTableModel
     public string? NewEmergencyContactRelationship { get; private set; }
 
     public int Status { get; private set; }
-    public string HrReason { get; private set; }
+    public string HrReason { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
     
     protected EmployeeUpdateRequest() { }
@@ -73,7 +73,7 @@ public class EmployeeUpdateRequest : BaseTableModel
         ModifiedBy = actionerId;
     }
 
-    public void Reject(string reason, long hrActionerId)
+    public void Reject(string? reason, long hrActionerId)
     {
         Status = 2; // Rejected
         HrReason = reason ?? "Rejected by Supervisor";
@@ -82,7 +82,7 @@ public class EmployeeUpdateRequest : BaseTableModel
         CreatedAt = DateTime.UtcNow.AddHours(7);
     }
 
-    public void Approve(string reason, long hrActionerId)
+    public void Approve(string? reason, long hrActionerId)
     {
         Status = 1; // Approved
         HrReason = reason ?? "Approved by Supervisor";

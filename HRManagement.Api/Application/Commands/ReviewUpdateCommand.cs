@@ -20,7 +20,7 @@ public class ReviewUpdateCommand(ReviewUpdateRequestDto decision) : IRequest<Api
             
             if (request == null) throw new ApiException("Not Found", (int)System.Net.HttpStatusCode.NotFound, "Request Not Found");
             if (request.Status != 0) throw new ApiException("Bad Request", (int)System.Net.HttpStatusCode.BadRequest, "This request has already been processed");
-            if (request.Employee.EmployeeEmail == hrEmail) throw new ApiException("Conflict", (int) System.Net.HttpStatusCode.Conflict, "You cannot approve your own request.");
+            if (request.Employee!.EmployeeEmail == hrEmail) throw new ApiException("Conflict", (int) System.Net.HttpStatusCode.Conflict, "You cannot approve your own request.");
             
             if (command.Decision.IsApproved)
             {

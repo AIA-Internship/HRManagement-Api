@@ -51,23 +51,6 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.MaritalStatus)
             .NotNull().WithMessage("Please select a valid marital status option.");
         
-<<<<<<< HEAD
-        RuleFor(x => x.RequestDto.StreetAddress)
-            .NotEmpty().WithMessage("Street address is required.")
-            .MaximumLength(150).WithMessage("Street address cannot exceed 150 characters.");
-        
-        RuleFor(x => x.RequestDto.City)
-            .NotEmpty().WithMessage("City is required.")
-            .MaximumLength(100).WithMessage("City cannot exceed 100 characters.");
-        
-        RuleFor(x => x.RequestDto.Province)
-            .NotEmpty().WithMessage("Province is required.")
-            .MaximumLength(50).WithMessage("Province cannot exceed 50 characters.");
-        
-        RuleFor(x => x.RequestDto.PostalCode)
-            .NotEmpty().WithMessage("Postal code is required.")
-            .MaximumLength(15).WithMessage("Postal code cannot exceed 15 characters.");
-=======
         // Current Address Validation
         RuleFor(x => x.RequestDto.CurrentStreetAddress)
             .NotEmpty().WithMessage("Current street address is required.")
@@ -101,7 +84,6 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.ResidentialPostalCode)
             .NotEmpty().WithMessage("Residential postal code is required.")
             .MaximumLength(15).WithMessage("Residential postal code cannot exceed 15 characters.");
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         
         RuleFor(x => x.RequestDto.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required.")

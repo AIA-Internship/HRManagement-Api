@@ -28,7 +28,7 @@ public class RequestRepository(AppDbContext dbContext) : IRequestRepository
     {
         return await dbContext.EmployeeUpdateRequests
             .Include(r => r.Employee)
-            .ThenInclude(e => e.EmergencyContacts)
+            .ThenInclude(e => e!.EmergencyContacts)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 

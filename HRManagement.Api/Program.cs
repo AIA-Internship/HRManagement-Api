@@ -63,19 +63,12 @@ builder.Services.AddAuthentication(options =>
         ValidAudiences = validAudiences,
     };
 
-<<<<<<< HEAD
-    // ==========================================
-    // 2. JWT Configuration
-    // ==========================================
-=======
     // DEBUGGING EVENT (PENTING UNTUK MELIHAT ERROR DI SWAGGER)
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-<<<<<<< HEAD
             context.Response.ContentType = "application/json";
             var result = JsonSerializer.Serialize(new ApiResponse
             {
@@ -85,17 +78,12 @@ builder.Services.AddAuthentication(options =>
                 IsError = true
             }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             return context.Response.WriteAsync(result);
-=======
-            context.Response.ContentType = "text/plain";
-            return context.Response.WriteAsync("DEBUG ERROR: " + context.Exception.Message);
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         },
         OnChallenge = context =>
         {
             if (!context.Response.HasStarted && context.AuthenticateFailure == null)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-<<<<<<< HEAD
                 context.Response.ContentType = "application/json";
                 var result = JsonSerializer.Serialize(new ApiResponse
                 {
@@ -105,9 +93,6 @@ builder.Services.AddAuthentication(options =>
                     IsError = true
                 }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 return context.Response.WriteAsync(result);
-=======
-                return context.Response.WriteAsync("Token Missing or Invalid");
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
             }
             return Task.CompletedTask;
         }
@@ -124,7 +109,6 @@ builder.Services.AddMemoryCache();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // ==========================================
-<<<<<<< HEAD
 // 4. CORS Configuration (Penting: Izin koneksi Frontend ke API)
 // ==========================================
 builder.Services.AddCors(options =>
@@ -139,8 +123,6 @@ builder.Services.AddCors(options =>
 });
 
 // ==========================================
-=======
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 // 5. Controllers, JSON & Validation Response
 // ==========================================
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -152,8 +134,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = actionContext =>
     {
-        var errors = actionContext.ModelState.Where(e => e.Value.Errors.Count > 0)
-            .Select(e => e.Value.Errors.First().ErrorMessage).ToList();
+        var errors = actionContext.ModelState.Where(e => e.Value!.Errors.Count > 0)
+            .Select(e => e.Value!.Errors.First().ErrorMessage).ToList();
             
         return new BadRequestObjectResult(new ApiResponse()
         {
@@ -228,12 +210,8 @@ app.UseHttpsRedirection();
 // 4. Routing
 app.UseRouting();
 
-<<<<<<< HEAD
 // 4.1. CORS (Harus setelah Routing dan sebelum Auth)
 app.UseCors("AllowAll");
-
-=======
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 // 5. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
@@ -241,12 +219,8 @@ app.UseAuthorization();
 // 6. Endpoints
 app.MapControllers();
 
-<<<<<<< HEAD
 // 6.1. Root Redirect to Swagger (Hidden from Swagger UI)
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
-
-=======
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 // 7. Database Seeding
 using (var scope = app.Services.CreateScope())
 {

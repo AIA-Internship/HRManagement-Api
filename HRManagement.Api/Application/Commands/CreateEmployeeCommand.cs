@@ -2,10 +2,7 @@ using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
-<<<<<<< HEAD
-=======
 using System.Text.RegularExpressions;
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;
@@ -24,22 +21,19 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             EmploymentInformation? employmentInfo = null;
             if (dto.EmploymentInformation != null)
             {
-<<<<<<< HEAD
-=======
                 var displayId = dto.EmploymentInformation.EmployeeDisplayId;
                 if (string.IsNullOrWhiteSpace(displayId))
                 {
                     displayId = await GenerateNextDisplayId(employeeRepository);
                 }
 
-                int? supervisorId = null;
+                string? supervisorName = null;
                 if (!string.IsNullOrWhiteSpace(dto.EmploymentInformation.SupervisorDisplayId))
                 {
                     var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.EmploymentInformation.SupervisorDisplayId);
-                    supervisorId = supervisor?.Id;
+                    supervisorName = supervisor?.FullName;
                 }
 
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
                 employmentInfo = new EmploymentInformation(actionerId);
                 employmentInfo.UpdateDetails(
                     dto.EmploymentInformation.EmploymentStatus,
@@ -47,13 +41,8 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     dto.EmploymentInformation.EmploymentType,
                     dto.EmploymentInformation.Department,
                     dto.EmploymentInformation.Position,
-<<<<<<< HEAD
-                    dto.EmploymentInformation.SupervisorName,
-                    dto.EmploymentInformation.EmployeeDisplayId,
-=======
-                    supervisorId,
+                    supervisorName,
                     displayId,
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
                     actionerId
                 );
             }
@@ -84,33 +73,15 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                 placeOfBirth: dto.PlaceOfBirth,
                 dateOfBirth: dto.DateOfBirth,
                 maritalStatus: dto.MaritalStatus,
-<<<<<<< HEAD
-                streetAddress: dto.StreetAddress,
-                city: dto.City,
-                province: dto.Province,
-                postalCode: dto.PostalCode,
-                role: dto.Role,
-                actionerId: actionerId);
-=======
                 currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
                 residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
                 role: dto.Role,
-                actionerId: actionerId,
-                employmentInformation: employmentInfo,
-                emergencyContacts: emergencyContacts
-            );
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
+                actionerId: actionerId);
             
             var hashedPassword = passwordHasher.Hash(dto.DefaultPassword);
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);
             
-<<<<<<< HEAD
             await employeeRepository.AddEmployeeAsync(user, employee, employmentInfo, emergencyContacts);
-
-            return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
-        }
-=======
-            await employeeRepository.AddEmployeeAsync(user, employee);
 
             return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
         }
@@ -140,6 +111,5 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
 
             return "E0001";
         }
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
     }
 }

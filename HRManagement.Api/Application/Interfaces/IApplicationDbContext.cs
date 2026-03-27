@@ -8,7 +8,6 @@ public interface IApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
-<<<<<<< HEAD
     public DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public DbSet<EmergencyContact> EmergencyContacts { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
@@ -19,9 +18,6 @@ public interface IApplicationDbContext
     public DbSet<TimesheetSubmission> TimesheetSubmissions { get; set; }
     public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }
     public DbSet<TodoTask> TodoTasks { get; set; }
-=======
-    public DbSet<SystemLookup> SystemLookups { get; set; }
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

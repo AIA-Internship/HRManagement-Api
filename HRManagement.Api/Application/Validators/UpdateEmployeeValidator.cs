@@ -45,23 +45,6 @@ public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
             .NotNull().WithMessage("Invalid marital status value.")
             .When(x => x.RequestDto.MaritalStatus.HasValue);
         
-<<<<<<< HEAD
-        RuleFor(x => x.RequestDto.StreetAddress)
-            .MaximumLength(150).WithMessage("Street address cannot exceed 150 characters.")
-            .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.StreetAddress));
-        
-        RuleFor(x => x.RequestDto.City)
-            .MaximumLength(100).WithMessage("City cannot exceed 100 characters.")
-            .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.City));
-        
-        RuleFor(x => x.RequestDto.Province)
-            .MaximumLength(50).WithMessage("Province cannot exceed 50 characters.")
-            .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.Province));
-        
-        RuleFor(x => x.RequestDto.PostalCode)
-            .MaximumLength(15).WithMessage("Postal code cannot exceed 15 characters.")
-            .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.PostalCode));
-=======
         // Current Address Validation
         RuleFor(x => x.RequestDto.CurrentStreetAddress)
             .MaximumLength(150).WithMessage("Current street address cannot exceed 150 characters.")
@@ -95,7 +78,6 @@ public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
         RuleFor(x => x.RequestDto.ResidentialPostalCode)
             .MaximumLength(15).WithMessage("Residential postal code cannot exceed 15 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.ResidentialPostalCode));
->>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         
         RuleFor(x => x.RequestDto.PhoneNumber)
             .MaximumLength(25).WithMessage("Phone number cannot exceed 25 characters.")
