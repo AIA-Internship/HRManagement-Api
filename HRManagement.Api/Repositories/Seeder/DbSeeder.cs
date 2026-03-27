@@ -57,10 +57,9 @@ public static class DbSeeder
 
         if (employeesExist && usersExist)
         {
-            return; // Only exit if BOTH tables are already populated
+            return; 
         }
-
-        // Setup shared DTOs so we can use the same data for Employees and Users
+        
         var adminDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Brandon@aia.com",
