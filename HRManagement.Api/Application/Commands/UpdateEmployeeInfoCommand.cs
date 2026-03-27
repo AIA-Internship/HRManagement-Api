@@ -5,20 +5,27 @@ using MediatR;
 
 namespace HRManagement.Api.Application.Commands;
 
-public class UpdateEmployeeInfoCommand(int employeeId, UpdateEmploymentInfoRequestDto commandDto) : IRequest<ApiResponse<string>>
+public class UpdateEmployeeInfoCommand(string employeeDisplayId, UpdateEmploymentInfoRequestDto commandDto) : IRequest<ApiResponse<string>>
 {
-    public int EmployeeId { get; } = employeeId;
+    public string EmployeeDisplayId { get; } = employeeDisplayId;
     public UpdateEmploymentInfoRequestDto RequestDto { get; } = commandDto;
     
     public class Handler(IEmployeeRepository employeeRepository, ICurrentUserService currentUserService) : IRequestHandler<UpdateEmployeeInfoCommand, ApiResponse<string>>
     {
         public async Task<ApiResponse<string>> Handle(UpdateEmployeeInfoCommand command, CancellationToken cancellationToken)
         {
-            var employee = await employeeRepository.GetByIdAsync(command.EmployeeId);
+            var employee = await employeeRepository.GetByDisplayIdAsync(command.EmployeeDisplayId);
             if (employee == null) throw new ApiException("Not found", 404, "Employee not found");
             
             var actionerId = currentUserService.UserId;
             var dto = command.RequestDto;
+
+            int? supervisorId = null;
+            if (!string.IsNullOrWhiteSpace(dto.SupervisorDisplayId))
+            {
+                var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.SupervisorDisplayId);
+                supervisorId = supervisor?.Id;
+            }
             
             employee.UpdateEmploymentInfo(
                 dto.EmploymentStatus,
@@ -26,8 +33,7 @@ public class UpdateEmployeeInfoCommand(int employeeId, UpdateEmploymentInfoReque
                 dto.EmploymentType,
                 dto.Department,
                 dto.Position,
-                dto.SupervisorId,
-                dto.SupervisorName,
+                supervisorId,
                 dto.EmployeeDisplayId,
                 actionerId
             );

@@ -1,3 +1,4 @@
+using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Repositories.Base;
@@ -89,6 +90,15 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<Employee?> GetByDisplayIdAsync(string displayId)
+    {
+        return await dbContext.Employees
+            .Include(e => e.EmploymentInformation)
+                .ThenInclude(ei => ei!.Supervisor)
+            .Include(e => e.EmergencyContacts)
+            .FirstOrDefaultAsync(e => e.EmploymentInformation!.EmployeeDisplayId == displayId);
+    }
+
     public async Task<string?> GetLastEmployeeDisplayIdAsync()
     {
         return await dbContext.EmploymentInformations
@@ -96,5 +106,17 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
             .OrderByDescending(e => e.Id)
             .Select(e => e.EmployeeDisplayId)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Employees
+            .Include(e => e.EmploymentInformation)
+            .AsNoTracking()
+            .Where(e => e.Role == 0 && e.IsActive) // 0 = Supervisor Role
+            .Select(e => new SupervisorLookupDto(
+                e.EmploymentInformation!.EmployeeDisplayId,
+                e.FullName))
+            .ToListAsync(cancellationToken);
     }
 }

@@ -19,12 +19,12 @@ public class EmployeeProfileResponseDto
     public bool IsActive { get; set; }
     
     //Employment Information
-    public int EmployeeId { get; set; }
     public string EmployeeStatus { get; set; }
     public DateTime StartDate { get; set; }
     public string EmploymentType { get; set; }
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
+    public string SupervisorDisplayId { get; set; } = string.Empty;
     public string SupervisorName { get; set; } = string.Empty;
     public string EmployeeDisplayId { get; set; } = string.Empty;
     

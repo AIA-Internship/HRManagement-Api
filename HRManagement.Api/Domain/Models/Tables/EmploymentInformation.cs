@@ -12,7 +12,6 @@ public class EmploymentInformation : BaseTableModel
     public string Position { get; set; } = string.Empty;
     public int? SupervisorId { get; set; }
     public Employee? Supervisor { get; set; }
-    public string SupervisorName { get; set; } = string.Empty;
     public string EmployeeDisplayId { get; set; } = string.Empty;
     
     protected EmploymentInformation() { }
@@ -23,7 +22,7 @@ public class EmploymentInformation : BaseTableModel
         MarkAsModified(actionerId);
     }
 
-    public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? supervisorName, string? employeeDisplayId, long actionerId)
+    public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
     {
         EmploymentStatus = status ?? EmploymentStatus;
         StartDate = startDate ?? StartDate;
@@ -31,7 +30,6 @@ public class EmploymentInformation : BaseTableModel
         Department = UseIfProvided(department, Department);
         Position = UseIfProvided(position, Position);
         SupervisorId = supervisorId ?? SupervisorId;
-        SupervisorName = UseIfProvided(supervisorName, SupervisorName);
         EmployeeDisplayId = UseIfProvided(employeeDisplayId, EmployeeDisplayId);
 
         MarkAsModified(actionerId); 

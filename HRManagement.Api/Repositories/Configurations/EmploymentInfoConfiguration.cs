@@ -41,11 +41,6 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
         builder.Property(e => e.SupervisorId)
             .HasColumnName("employment_supervisor_id");
 
-        builder.Property(e => e.SupervisorName)
-            .HasColumnName("employment_supervisor_name")
-            .HasMaxLength(100)
-            .IsRequired(false);
-
         builder.Property(e => e.EmployeeDisplayId)
             .HasColumnName("employee_display_id")
             .HasMaxLength(10)

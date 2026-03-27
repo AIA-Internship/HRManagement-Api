@@ -24,11 +24,12 @@ public class CreateEmploymentInfoValidator : AbstractValidator<CreateEmploymentI
             .NotEmpty().WithMessage("Employment position is required.")
             .MaximumLength(50).WithMessage("Employment position must not exceed 50 characters.");
         
-        RuleFor(x => x.SupervisorName)
-            .MaximumLength(100).WithMessage("Supervisor name must not exceed 100 characters.");
-
         RuleFor(x => x.EmployeeDisplayId)
             .Matches(@"^E\d+$").WithMessage("Employee ID must be in the format EXXX (e.g., E001, E0001).")
             .When(x => !string.IsNullOrEmpty(x.EmployeeDisplayId));
+
+        RuleFor(x => x.SupervisorDisplayId)
+            .Matches(@"^E\d+$").WithMessage("Supervisor ID must be in the format EXXX (e.g., E001, E0001).")
+            .When(x => !string.IsNullOrEmpty(x.SupervisorDisplayId));
     }
 }

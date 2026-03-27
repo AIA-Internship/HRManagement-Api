@@ -12,10 +12,8 @@ public class UpdateEmploymentInfoRequestDto
     public string Department { get; set; } = string.Empty;
     /// <example>Software Engineer</example>
     public string Position { get; set; } = string.Empty;
-    // <example>1</example>
-    public int? SupervisorId { get; set; }
-    /// <example>John Doe</example>
-    public string SupervisorName { get; set; } = string.Empty;
+    /// <example>E0001</example>
+    public string? SupervisorDisplayId { get; set; }
     /// <example>E150529</example>
     public string EmployeeDisplayId { get; set; } = string.Empty;
 }

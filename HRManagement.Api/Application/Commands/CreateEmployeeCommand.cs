@@ -27,6 +27,13 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     displayId = await GenerateNextDisplayId(employeeRepository);
                 }
 
+                int? supervisorId = null;
+                if (!string.IsNullOrWhiteSpace(dto.EmploymentInformation.SupervisorDisplayId))
+                {
+                    var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.EmploymentInformation.SupervisorDisplayId);
+                    supervisorId = supervisor?.Id;
+                }
+
                 employmentInfo = new EmploymentInformation(actionerId);
                 employmentInfo.UpdateDetails(
                     dto.EmploymentInformation.EmploymentStatus,
@@ -34,8 +41,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     dto.EmploymentInformation.EmploymentType,
                     dto.EmploymentInformation.Department,
                     dto.EmploymentInformation.Position,
-                    dto.EmploymentInformation.SupervisorId,
-                    dto.EmploymentInformation.SupervisorName,
+                    supervisorId,
                     displayId,
                     actionerId
                 );

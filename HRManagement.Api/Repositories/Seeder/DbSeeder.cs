@@ -84,8 +84,7 @@ public static class DbSeeder
                 EmploymentType = 1, // Fulltime
                 Department = "Human Resources",
                 Position = "HR Manager",
-                SupervisorId = null,
-                SupervisorName = "System Director",
+                SupervisorDisplayId = null,
                 EmployeeDisplayId = "E0001"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
@@ -123,8 +122,7 @@ public static class DbSeeder
                 EmploymentType = 3, // Intern
                 Department = "Development",
                 Position = "Software Engineering Intern",
-                SupervisorId = null,
-                SupervisorName = "Brandon Admin",
+                SupervisorDisplayId = null,
                 EmployeeDisplayId = "E0002"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
@@ -158,8 +156,7 @@ public static class DbSeeder
                 EmploymentType = dto.EmploymentInformation.EmploymentType,
                 Department = dto.EmploymentInformation.Department,
                 Position = dto.EmploymentInformation.Position,
-                SupervisorId = dto.EmploymentInformation.SupervisorId,
-                SupervisorName = dto.EmploymentInformation.SupervisorName,
+                SupervisorId = null, // Set manually after creation in Seeder if needed
                 EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
             };
 

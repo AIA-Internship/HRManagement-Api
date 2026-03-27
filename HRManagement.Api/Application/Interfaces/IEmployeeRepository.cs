@@ -1,3 +1,4 @@
+using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Tables;
 
 namespace HRManagement.Api.Application.Interfaces;
@@ -13,6 +14,8 @@ public interface IEmployeeRepository
     Task<List<Employee>> GetAllEmployeesAsync();
     Task<Employee?> GetByEmailAsync(string email);
     Task<Employee?> GetByIdAsync(int id);
+    Task<Employee?> GetByDisplayIdAsync(string displayId);
     Task UpdateEmployeeAsync(Employee employee);
     Task<string?> GetLastEmployeeDisplayIdAsync();
+    Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default);
 }
