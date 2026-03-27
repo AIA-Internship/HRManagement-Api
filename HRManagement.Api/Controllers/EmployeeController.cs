@@ -29,26 +29,6 @@ public class EmployeeController : ValidateController<EmployeeController>
         _logger = logger;
     }
     
-    [HttpPut("me")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
-    {
-        string methodName = nameof(UpdateEmployee);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new UpdateEmployeeCommand(commandDto);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((UpdateEmployeeCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
     [HttpPut("employment-info/{displayId}")]
     [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(200)]
@@ -65,6 +45,26 @@ public class EmployeeController : ValidateController<EmployeeController>
         return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
         {
             var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+    
+    [HttpPut("me")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
+    {
+        string methodName = nameof(UpdateEmployee);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var command = new UpdateEmployeeCommand(commandDto);
+        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(command, async (c) => 
+        {
+            var result = await _mediator.Send((UpdateEmployeeCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
@@ -153,6 +153,25 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
     
+    [HttpGet("supervisors-lookup")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
+    {
+        string methodName = nameof(GetSupervisorLookup);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var query = new GetSupervisorLookupQuery();
+        var result = await _mediator.Send(query);
+        
+        _logger.LogInformation("End {Service}.", methodName);
+        return Ok(result);
+    }
+    
     [HttpPost("review-update")]
     [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(200)]
@@ -193,24 +212,5 @@ public class EmployeeController : ValidateController<EmployeeController>
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
-    }
-
-    [HttpGet("supervisors-lookup")]
-    [Authorize(Roles = "Supervisor")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
-    {
-        string methodName = nameof(GetSupervisorLookup);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetSupervisorLookupQuery();
-        var result = await _mediator.Send(query);
-        
-        _logger.LogInformation("End {Service}.", methodName);
-        return Ok(result);
     }
 }
