@@ -50,16 +50,17 @@ public static class DbSeeder
         }
         
         // ==========================================
-        // 2. CHECK IF EMPLOYEES ALREADY EXIST
+        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
         // ==========================================
-        if (context.Employees.Any())
+        bool employeesExist = context.Employees.Any();
+        bool usersExist = context.Users.Any();
+
+        if (employeesExist && usersExist)
         {
-            return; 
+            return; // Only exit if BOTH tables are already populated
         }
 
-        // ==========================================
-        // 3. SEED THE ADMIN / SUPERVISOR
-        // ==========================================
+        // Setup shared DTOs so we can use the same data for Employees and Users
         var adminDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Brandon@aia.com",
@@ -72,10 +73,14 @@ public static class DbSeeder
             PlaceOfBirth = "Jakarta",
             DateOfBirth = new DateTime(1998, 1, 15).ToUniversalTime(),
             MaritalStatus = 0, // Single
-            StreetAddress = "Jl. Sudirman No. 1",
-            City = "Jakarta",
-            Province = "DKI Jakarta",
-            PostalCode = "10220",
+            CurrentStreetAddress = "Jl. Sudirman No. 1",
+            CurrentCity = "Jakarta",
+            CurrentProvince = "DKI Jakarta",
+            CurrentPostalCode = "10220",
+            ResidentialStreetAddress = "Jl. Sudirman No. 1",
+            ResidentialCity = "Jakarta",
+            ResidentialProvince = "DKI Jakarta",
+            ResidentialPostalCode = "10220",
             Role = 0, // Supervisor
             EmploymentInformation = new CreateEmploymentInfoDto
             {
@@ -92,12 +97,7 @@ public static class DbSeeder
                 new() { Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" }
             }
         };
-        
-        var adminEmployee = CreateEmployeeEntity(adminDto, 1);
 
-        // ==========================================
-        // 4. SEED THE INTERN
-        // ==========================================
         var internDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Owen@aia.com",
@@ -110,10 +110,14 @@ public static class DbSeeder
             PlaceOfBirth = "Bandung",
             DateOfBirth = new DateTime(2002, 5, 20).ToUniversalTime(),
             MaritalStatus = 0, // Single
-            StreetAddress = "Jl. Thamrin No. 10",
-            City = "Jakarta",
-            Province = "DKI Jakarta",
-            PostalCode = "10350",
+            CurrentStreetAddress = "Jl. Thamrin No. 10",
+            CurrentCity = "Jakarta",
+            CurrentProvince = "DKI Jakarta",
+            CurrentPostalCode = "10350",
+            ResidentialStreetAddress = "Jl. Thamrin No. 10",
+            ResidentialCity = "Jakarta",
+            ResidentialProvince = "DKI Jakarta",
+            ResidentialPostalCode = "10350",
             Role = 1, // Employee
             EmploymentInformation = new CreateEmploymentInfoDto
             {
@@ -131,17 +135,46 @@ public static class DbSeeder
             }
         };
 
-        var internEmployee = CreateEmployeeEntity(internDto, 1);
-
-        if (internEmployee.EmploymentInformation != null)
+        // ==========================================
+        // 3. SEED EMPLOYEES (If missing)
+        // ==========================================
+        if (!employeesExist)
         {
-            internEmployee.EmploymentInformation.Supervisor = adminEmployee;
+            var adminEmployee = CreateEmployeeEntity(adminDto, 1);
+            var internEmployee = CreateEmployeeEntity(internDto, 1);
+
+            if (internEmployee.EmploymentInformation != null)
+            {
+                internEmployee.EmploymentInformation.Supervisor = adminEmployee;
+            }
+
+            context.Employees.AddRange(adminEmployee, internEmployee);
         }
 
         // ==========================================
-        // 5. SAVE TO DATABASE
+        // 4. SEED USERS (If missing)
         // ==========================================
-        context.Employees.AddRange(adminEmployee, internEmployee);
+        if (!usersExist)
+        {
+            var adminUser = new User(
+                email: adminDto.EmployeeEmail, 
+                passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
+                role: adminDto.Role, 
+                actionerId: 1);
+                
+            var internUser = new User(
+                email: internDto.EmployeeEmail, 
+                passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
+                role: internDto.Role, 
+                actionerId: 1);
+
+            context.Users.AddRange(adminUser, internUser);
+        }
+
+        // ==========================================
+        // 5. COMMIT TRANSACTIONS
+        // ==========================================
+        // This will save both Employees and Users in a single database transaction
         await context.SaveChangesAsync();
     }
 
@@ -156,7 +189,7 @@ public static class DbSeeder
                 EmploymentType = dto.EmploymentInformation.EmploymentType,
                 Department = dto.EmploymentInformation.Department,
                 Position = dto.EmploymentInformation.Position,
-                SupervisorId = null, // Set manually after creation in Seeder if needed
+                SupervisorId = null, 
                 EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
             };
 
@@ -179,10 +212,8 @@ public static class DbSeeder
             placeOfBirth: dto.PlaceOfBirth,
             dateOfBirth: dto.DateOfBirth,
             maritalStatus: dto.MaritalStatus,
-            streetAddress: dto.StreetAddress,
-            city: dto.City,
-            province: dto.Province,
-            postalCode: dto.PostalCode,
+            currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
+            residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
             role: dto.Role,
             actionerId: actionerId,
             employmentInformation: employmentInformation,
