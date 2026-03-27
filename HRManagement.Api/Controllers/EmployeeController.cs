@@ -197,7 +197,11 @@ public class EmployeeController : ValidateController<EmployeeController>
 
     [HttpGet("supervisors-lookup")]
     [Authorize(Roles = "Supervisor")]
-    [ProducesResponseType(typeof(ApiResponse<List<SupervisorLookupDto>>), 200)]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
     {
         string methodName = nameof(GetSupervisorLookup);

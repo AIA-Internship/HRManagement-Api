@@ -41,6 +41,8 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
         builder.Property(e => e.SupervisorId)
             .HasColumnName("employment_supervisor_id");
 
+        builder.HasIndex(e => e.SupervisorId);
+
         builder.Property(e => e.EmployeeDisplayId)
             .HasColumnName("employee_display_id")
             .HasMaxLength(10)
@@ -48,6 +50,8 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
         
         builder.HasIndex(e => e.EmployeeDisplayId)
             .IsUnique();
+        
+        builder.HasIndex(e => e.EmployeeId);
         
         builder.HasOne(e => e.Employee)
             .WithOne(emp => emp.EmploymentInformation)

@@ -84,6 +84,8 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
             .HasColumnName("created_at")
             .IsRequired();
         
+        builder.HasIndex(e => e.EmployeeId);
+        
         builder.HasOne(e => e.Employee)
             .WithMany() 
             .HasForeignKey(e => e.EmployeeId)
