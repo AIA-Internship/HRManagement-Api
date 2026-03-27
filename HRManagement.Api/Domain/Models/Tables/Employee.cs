@@ -13,10 +13,8 @@ public class Employee : BaseTableModel
     public string PlaceOfBirth { get; private set; }
     public DateTime DateOfBirth { get; private set; }
     public int MaritalStatus { get; private set; }
-    public string StreetAddress { get; private set; }
-    public string City { get; private set; }
-    public string Province { get; private set; }
-    public string PostalCode { get; private set; }
+    public Address CurrentAddress { get; private set; } = new Address();
+    public Address ResidentialAddress { get; private set; } = new Address();
     public string PhoneNumber { get; private set; }
     public bool IsActive { get; private set; }
     public int Role { get; private set; }
@@ -40,10 +38,8 @@ public class Employee : BaseTableModel
         string placeOfBirth,
         DateTime dateOfBirth,
         int maritalStatus,
-        string streetAddress,
-        string city,
-        string province,
-        string postalCode,
+        Address currentAddress,
+        Address residentialAddress,
         int role,
         long actionerId)
     {
@@ -56,10 +52,8 @@ public class Employee : BaseTableModel
         PlaceOfBirth = placeOfBirth;
         DateOfBirth = dateOfBirth;
         MaritalStatus = maritalStatus;
-        StreetAddress = streetAddress;
-        City = city;
-        Province = province;
-        PostalCode = postalCode;
+        CurrentAddress = currentAddress;
+        ResidentialAddress = residentialAddress;
         Role = role;
         IsActive = true;
 
@@ -71,10 +65,17 @@ public class Employee : BaseTableModel
     {
         FullName = UseIfProvided(request.NewFullName, FullName);
         Gender = request.NewGender ?? Gender;
-        StreetAddress = UseIfProvided(request.NewStreetAddress, StreetAddress);
-        City = UseIfProvided(request.NewCity, City);
-        Province = UseIfProvided(request.NewProvince, Province);
-        PostalCode = UseIfProvided(request.NewPostalCode, PostalCode);
+        
+        CurrentAddress.Street = UseIfProvided(request.NewCurrentStreetAddress, CurrentAddress.Street);
+        CurrentAddress.City = UseIfProvided(request.NewCurrentCity, CurrentAddress.City);
+        CurrentAddress.Province = UseIfProvided(request.NewCurrentProvince, CurrentAddress.Province);
+        CurrentAddress.ZipCode = UseIfProvided(request.NewCurrentZipCode, CurrentAddress.ZipCode);
+
+        ResidentialAddress.Street = UseIfProvided(request.NewResidentialStreetAddress, ResidentialAddress.Street);
+        ResidentialAddress.City = UseIfProvided(request.NewResidentialCity, ResidentialAddress.City);
+        ResidentialAddress.Province = UseIfProvided(request.NewResidentialProvince, ResidentialAddress.Province);
+        ResidentialAddress.ZipCode = UseIfProvided(request.NewResidentialZipCode, ResidentialAddress.ZipCode);
+
         PhoneNumber = UseIfProvided(request.NewPhoneNumber, PhoneNumber);
         PersonalEmail = UseIfProvided(request.NewPersonalEmail, PersonalEmail);
         PlaceOfBirth = UseIfProvided(request.NewPlaceOfBirth, PlaceOfBirth);

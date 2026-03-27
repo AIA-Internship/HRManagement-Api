@@ -11,7 +11,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.ToTable("Employees");
         
         // Logical relationships: No physical DB Foreign Keys for enterprise modularity.
-        // Managed via IDs at the application level.
+        // Managed via IDs at the application level. (Removed HasOne/HasMany from master)
         
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("emp_id");
@@ -46,35 +46,31 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .IsRequired();
         
         builder.Property(e => e.DateOfBirth)
-            .HasColumnType("date")
             .HasColumnName("emp_DOB")
+            .HasColumnType("date")
             .IsRequired();
         
         builder.Property(e => e.MaritalStatus)
-            .HasColumnType("int")
             .HasColumnName("emp_marital_status")
             .IsRequired();
         
-        builder.Property(e => e.StreetAddress)
-            .HasColumnName("emp_st_address")
-            .HasMaxLength(150)
-            .IsRequired();
-        
-        builder.Property(e => e.City)
-            .HasColumnName("emp_city")
-            .HasMaxLength(100)
-            .IsRequired();
-        
-        builder.Property(e => e.Province)
-            .HasColumnName("emp_province")
-            .HasMaxLength(50)
-            .IsRequired();
-        
-        builder.Property(e => e.PostalCode)
-            .HasColumnName("emp_postal_code")
-            .HasMaxLength(15)
-            .IsRequired();
-        
+        // Addresses (Owned Types from master)
+        builder.OwnsOne(e => e.CurrentAddress, a =>
+        {
+            a.Property(p => p.Street).HasColumnName("emp_current_st_address").HasMaxLength(150).IsRequired();
+            a.Property(p => p.City).HasColumnName("emp_current_city").HasMaxLength(100).IsRequired();
+            a.Property(p => p.Province).HasColumnName("emp_current_province").HasMaxLength(50).IsRequired();
+            a.Property(p => p.ZipCode).HasColumnName("emp_current_postal_code").HasMaxLength(15).IsRequired();
+        });
+
+        builder.OwnsOne(e => e.ResidentialAddress, a =>
+        {
+            a.Property(p => p.Street).HasColumnName("emp_residential_st_address").HasMaxLength(150).IsRequired();
+            a.Property(p => p.City).HasColumnName("emp_residential_city").HasMaxLength(100).IsRequired();
+            a.Property(p => p.Province).HasColumnName("emp_residential_province").HasMaxLength(50).IsRequired();
+            a.Property(p => p.ZipCode).HasColumnName("emp_residential_postal_code").HasMaxLength(15).IsRequired();
+        });
+
         builder.Property(e => e.PhoneNumber)
             .HasColumnName("emp_phone")
             .HasMaxLength(25)

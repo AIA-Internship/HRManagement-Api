@@ -1,3 +1,4 @@
+using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Repositories.Base;
@@ -86,7 +87,6 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
         if (employee.EmergencyContacts.Any())
         {
             // Simple approach: Delete old, add current (if not using specific IDs)
-            // But let's just use Update for now if they are tracked.
             foreach(var c in employee.EmergencyContacts)
             {
                 if (c.Id == 0) await dbContext.EmergencyContacts.AddAsync(c);
@@ -171,5 +171,45 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
         }
 
         return employee;
+    }
+
+    public async Task<Employee?> GetByDisplayIdAsync(string displayId)
+    {
+        var info = await dbContext.EmploymentInformation
+            .FirstOrDefaultAsync(ei => ei.EmployeeDisplayId == displayId);
+        
+        if (info == null) return null;
+
+        return await GetByIdAsync(info.EmployeeId);
+    }
+
+    public async Task<string?> GetLastEmployeeDisplayIdAsync()
+    {
+        return await dbContext.EmploymentInformation
+            .Where(e => e.EmployeeDisplayId != null && e.EmployeeDisplayId.StartsWith("E"))
+            .OrderByDescending(e => e.Id)
+            .Select(e => e.EmployeeDisplayId)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
+    {
+        var supervisors = await dbContext.Employees
+            .AsNoTracking()
+            .Where(e => e.Role == 0 && e.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var empIds = supervisors.Select(e => e.Id).ToList();
+        var infos = await dbContext.EmploymentInformation
+            .AsNoTracking()
+            .Where(i => empIds.Contains(i.EmployeeId))
+            .ToListAsync(cancellationToken);
+
+        return supervisors.Select(s => {
+            var matchingInfo = infos.FirstOrDefault(i => i.EmployeeId == s.Id);
+            return new SupervisorLookupDto(
+                matchingInfo?.EmployeeDisplayId ?? string.Empty,
+                s.FullName);
+        }).ToList();
     }
 }

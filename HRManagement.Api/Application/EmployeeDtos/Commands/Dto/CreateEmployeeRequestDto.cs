@@ -22,6 +22,7 @@ public class CreateEmployeeRequestDto
     public DateTime DateOfBirth { get; set; }
     /// <example>1</example>
     public int MaritalStatus { get; set; }
+<<<<<<< HEAD
     /// <example>Jl. Sudirman No. 1</example>
     public string StreetAddress { get; set; } = string.Empty;
     /// <example>Jakarta Selatan</example>
@@ -30,6 +31,29 @@ public class CreateEmployeeRequestDto
     public string Province { get; set; } = string.Empty;
     /// <example>12345</example>
     public string PostalCode { get; set; } = string.Empty;
+=======
+    
+    // Current Address
+    /// <example>Jl. Sudirman No. 1</example>
+    public string CurrentStreetAddress { get; set; } = string.Empty;
+    /// <example>Jakarta Selatan</example>
+    public string CurrentCity { get; set; } = string.Empty;
+    /// <example>DKI Jakarta</example>
+    public string CurrentProvince { get; set; } = string.Empty;
+    /// <example>12345</example>
+    public string CurrentPostalCode { get; set; } = string.Empty;
+
+    // Residential Address
+    /// <example>Jl. Thamrin No. 10</example>
+    public string ResidentialStreetAddress { get; set; } = string.Empty;
+    /// <example>Bandung</example>
+    public string ResidentialCity { get; set; } = string.Empty;
+    /// <example>Jawa Barat</example>
+    public string ResidentialProvince { get; set; } = string.Empty;
+    /// <example>40123</example>
+    public string ResidentialPostalCode { get; set; } = string.Empty;
+
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
     /// <example>1</example>
     public int Role { get; set; }
     public CreateEmploymentInfoDto? EmploymentInformation { get; set; }
@@ -48,10 +72,16 @@ public class CreateEmploymentInfoDto
     public string Department { get; set; } = string.Empty;
     /// <example>Software Engineer</example>
     public string Position { get; set; } =  string.Empty;
+<<<<<<< HEAD
     /// <example>Jane Smith</example>
     public string SupervisorName { get; set; } = string.Empty;
 
     /// <example>E150529</example>
+=======
+    /// <example>E0001</example>
+    public string? SupervisorDisplayId { get; set; }
+    /// <example>E00001</example>
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
     public string EmployeeDisplayId { get; set; } = string.Empty;
 }
 

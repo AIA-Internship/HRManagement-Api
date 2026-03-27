@@ -28,7 +28,7 @@ public static class DbSeeder
                 // UserRole
                 new SystemLookup { Category = "ROLE", Value = 0, DisplayName = "Supervisor", IsActive = true },
                 new SystemLookup { Category = "ROLE", Value = 1, DisplayName = "Employee", IsActive = true },
-
+                
                 // EmployeeStatus
                 new SystemLookup { Category = "EMPLOYMENT_STATUS", Value = 0, DisplayName = "Inactive", IsActive = true },
                 new SystemLookup { Category = "EMPLOYMENT_STATUS", Value = 1, DisplayName = "Active", IsActive = true },
@@ -51,102 +51,94 @@ public static class DbSeeder
         }
         
         // ==========================================
-        // 2. SEED DEFAULT USERS (IF NOT EXIST)
+        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
         // ==========================================
-        var usersToSeed = new List<(string Email, string Password, int Role, string FullName, string DisplayId)>
+        if (context.Employees.Any() && context.Users.Any())
         {
-            ("Brandon@aia.com", "AdminPass123!", 0, "Brandon Admin", "E150529"),
-            ("Owen@aia.com", "WorkerPass123!", 1, "Owen Intern", "E150530")
+            return; 
+        }
+
+        // ==========================================
+        // 3. SEED DEFAULT USERS (IF NOT EXIST)
+        // ==========================================
+        var adminsToSeed = new List<(string Email, string Password, string FullName, string DisplayId)>
+        {
+            ("Brandon@aia.com", "AdminPass123!", "Brandon Admin", "E0001")
         };
 
-        foreach (var u in usersToSeed)
+        var internsToSeed = new List<(string Email, string Password, string FullName, string DisplayId, string SupervisorName)>
+        {
+            ("Owen@aia.com", "WorkerPass123!", "Owen Intern", "E0002", "Brandon Admin")
+        };
+
+        // Seed Admins
+        foreach (var u in adminsToSeed)
         {
             if (!await context.Users.AnyAsync(user => user.EmployeeEmail == u.Email))
             {
-                // Create minimal user and employee record
-                var user = new User(u.Email, passwordHasher.Hash(u.Password), u.Role, 1);
+                var user = new User(u.Email, passwordHasher.Hash(u.Password), 0, 1);
                 context.Users.Add(user);
                 
-                // Add minimal employee record if missing
-                if (!await context.Employees.AnyAsync(e => e.EmployeeEmail == u.Email))
-                {
-                    var emp = new Employee(
-                        fullName: u.FullName,
-                        gender: 0,
-                        personalEmail: u.Email.Replace("@aia.com", "@personal.com"),
-                        employeeEmail: u.Email,
-                        phoneNumber: "08123456789",
-                        nik: u.DisplayId,
-                        placeOfBirth: "Jakarta",
-                        dateOfBirth: DateTime.UtcNow.AddYears(-25),
-                        maritalStatus: 0,
-                        streetAddress: "Jl. Sudirman",
-                        city: "Jakarta",
-                        province: "DKI Jakarta",
-                        postalCode: "12345",
-                        role: u.Role,
-                        actionerId: 1);
-                    
-                    context.Employees.Add(emp);
-                    await context.SaveChangesAsync(); // Save to get emp_id
+                var emp = new Employee(
+                    u.FullName, 0, u.Email.Replace("@aia.com", "@personal.com"), u.Email, "081234567890", u.DisplayId, "Jakarta", 
+                    new DateTime(1998, 1, 15), 0, new Address("Jl. Sudirman No. 1", "Jakarta", "DKI Jakarta", "10220"), 
+                    new Address("Jl. Sudirman No. 1", "Jakarta", "DKI Jakarta", "10220"), 0, 1);
+                
+                context.Employees.Add(emp);
+                await context.SaveChangesAsync(); 
 
-                    var info = new EmploymentInformation(1)
-                    {
-                        EmployeeId = emp.Id,
-                        EmployeeDisplayId = u.DisplayId,
-                        Position = u.Role == 0 ? "Manager" : "Intern",
-                        Department = "IT",
-                        StartDate = DateTime.UtcNow,
-                        SupervisorName = u.Role == 1 ? "Brandon Admin" : ""
-                    };
-                    context.EmploymentInformation.Add(info);
-                }
+                var info = new EmploymentInformation(1)
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeDisplayId = u.DisplayId,
+                    Position = "HR Manager",
+                    Department = "Human Resources",
+                    StartDate = DateTime.UtcNow,
+                    EmploymentStatus = 1,
+                    EmploymentType = 1,
+                    SupervisorName = string.Empty
+                };
+                context.EmploymentInformation.Add(info);
+                
+                var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" };
+                context.EmergencyContacts.Add(contact);
+            }
+        }
+
+        // Seed Interns
+        foreach (var u in internsToSeed)
+        {
+            if (!await context.Users.AnyAsync(user => user.EmployeeEmail == u.Email))
+            {
+                var user = new User(u.Email, passwordHasher.Hash(u.Password), 1, 1);
+                context.Users.Add(user);
+                
+                var emp = new Employee(
+                    u.FullName, 0, u.Email.Replace("@aia.com", "@personal.com"), u.Email, "081298765432", u.DisplayId, "Bandung", 
+                    new DateTime(2002, 5, 20), 0, new Address("Jl. Thamrin No. 10", "Jakarta", "DKI Jakarta", "10350"), 
+                    new Address("Jl. Thamrin No. 10", "Jakarta", "DKI Jakarta", "10350"), 1, 1);
+                
+                context.Employees.Add(emp);
+                await context.SaveChangesAsync(); 
+
+                var info = new EmploymentInformation(1)
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeDisplayId = u.DisplayId,
+                    Position = "Software Engineering Intern",
+                    Department = "Development",
+                    StartDate = DateTime.UtcNow,
+                    EmploymentStatus = 1,
+                    EmploymentType = 3,
+                    SupervisorName = u.SupervisorName
+                };
+                context.EmploymentInformation.Add(info);
+                
+                var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Sarah Intern", Relationship = "Mother", PhoneNumber = "087712345678" };
+                context.EmergencyContacts.Add(contact);
             }
         }
 
         await context.SaveChangesAsync();
-
-    }
-
-    private static Employee CreateEmployeeEntity(CreateEmployeeRequestDto dto, long actionerId)
-    {
-        var employmentInformation = dto.EmploymentInformation == null
-            ? null
-            : new EmploymentInformation(actionerId)
-            {
-                EmploymentStatus = dto.EmploymentInformation.EmploymentStatus,
-                StartDate = dto.EmploymentInformation.StartDate,
-                EmploymentType = dto.EmploymentInformation.EmploymentType,
-                Department = dto.EmploymentInformation.Department,
-                Position = dto.EmploymentInformation.Position,
-                SupervisorName = dto.EmploymentInformation.SupervisorName,
-                EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
-            };
-
-        var emergencyContacts = dto.EmergencyContacts
-            .Select(x => new EmergencyContact
-            {
-                Name = x.Name,
-                Relationship = x.Relationship,
-                PhoneNumber = x.PhoneNumber
-            })
-            .ToList(); 
-
-        return new Employee(
-            fullName: dto.FullName,
-            gender: dto.Gender,
-            personalEmail: dto.PersonalEmail,
-            employeeEmail: dto.EmployeeEmail,
-            phoneNumber: dto.PhoneNumber,
-            nik: dto.Nik,
-            placeOfBirth: dto.PlaceOfBirth,
-            dateOfBirth: dto.DateOfBirth,
-            maritalStatus: dto.MaritalStatus,
-            streetAddress: dto.StreetAddress,
-            city: dto.City,
-            province: dto.Province,
-            postalCode: dto.PostalCode,
-            role: dto.Role,
-            actionerId: actionerId);
     }
 }

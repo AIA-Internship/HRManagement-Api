@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 {
+=======
+﻿{
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {

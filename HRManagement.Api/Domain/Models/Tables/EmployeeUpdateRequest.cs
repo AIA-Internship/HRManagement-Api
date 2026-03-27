@@ -18,12 +18,20 @@ public class EmployeeUpdateRequest : BaseTableModel
     public string? NewPlaceOfBirth { get; private set; }
     public DateTime? NewDateOfBirth { get; private set; }
     public int? NewMaritalStatus { get; private set; }
-    public string? NewStreetAddress { get; private set; }
-    public string? NewCity { get; private set; }
-    public string? NewProvince { get; private set; }
-    public string? NewPostalCode { get; private set; }
-    public string? NewPhoneNumber { get; private set; }
     
+    // New Current Address
+    public string? NewCurrentStreetAddress { get; private set; }
+    public string? NewCurrentCity { get; private set; }
+    public string? NewCurrentProvince { get; private set; }
+    public string? NewCurrentZipCode { get; private set; }
+
+    // New Residential Address
+    public string? NewResidentialStreetAddress { get; private set; }
+    public string? NewResidentialCity { get; private set; }
+    public string? NewResidentialProvince { get; private set; }
+    public string? NewResidentialZipCode { get; private set; }
+
+    public string? NewPhoneNumber { get; private set; }
     
     public string? NewEmergencyContactName { get; private set; }
     public string? NewEmergencyContactPhone { get; private set; }
@@ -44,10 +52,17 @@ public class EmployeeUpdateRequest : BaseTableModel
         NewPlaceOfBirth = dto.PlaceOfBirth;
         NewDateOfBirth = dto.DateOfBirth;
         NewMaritalStatus = dto.MaritalStatus;
-        NewStreetAddress = dto.StreetAddress;
-        NewCity = dto.City;
-        NewProvince = dto.Province;
-        NewPostalCode = dto.PostalCode;
+        
+        NewCurrentStreetAddress = dto.CurrentStreetAddress;
+        NewCurrentCity = dto.CurrentCity;
+        NewCurrentProvince = dto.CurrentProvince;
+        NewCurrentZipCode = dto.CurrentPostalCode;
+
+        NewResidentialStreetAddress = dto.ResidentialStreetAddress;
+        NewResidentialCity = dto.ResidentialCity;
+        NewResidentialProvince = dto.ResidentialProvince;
+        NewResidentialZipCode = dto.ResidentialPostalCode;
+
         NewPhoneNumber = dto.PhoneNumber;
         NewEmergencyContactName = dto.EmergencyContactName;
         NewEmergencyContactPhone = dto.EmergencyContactPhone;

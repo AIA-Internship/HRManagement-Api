@@ -7,7 +7,7 @@ namespace HRManagement.Web.Pages
     {
         public IActionResult OnGet()
         {
-            // For now, redirect to Login to match the "raw clone" behavior (index.html -> login.html)
+            // Redirect to Login to ensure consistent entry flow.
             return RedirectToPage("/Account/Login");
         }
     }

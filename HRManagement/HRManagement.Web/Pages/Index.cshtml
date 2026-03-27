@@ -1,3 +1,36 @@
 @page
 @model IndexModel
-@* This page handles the root redirect logic *@
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@* This page acts as the root dashboard. Currently it redirects to Login via Index.cshtml.cs, but contains the Metronic Multipurpose template from master for future dashboard implementation. *@
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!-- Metronic Dashboard Content from Master goes here (truncated for brevity in edit, but I'll try to keep the core structure) -->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Dashboard</h1>
+            </div>
+        </div>
+    </div>
+    
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            <!-- Content here will be populated based on auth level (Supervisor/Intern) -->
+            <div class="card card-flush h-xl-100">
+                <div class="card-body p-9">
+                    <div class="flex-grow-1">
+                        <h3 class="fs-2hx fw-bold text-gray-800 mb-5">Welcome to AIA HR Management</h3>
+                        <p class="text-gray-400 fs-4 fw-semibold mb-7">Select an option from the sidebar to manage your timesheets and profile settings.</p>
+                        <hr/>
+                        <div class="d-flex align-items-center">
+                            <span class="badge badge-light-primary fs-base fw-bold px-4 py-3">Decoupled Architecture Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

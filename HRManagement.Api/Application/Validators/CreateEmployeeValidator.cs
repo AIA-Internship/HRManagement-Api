@@ -51,6 +51,7 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.MaritalStatus)
             .NotNull().WithMessage("Please select a valid marital status option.");
         
+<<<<<<< HEAD
         RuleFor(x => x.RequestDto.StreetAddress)
             .NotEmpty().WithMessage("Street address is required.")
             .MaximumLength(150).WithMessage("Street address cannot exceed 150 characters.");
@@ -66,6 +67,41 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.PostalCode)
             .NotEmpty().WithMessage("Postal code is required.")
             .MaximumLength(15).WithMessage("Postal code cannot exceed 15 characters.");
+=======
+        // Current Address Validation
+        RuleFor(x => x.RequestDto.CurrentStreetAddress)
+            .NotEmpty().WithMessage("Current street address is required.")
+            .MaximumLength(150).WithMessage("Current street address cannot exceed 150 characters.");
+        
+        RuleFor(x => x.RequestDto.CurrentCity)
+            .NotEmpty().WithMessage("Current city is required.")
+            .MaximumLength(100).WithMessage("Current city cannot exceed 100 characters.");
+        
+        RuleFor(x => x.RequestDto.CurrentProvince)
+            .NotEmpty().WithMessage("Current province is required.")
+            .MaximumLength(50).WithMessage("Current province cannot exceed 50 characters.");
+        
+        RuleFor(x => x.RequestDto.CurrentPostalCode)
+            .NotEmpty().WithMessage("Current postal code is required.")
+            .MaximumLength(15).WithMessage("Current postal code cannot exceed 15 characters.");
+
+        // Residential Address Validation
+        RuleFor(x => x.RequestDto.ResidentialStreetAddress)
+            .NotEmpty().WithMessage("Residential street address is required.")
+            .MaximumLength(150).WithMessage("Residential street address cannot exceed 150 characters.");
+        
+        RuleFor(x => x.RequestDto.ResidentialCity)
+            .NotEmpty().WithMessage("Residential city is required.")
+            .MaximumLength(100).WithMessage("Residential city cannot exceed 100 characters.");
+        
+        RuleFor(x => x.RequestDto.ResidentialProvince)
+            .NotEmpty().WithMessage("Residential province is required.")
+            .MaximumLength(50).WithMessage("Residential province cannot exceed 50 characters.");
+        
+        RuleFor(x => x.RequestDto.ResidentialPostalCode)
+            .NotEmpty().WithMessage("Residential postal code is required.")
+            .MaximumLength(15).WithMessage("Residential postal code cannot exceed 15 characters.");
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         
         RuleFor(x => x.RequestDto.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required.")

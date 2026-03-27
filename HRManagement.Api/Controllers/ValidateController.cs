@@ -24,7 +24,11 @@ namespace HRManagement.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="validators"/> class.
         /// </summary>
+<<<<<<< HEAD
         /// <param name="validators">The validation helpers.</param>
+=======
+        /// <param name="logger">The validation helpers.</param>
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         /// <param name="logger">The logger.</param>
         public ValidateController(IEnumerable<IValidator> validators, ILogger<TController> logger)
         {

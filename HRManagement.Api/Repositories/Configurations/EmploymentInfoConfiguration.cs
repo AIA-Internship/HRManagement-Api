@@ -55,5 +55,4 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
         // Relationship is managed at the application/logic level via emp_id.
         builder.HasIndex(e => e.EmployeeId);
     }
-    
 }

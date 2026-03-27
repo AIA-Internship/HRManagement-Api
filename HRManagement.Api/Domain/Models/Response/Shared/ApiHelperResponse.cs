@@ -59,6 +59,7 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
             };
         }
 
+<<<<<<< HEAD
         /// <summary>
         /// Generic overload — use when the method return type is <see cref="ApiResponse{T}"/>.
         /// </summary>
@@ -73,6 +74,8 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
             };
         }
 
+=======
+>>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
         public static ApiResponse Failed(string errorMessage, dynamic dataerror)
         {
             return new ApiResponse()

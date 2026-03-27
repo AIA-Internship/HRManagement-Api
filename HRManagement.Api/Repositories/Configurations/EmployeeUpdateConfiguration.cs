@@ -44,23 +44,43 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
             .HasColumnName("new_marital_status")
             .IsRequired(false);
 
-        builder.Property(e => e.NewStreetAddress)
-            .HasColumnName("new_street_address")
+        builder.Property(e => e.NewCurrentStreetAddress)
+            .HasColumnName("new_current_street_address")
             .HasMaxLength(150)
             .IsRequired(false);
         
-        builder.Property(e => e.NewCity)
-            .HasColumnName("new_city")
+        builder.Property(e => e.NewCurrentCity)
+            .HasColumnName("new_current_city")
             .HasMaxLength(100)
             .IsRequired(false);
         
-        builder.Property(e => e.NewProvince)
-            .HasColumnName("new_province")
+        builder.Property(e => e.NewCurrentProvince)
+            .HasColumnName("new_current_province")
             .HasMaxLength(50)
             .IsRequired(false);
         
-        builder.Property(e => e.NewPostalCode)
-            .HasColumnName("new_postal_code")
+        builder.Property(e => e.NewCurrentZipCode)
+            .HasColumnName("new_current_postal_code")
+            .HasMaxLength(15)
+            .IsRequired(false);
+
+        builder.Property(e => e.NewResidentialStreetAddress)
+            .HasColumnName("new_residential_street_address")
+            .HasMaxLength(150)
+            .IsRequired(false);
+        
+        builder.Property(e => e.NewResidentialCity)
+            .HasColumnName("new_residential_city")
+            .HasMaxLength(100)
+            .IsRequired(false);
+        
+        builder.Property(e => e.NewResidentialProvince)
+            .HasColumnName("new_residential_province")
+            .HasMaxLength(50)
+            .IsRequired(false);
+        
+        builder.Property(e => e.NewResidentialZipCode)
+            .HasColumnName("new_residential_postal_code")
             .HasMaxLength(15)
             .IsRequired(false);
 
@@ -83,7 +103,7 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
             .HasColumnName("created_at")
             .IsRequired();
             
-        // Logical Relationship: Decoupled for Enterprise Scale.
+        // Logical Relationship: Decoupled for Enterprise Scale. No physical Foreign Keys.
         builder.HasIndex(e => e.EmployeeId);
     }
 }
