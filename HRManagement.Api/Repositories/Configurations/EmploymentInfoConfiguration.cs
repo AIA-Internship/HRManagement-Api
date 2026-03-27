@@ -38,10 +38,13 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(e => e.SupervisorId)
+            .HasColumnName("employment_supervisor_id");
+
         builder.Property(e => e.SupervisorName)
             .HasColumnName("employment_supervisor_name")
             .HasMaxLength(100)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(e => e.EmployeeDisplayId)
             .HasColumnName("employee_display_id")
@@ -55,6 +58,11 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
             .WithOne(emp => emp.EmploymentInformation)
             .HasForeignKey<EmploymentInformation>(e => e.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(e => e.Supervisor)
+            .WithMany()
+            .HasForeignKey(e => e.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
     
 }

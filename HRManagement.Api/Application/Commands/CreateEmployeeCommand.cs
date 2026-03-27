@@ -2,6 +2,7 @@ using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
+using System.Text.RegularExpressions;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;
@@ -20,6 +21,12 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             EmploymentInformation? employmentInfo = null;
             if (dto.EmploymentInformation != null)
             {
+                var displayId = dto.EmploymentInformation.EmployeeDisplayId;
+                if (string.IsNullOrWhiteSpace(displayId))
+                {
+                    displayId = await GenerateNextDisplayId(employeeRepository);
+                }
+
                 employmentInfo = new EmploymentInformation(actionerId);
                 employmentInfo.UpdateDetails(
                     dto.EmploymentInformation.EmploymentStatus,
@@ -27,8 +34,9 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     dto.EmploymentInformation.EmploymentType,
                     dto.EmploymentInformation.Department,
                     dto.EmploymentInformation.Position,
+                    dto.EmploymentInformation.SupervisorId,
                     dto.EmploymentInformation.SupervisorName,
-                    dto.EmploymentInformation.EmployeeDisplayId,
+                    displayId,
                     actionerId
                 );
             }
@@ -75,6 +83,32 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             await employeeRepository.AddEmployeeAsync(user, employee);
 
             return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
+        }
+
+        private static async Task<string> GenerateNextDisplayId(IEmployeeRepository repository)
+        {
+            var lastId = await repository.GetLastEmployeeDisplayIdAsync();
+            if (string.IsNullOrEmpty(lastId))
+            {
+                return "E0001";
+            }
+
+            var match = Regex.Match(lastId, @"(\D*)(\d+)");
+            if (match.Success)
+            {
+                var prefix = match.Groups[1].Value;
+                var numberStr = match.Groups[2].Value;
+
+                if (long.TryParse(numberStr, out var number))
+                {
+                    var nextNumber = number + 1;
+                    if (string.IsNullOrEmpty(prefix)) prefix = "E";
+
+                    return $"{prefix}{nextNumber.ToString().PadLeft(numberStr.Length, '0')}";
+                }
+            }
+
+            return "E0001";
         }
     }
 }

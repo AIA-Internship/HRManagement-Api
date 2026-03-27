@@ -48,10 +48,11 @@ public class CreateEmploymentInfoDto
     public string Department { get; set; } = string.Empty;
     /// <example>Software Engineer</example>
     public string Position { get; set; } =  string.Empty;
+    // <example>1</example>
+    public int? SupervisorId { get; set; }
     /// <example>Jane Smith</example>
     public string SupervisorName { get; set; } = string.Empty;
-
-    /// <example>E150529</example>
+    /// <example>E00001</example>
     public string EmployeeDisplayId { get; set; } = string.Empty;
 }
 
