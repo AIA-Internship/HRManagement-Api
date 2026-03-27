@@ -29,6 +29,27 @@ public class EmployeeController : ValidateController<EmployeeController>
         _logger = logger;
     }
     
+    [HttpPut("employment-info/{displayId}")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(string displayId, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
+    {
+        string methodName = nameof(UpdateEmploymentInformation);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var command = new UpdateEmployeeInfoCommand(displayId, commandDto);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
+        {
+            var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+    
     [HttpPut("me")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -44,27 +65,6 @@ public class EmployeeController : ValidateController<EmployeeController>
         return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(command, async (c) => 
         {
             var result = await _mediator.Send((UpdateEmployeeCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
-    [HttpPut("employment-info/{id}")]
-    [Authorize(Roles = "Supervisor")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(int id, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
-    {
-        string methodName = nameof(UpdateEmploymentInformation);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new UpdateEmployeeInfoCommand(id, commandDto);
-        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
@@ -132,25 +132,44 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{displayId}")]
     [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileById(int id)
+    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
     {
-        string methodName = nameof(GetEmployeeProfileById);
+        string methodName = nameof(GetEmployeeProfileByDisplayId);
         _logger.LogInformation("Start {Service}.", methodName);
         
-        var query = new GetEmployeeProfileByIdQuery(id);
+        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
         return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
         {
-            var result = await _mediator.Send((GetEmployeeProfileByIdQuery)q);
+            var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
+    }
+    
+    [HttpGet("supervisors-lookup")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
+    {
+        string methodName = nameof(GetSupervisorLookup);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var query = new GetSupervisorLookupQuery();
+        var result = await _mediator.Send(query);
+        
+        _logger.LogInformation("End {Service}.", methodName);
+        return Ok(result);
     }
     
     [HttpPost("review-update")]

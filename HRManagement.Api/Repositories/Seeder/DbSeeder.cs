@@ -50,16 +50,16 @@ public static class DbSeeder
         }
         
         // ==========================================
-        // 2. CHECK IF EMPLOYEES ALREADY EXIST
+        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
         // ==========================================
-        if (context.Employees.Any())
+        bool employeesExist = context.Employees.Any();
+        bool usersExist = context.Users.Any();
+
+        if (employeesExist && usersExist)
         {
             return; 
         }
-
-        // ==========================================
-        // 3. SEED THE ADMIN / SUPERVISOR
-        // ==========================================
+        
         var adminDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Brandon@aia.com",
@@ -72,10 +72,14 @@ public static class DbSeeder
             PlaceOfBirth = "Jakarta",
             DateOfBirth = new DateTime(1998, 1, 15).ToUniversalTime(),
             MaritalStatus = 0, // Single
-            StreetAddress = "Jl. Sudirman No. 1",
-            City = "Jakarta",
-            Province = "DKI Jakarta",
-            PostalCode = "10220",
+            CurrentStreetAddress = "Jl. Sudirman No. 1",
+            CurrentCity = "Jakarta",
+            CurrentProvince = "DKI Jakarta",
+            CurrentPostalCode = "10220",
+            ResidentialStreetAddress = "Jl. Sudirman No. 1",
+            ResidentialCity = "Jakarta",
+            ResidentialProvince = "DKI Jakarta",
+            ResidentialPostalCode = "10220",
             Role = 0, // Supervisor
             EmploymentInformation = new CreateEmploymentInfoDto
             {
@@ -84,26 +88,15 @@ public static class DbSeeder
                 EmploymentType = 1, // Fulltime
                 Department = "Human Resources",
                 Position = "HR Manager",
-                SupervisorName = "System Director",
-                EmployeeDisplayId = "E150529"
+                SupervisorDisplayId = null,
+                EmployeeDisplayId = "E0001"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
             {
                 new() { Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" }
             }
         };
-        
-        var adminEmployee = CreateEmployeeEntity(adminDto, 1);
-        // var adminUser = new User(
-        //     adminDto.EmployeeEmail, 
-        //     passwordHasher.Hash(adminDto.DefaultPassword), 
-        //     adminDto.Role, 
-        //     1
-        // );
 
-        // ==========================================
-        // 4. SEED THE INTERN
-        // ==========================================
         var internDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Owen@aia.com",
@@ -116,11 +109,15 @@ public static class DbSeeder
             PlaceOfBirth = "Bandung",
             DateOfBirth = new DateTime(2002, 5, 20).ToUniversalTime(),
             MaritalStatus = 0, // Single
-            StreetAddress = "Jl. Thamrin No. 10",
-            City = "Jakarta",
-            Province = "DKI Jakarta",
-            PostalCode = "10350",
-            Role = 1, // Employee (Intern role in User table might be different, but looking at lookups...)
+            CurrentStreetAddress = "Jl. Thamrin No. 10",
+            CurrentCity = "Jakarta",
+            CurrentProvince = "DKI Jakarta",
+            CurrentPostalCode = "10350",
+            ResidentialStreetAddress = "Jl. Thamrin No. 10",
+            ResidentialCity = "Jakarta",
+            ResidentialProvince = "DKI Jakarta",
+            ResidentialPostalCode = "10350",
+            Role = 1, // Employee
             EmploymentInformation = new CreateEmploymentInfoDto
             {
                 EmploymentStatus = 1, // Active
@@ -128,29 +125,55 @@ public static class DbSeeder
                 EmploymentType = 3, // Intern
                 Department = "Development",
                 Position = "Software Engineering Intern",
-                SupervisorName = "Brandon Admin",
-                EmployeeDisplayId = "E150530"
+                SupervisorDisplayId = null,
+                EmployeeDisplayId = "E0002"
             },
             EmergencyContacts = new List<CreateEmergencyContactDto>
             {
                 new() { Name = "Sarah Intern", Relationship = "Mother", PhoneNumber = "087712345678" }
             }
         };
-        
-        var internEmployee = CreateEmployeeEntity(internDto, 1);
-        // var internUser = new User(
-        //     internDto.EmployeeEmail, 
-        //     passwordHasher.Hash(internDto.DefaultPassword), 
-        //     internDto.Role, 
-        //     1
-        // );
 
         // ==========================================
-        // 5. SAVE TO DATABASE
+        // 3. SEED EMPLOYEES (If missing)
         // ==========================================
-        context.Employees.AddRange(adminEmployee, internEmployee);
-        // context.Users.AddRange(adminUser, internUser);
+        if (!employeesExist)
+        {
+            var adminEmployee = CreateEmployeeEntity(adminDto, 1);
+            var internEmployee = CreateEmployeeEntity(internDto, 1);
 
+            if (internEmployee.EmploymentInformation != null)
+            {
+                internEmployee.EmploymentInformation.Supervisor = adminEmployee;
+            }
+
+            context.Employees.AddRange(adminEmployee, internEmployee);
+        }
+
+        // ==========================================
+        // 4. SEED USERS (If missing)
+        // ==========================================
+        if (!usersExist)
+        {
+            var adminUser = new User(
+                email: adminDto.EmployeeEmail, 
+                passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
+                role: adminDto.Role, 
+                actionerId: 1);
+                
+            var internUser = new User(
+                email: internDto.EmployeeEmail, 
+                passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
+                role: internDto.Role, 
+                actionerId: 1);
+
+            context.Users.AddRange(adminUser, internUser);
+        }
+
+        // ==========================================
+        // 5. COMMIT TRANSACTIONS
+        // ==========================================
+        // This will save both Employees and Users in a single database transaction
         await context.SaveChangesAsync();
     }
 
@@ -165,7 +188,7 @@ public static class DbSeeder
                 EmploymentType = dto.EmploymentInformation.EmploymentType,
                 Department = dto.EmploymentInformation.Department,
                 Position = dto.EmploymentInformation.Position,
-                SupervisorName = dto.EmploymentInformation.SupervisorName,
+                SupervisorId = null, 
                 EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
             };
 
@@ -188,10 +211,8 @@ public static class DbSeeder
             placeOfBirth: dto.PlaceOfBirth,
             dateOfBirth: dto.DateOfBirth,
             maritalStatus: dto.MaritalStatus,
-            streetAddress: dto.StreetAddress,
-            city: dto.City,
-            province: dto.Province,
-            postalCode: dto.PostalCode,
+            currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
+            residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
             role: dto.Role,
             actionerId: actionerId,
             employmentInformation: employmentInformation,

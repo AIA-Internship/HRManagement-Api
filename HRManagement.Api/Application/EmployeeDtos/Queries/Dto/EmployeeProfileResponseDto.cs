@@ -7,10 +7,19 @@ public class EmployeeProfileResponseDto
     public string Gender { get; set; }
     public string PersonalEmail { get; set; } = string.Empty;
     public string EmployeeEmail { get; set; } =  string.Empty;
-    public string StreetAddress { get; set; } =  string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string Province { get; set; } = string.Empty;
-    public string PostalCode { get; set; } = string.Empty;
+
+    // Current Address
+    public string CurrentStreetAddress { get; set; } =  string.Empty;
+    public string CurrentCity { get; set; } = string.Empty;
+    public string CurrentProvince { get; set; } = string.Empty;
+    public string CurrentPostalCode { get; set; } = string.Empty;
+
+    // Residential Address
+    public string ResidentialStreetAddress { get; set; } =  string.Empty;
+    public string ResidentialCity { get; set; } = string.Empty;
+    public string ResidentialProvince { get; set; } = string.Empty;
+    public string ResidentialPostalCode { get; set; } = string.Empty;
+
     public string PhoneNumber { get; set; } =   string.Empty;
     public string Nik { get; set; } =  string.Empty;
     public string PlaceOfBirth { get; set; } =   string.Empty;
@@ -19,12 +28,12 @@ public class EmployeeProfileResponseDto
     public bool IsActive { get; set; }
     
     //Employment Information
-    public int EmployeeId { get; set; }
     public string EmployeeStatus { get; set; }
     public DateTime StartDate { get; set; }
     public string EmploymentType { get; set; }
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
+    public string SupervisorDisplayId { get; set; } = string.Empty;
     public string SupervisorName { get; set; } = string.Empty;
     public string EmployeeDisplayId { get; set; } = string.Empty;
     

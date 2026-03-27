@@ -28,13 +28,12 @@ public class UpdateEmploymentInfoValidator : AbstractValidator<UpdateEmployeeInf
             .MaximumLength(50).WithMessage("Position cannot exceed 50 characters.")
             .When(x => x.RequestDto.Position != null);
 
-        RuleFor(x => x.RequestDto.SupervisorName)
-            .MaximumLength(100).WithMessage("Supervisor name cannot exceed 100 characters.")
-            .When(x => x.RequestDto.SupervisorName != null);
-
         RuleFor(x => x.RequestDto.EmployeeDisplayId)
-            .NotEmpty().WithMessage("Employee ID is required.")
-            .Matches(@"^E\d{6}$").WithMessage("Employee ID must be in the format EXXXXXX (e.g., E150529).")
+            .Matches(@"^E\d+$").WithMessage("Employee ID must be in the format EXXX (e.g., E001, E0001).")
             .When(x => !string.IsNullOrEmpty(x.RequestDto.EmployeeDisplayId));
+
+        RuleFor(x => x.RequestDto.SupervisorDisplayId)
+            .Matches(@"^E\d+$").WithMessage("Supervisor ID must be in the format EXXX (e.g., E001, E0001).")
+            .When(x => !string.IsNullOrEmpty(x.RequestDto.SupervisorDisplayId));
     }
 }
