@@ -1,0 +1,81 @@
+@page "/Timesheet/Supervisor/Review"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.ReviewModel
+@{
+    ViewData["Title"] = "Review Timesheet";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/management.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-review.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!-- BACK TO DASHBOARD -->
+            <a href="/Timesheet/Supervisor/Dashboard" class="btn btn-sm btn-light btn-active-light-primary fw-boldest mb-6"><i class="bi bi-arrow-left me-2"></i> Back to Dashboard</a>
+
+            <div class="review-header-card shadow-sm">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-6">
+                    <div class="intern-profile">
+                        <div class="avatar-circle" id="intern_avatar">I</div>
+                        <div>
+                            <div class="text-gray-400 fs-8 fw-boldest text-uppercase">Timesheet Review for</div>
+                            <h1 class="text-gray-900 fw-boldest fs-1 mb-1" id="intern_name">Loading...</h1>
+                            <span class="period-pill" id="review_period">---</span>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <span class="badge badge-lg fw-boldest px-4 py-2" style="background: #FFF5F8; color: #D31145; border-radius: 8px; font-size: 0.75rem;" id="submission_status">WAITING APPROVAL</span>
+                        <small class="text-gray-400 fw-bold mt-2" id="submitted_at">Submitted --</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMESHEET GRID (AIA DRAFT STYLE) -->
+            <div class="card shadow-sm border-0 mb-8" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header pt-6 px-10 border-0">
+                    <h3 class="card-title fw-boldest fs-3 text-gray-800">Monthly Log Preview</h3>
+                    <div class="card-toolbar">
+                         <span class="badge fw-boldest text-gray-400 border border-gray-300 px-3 py-1 fs-9">AIA-TIMESHEET-V2</span>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-0">
+                    <div class="table-responsive">
+                        <table class="grid-table w-100">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px">DATE</th>
+                                    <th>PROJECT / ACTIVITIES</th>
+                                    <th style="width: 100px">TOTAL HOUR</th>
+                                    <th style="width: 250px">SUPERVISOR FEEDBACK</th>
+                                </tr>
+                            </thead>
+                            <tbody id="review_tbody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OVERALL REVISION NOTE -->
+            <div class="card shadow-sm border-0 p-10 mb-8" style="border-radius: 20px">
+                <h4 class="fw-boldest text-gray-800 mb-4">Overall Feedback</h4>
+                <textarea id="overall_revision_note" class="form-control form-control-solid border-0 fs-7 fw-bold p-6" rows="3" style="background: #F8F9FA; border-radius: 12px;" placeholder="Add general comments or revision reasons here..."></textarea>
+                
+                <div class="action-container">
+                    <button class="btn-approve" onclick="approveTimesheet()"><i class="bi bi-check-circle-fill me-2"></i> APPROVE TIMESHEET</button>
+                    <button class="btn-revision" onclick="giveRevision()"><i class="bi bi-chat-dots-fill me-2"></i> REQUEST REVISION</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/timesheet/js/supervisor-review.js" asp-append-version="true"></script>
+}

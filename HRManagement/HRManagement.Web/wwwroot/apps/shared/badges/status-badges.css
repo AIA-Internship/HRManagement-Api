@@ -1,0 +1,30 @@
+/* AIA GLOBAL STATUS BADGES & PILLS */
+
+.badge-pill-status {
+    border-radius: 12px !important;
+    padding: 8px 16px !important;
+    font-weight: 900 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.badge-pill-missing { 
+    background-color: #FFF5F8 !important; color: var(--aia-red) !important; border: 1px solid rgba(211, 17, 69, 0.1); 
+}
+
+.badge-pill-draft { 
+    background-color: #FFF4DE !important; color: #ca8a04 !important; border: 1px solid rgba(202, 138, 4, 0.1); 
+}
+
+.badge-pill-approved { 
+    background-color: #E6FFF6 !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.1); 
+}
+
+.badge-pill-todo { 
+    border-radius: 20px !important; padding: 6px 15px !important; font-weight: 800 !important; font-size: 0.75rem !important; min-width: 80px; text-align: center; 
+}

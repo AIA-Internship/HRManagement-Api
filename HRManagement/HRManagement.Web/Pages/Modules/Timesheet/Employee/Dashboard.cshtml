@@ -1,0 +1,325 @@
+@page "/Timesheet/Employee/Dashboard"
+@model HRManagement.Web.Pages.Modules.Timesheet.DashboardModel
+@{
+    ViewData["Title"] = "Intern Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <style>
+        /* MAIN LAYOUT WRAPPER */
+        .intern-dashboard-container { 
+            padding: 30px; 
+            background-color: #F8F9FA; 
+            min-height: calc(100vh - 70px); 
+        }
+
+        /* FLEX STRETCH FIX (FORCE EQUAL HEIGHT) */
+        .equal-height-row { display: flex !important; flex-wrap: wrap; align-items: stretch; }
+        .equal-height-col { display: flex !important; flex-direction: column; }
+
+        /* AIA SIGNATURE CARDS */
+        .aia-glass-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* CARDS MUST FILL PARENT HEIGHT */
+        .todo-sidebar-card { height: 100%; flex: 1 1 auto; }
+        .allocation-hub-card { flex: 1 1 auto; }
+        
+        .todo-header, .status-header, .allocation-header { flex-shrink: 0; }
+        .todo-content, .status-body, .allocation-grid { flex-grow: 1; display: flex; flex-direction: column; }
+        .todo-header {
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F4F9;
+        }
+        .todo-title {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #181C32;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .todo-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #A1A5B7;
+            font-weight: 600;
+            text-align: center;
+        }
+        .todo-illustration {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 24px;
+            filter: grayscale(1) opacity(0.15);
+        }
+        .todo-footer {
+            padding: 24px 30px;
+            border-top: 1px solid #F1F4F9;
+        }
+
+        /* RIGHT PANEL COMPONENTS */
+        .greeting-section {
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .greeting-text h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #181C32;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+        .greeting-text span {
+            font-size: 0.85rem;
+            font-weight: 850;
+            color: #A1A5B7;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .submission-status-card { margin-bottom: 25px; }
+        .status-header {
+            padding: 22px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F4F9;
+        }
+        .status-header h3 {
+            font-size: 1.15rem;
+            font-weight: 850;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #181C32;
+        }
+        .status-pill-lite {
+            background: #FEFCE8; color: #854D0E; border-radius: 8px; padding: 6px 14px; border: 1px solid #FEF9C3;
+            font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .status-body { padding: 35px 30px; }
+        .data-label-small { font-size: 0.65rem; font-weight: 850; color: #A1A5B7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        .data-value-main { font-size: 1.85rem; font-weight: 900; color: #181C32; line-height: 1; }
+        .text-aia-red { color: #D31145 !important; }
+
+        /* ALLOCATION HUB */
+        .allocation-hub-card { flex-grow: 1; display: flex; flex-direction: column; }
+        .allocation-header { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .allocation-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            padding: 0 30px 30px 30px; 
+            flex-grow: 1;
+        }
+        .empty-allocation-state {
+            grid-column: span 3;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 40px; color: #A1A5B7; font-weight: 600; text-align: center;
+            background: rgba(244,246,249,0.3); border-radius: 16px; border: 1px dashed #E1E3EA;
+        }
+        
+        .proj-card { background: #fff; border-radius: 16px; padding: 22px; border: 1px solid #F1F4F9; transition: transform 0.2s; }
+        .proj-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.03); }
+        .proj-label { font-size: 0.65rem; font-weight: 850; color: #BBB; text-transform: uppercase; margin-bottom: 12px; }
+        .proj-hours { display: flex; align-items: baseline; gap: 4px; margin-bottom: 15px; }
+        .proj-hours .num { font-size: 1.5rem; font-weight: 900; color: #181C32; }
+        .proj-hours .unit { font-size: 0.9rem; font-weight: 800; color: #BBB; }
+        .proj-bar-container { height: 4px; border-radius: 10px; background: #F1F4F9; overflow: hidden; }
+        .proj-bar-inner { height: 100%; border-radius: 10px; }
+
+        /* BUTTONS */
+        .btn-dashboard-row { padding: 0 24px !important; height: 44px !important; font-size: 0.8rem !important; }
+    </style>
+}
+
+<div class="intern-dashboard-container">
+    <div class="row g-8 equal-height-row">
+        
+        <!-- LEFT PANEL: TO DO LIST -->
+        <div class="col-lg-4 equal-height-col">
+            <div class="aia-glass-card todo-sidebar-card">
+                <div class="todo-header">
+                    <div class="todo-title">
+                        <i class="bi bi-list-check text-danger text-opacity-75 fs-3"></i> To Do List
+                    </div>
+                    @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-aia-sm", Id = "new_task_btn" })
+                </div>
+                <div class="todo-content">
+                    <img src="/assets/media/illustrations/sigma-1/17.png" class="todo-illustration" />
+                    <span class="fs-6 mb-1">No tasks yet. Add one!</span>
+                    <p class="text-muted fs-8 fw-bold">Keep track of your daily priorities.</p>
+                </div>
+                <div class="todo-footer">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-boldest fs-8 text-aia-red">0 of 0 tasks completed</span>
+                    </div>
+                    <div class="progress h-8px w-100 rounded-pill" style="background: #F1F4F9;">
+                        <div class="progress-bar" id="todo_progress_bar" style="width: 0%; background: #D31145;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="col-lg-8 equal-height-col">
+            
+            <div class="greeting-section">
+                <div class="greeting-text">
+                    <h1 id="welcome_text">Good Morning, Intern!</h1>
+                    <span id="current_date_label">@DateTime.Now.ToString("dddd, MMMM dd, yyyy").ToUpper()</span>
+                </div>
+                @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Entry", Icon = "plus-lg", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+            </div>
+
+            <!-- SUBMISSION STATUS -->
+            <div class="aia-glass-card submission-status-card">
+                <div class="status-header">
+                    <h3><i class="bi bi-journal-text text-danger fs-3"></i> Monthly Submission Status</h3>
+                    <span class="status-pill-lite" id="active_status_label">Draft Submission</span>
+                </div>
+                <div class="status-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <span class="data-label-small">Reporting Period</span>
+                            <span class="data-value-main" id="active_period">...</span>
+                        </div>
+                        <div class="col-md-3 border-start ps-10">
+                            <span class="data-label-small">Deadline</span>
+                            <span class="data-value-main text-aia-red" id="active_deadline">...</span>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-end gap-3 px-0">
+                            @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "ghost", Title = "Review Logs", Class = "btn-aia-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                            @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "Submit Now", Class = "btn-aia-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALLOCATION HUB -->
+            <div class="aia-glass-card allocation-hub-card">
+                <div class="allocation-header">
+                    <div class="todo-title">
+                        <i class="bi bi-bar-chart-line-fill text-primary fs-3"></i> Project Allocation Hub
+                    </div>
+                    <div class="fs-8 fw-boldest text-muted">
+                        TOTAL <span class="text-aia-red fs-5 ms-2" id="total_hours_display">0 h</span>
+                    </div>
+                </div>
+                <div class="allocation-grid" id="allocation_container">
+                    <div class="empty-allocation-state" id="no_projects_msg">
+                        <div class="empty-icon-box" style="width: 60px; height: 60px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                            <i class="bi bi-inbox fs-2x text-muted opacity-50"></i>
+                        </div>
+                        <span class="fs-6">No project allocation recorded yet.</span>
+                        <p class="fs-8 mt-2 text-muted">Start logging your daily activities to see your contribution overview here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+             try {
+                 const data = await fetchAPI('dashboard');
+                 if (!data) return;
+
+                 console.log("Dashboard Raw Data:", data);
+                 const h = new Date().getHours();
+                 let g = "Good Morning";
+                 if(h >= 12) g = "Good Afternoon";
+                 if(h >= 17) g = "Good Evening";
+                 
+                 // Check if data is already the content or still wrapped
+                 const actualData = data.content || data.Content || data.data || data;
+
+                 // 1. Greeting
+                 const eName = actualData.employeeName || actualData.EmployeeName || actualData.Employee_Name || "Intern";
+                 document.getElementById('welcome_text').innerText = `${g}, ${eName}!`;
+
+                 // 2. Status Card (Comprehensive Case Handling)
+                 const cms = actualData.currentMonthSubmission || actualData.CurrentMonthSubmission;
+                 if (cms) {
+                     const mName = cms.monthName || cms.MonthName || "Current Month";
+                     const yVal = cms.year || cms.Year || "";
+                     const dRem = (cms.daysRemaining !== undefined) ? cms.daysRemaining : cms.DaysRemaining;
+                     const stat = cms.status || cms.Status || "Draft Submission";
+                     
+                     document.getElementById('active_period').innerText = `${mName} ${yVal}`;
+                     document.getElementById('active_status_label').innerText = stat;
+                     document.getElementById('active_deadline').innerText = `${dRem} Days Remaining`;
+                 } else {
+                     // Final Fallback: Try to calculate if CMS object is missing but actualData has fields
+                     const dRemFallback = actualData.daysUntilDeadline || actualData.DaysUntilDeadline || "??";
+                     document.getElementById('active_period').innerText = "Current Period";
+                     document.getElementById('active_deadline').innerText = `${dRemFallback} Days Remaining`;
+                 }
+
+                 // 3. Project Grid
+                 const container = document.getElementById('allocation_container');
+                 const totalEl = document.getElementById('total_hours_display');
+                 
+                 const allocations = actualData.projectAllocations || actualData.ProjectAllocations;
+                 if (container && allocations && allocations.length > 0) {
+                     let totalMins = 0;
+                     const colors = ['#D31145', '#181C32', '#009EF7', '#50CD89', '#F1416C', '#7239EA'];
+                     let htmlBuffer = '';
+      
+                     allocations.forEach((p, idx) => {
+                         const pMins = p.totalMinutes || p.TotalMinutes || 0;
+                         totalMins += pMins;
+                         const hrs = (pMins / 60).toFixed(0);
+                         const perc = p.allocationPercentage || p.AllocationPercentage || 10;
+                         const c = colors[idx % colors.length];
+                         const pName = p.projectName || p.ProjectName || "Project";
+      
+                         htmlBuffer += `
+                            <div class="proj-card">
+                                <div class="proj-label">${pName}</div>
+                                <div class="proj-hours">
+                                    <span class="num">${hrs}</span>
+                                    <span class="unit">h</span>
+                                </div>
+                                <div class="proj-bar-container">
+                                    <div class="proj-bar-inner" style="width: ${perc}%; background: ${c};"></div>
+                                </div>
+                            </div>
+                         `;
+                     });
+                     container.innerHTML = htmlBuffer;
+                     totalEl.innerText = (totalMins / 60).toFixed(0) + ' h';
+                 }
+             } catch (err) {
+                 console.error("Dashboard Init Error:", err);
+             }
+        });
+    </script>
+}

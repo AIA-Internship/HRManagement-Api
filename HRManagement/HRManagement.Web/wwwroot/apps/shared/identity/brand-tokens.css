@@ -1,0 +1,42 @@
+/* AIA BRAND IDENTITY - CORE TOKENS (V1.0) */
+:root {
+    /* PRIMARY AIA BRAND COLOR TOKENS */
+    --aia-red: #D31145;
+    --aia-red-active: #b60c33;
+    --aia-red-light: #fdeef2;
+    
+    /* SYSTEM-WIDE OVERRIDES FOR METRONIC/BOOTSTRAP */
+    --kt-primary: var(--aia-red) !important;
+    --kt-primary-active: var(--aia-red-active) !important;
+    --kt-primary-light: var(--aia-red-light) !important;
+    --bs-primary: var(--aia-red) !important;
+    --bs-primary-rgb: 211, 17, 69 !important;
+}
+
+/* TYPOGRAPHY - 100% GLOBAL INTER ENFORCEMENT */
+body {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* BRAND UTILITIES */
+.text-aia { color: var(--aia-red) !important; }
+.bg-aia { background-color: var(--aia-red) !important; }
+.text-primary { color: var(--aia-red) !important; }
+
+/* LEGACY BUTTON ALIASES */
+.btn-aia { 
+    background-color: var(--aia-red) !important; 
+    color: #fff !important; 
+    border-radius: 8px;
+    font-weight: 700;
+}
+.btn-aia:hover { background-color: var(--aia-red-active) !important; }
+
+.btn-primary { 
+    background-color: var(--aia-red) !important; 
+    border-color: var(--aia-red) !important; 
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus { 
+    background-color: var(--aia-red-active) !important; 
+    border-color: var(--aia-red-active) !important; 
+}

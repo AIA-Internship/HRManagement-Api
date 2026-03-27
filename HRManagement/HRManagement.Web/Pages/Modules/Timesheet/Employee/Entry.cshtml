@@ -1,0 +1,142 @@
+@page "/Timesheet/Employee/Entry"
+@model HRManagement.Web.Pages.Modules.Timesheet.EntryModel
+@{
+    ViewData["Title"] = "Daily Entry";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full bg-white">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            <!-- GIANT DATE HEADER -->
+            <div class="px-4">
+                <h1 class="entry-form-header" id="entry_date_label"></h1>
+            </div>
+
+            <!-- SHARED INFO BAR (INTERN & SUPERVISOR) -->
+            <div class="intern-supervisor-card shadow-sm">
+                <div class="info-section border-right">
+                    <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
+                    <div class="info-text-block">
+                        <span class="info-title-label">Intern</span>
+                        <span class="info-person-name" id="intern_name_label">---</span>
+                    </div>
+                </div>
+                <div class="info-section ps-10">
+                    <div class="info-icon-circle"><i class="bi bi-person-badge"></i></div>
+                    <div class="info-text-block">
+                        <span class="info-title-label">Supervisor</span>
+                        <span class="info-person-name" id="supervisor_name_label">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THE MAIN LOG ENTRY TABLE -->
+            <div class="entry-table-wrap mb-10">
+                <table class="daily-master-table w-100 mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 110px" class="text-center">DURATION</th>
+                            <th style="width: 180px">PROJECT</th>
+                            <th style="width: 120px">APPS USED</th>
+                            <th>TASK DESCRIPTION</th>
+                            <th style="width: 150px">PROJECT LEAD</th>
+                            <th style="width: 140px">LOCATION</th>
+                            <th style="width: 60px" class="text-center">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log_entry_tbody">
+                        <tr class="align-middle">
+                            <td class="p-4 position-relative">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <input type="text" class="entry-input text-center duration-trigger" value="00h 00m" style="width:100px; cursor:pointer" readonly onclick="toggleDurationPicker(this, event)">
+                                </div>
+                                <!-- DURATION SPINNER POPOVER -->
+                                <div class="duration-picker-popover shadow-lg">
+                                    <div class="duration-columns">
+                                        <div class="duration-col">
+                                            <span class="duration-col-label">HH</span>
+                                            <div class="duration-items-scroll">
+                                                @for (int h=0; h<24; h++) { <div class="duration-item @(h==0?"selected":"")" onclick="selectHH(this, @h)">@h.ToString("D2")</div> }
+                                            </div>
+                                        </div>
+                                        <div class="duration-col">
+                                            <span class="duration-col-label">MM</span>
+                                            <div class="duration-items-scroll">
+                                                @for (int m=0; m<60; m+=5) { <div class="duration-item @(m==0?"selected":"")" onclick="selectMM(this, @m)">@m.ToString("D2")</div> }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4">
+                                <div class="aia-custom-select-wrap">
+                                    <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)">
+                                        <span class="trigger-text">Select Project</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                    <div class="aia-select-popover">
+                                        <div class="aia-select-option" data-value="Insurable Interest" data-lead="Novia" onclick="selectAiaOption(this)">Insurable Interest</div>
+                                        <div class="aia-select-option" data-value="Click Revamp" data-lead="Hansen" onclick="selectAiaOption(this)">Click Revamp</div>
+                                        <div class="aia-select-option" data-value="iRecruit" data-lead="Hansen" onclick="selectAiaOption(this)">iRecruit 3.0</div>
+                                    </div>
+                                    <input type="hidden" class="aia-select-value" value="">
+                                </div>
+                            </td>
+                            <td class="p-4"><input type="text" class="entry-input" placeholder="App Used"></td>
+                            <td class="p-4"><textarea class="entry-input" style="height:48px; min-height:48px" placeholder="Describe what you do...."></textarea></td>
+                            <td class="p-4"><input type="text" class="entry-input bg-light-gray" placeholder="Project Lead" readonly></td>
+                            <td class="p-4">
+                                <div class="aia-custom-select-wrap">
+                                    <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)">
+                                        <span class="trigger-text">Location</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </div>
+                                    <div class="aia-select-popover">
+                                        <div class="aia-select-option" data-value="AIA Central" onclick="selectAiaOption(this)">AIA Central</div>
+                                        <div class="aia-select-option" data-value="WFH" onclick="selectAiaOption(this)">WFH</div>
+                                    </div>
+                                    <input type="hidden" class="aia-select-value" value="">
+                                </div>
+                            </td>
+                            <td class="p-4 text-center">
+                                <button class="btn btn-icon btn-light-danger btn-sm rounded-circle h-35px w-35px" onclick="this.closest('tr').remove();">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="p-8 border-top border-gray-100">
+                    <button class="btn-add-row" onclick="addNewLogEntry()"><i class="bi bi-plus-circle-fill"></i> Add Entry</button>
+                </div>
+            </div>
+
+            <!-- FOOTER ACTION BAR -->
+            <div class="btn-save-footer align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-4 ms-4">
+                    <div class="symbol symbol-40px bg-light-danger d-flex align-items-center justify-content-center rounded-circle" style="width:45px; height:45px; background: rgba(211, 17, 69, 0.05)">
+                        <i class="bi bi-clock-history text-aia fs-2"></i>
+                    </div>
+                    <div>
+                        <div class="text-gray-400 fs-8 fw-boldest text-uppercase ls-1 mb-1">Total Logged Hours Today</div>
+                        <div class="text-gray-800 fs-2 fw-boldest lh-1" id="total_log_hours">00h 00m</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <button class="btn-action-discard" onclick="history.back()">Discard</button>
+                    <button class="btn-action-save" onclick="window.location.href='/Timesheet/Employee/Management?view=daily'"><i class="bi bi-save2-fill fs-5"></i> Save Timesheet</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+}

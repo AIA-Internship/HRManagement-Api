@@ -1,0 +1,198 @@
+:root {
+    --aia-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --aia-grey-bg: #EAECEF;
+    --aia-red: #D31145;
+    --aia-bg: #F8F9FA;
+}
+
+body { background-color: var(--aia-bg) !important; font-family: 'Inter', sans-serif; }
+
+.welcome-banner {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px 40px;
+    box-shadow: var(--aia-card-shadow);
+    margin-bottom: 24px;
+    border-bottom: 6px solid var(--aia-red);
+}
+
+.welcome-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #000;
+    letter-spacing: -0.5px;
+}
+
+.welcome-sub {
+    font-size: 0.85rem;
+    color: #999;
+    font-weight: 500;
+}
+
+.dashboard-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    box-shadow: var(--aia-card-shadow);
+    height: 100%;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card.table-card {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 0;
+}
+
+.card-header-inner {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.card-title-text {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #111;
+    margin: 0;
+}
+
+.card-icon {
+    font-size: 1.1rem;
+    margin-right: 12px;
+    color: #111;
+}
+
+.missing-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.85rem;
+    color: #222;
+    font-weight: 700;
+}
+
+.missing-row .dash-sep {
+    color: #111;
+    margin-right: 8px;
+    font-weight: 700;
+}
+
+.btn-aia-primary {
+    background: var(--aia-red);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 12px 24px;
+    border: none;
+    width: 75%;
+    margin: 0 auto;
+    display: block;
+    transition: opacity 0.2s;
+    font-size: 0.9rem;
+}
+.btn-aia-primary:hover { opacity: 0.9; color: #fff; }
+
+.btn-aia-outline {
+    border: 1px solid #E0E0E0;
+    color: var(--aia-red);
+    background: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 12px 24px;
+    width: 75%;
+    margin: 0 auto 12px auto;
+    display: block;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+.btn-aia-outline:hover { background: #f9f9f9; }
+
+.table-header-section {
+    background-color: #fff;
+    padding: 24px 32px 16px 32px;
+}
+
+.table-responsive-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.table-pivot {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+}
+
+.table-pivot th {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 700;
+    padding: 16px 32px;
+    background: #F1F4F9;
+    border-bottom: 1px solid #D1D5DB;
+    text-align: center;
+}
+
+.table-pivot th:first-child {
+    text-align: left;
+}
+
+.table-pivot td {
+    padding: 20px 32px;
+    font-size: 0.85rem;
+    color: #111;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid #F1F4F9;
+}
+
+.table-pivot td:first-child {
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.cell-value { color: #111; font-weight: 700; }
+.cell-zero { color: #D1D1D1; font-weight: 400; }
+
+.allocation-legend-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background: #F8F9FA;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.color-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 16px; }
+.app-name { flex: 1; font-weight: 600; color: #5E6278; font-size: 0.9rem; }
+.app-percentage { font-weight: 800; font-size: 1.1rem; color: #111; }
+
+.donut-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.donut-val { font-size: 2.2rem; font-weight: 900; display: block; line-height: 1.2; color: #111; }
+.donut-lbl { font-size: 0.65rem; font-weight: 800; color: #A1A5B7; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.dashboard-container {
+    padding: 32px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.info-label { font-size: 0.8rem; color: #A1A5B7; font-weight: 600; }
+.info-value { font-size: 0.85rem; color: #111; font-weight: 800; }

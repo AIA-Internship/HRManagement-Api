@@ -1,0 +1,185 @@
+@page "/Timesheet/Supervisor/Dashboard"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.DashboardModel
+@{
+    ViewData["Title"] = "Supervisor Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-dashboard.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+<div class="dashboard-container" style="max-width: 1300px;">
+    
+    <!-- GREETING -->
+    <div class="d-flex align-items-center justify-content-between px-2 mb-8">
+        <div>
+            <h1 class="text-gray-900 fw-boldest mb-2 ls-n1" id="welcome_text" style="font-size: 2.2rem; font-weight: 900;">Good Morning, Supervisor</h1>
+            <div class="d-flex align-items-center mt-2">
+                <span class="badge" style="background: #EAECEF; color: #7E8299; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px;">
+                    <i class="bi bi-calendar-event-fill me-2" style="color: #A1A5B7;"></i>@DateTime.Now.ToString("dddd, MMMM dd, yyyy").ToUpper()
+                </span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-4 bg-white" style="border-radius: 14px; padding: 12px 24px; box-shadow: var(--aia-card-shadow);">
+                <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 48px; height: 48px; background: #FFF5F8;">
+                    <i class="bi bi-people-fill fs-2" style="color: var(--aia-red);"></i>
+                </div>
+                <div class="d-flex flex-column text-start">
+                    <span class="fw-boldest fs-8 text-uppercase mb-1" style="color: #A1A5B7; letter-spacing: 1px;">Active Interns</span>
+                    <span class="text-gray-900 fw-boldest lh-1" style="font-size: 1.8rem;" id="active_intern_count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARDS ROW: MISSING & APPROVALS -->
+    <div class="row g-8 mb-8">
+        
+        <!-- Missing Timesheets -->
+        <div class="col-lg-5">
+            <div class="dashboard-card h-100 p-8">
+                <div class="d-flex justify-content-between align-items-start mb-8">
+                    <div class="d-flex align-items-center gap-3 mt-1">
+                        <i class="bi bi-exclamation-circle-fill text-danger fs-2"></i>
+                        <h3 class="card-title-text fw-boldest fs-3 m-0" style="line-height: 1.2; white-space: nowrap;">Missing Timesheets</h3>
+                    </div>
+                    <div class="d-flex flex-column align-items-end">
+                        <span class="badge" style="background: #FFF5F8; color: var(--aia-red); padding: 8px 12px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; letter-spacing: 0.5px; border: 1px solid rgba(211, 17, 69, 0.1);">HIGH PRIORITY</span>
+                    </div>
+                </div>
+                
+                <div id="missing_list_container" class="d-flex flex-column gap-6 mt-4 flex-grow-1">
+                    <!-- Injected by JS -->
+                </div>
+                
+                <div class="mt-auto pt-6 border-top" style="border-color: #F1F4F9 !important;" id="remind_all_container" style="display: none;">
+                    <button class="btn btn-sm w-100 py-3" style="background: white; color: var(--aia-red); border: 2px dashed #FFE2E5; border-radius: 12px; font-weight: 800; font-size: 0.85rem; transition: all 0.2s;" onmouseover="this.style.background='#FFF5F8'; this.style.borderColor='var(--aia-red)';" onmouseout="this.style.background='white'; this.style.borderColor='#FFE2E5';" onclick="window.nudgeAll()"><i class="bi bi-bell-fill me-2"></i> Remind All Missing Interns</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Interns Timesheet Approval -->
+        <div class="col-lg-7">
+            <div class="dashboard-card h-100 p-8">
+                <div class="d-flex justify-content-between align-items-start mb-8">
+                    <div>
+                        <h3 class="card-title-text fw-boldest fs-3 mb-2">Interns' Timesheet Approval</h3>
+                        <div class="text-gray-500 fw-bold fs-7">Status for <span class="capitalize" id="current_month_label">AUG 2023</span></div>
+                    </div>
+                    <div class="d-flex align-items-center" style="background: #F1F4F9; padding: 12px 20px; border-radius: 30px;">
+                        <i class="bi bi-file-earmark-text-fill text-gray-500 me-2"></i>
+                        <span class="text-gray-600 fw-boldest fs-8" id="pending_submissions_pill">0 Pending Submissions</span>
+                    </div>
+                </div>
+                
+                <div class="row g-6 mt-2 h-100 pb-2">
+                    <div class="col-6 d-flex flex-column justify-content-between">
+                        <div class="h-100 p-8 rounded-4 d-flex flex-column justify-content-between" style="background: #F8F9FA;">
+                            <div>
+                                <div class="text-gray-500 fw-boldest fs-8 text-uppercase mb-4" style="letter-spacing: 1px;">Draft Status</div>
+                                <div class="d-flex align-items-end gap-2 mb-2">
+                                    <span class="text-gray-900 fw-boldest lh-1" style="font-size: 2.5rem;">0</span>
+                                    <span class="text-gray-500 fw-bold fs-6 mb-2">Interns</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-light w-100 fw-boldest mt-6 py-4 fs-7" style="border-radius: 8px; color: #5E6278; background:#EAECEF;" onclick="window.location.href='/Timesheet/Supervisor/Report'">View Draft</button>
+                        </div>
+                    </div>
+                    <div class="col-6 d-flex flex-column justify-content-between">
+                        <div class="h-100 p-8 rounded-4 d-flex flex-column justify-content-between" style="background: #F8F9FA;">
+                            <div>
+                                <div class="text-gray-500 fw-boldest fs-8 text-uppercase mb-4" style="letter-spacing: 1px;">Needs Review</div>
+                                <div class="d-flex align-items-end gap-2 mb-2">
+                                    <span class="text-gray-900 fw-boldest lh-1" style="font-size: 2.5rem;" id="needs_review_count">0</span>
+                                    <span class="text-gray-500 fw-bold fs-6 mb-2">Interns</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100 fw-boldest text-white mt-6 py-4 fs-7" style="background: var(--aia-red); border: none; border-radius: 8px;" onclick="window.location.href='/Timesheet/Supervisor/Report'">Update Approval</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIVOT TABLE SECTION -->
+    <div class="dashboard-card table-card mb-8 p-8">
+        <div class="d-flex justify-content-between align-items-end mb-8 px-2">
+            <div>
+                <h3 class="card-title-text fw-boldest fs-3 mb-2">Intern Hours Breakdown</h3>
+                <div class="text-gray-500 fw-bold fs-7">Project-wise hour allocation for the current cycle</div>
+            </div>
+            <div>
+                <select class="form-select form-select-sm fw-bold border-0 px-4 py-3 text-gray-700" style="width: 150px; border-radius: 8px; background: #F4F6F9; font-size:0.85rem;" id="intern_filter_dropdown">
+                    <option value="">All Interns</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive-wrapper px-2">
+            <table class="table-pivot w-100" style="border-collapse: collapse; min-width: 900px;" id="intern_breakdown_table">
+                <thead>
+                    <tr id="breakdown_header_row" class="text-gray-500 fw-boldest fs-9 text-uppercase" style="letter-spacing: 1px; border-bottom: 2px solid #F1F4F9;">
+                        <!-- Injected by JS -->
+                    </tr>
+                </thead>
+                <tbody id="breakdown_body">
+                    <!-- Data rows -->
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-10 mb-4">
+            <a href="/Timesheet/Supervisor/Report" class="fw-boldest fs-7 outline-none" style="color: var(--aia-red); text-decoration: none;">View All Breakdown Data</a>
+        </div>
+    </div>
+
+    <!-- BOTTOM ROW: BARS & DONUT -->
+    <div class="row g-8 mb-8">
+        <!-- Monthly Apps Allocations (Bars) -->
+        <div class="col-lg-7">
+            <div class="dashboard-card h-100 p-8 flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-10">
+                    <h3 class="card-title-text fw-boldest fs-4 m-0">Monthly Apps Allocations</h3>
+                    <div class="d-flex align-items-center gap-4" id="allocation_legend_bars">
+                        <!-- Legend dots -->
+                    </div>
+                </div>
+                
+                <div class="d-flex flex-column gap-8 mt-2" id="allocation_bars_container">
+                    <!-- Bar template -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Hour Distribution (Donut) -->
+        <div class="col-lg-5">
+            <div class="dashboard-card h-100 p-8">
+                <h3 class="card-title-text fw-boldest fs-4 m-0 text-center mb-8">Overall Hour Distribution</h3>
+                <div class="position-relative mx-auto mt-4" style="width: 250px; height: 250px;">
+                    <canvas id="allocation_donut_chart"></canvas>
+                    <div class="donut-center-text d-flex align-items-center justify-content-center flex-column" style="position: absolute; top: 50%; left: 50%; width: 100%; transform: translate(-50%, -50%);">
+                        <span class="text-gray-900 fw-boldest m-0 lh-1" style="font-size: 2.2rem;" id="donut_total_hrs">0</span>
+                        <span class="text-gray-500 fw-bold fs-9 mt-2 text-uppercase" style="letter-spacing: 1px;">TOTAL HRS</span>
+                    </div>
+                </div>
+                <div id="donut_legends" class="d-flex flex-wrap justify-content-center gap-x-8 gap-y-4 mt-12 px-2">
+                    <!-- donut legends -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/timesheet/js/dashboard.js" asp-append-version="true"></script>
+}

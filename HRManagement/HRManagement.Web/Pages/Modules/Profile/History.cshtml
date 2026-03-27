@@ -1,0 +1,93 @@
+@page "/Profile/History"
+@model HRManagement.Web.Pages.Modules.Profile.HistoryModel
+@{
+    ViewData["Title"] = "Request History";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/css/modules/profile/style.css" asp-append-version="true" />
+    <style>
+        .text-aia { color: #D31145 !important; }
+        .bg-aia { background-color: #D31145 !important; }
+        .badge-light-pending { background-color: #FFF4DE; color: #FFA800; }
+        .badge-light-approved { background-color: #E8FFF3; color: #50CD89; }
+        .badge-light-rejected { background-color: #FFF5F8; color: #F1416C; }
+        .table thead th { background-color: #F9FAFB; border-bottom: 0; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; font-weight: 700; color: #7E8299; padding-top: 15px; padding-bottom: 15px; }
+        .table tbody td { vertical-align: middle; padding-top: 15px; padding-bottom: 15px; border-bottom: 1px solid #EFF2F5; }
+        .table tbody tr:last-child td { border-bottom: 0; }
+        .row-hover:hover { background-color: #fcfcfc; transition: 0.2s; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <!--begin::Page title-->
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
+                        <li class="breadcrumb-item active text-aia" aria-current="page">Request History</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Request History
+                    <span class="text-muted fs-7 fw-normal mt-1">View your personal change data requests</span>
+                </h1>
+            </div>
+            <!--end::Page title-->
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            <!-- Pending Banner (Alert Metronic Style) -->
+            <div id="pendingBanner" class="alert alert-dismissible bg-light-danger d-none border border-danger border-dashed d-flex flex-column flex-sm-row p-5 mb-10" style="border-radius: 12px;">
+                <i class="bi bi-info-circle fs-2hx text-danger me-4 mb-5 mb-sm-0"></i>
+                <div class="d-flex flex-column pe-0 pe-sm-10">
+                    <h5 class="mb-1 text-danger fw-bold">Pending Update Request</h5>
+                    <span>You have a pending profile update request awaiting supervisor approval.</span>
+                </div>
+                <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                    <i class="bi bi-x fs-1 text-danger"></i>
+                </button>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card shadow-sm">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <h3 class="fw-bold fs-4">All Requests</h3>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5">
+                            <thead>
+                                <tr class="text-center">
+                                    <th class="text-start ps-4">Request ID</th>
+                                    <th>Status</th>
+                                    <th>Submitted Date</th>
+                                    <th>Fields Changed</th>
+                                    <th class="text-end pe-4">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestTableBody" class="fw-semibold text-gray-600">
+                                <!-- Injected from JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/js/modules/profile/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/js/modules/profile/history.js" asp-append-version="true"></script>
+}

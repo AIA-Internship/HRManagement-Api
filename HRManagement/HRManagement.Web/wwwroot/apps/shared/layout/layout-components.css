@@ -1,0 +1,35 @@
+/* AIA GLOBAL LAYOUT COMPONENTS */
+
+.card-aia {
+    border-radius: 14px !important;
+    border: 0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+    background: #fff;
+}
+
+/* Sidebar & Menu Overrides (Global Consistency) */
+.menu-item .menu-link.active { 
+    background-color: var(--aia-red-light) !important; 
+    color: var(--aia-red) !important; 
+}
+
+.menu-item .menu-link.active .menu-bullet .bullet { 
+    background-color: var(--aia-red) !important; 
+}
+
+.menu-link:hover:not(.active) {
+    background-color: rgba(211, 17, 69, 0.03) !important;
+    color: var(--aia-red) !important;
+}
+
+/* GLOBAL PROGRESS BAR */
+.progress-aia { 
+    height: 8px !important; 
+    background-color: #F1F4F9 !important; 
+    border-radius: 10px !important; 
+    overflow: hidden; 
+}
+
+.progress-aia .progress-bar { 
+    background-color: var(--aia-red) !important; 
+}

@@ -1,0 +1,32 @@
+@using Microsoft.AspNetCore.Routing
+@model dynamic
+@{
+    /*
+     * REUSABLE AIA BUTTON COMPONENT (V1.2 - Robust Edition)
+     * Handles missing properties in anonymous objects safely.
+     */
+    var dict = new RouteValueDictionary(Model);
+    
+    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : null) ?? "primary";
+    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : null) ?? "";
+    string icon = (dict.ContainsKey("Icon") ? dict["Icon"]?.ToString() : null) ?? "";
+    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : null) ?? "";
+    string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : null) ?? "";
+    string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : null) ?? "";
+
+    string cssClass = type switch {
+        "primary" => "btn-aia-primary",
+        "ghost" => "btn-aia-ghost",
+        "info" => "btn-aia-info",
+        "nav" => "btn-aia-nav",
+        _ => "btn-aia-primary"
+    } + " " + extraClass;
+}
+
+<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title">
+    @if (!string.IsNullOrEmpty(icon)) {
+        var iconClass = icon.StartsWith("bi-") ? icon : "bi-" + icon;
+        <i class="bi @iconClass @(string.IsNullOrEmpty(title) ? "" : "me-2")"></i>
+    }
+    @title
+</button>

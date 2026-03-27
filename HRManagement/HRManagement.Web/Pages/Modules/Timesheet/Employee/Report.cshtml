@@ -1,0 +1,400 @@
+@page "/Timesheet/Employee/Report"
+@using HRManagement.Web.Pages.Modules.Timesheet
+@model HRManagement.Web.Pages.Modules.Timesheet.ReportModel
+@{
+    ViewData["Title"] = "Timesheet Report";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <style>
+        :root {
+            --aia-red: #D31145;
+            --border-subtle: #ECEFF4;
+            --text-main: #181C32;
+            --text-label: #7E8299;
+        }
+
+        body { background-color: #F8F9FA !important; font-family: 'Inter', 'Outfit', sans-serif; }
+
+        .page-title-wrap { margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title-wrap h1 { font-size: 1.75rem; font-weight: 850; color: var(--text-main); margin: 0; }
+        
+        /* SLEEK FEATURED BANNER */
+        .featured-submission-banner {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px 35px;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+        .featured-submission-banner::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 5px;
+            background: var(--aia-red);
+        }
+
+        .banner-left { display: flex; align-items: center; gap: 30px; }
+        .month-display { line-height: 1; }
+        .month-display span { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-label); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .month-display h2 { font-size: 1.85rem; font-weight: 900; color: var(--text-main); margin: 0; }
+
+        .status-display { display: flex; flex-direction: column; gap: 5px; border-left: 1px solid #F1F4F9; padding-left: 30px; }
+        .banner-divider { width: 1px; height: 40px; background: #EEE; }
+
+        .status-pill { 
+            border-radius: 50px; 
+            padding: 6px 14px; 
+            font-size: 0.725rem; 
+            font-weight: 950; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-pill.waiting { background: #FFF5F8; color: var(--aia-red); border: 1px solid rgba(211,17,69,0.1); }
+        .status-pill.approved { background: #E8FFF3; color: #10b981; border: 1px solid rgba(16,185,129,0.1); }
+        .status-pill.revision { background: #FFF8DD; color: #ca8a04; border: 1px solid rgba(202, 138, 4, 0.1); }
+
+        .banner-right { display: flex; align-items: center; gap: 15px; }
+        
+        .btn-banner-action {
+            height: 44px;
+            border-radius: 12px;
+            padding: 0 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .btn-download-main { background: #F9FAFB; color: #3F4254; border: 1px solid #E1E3EA; }
+        .btn-download-main:hover { background: #fff; border-color: var(--aia-red); color: var(--aia-red); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(211,17,69,0.1); }
+
+        .btn-revision-main { background: #FFF8DD; color: #ca8a04; border: 1px solid rgba(202, 138, 4, 0.3); }
+        .btn-revision-main:hover { background: #fed7aa; color: #9a3412; }
+
+        /* HISTORY LIST */
+        .history-card { 
+            background: #fff; 
+            border-radius: 20px; 
+            border: 1px solid var(--border-subtle); 
+            padding: 10px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        }
+        .history-header { padding: 25px 35px; border-bottom: 1px solid #F1F4F9; display: flex; justify-content: space-between; align-items: center; }
+        .history-header h3 { font-size: 1.25rem; font-weight: 850; color: var(--text-main); margin: 0; }
+
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table th { 
+            padding: 18px 35px; 
+            text-align: left; 
+            font-size: 0.725rem; 
+            font-weight: 850; 
+            color: var(--text-label); 
+            text-transform: uppercase; 
+            background: #FAFBFC; 
+            letter-spacing: 0.8px;
+        }
+        .history-table td { 
+            padding: 24px 35px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            border-top: 1px solid #F8FAFC; 
+            vertical-align: middle; 
+        }
+...
+        .history-table tr:last-child td { border-bottom: 0; }
+        .history-table tr:hover td { background: #FDFDFD; }
+        
+        .export-icon { 
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #F4F7FB;
+            color: #A1A5B7; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-size: 1.2rem; 
+        }
+        .export-icon.active { background: #FFF5F8; color: var(--aia-red); }
+        .export-icon.active:hover { transform: scale(1.1); background: var(--aia-red); color: #fff; }
+        .export-icon.disabled { opacity: 0.2; cursor: not-allowed; }
+        
+        .comment-trigger { 
+            color: var(--aia-red); 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            margin-top: 5px; 
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .comment-trigger:hover { opacity: 1; text-decoration: underline; }
+
+        /* MODAL REFINEMENT */
+        .rounded-20 { border-radius: 20px !important; }
+        .live-revision-view { border: 1px solid #ECEFF4; border-radius: 16px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .revision-excel-header { 
+            background: #217346; 
+            color: #fff; 
+            padding: 12px 20px; 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+        .revision-table-mini th { background: #F1F4F9; border: 1px solid #E1E3EA; padding: 10px 15px; font-weight: 800; font-size: 0.7rem; color: #7E8299; text-transform: uppercase; }
+        .revision-table-mini td { border: 1px solid #F1F4F9; padding: 15px; font-size: 0.9rem; font-weight: 600; }
+        .revision-row-flag { background: #FFF9FA; }
+        
+        .supervisor-comment-bubble { 
+            background: #F1416C; 
+            color: #fff; 
+            padding: 12px 18px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            position: relative; 
+            display: inline-block; 
+            font-weight: 600; 
+            box-shadow: 0 4px 12px rgba(241, 65, 108, 0.2);
+            line-height: 1.4;
+        }
+        .supervisor-comment-bubble::after { 
+            content: ''; 
+            position: absolute; 
+            top: 20px; left: -8px; 
+            border-top: 8px solid transparent; 
+            border-bottom: 8px solid transparent; 
+            border-right: 8px solid #F1416C; 
+        }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            <div class="page-title-wrap">
+                <h1>Timesheet Report</h1>
+            </div>
+
+            <!-- SLEEK FEATURED BANNER -->
+            <div class="featured-submission-banner">
+                <div class="banner-left">
+                    <div class="month-display">
+                        <span>Current Submission</span>
+                        <h2 id="active_month_label">February 2026</h2>
+                    </div>
+                    <div class="status-display">
+                        <span class="status-pill waiting" id="active_status_pill">
+                            <i class="bi bi-clock-history"></i> In Review
+                        </span>
+                        <div class="submitted-date-sub" id="active_submitted_date" style="font-size: 0.65rem; font-weight: 700; color: #BBB">Submitted Mar 02, 2026</div>
+                    </div>
+                </div>
+
+                <div class="banner-right">
+                    <button id="active_revision_btn" class="btn-banner-action btn-revision-main" style="display:none" onclick="showLiveRevision()">
+                        <i class="bi bi-chat-left-dots-fill"></i> View Feedback
+                    </button>
+                    <button class="btn-banner-action btn-download-main">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Download Draft
+                    </button>
+                </div>
+            </div>
+
+            <!-- HISTORY LIST CARD -->
+            <div class="history-card mb-10">
+                <div class="history-header">
+                    <h3>Submission History</h3>
+                    
+                    <div style="width: 200px">
+                        <div class="aia-custom-select-wrap">
+                            <div class="aia-select-trigger h-40px" onclick="toggleAiaSelect(this, event)">
+                                <span class="trigger-text">All Status</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="aia-select-popover">
+                                <div class="aia-select-option" data-value="All Status" onclick="filterHistory(this)">All Status</div>
+                                <div class="aia-select-option" data-value="Approved" onclick="filterHistory(this)">Approved</div>
+                                <div class="aia-select-option" data-value="Waiting" onclick="filterHistory(this)">Waiting</div>
+                                <div class="aia-select-option" data-value="Revision" onclick="filterHistory(this)">Need Revision</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%">Period</th>
+                            <th style="width: 30%">Submission</th>
+                            <th style="width: 25%">Status</th>
+                            <th style="width: 15%" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history_tbody">
+                        <!-- DATA WILL BE RENDERED VIA JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- LIVE REVISION MODAL (SOLUSI: MINI EXCEL VIEW) -->
+<div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content rounded-20 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 pt-8 px-10">
+                <h2 class="fw-bolder">Revision Required</h2>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                    <i class="bi bi-x fs-1"></i>
+                </div>
+            </div>
+            <div class="modal-body px-10 pb-10">
+                <p class="text-muted fw-bold mb-6">Supervisor has requested changes on the following entries:</p>
+                
+                <div class="live-revision-view shadow-sm">
+                    <div class="revision-excel-header">
+                        <i class="bi bi-file-earmark-spreadsheet-fill"></i> Timesheet_Draft_Feb2026.xlsx - Review Mode
+                    </div>
+                    <table class="revision-table-mini">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">Row</th>
+                                <th style="width: 150px">Date</th>
+                                <th style="width: 250px">Description</th>
+                                <th>Supervisor Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">12</td>
+                                <td>Feb 12, 2026</td>
+                                <td>Development of Insurance Portal UI</td>
+                                <td class="revision-row-flag">
+                                    <div class="supervisor-comment-bubble">Tolong jelaskan secara mendetail aplikasi apa yang digunakan untuk development.</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">15</td>
+                                <td>Feb 15, 2026</td>
+                                <td>Bug fixing on Click Revamp</td>
+                                <td class="revision-row-flag">
+                                    <div class="supervisor-comment-bubble">Deskripsi terlalu singkat. Lampirkan modul yang dikerjakan.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-end mt-10">
+                    <button class="btn btn-action-save" onclick="window.location.href='/Timesheet/Employee/Entry?date=2026-02-12'">Edit Timesheet Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        // MOCK DATA FOR HISTORY
+        const historyData = [
+            { id: 1, month: "January 2026", date: "Feb 02, 2026", status: "Waiting", canDownload: false },
+            { id: 2, month: "December 2025", date: "Jan 03, 2026", status: "Approved", canDownload: true },
+            { id: 3, month: "November 2025", date: "Dec 02, 2025", status: "Approved", canDownload: true },
+            { id: 4, month: "October 2025", date: "Nov 04, 2025", status: "Revision", canDownload: false, comment: "Revisi Deskripsi" }
+        ];
+
+        function renderHistory(filter = "All Status") {
+            const tbody = document.getElementById('history_tbody');
+            tbody.innerHTML = '';
+            
+            historyData.forEach(item => {
+                if (filter !== "All Status" && item.status !== filter) return;
+
+                const statusClass = item.status.toLowerCase();
+                let statusIcon = '<i class="bi bi-clock"></i>';
+                if (item.status === 'Approved') statusIcon = '<i class="bi bi-check-circle-fill"></i>';
+                if (item.status === 'Revision') statusIcon = '<i class="bi bi-exclamation-circle-fill"></i>';
+
+                const downloadIcon = item.canDownload ? 
+                    `<div class="export-icon active" title="Download Approved Excel"><i class="bi bi-file-earmark-arrow-down-fill"></i></div>` : 
+                    `<div class="export-icon disabled" title="Download Locked (Pending Approval)"><i class="bi bi-lock-fill"></i></div>`;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.month}</td>
+                    <td><span class="submitted-date-sub" style="font-size: 0.7rem">${item.date}</span></td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="status-pill ${statusClass}" style="width: fit-content">
+                                ${statusIcon} ${item.status === 'Revision' ? 'Need Revision' : item.status}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="text-center">${downloadIcon}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterHistory(option) {
+            const val = option.getAttribute('data-value');
+            selectAiaOption(option);
+            renderHistory(val);
+        }
+
+        function showLiveRevision() {
+            const modal = new bootstrap.Modal(document.getElementById('revisionModal'));
+            modal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHistory();
+            
+            // SIMULATING REVISION STATE FOR DEMO
+            // This would normally come from the backend Model
+            const currentStatus = "Revision"; // Change to 'Waiting' or 'Approved' to see diff
+            if (currentStatus === "Revision") {
+                const pill = document.getElementById('active_status_pill');
+                pill.className = "status-pill revision";
+                pill.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Need Revision';
+                document.getElementById('active_revision_btn').style.display = 'flex';
+            }
+        });
+    </script>
+}
+            const val = option.getAttribute('data-value');
+            selectAiaOption(option);
+            renderHistory(val);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadReportData();
+        });
+    </script>
+}
