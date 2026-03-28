@@ -230,7 +230,7 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AppDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
-        context.Database.Migrate();
+        context.Database.EnsureCreated();
         await DbSeeder.SeedAsync(context, passwordHasher);
     }
     catch (Exception ex)

@@ -56,11 +56,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 40px;
+            justify-content: flex-start;
+            padding: 24px 30px;
             color: #A1A5B7;
             font-weight: 600;
             text-align: center;
+            max-height: 600px;
+            overflow-y: auto;
         }
         .todo-illustration {
             width: 100%;
@@ -166,7 +168,7 @@
                     <div class="todo-title">
                         <i class="bi bi-list-check text-danger text-opacity-75 fs-3"></i> To Do List
                     </div>
-                    @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-aia-sm", Id = "new_task_btn" })
+                    @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-aia-sm", Id = "new_task_btn", data_bs_toggle = "modal", data_bs_target = "#modal_new_task" })
                 </div>
                 <div class="todo-content">
                     <img src="/assets/media/illustrations/sigma-1/17.png" class="todo-illustration" />
@@ -189,10 +191,10 @@
             
             <div class="greeting-section">
                 <div class="greeting-text">
-                    <h1 id="welcome_text">Good Morning, Intern!</h1>
-                    <span id="current_date_label">@DateTime.Now.ToString("dddd, MMMM dd, yyyy").ToUpper()</span>
+                    <h1 id="welcome_text">...</h1>
+                    <span id="current_date_label">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
                 </div>
-                @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Entry", Icon = "plus-lg", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Entry", Icon = "plus-lg", OnClick = "window.location.href='/Timesheet/Employee/Entry'" })
             </div>
 
             <!-- SUBMISSION STATUS -->
@@ -226,7 +228,7 @@
                         <i class="bi bi-bar-chart-line-fill text-primary fs-3"></i> Project Allocation Hub
                     </div>
                     <div class="fs-8 fw-boldest text-muted">
-                        TOTAL <span class="text-aia-red fs-5 ms-2" id="total_hours_display">0 h</span>
+                        Total <span class="text-aia-red fs-5 ms-2" id="total_hours_display">0 h</span>
                     </div>
                 </div>
                 <div class="allocation-grid" id="allocation_container">
@@ -244,82 +246,17 @@
     </div>
 </div>
 
+@await Html.PartialAsync("Modules/Timesheet/Employee/_ModalNewTask")
+
 @section Scripts {
     <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-             try {
-                 const data = await fetchAPI('dashboard');
-                 if (!data) return;
+        document.addEventListener('DOMContentLoaded', () => {
+             // 1. Fetch data & Render UI
+             if (typeof initDashboard === 'function') initDashboard();
 
-                 console.log("Dashboard Raw Data:", data);
-                 const h = new Date().getHours();
-                 let g = "Good Morning";
-                 if(h >= 12) g = "Good Afternoon";
-                 if(h >= 17) g = "Good Evening";
-                 
-                 // Check if data is already the content or still wrapped
-                 const actualData = data.content || data.Content || data.data || data;
-
-                 // 1. Greeting
-                 const eName = actualData.employeeName || actualData.EmployeeName || actualData.Employee_Name || "Intern";
-                 document.getElementById('welcome_text').innerText = `${g}, ${eName}!`;
-
-                 // 2. Status Card (Comprehensive Case Handling)
-                 const cms = actualData.currentMonthSubmission || actualData.CurrentMonthSubmission;
-                 if (cms) {
-                     const mName = cms.monthName || cms.MonthName || "Current Month";
-                     const yVal = cms.year || cms.Year || "";
-                     const dRem = (cms.daysRemaining !== undefined) ? cms.daysRemaining : cms.DaysRemaining;
-                     const stat = cms.status || cms.Status || "Draft Submission";
-                     
-                     document.getElementById('active_period').innerText = `${mName} ${yVal}`;
-                     document.getElementById('active_status_label').innerText = stat;
-                     document.getElementById('active_deadline').innerText = `${dRem} Days Remaining`;
-                 } else {
-                     // Final Fallback: Try to calculate if CMS object is missing but actualData has fields
-                     const dRemFallback = actualData.daysUntilDeadline || actualData.DaysUntilDeadline || "??";
-                     document.getElementById('active_period').innerText = "Current Period";
-                     document.getElementById('active_deadline').innerText = `${dRemFallback} Days Remaining`;
-                 }
-
-                 // 3. Project Grid
-                 const container = document.getElementById('allocation_container');
-                 const totalEl = document.getElementById('total_hours_display');
-                 
-                 const allocations = actualData.projectAllocations || actualData.ProjectAllocations;
-                 if (container && allocations && allocations.length > 0) {
-                     let totalMins = 0;
-                     const colors = ['#D31145', '#181C32', '#009EF7', '#50CD89', '#F1416C', '#7239EA'];
-                     let htmlBuffer = '';
-      
-                     allocations.forEach((p, idx) => {
-                         const pMins = p.totalMinutes || p.TotalMinutes || 0;
-                         totalMins += pMins;
-                         const hrs = (pMins / 60).toFixed(0);
-                         const perc = p.allocationPercentage || p.AllocationPercentage || 10;
-                         const c = colors[idx % colors.length];
-                         const pName = p.projectName || p.ProjectName || "Project";
-      
-                         htmlBuffer += `
-                            <div class="proj-card">
-                                <div class="proj-label">${pName}</div>
-                                <div class="proj-hours">
-                                    <span class="num">${hrs}</span>
-                                    <span class="unit">h</span>
-                                </div>
-                                <div class="proj-bar-container">
-                                    <div class="proj-bar-inner" style="width: ${perc}%; background: ${c};"></div>
-                                </div>
-                            </div>
-                         `;
-                     });
-                     container.innerHTML = htmlBuffer;
-                     totalEl.innerText = (totalMins / 60).toFixed(0) + ' h';
-                 }
-             } catch (err) {
-                 console.error("Dashboard Init Error:", err);
-             }
+             // 2. Initialize Task Modal
+             if (typeof initTaskModal === 'function') initTaskModal();
         });
     </script>
 }

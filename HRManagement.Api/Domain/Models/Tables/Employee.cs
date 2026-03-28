@@ -61,6 +61,14 @@ public class Employee : BaseTableModel
         MarkAsModified(actionerId);
     }
 
+    public void UpdateFullName(string fullName)
+    {
+        if (!string.IsNullOrWhiteSpace(fullName))
+        {
+            FullName = fullName;
+        }
+    }
+
     public void ApplyUpdate(EmployeeUpdateRequest request, long actionerId)
     {
         FullName = UseIfProvided(request.NewFullName, FullName);

@@ -1,0 +1,69 @@
+@* 
+    AIA BRANDED NEW TASK MODAL
+    Hybrid implementation: Uses modern design shown in screenshot.
+*@
+
+<div class="modal fade" id="modal_new_task" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-900px">
+        <div class="modal-content modal-new-task">
+            <div class="modal-body">
+                <div class="row g-0">
+                    <!-- LEFT PANEL: INFO -->
+                    <div class="col-md-5 modal-left-panel">
+                        <div class="panel-icon-box">
+                            <i class="bi bi-check2-circle fs-1"></i>
+                        </div>
+                        <span class="panel-subtitle">Set your focus</span>
+                        <h2 class="panel-title">New Task</h2>
+                        <p class="panel-desc">
+                            Break down your goals into actionable daily tasks to maintain your productivity streak.
+                        </p>
+                    </div>
+
+                    <!-- RIGHT PANEL: FORM -->
+                    <div class="col-md-7 modal-right-panel">
+                        <button type="button" class="btn-close-custom" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                        <div class="form-section">
+                            <label class="form-label-custom">Task Objective</label>
+                            <input type="text" id="task_name_input" class="task-objective-input" placeholder="What needs to be done?" />
+
+                            <div class="date-section">
+                                <div class="date-nav">
+                                    <span id="task_month_label">March 2026</span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn-date-nav" onclick="moveTaskPickerDate(-1)"><i class="bi bi-chevron-left"></i></button>
+                                        <button class="btn-date-nav" onclick="moveTaskPickerDate(1)"><i class="bi bi-chevron-right"></i></button>
+                                    </div>
+                                </div>
+                                <div class="day-list" id="task_day_selector">
+                                    <!-- Days will be injected by JS -->
+                                </div>
+                            </div>
+
+                            <label class="form-label-custom">Priority Level</label>
+                            <div class="priority-list">
+                                <div class="priority-item selected" data-priority="2" onclick="selectTaskPriority(this)">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                    <span>High</span>
+                                </div>
+                                <div class="priority-item" data-priority="1" onclick="selectTaskPriority(this)">
+                                    <i class="bi bi-lightning-charge"></i>
+                                    <span>Med</span>
+                                </div>
+                                <div class="priority-item" data-priority="0" onclick="selectTaskPriority(this)">
+                                    <i class="bi bi-lightning"></i>
+                                    <span>Low</span>
+                                </div>
+                            </div>
+
+                            <button class="btn-confirm" onclick="confirmNewTask()">Confirm Task</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

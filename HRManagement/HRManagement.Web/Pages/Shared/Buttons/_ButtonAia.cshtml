@@ -2,17 +2,20 @@
 @model dynamic
 @{
     /*
-     * REUSABLE AIA BUTTON COMPONENT (V1.2 - Robust Edition)
-     * Handles missing properties in anonymous objects safely.
+     * REUSABLE AIA BUTTON COMPONENT (V1.3 - Dynamic Attributes Edition)
      */
     var dict = new RouteValueDictionary(Model);
     
-    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : null) ?? "primary";
-    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : null) ?? "";
-    string icon = (dict.ContainsKey("Icon") ? dict["Icon"]?.ToString() : null) ?? "";
-    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : null) ?? "";
-    string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : null) ?? "";
-    string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : null) ?? "";
+    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : "primary");
+    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : "");
+    string icon = (dict.ContainsKey("Icon") ? dict["Icon"]?.ToString() : "");
+    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : "");
+    string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : "");
+    string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : "");
+
+    // Filter out known keys to get extra attributes
+    var knownKeys = new[] { "Type", "Title", "Icon", "Id", "OnClick", "Class" };
+    var extraAttrs = dict.Where(kv => !knownKeys.Contains(kv.Key));
 
     string cssClass = type switch {
         "primary" => "btn-aia-primary",
@@ -23,7 +26,10 @@
     } + " " + extraClass;
 }
 
-<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title">
+<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title"
+    @foreach(var attr in extraAttrs) {
+        @:@attr.Key.Replace("_", "-")="@attr.Value"
+    }>
     @if (!string.IsNullOrEmpty(icon)) {
         var iconClass = icon.StartsWith("bi-") ? icon : "bi-" + icon;
         <i class="bi @iconClass @(string.IsNullOrEmpty(title) ? "" : "me-2")"></i>

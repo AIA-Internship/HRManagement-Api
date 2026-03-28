@@ -1,0 +1,71 @@
+/* AIA PREMIUM SIDE-PANEL MODAL SYSTEM */
+.modal-new-task {
+    border-radius: 30px !important;
+    overflow: hidden;
+    border: 0;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+}
+
+.modal-left-panel {
+    background: #F8F9FA;
+    padding: 45px 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-right: 1px solid #F1F4F9;
+}
+.modal-right-panel {
+    background: #FFFFFF;
+    padding: 40px 45px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-icon-box {
+    width: 65px; height: 65px;
+    border-radius: 18px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 8px 25px rgba(211,17,69,0.08);
+    margin-bottom: 30px;
+    color: #D31145;
+}
+.panel-icon-box i { font-size: 2.2rem; }
+
+.panel-subtitle { font-size: 0.7rem; font-weight: 850; color: #A1A5B7; letter-spacing: 2.5px; margin-bottom: 10px; }
+.panel-title { font-size: 2rem; font-weight: 950; color: #181C32; margin-bottom: 20px; letter-spacing: -0.5px; }
+.panel-desc { font-size: 0.95rem; font-weight: 600; color: #7E8299; line-height: 1.6; max-width: 240px; }
+
+.btn-close-custom {
+    position: absolute;
+    top: 30px; right: 30px;
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: #F8F9FB;
+    display: flex; align-items: center; justify-content: center;
+    color: #A1A5B7;
+    cursor: pointer;
+    border: 0;
+    z-index: 100;
+    transition: all 0.2s;
+}
+.btn-close-custom:hover { background: #fee2e2; color: #D31145; transform: rotate(90deg); }
+
+/* CONFIRM BUTTON (INSIDE MODAL) */
+.btn-confirm {
+    background: #D31145;
+    color: #fff;
+    border-radius: 16px;
+    padding: 18px 45px;
+    font-weight: 900;
+    font-size: 1.1rem;
+    border: 0;
+    align-self: flex-end;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(211,17,69,0.2);
+}
+.btn-confirm:hover { background: #b60f3a; transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(211,17,69,0.3); }

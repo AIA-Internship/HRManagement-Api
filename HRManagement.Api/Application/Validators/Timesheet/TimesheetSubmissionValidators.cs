@@ -7,12 +7,27 @@ public class SubmitTimesheetValidator : AbstractValidator<SubmitTimesheetCommand
 {
     public SubmitTimesheetValidator()
     {
-        RuleFor(x => x.RequestDto.Year)
-            .GreaterThan(2000).WithMessage("Year must be greater than 2000.")
-            .LessThanOrEqualTo(DateTime.Now.Year + 1).WithMessage("Year value is not valid.");
-
         RuleFor(x => x.RequestDto.Month)
-            .InclusiveBetween(1, 12).WithMessage("Month must be between 1 and 12.");
+            .InclusiveBetween(1, 12).WithMessage("Bulan pengajuan tidak valid. Harus antara 1 sampai 12.");
+
+        RuleFor(x => x.RequestDto.Year)
+            .LessThanOrEqualTo(DateTime.UtcNow.AddHours(7).Year)
+            .WithMessage("Tahun pengajuan tidak boleh untuk masa depan.");
+
+        RuleFor(x => x.RequestDto)
+            .Must(dto =>
+            {
+                var today = DateTime.UtcNow.AddHours(7);
+                if (dto.Year > today.Year) return false;
+                if (dto.Year == today.Year && dto.Month > today.Month) return false;
+                return true;
+            })
+            .WithMessage(x => {
+                try {
+                    var monthName = new System.Globalization.CultureInfo("en-US").DateTimeFormat.GetMonthName(x.RequestDto.Month);
+                    return $"Anda tidak dapat mengirim timesheet untuk periode masa depan ({monthName} {x.RequestDto.Year}).";
+                } catch { return "Periode waktu tidak valid."; }
+            });
     }
 }
 

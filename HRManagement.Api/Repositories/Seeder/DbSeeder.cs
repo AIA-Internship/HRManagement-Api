@@ -51,30 +51,23 @@ public static class DbSeeder
         }
         
         // ==========================================
-        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
-        // ==========================================
-        if (context.Employees.Any() && context.Users.Any())
-        {
-            return; 
-        }
-
-        // ==========================================
-        // 3. SEED DEFAULT USERS (IF NOT EXIST)
+        // 2. SEED DEFAULT USERS (Enforce Password Reset if Needed)
         // ==========================================
         var adminsToSeed = new List<(string Email, string Password, string FullName, string DisplayId)>
         {
-            ("Brandon@aia.com", "AdminPass123!", "Brandon Admin", "E0001")
+            ("Brandon@aia.com", "AdminPass123!", "Brandon", "E0001")
         };
 
         var internsToSeed = new List<(string Email, string Password, string FullName, string DisplayId, string SupervisorName)>
         {
-            ("Owen@aia.com", "WorkerPass123!", "Owen Intern", "E0002", "Brandon Admin")
+            ("Owen@aia.com", "WorkerPass123!", "Owen", "E0002", "Brandon")
         };
 
         // Seed Admins
         foreach (var u in adminsToSeed)
         {
-            if (!await context.Users.AnyAsync(user => user.EmployeeEmail == u.Email))
+            var existingUser = await context.Users.FirstOrDefaultAsync(user => user.EmployeeEmail == u.Email);
+            if (existingUser == null)
             {
                 var user = new User(u.Email, passwordHasher.Hash(u.Password), 0, 1);
                 context.Users.Add(user);
@@ -103,12 +96,22 @@ public static class DbSeeder
                 var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" };
                 context.EmergencyContacts.Add(contact);
             }
+            else
+            {
+                // Sync name for existing user
+                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == u.Email);
+                if (emp != null) emp.UpdateFullName(u.FullName);
+
+                // Force update password
+                existingUser.ChangePassword(passwordHasher.Hash(u.Password), 1);
+            }
         }
 
         // Seed Interns
         foreach (var u in internsToSeed)
         {
-            if (!await context.Users.AnyAsync(user => user.EmployeeEmail == u.Email))
+            var existingUser = await context.Users.FirstOrDefaultAsync(user => user.EmployeeEmail == u.Email);
+            if (existingUser == null)
             {
                 var user = new User(u.Email, passwordHasher.Hash(u.Password), 1, 1);
                 context.Users.Add(user);
@@ -136,6 +139,15 @@ public static class DbSeeder
                 
                 var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Sarah Intern", Relationship = "Mother", PhoneNumber = "087712345678" };
                 context.EmergencyContacts.Add(contact);
+            }
+            else
+            {
+                // Sync name for existing user
+                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == u.Email);
+                if (emp != null) emp.UpdateFullName(u.FullName);
+
+                 // Force update password
+                existingUser.ChangePassword(passwordHasher.Hash(u.Password), 1);
             }
         }
 

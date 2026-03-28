@@ -28,18 +28,8 @@ public class SubmitTimesheetCommand(SubmitTimesheetRequestDto requestDto)
             var actionerId = (long)employeeId;
             var dto = command.RequestDto;
 
-            // Validate month/year range
-            if (dto.Month < 1 || dto.Month > 12)
-            {
-                return ApiHelperResponse.Failed<string>($"Bulan pengajuan ({dto.Month}) tidak valid. Harus antara 1 sampai 12.");
-            }
-            
-            var today = DateTime.UtcNow.AddHours(7);
-            if (dto.Year > today.Year || (dto.Year == today.Year && dto.Month > today.Month))
-            {
-                var monthName = new System.Globalization.CultureInfo("en-US").DateTimeFormat.GetMonthName(dto.Month);
-                return ApiHelperResponse.Failed<string>($"Anda tidak dapat mengirim timesheet untuk periode masa depan ({monthName} {dto.Year}).");
-            }
+            // Note: Basic range and future date validation is now handled by SubmitTimesheetValidator
+            // which is automatically executed by the base controller.
 
             // Check for missing entries
             var missingDays = await timesheetRepository.GetMissingEntryDatesAsync(employeeId, dto.Year, dto.Month);

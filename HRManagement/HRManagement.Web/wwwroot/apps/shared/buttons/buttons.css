@@ -22,7 +22,7 @@
     background: var(--aia-red-active); 
     transform: translateY(-1px); 
 }
-.btn-aia-primary i {
+.btn-aia-primary i, .btn-action-save i, .btn-confirm i {
     color: #fff !important;
 }
 

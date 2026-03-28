@@ -27,20 +27,9 @@ public class SaveDailyTimesheetCommand(SaveDailyTimesheetRequestDto requestDto)
             var employeeId = currentUserService.UserId;
             var actionerId = (long)employeeId;
             var dto = command.RequestDto;
-
-            if (!DateOnly.TryParseExact(dto.Date, "yyyy-MM-dd", out var entryDate))
-            {
-                return ApiHelperResponse.Failed<string>($"Format tanggal '{dto.Date}' tidak valid. Gunakan format yyyy-MM-dd.");
-            }
-
-            var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(7));
-
-            // Business rule: interns can only log entries for today or past dates in the same month
-            if (entryDate > today)
-            {
-                return ApiHelperResponse.Failed<string>($"Anda tidak dapat mengisi timesheet untuk tanggal masa depan ({entryDate:dd MMM yyyy}).");
-            }
-
+            var entryDate = DateOnly.ParseExact(dto.Date, "yyyy-MM-dd");
+            
+            // Note: Structural validation (Format, Future Date, Requirements) is handled by SaveDailyTimesheetValidator
             var entries = dto.Entries.Select(row => new TimesheetEntry(
                 employeeId: employeeId,
                 entryDate: entryDate,
