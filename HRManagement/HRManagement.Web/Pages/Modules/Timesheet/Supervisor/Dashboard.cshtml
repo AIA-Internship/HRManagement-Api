@@ -15,25 +15,24 @@
 <div class="dashboard-container" style="max-width: 1300px;">
     
     <!-- GREETING -->
-    <div class="d-flex align-items-center justify-content-between px-2 mb-8">
-        <div>
-            <h1 class="text-gray-900 fw-boldest mb-2 ls-n1" id="welcome_text" style="font-size: 2.2rem; font-weight: 900;">Good Morning, Supervisor</h1>
-            <div class="d-flex align-items-center mt-2">
-                <span class="badge" style="background: #EAECEF; color: #7E8299; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-calendar-event-fill me-2" style="color: #A1A5B7;"></i>@DateTime.Now.ToString("dddd, MMMM dd, yyyy").ToUpper()
-                </span>
-            </div>
-        </div>
-        <div class="d-flex align-items-center">
-            <div class="d-flex align-items-center gap-4 bg-white" style="border-radius: 14px; padding: 12px 24px; box-shadow: var(--aia-card-shadow);">
-                <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 48px; height: 48px; background: #FFF5F8;">
-                    <i class="bi bi-people-fill fs-2" style="color: var(--aia-red);"></i>
-                </div>
-                <div class="d-flex flex-column text-start">
-                    <span class="fw-boldest fs-8 text-uppercase mb-1" style="color: #A1A5B7; letter-spacing: 1px;">Active Interns</span>
-                    <span class="text-gray-900 fw-boldest lh-1" style="font-size: 1.8rem;" id="active_intern_count">0</span>
-                </div>
-            </div>
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "...",
+                Subtitle = "Overview of intern attendance and timesheet approvals",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Dashboard" }
+                },
+                RenderActions = Html.Raw(@"
+                    <div class='d-flex align-items-center gap-4 bg-white px-6 py-3' style='border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);'>
+                        <div class='d-flex align-items-center justify-content-center rounded-circle' style='width: 40px; height: 40px; background: #FFF5F8;'>
+                            <i class='bi bi-people-fill fs-4' style='color: var(--brand-red);'></i>
+                        </div>
+                        <div class='d-flex flex-column'>
+                            <span class='fw-boldest fs-8 text-uppercase' style='color: #A1A5B7; letter-spacing: 0.5px;'>Active Interns</span>
+                            <span class='text-gray-900 fw-boldest lh-1 fs-3' id='active_intern_count'>0</span>
+                        </div>
+                    </div>")
+            })
         </div>
     </div>
 
@@ -49,7 +48,7 @@
                         <h3 class="card-title-text fw-boldest fs-3 m-0" style="line-height: 1.2; white-space: nowrap;">Missing Timesheets</h3>
                     </div>
                     <div class="d-flex flex-column align-items-end">
-                        <span class="badge" style="background: #FFF5F8; color: var(--aia-red); padding: 8px 12px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; letter-spacing: 0.5px; border: 1px solid rgba(211, 17, 69, 0.1);">HIGH PRIORITY</span>
+                        <span class="badge" style="background: #FFF5F8; color: var(--brand-red); padding: 8px 12px; border-radius: 6px; font-weight: 800; font-size: 0.65rem; letter-spacing: 0.5px; border: 1px solid rgba(211, 17, 69, 0.1);">HIGH PRIORITY</span>
                     </div>
                 </div>
                 
@@ -58,7 +57,7 @@
                 </div>
                 
                 <div class="mt-auto pt-6 border-top" style="border-color: #F1F4F9 !important;" id="remind_all_container" style="display: none;">
-                    <button class="btn btn-sm w-100 py-3" style="background: white; color: var(--aia-red); border: 2px dashed #FFE2E5; border-radius: 12px; font-weight: 800; font-size: 0.85rem; transition: all 0.2s;" onmouseover="this.style.background='#FFF5F8'; this.style.borderColor='var(--aia-red)';" onmouseout="this.style.background='white'; this.style.borderColor='#FFE2E5';" onclick="window.nudgeAll()"><i class="bi bi-bell-fill me-2"></i> Remind All Missing Interns</button>
+                    <button class="btn btn-sm w-100 py-3" style="background: white; color: var(--brand-red); border: 2px dashed #FFE2E5; border-radius: 12px; font-weight: 800; font-size: 0.85rem; transition: all 0.2s;" onmouseover="this.style.background='#FFF5F8'; this.style.borderColor='var(--brand-red)';" onmouseout="this.style.background='white'; this.style.borderColor='#FFE2E5';" onclick="window.nudgeAll()"><i class="bi bi-bell-fill me-2"></i> Remind All Missing Interns</button>
                 </div>
             </div>
         </div>
@@ -99,7 +98,7 @@
                                     <span class="text-gray-500 fw-bold fs-6 mb-2">Interns</span>
                                 </div>
                             </div>
-                            <button class="btn btn-primary w-100 fw-boldest text-white mt-6 py-4 fs-7" style="background: var(--aia-red); border: none; border-radius: 8px;" onclick="window.location.href='/Timesheet/Supervisor/Report'">Update Approval</button>
+                            <button class="btn btn-primary w-100 fw-boldest text-white mt-6 py-4 fs-7" style="background: var(--brand-red); border: none; border-radius: 8px;" onclick="window.location.href='/Timesheet/Supervisor/Report'">Update Approval</button>
                         </div>
                     </div>
                 </div>
@@ -134,7 +133,7 @@
             </table>
         </div>
         <div class="text-center mt-10 mb-4">
-            <a href="/Timesheet/Supervisor/Report" class="fw-boldest fs-7 outline-none" style="color: var(--aia-red); text-decoration: none;">View All Breakdown Data</a>
+            <a href="/Timesheet/Supervisor/Report" class="fw-boldest fs-7 outline-none" style="color: var(--brand-red); text-decoration: none;">View All Breakdown Data</a>
         </div>
     </div>
 
@@ -182,4 +181,25 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js" asp-append-version="true"></script>
     <script src="~/apps/modules/timesheet/js/dashboard.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             const userInfoRaw = localStorage.getItem('aia_user_info');
+             if (userInfoRaw) {
+                 const u = JSON.parse(userInfoRaw);
+                 
+                 // Support common JWT claim names for the user's full name
+                 const rawName = u.fullname || u.fullName || u.name || u.unique_name || u["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || u.email || "Supervisor";
+                 const name = rawName.split(' ')[0];
+                 
+                 const hour = new Date().getHours();
+                 let greet = "Good Morning";
+                 if (hour >= 12 && hour < 17) greet = "Good Afternoon";
+                 else if (hour >= 17 && hour < 21) greet = "Good Evening";
+                 else if (hour >= 21 || hour < 5) greet = "Good Night";
+                 
+                 const titleEl = document.getElementById('page_title_text');
+                 if (titleEl) titleEl.innerText = `${greet}, ${name}`;
+             }
+        });
+    </script>
 }

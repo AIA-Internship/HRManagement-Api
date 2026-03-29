@@ -17,10 +17,18 @@
     </style>
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full bg-white">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full bg-white">
     <div id="kt_app_content" class="app-content flex-column-fluid">
-        <div id="kt_app_content_container" class="app-container container-fluid p-0">
+        <div id="kt_app_content_container" class="app-container container-fluid">
             
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Review",
+                Subtitle = "Deep-dive into individual intern work logs and daily activities",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Review" }
+                }
+            })
             <div class="px-4 py-5">
                 
                 <!-- UNIFIED TOOLBAR NAV (MIRRORING EMPLOYEE) -->
@@ -41,7 +49,7 @@
                             <div id="datepicker_focal_backdrop" onclick="closeDatePopup()"></div>
                             
                             <h1 class="current-date-title d-flex align-items-center gap-3 px-6 py-3 mb-0" style="cursor:pointer; background: #F8F9FA; border-radius: 14px;" onclick="toggleDatePopup(event)">
-                                <i class="bi bi-calendar3 text-aia fs-3"></i>
+                                <i class="bi bi-calendar3 text-brand fs-3"></i>
                                 <span id="current_view_label">Maret 2026</span>
                             </h1>
 

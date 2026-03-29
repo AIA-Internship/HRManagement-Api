@@ -57,18 +57,18 @@ function showToast(message, type = 'error') {
         return;
     }
 
-    let container = document.getElementById('aia_toast_container');
+    let container = document.getElementById('standard_toast_container');
     if (!container) {
         container = document.createElement('div');
-        container.id = 'aia_toast_container';
-        container.className = 'aia-toast-container';
+        container.id = 'standard_toast_container';
+        container.className = 'standard-toast-container';
         document.body.appendChild(container);
     }
 
     const toast = document.createElement('div');
-    toast.className = `aia-toast ${type}`;
+    toast.className = `standard-toast ${type}`;
     toast.innerHTML = `
-        <i class="bi bi-exclamation-circle-fill fs-4 text-aia"></i>
+        <i class="bi bi-exclamation-circle-fill fs-4 text-brand"></i>
         <div class="toast-content">
             <span class="toast-title">${type === 'error' ? 'System Error' : 'Success'}</span>
             <span class="toast-message">${message}</span>
@@ -137,8 +137,15 @@ function renderCurrentState() {
     if (activeView === 'daily') renderDailyGrid();
 }
 
-function updateDateLabel() {
+function updateDateLabel(direction = 'right') {
     const label = document.getElementById('current_view_label');
+    if (!label) return;
+
+    // Apply animation
+    label.classList.remove('slide-in-right', 'slide-in-left');
+    void label.offsetWidth; // Trigger reflow
+    label.classList.add(direction === 'right' ? 'slide-in-right' : 'slide-in-left');
+
     if (activeView === 'monthly') {
         label.innerText = `${englishMonths[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
     } else if (activeView === 'weekly') {
@@ -151,11 +158,16 @@ function updateDateLabel() {
     }
 }
 
-function moveDate(offset) {
+function moveDate(offset, direction = 'right') {
     if (activeView === 'monthly') currentDate.setMonth(currentDate.getMonth() + offset);
     else if (activeView === 'weekly') currentDate.setDate(currentDate.getDate() + (offset * 7));
     else currentDate.setDate(currentDate.getDate() + offset);
-    renderCurrentState();
+    
+    updateDateLabel(direction);
+    
+    if (activeView === 'monthly') renderMonthlyGrid();
+    if (activeView === 'weekly') renderWeeklyGrid();
+    if (activeView === 'daily') renderDailyGrid();
 }
 
 async function renderMonthlyGrid() {
@@ -210,7 +222,7 @@ async function renderWeeklyGrid() {
         const isToday = (d.toDateString() === new Date().toDateString());
         const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
         col.className = isToday ? "today-col-highlight" : (isWeekend ? "weekend-th" : "");
-        col.innerHTML = `<div class="day-title-wrap"><span class="day-short-label ${isWeekend ? 'text-aia' : ''}">${dayLabel}</span><span class="day-full-date ${isWeekend ? 'text-aia' : ''}">${dateString}</span></div>`;
+        col.innerHTML = `<div class="day-title-wrap"><span class="day-short-label ${isWeekend ? 'text-brand' : ''}">${dayLabel}</span><span class="day-full-date ${isWeekend ? 'text-brand' : ''}">${dateString}</span></div>`;
     });
 
     if (!data || !data.projects || data.projects.length === 0) {
@@ -267,14 +279,15 @@ async function renderDailyGrid() {
 }
 
 async function syncProfileInfo() {
-    const nameLabels = document.querySelectorAll('.info-person-name');
-    if (nameLabels.length === 0) return;
-
     const data = await fetchAPI('dashboard');
     if (data) {
         employeeInfo = data;
-        // The first label is usually the Intern/Employee name in our info cards
-        if (nameLabels[0]) nameLabels[0].innerText = data.employeeName;
+        
+        const internLabel = document.getElementById('intern_name_label');
+        const supervisorLabel = document.getElementById('supervisor_name_label');
+        
+        if (internLabel) internLabel.innerText = data.employeeName || data.EmployeeName;
+        if (supervisorLabel) supervisorLabel.innerText = data.supervisorName || data.SupervisorName;
     }
 }
 
@@ -720,6 +733,7 @@ async function initDashboard() {
         else if (h >= 17) g = "Good Evening";
         
         const actualData = data.content || data.Content || data.data || data;
+        window.dashboardData = actualData; // Store for global access
 
         // 1. Greeting
         const welcomeEl = document.getElementById('welcome_text');
@@ -736,8 +750,30 @@ async function initDashboard() {
             const cms = actualData.currentMonthSubmission || actualData.CurrentMonthSubmission;
             if (cms) {
                 document.getElementById('active_period').innerText = `${cms.monthName} ${cms.year}`;
-                statusCard.innerText = cms.status || "Draft Submission";
                 document.getElementById('active_deadline').innerText = `${cms.daysRemaining} Days Remaining`;
+
+                // Map API status string to design badge
+                const s = (cms.status || 'Not Submitted').toLowerCase();
+                let cls = 'badge-pill-draft';
+                let icon = 'bi-file-earmark-text';
+                let label = cms.status || 'Not Submitted';
+
+                if (s.includes('waiting') || s.includes('approval')) {
+                    cls = 'badge-pill-needs-approval';
+                    icon = 'bi-clock';
+                    label = 'Needs Approval';
+                } else if (s.includes('approved')) {
+                    cls = 'badge-pill-approved';
+                    icon = 'bi-check-circle-fill';
+                    label = 'Approved';
+                } else if (s.includes('revision') || s.includes('rejected')) {
+                    cls = 'badge-pill-rejected';
+                    icon = 'bi-x-circle-fill';
+                    label = 'Rejected';
+                }
+
+                statusCard.className = `badge-pill-status ${cls}`;
+                statusCard.innerHTML = `<i class="bi ${icon}"></i> ${label}`;
             }
         }
 
@@ -790,7 +826,7 @@ function renderProjectAllocations(allocations) {
 
 function renderToDoList(tasks) {
     const todoContent = document.querySelector('.todo-content');
-    const progressText = document.querySelector('.todo-footer .text-aia-red');
+    const progressText = document.querySelector('.todo-footer .text-brand-red');
     const progressBar = document.getElementById('todo_progress_bar');
     
     if (!todoContent) return;
@@ -859,6 +895,19 @@ function initTaskModal() {
     renderTaskDaySelector();
 }
 
+function jumpToToday() {
+    taskPickerDate = new Date();
+    selectedTaskDate = new Date();
+    renderTaskDaySelector();
+}
+
+function jumpToNextWeek() {
+    const nextWeek = new Date(taskPickerDate);
+    nextWeek.setDate(taskPickerDate.getDate() + 7);
+    taskPickerDate = nextWeek;
+    renderTaskDaySelector();
+}
+
 function renderTaskDaySelector() {
     const selector = document.getElementById('task_day_selector');
     const monthLabel = document.getElementById('task_month_label');
@@ -866,6 +915,20 @@ function renderTaskDaySelector() {
 
     const mName = englishMonths[taskPickerDate.getMonth()];
     monthLabel.innerText = `${mName} ${taskPickerDate.getFullYear()}`;
+    
+    // HYBRID PICKER: Clicking Month Label triggers full monthly picker
+    monthLabel.style.cursor = "pointer"; // Ensure it shows pointer
+    monthLabel.onclick = (e) => {
+        pickerDate = new Date(taskPickerDate);
+        activeView = 'daily'; // Set to daily so picking a day updates the current view
+        executePickerSelection = (day) => {
+            selectedTaskDate = new Date(pickerDate.getFullYear(), pickerDate.getMonth(), day);
+            taskPickerDate = new Date(selectedTaskDate);
+            renderTaskDaySelector();
+            closeDatePopup();
+        };
+        toggleDatePopup(e);
+    };
     
     selector.innerHTML = "";
     
@@ -880,10 +943,16 @@ function renderTaskDaySelector() {
         d.setDate(start.getDate() + i);
         
         const isSelected = d.toDateString() === selectedTaskDate.toDateString();
+        const dateKey = d.toISOString().split('T')[0];
+        
+        // Use real tasks to show status indicators if available
+        // dashboardData is likely available globally from initDashboard
+        const hasTask = window.dashboardData?.todoTasks?.some(t => t.dueDate === dateKey) || false;
+        
         const dayName = englishDaysShort[d.getDay()].toUpperCase();
         
         const item = document.createElement('div');
-        item.className = `day-item ${isSelected ? 'selected' : ''}`;
+        item.className = `day-item ${isSelected ? 'selected' : ''} ${hasTask ? 'has-task' : ''}`;
         item.onclick = () => {
             selectedTaskDate = new Date(d);
             renderTaskDaySelector();
@@ -891,6 +960,7 @@ function renderTaskDaySelector() {
         item.innerHTML = `
             <span class="day-name">${dayName}</span>
             <span class="day-num">${d.getDate()}</span>
+            <div class="day-dot"></div>
         `;
         selector.appendChild(item);
     }
@@ -955,6 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dispatch inits
     setTimeout(() => {
         if (document.getElementById('monthly_grid_container')) renderCurrentState();
+        if (document.getElementById('intern_name_label')) syncProfileInfo();
         if (document.getElementById('entry_date_label')) initEntryPage();
         if (document.getElementById('welcome_text')) initDashboard();
     }, 50);

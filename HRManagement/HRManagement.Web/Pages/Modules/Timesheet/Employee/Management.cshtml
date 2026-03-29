@@ -8,14 +8,23 @@
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full bg-white">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full bg-white">
     <div id="kt_app_content" class="app-content flex-column-fluid">
-        <div id="kt_app_content_container" class="app-container container-fluid p-0">
+        <div id="kt_app_content_container" class="app-container container-fluid">
             
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Management",
+                Subtitle = "Monitor and manage your monthly work logs with ease",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Management" }
+                }
+            })
             <!-- PERFECT BASELINE CONTAINER (v8.1) -->
             <div class="px-4 py-5">
                 
                 <!-- UNIFIED TOOLBAR NAV (1-Line Layout Match with Supervisor) -->
+                <!-- UNIFIED TOOLBAR NAV (SLIDER FORMAT) -->
                 <div class="d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
                     
                     <!-- View Segment Control -->
@@ -27,61 +36,24 @@
 
                     <!-- Date Scroller (Keep Intern Font) -->
                     <div class="date-selector-container position-relative d-flex align-items-center gap-4">
-                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(-1)" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center;"><i class="bi bi-chevron-left fs-4"></i></button>
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(-1, 'left')" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center; background: #fff;"><i class="bi bi-chevron-left fs-4"></i></button>
                         
                         <div class="d-flex flex-column align-items-center">
-                            <div id="datepicker_focal_backdrop" onclick="closeDatePopup()"></div>
-                            
                             <h1 class="current-date-title d-flex align-items-center gap-3 px-6 py-3 mb-0" style="cursor:pointer; background: #F8F9FA; border-radius: 14px;" onclick="toggleDatePopup(event)">
-                                <i class="bi bi-calendar3 text-aia fs-3"></i>
-                                <span id="current_view_label">February 2026</span>
+                                <i class="bi bi-calendar3 text-brand fs-3"></i>
+                                <span id="current_view_label">...</span>
                             </h1>
-
-                            <!-- COMPACT PICKERS (ANCHORED) -->
-                            <div id="popover_monthly" class="datepicker-popover">
-                                <div class="datepicker-header">
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
-                                    <div class="datepicker-header-title fw-bold" id="picker_year_label">2026</div>
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
-                                </div>
-                                <div class="datepicker-grid-3">
-                                    @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
-                                        <div class="datepicker-month-cell @(m == "Feb" ? "selected" : "")" onclick="selectMonth('@m')">@m</div>
-                                    }
-                                </div>
-                            </div>
-
-                            <div id="popover_weekly" class="datepicker-popover">
-                                <div class="datepicker-header">
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
-                                    <div class="datepicker-header-title fw-bold">March 2026</div>
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
-                                </div>
-                                <div class="datepicker-grid-7 px-4">
-                                    <!-- DYNAMICALLY FILLED BY JS -->
-                                </div>
-                            </div>
-
-                            <div id="popover_daily" class="datepicker-popover">
-                                <div class="datepicker-header">
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
-                                    <div class="datepicker-header-title fw-bold">March 2026</div>
-                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
-                                </div>
-                                <div class="datepicker-grid-7 px-4">
-                                    <!-- DYNAMICALLY FILLED BY JS -->
-                                </div>
-                            </div>
+                            @* GLOBAL POPOVERS NOW LOADED IN _LAYOUT *@
                         </div>
 
-                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(1)" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center;"><i class="bi bi-chevron-right fs-4"></i></button>
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(1, 'right')" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center; background: #fff;"><i class="bi bi-chevron-right fs-4"></i></button>
                     </div>
 
                     <!-- Actions -->
                     <div class="btn-group-actions d-flex align-items-center gap-3">
                         <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
                         <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" data-bs-toggle="modal" data-bs-target="#modal_review_submit"><i class="bi bi-send-fill me-2"></i> SUBMIT APPROVAL</button>
+                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" data-bs-toggle="modal" data-bs-target="#modal_review_submit"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
                     </div>
                 </div>
 
@@ -90,14 +62,14 @@
                     <div class="info-section border-right">
                         <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
                         <div class="info-text-block">
-                            <span class="info-title-label">Intern</span>
+                            <span class="info-title-label">Intern Identity</span>
                             <span class="info-person-name" id="intern_name_label">---</span>
                         </div>
                     </div>
                     <div class="info-section ps-10">
                         <div class="info-icon-circle"><i class="bi bi-person-hearts"></i></div>
                         <div class="info-text-block">
-                            <span class="info-title-label">Supervisor</span>
+                            <span class="info-title-label">Assigned Supervisor</span>
                             <span class="info-person-name" id="supervisor_name_label">---</span>
                         </div>
                     </div>
@@ -146,7 +118,7 @@
                                         <td id="weekly_total_fri" class="fw-boldest text-center">00h : 00m</td>
                                         <td id="weekly_total_sat" class="fw-boldest text-center">00h : 00m</td>
                                         <td id="weekly_total_sun" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_all" class="fw-boldest text-center text-aia fs-4">00h : 00m</td>
+                                        <td id="weekly_total_all" class="fw-boldest text-center text-brand fs-4">00h : 00m</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -157,11 +129,11 @@
                         @if (Model.DailyLogCount == 0) {
                             <div class="card shadow-sm border-0 py-12 px-8" style="background: rgba(211, 17, 69, 0.03); border-radius: 12px; border: 1px dashed rgba(211, 17, 69, 0.2) !important;">
                                 <div class="text-center">
-                                    <div class="mb-4"><i class="bi bi-exclamation-triangle-fill text-aia fs-3x"></i></div>
+                                    <div class="mb-4"><i class="bi bi-exclamation-triangle-fill text-brand fs-3x"></i></div>
                                     <h3 class="fw-bolder text-gray-800 mb-2">Daily Activities Not Found</h3>
                                     <p class="text-gray-600 fw-bold fs-6 mx-auto" style="max-width: 450px;">@Model.DailyLogErrorMessage</p>
                                     <div class="mt-6">
-                                        <a href="/Timesheet/Employee/Entry" class="btn btn-sm btn-aia fw-boldest px-8" style="border-radius: 8px;"><i class="bi bi-plus-lg me-2"></i> RECORD NEW ACTIVITY</a>
+                                        <a href="/Timesheet/Employee/Entry" class="btn btn-sm btn-brand fw-boldest px-8" style="border-radius: 8px;"><i class="bi bi-plus-lg me-2"></i> Record New Activity</a>
                                     </div>
                                 </div>
                             </div>
@@ -170,12 +142,12 @@
                                 <table class="daily-master-table w-100">
                                     <thead>
                                         <tr>
-                                            <th style="width: 15%">DURATION</th>
-                                            <th style="width: 20%">PROJECT</th>
-                                            <th style="width: 15%">APPS USED</th>
-                                            <th>TASK DESCRIPTION</th>
-                                            <th style="width: 15%">PROJECT LEAD</th>
-                                            <th style="width: 15%">LOCATION</th>
+                                            <th style="width: 15%">Duration</th>
+                                            <th style="width: 20%">Project</th>
+                                            <th style="width: 15%">Apps Used</th>
+                                            <th>Task Description</th>
+                                            <th style="width: 15%">Project Lead</th>
+                                            <th style="width: 15%">Location</th>
                                         </tr>
                                     </thead>
                                     <tbody id="daily_log_tbody">
@@ -198,7 +170,7 @@
         <div class="modal-content">
             <div class="datepicker-header">
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
-                <div class="title">2026</div>
+                <div class="title" id="m_picker_year">...</div>
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
             </div>
             <div class="datepicker-grid-3">
@@ -215,7 +187,7 @@
         <div class="modal-content">
             <div class="datepicker-header">
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
-                <div class="title">March 2026</div>
+                <div class="title" id="w_picker_month">...</div>
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
             </div>
             <div class="datepicker-grid-7 px-4">
@@ -233,7 +205,7 @@
         <div class="modal-content">
             <div class="datepicker-header">
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
-                <div class="title">March 2026</div>
+                <div class="title" id="d_picker_month">...</div>
                 <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
             </div>
             <div class="datepicker-grid-7 px-4">
@@ -250,7 +222,7 @@
     <div class="modal-dialog modal-dialog-centered mw-500px">
         <div class="modal-content modal-review-submit shadow-lg">
             <h2 class="modal-title">Review & Submit</h2>
-            <p class="modal-desc">Please review your logs for <strong>March 2026</strong> before final submission to your supervisor. You can</p>
+            <p class="modal-desc">Please review your logs for <strong id="review_period_label">...</strong> before final submission to your supervisor. You can</p>
             
             <a href="#" class="btn-download-draft w-100 shadow-sm mb-8"><i class="bi bi-file-earmark-excel-fill fs-3"></i> Download Draft (.xlsx) <span>to double-check.</span></a>
             
@@ -261,7 +233,7 @@
 
             <div class="row g-4">
                 <div class="col-6"><button class="btn btn-action-main btn-neutral-ghost w-100 fw-boldest" style="height:55px" data-bs-dismiss="modal">Back to Editing</button></div>
-                <div class="col-6"><button class="btn btn-aia w-100 fw-boldest" style="height:55px; border-radius:12px" onclick="submitTimesheetApproval()">Submit Now</button></div>
+                <div class="col-6"><button class="btn btn-brand w-100 fw-boldest" style="height:55px; border-radius:12px" onclick="submitTimesheetApproval()">Submit Now</button></div>
             </div>
         </div>
     </div>

@@ -1,8 +1,8 @@
-/* AIA GLOBAL BUTTON SYSTEM (REUSABLE COMPONENTS) */
+/* GLOBAL BUTTON SYSTEM (REUSABLE COMPONENTS) */
 
 /* 1. PRIMARY BUTTONS (RED) */
-.btn-aia-primary, .btn-action-save, .btn-submit-red { 
-    background: var(--aia-red); 
+.btn-standard-primary, .btn-action-save, .btn-submit-red, .btn-confirm, .btn-brand { 
+    background: var(--brand-red); 
     color: #fff !important; 
     border: 0; 
     border-radius: 12px; 
@@ -17,17 +17,18 @@
     box-shadow: 0 4px 15px rgba(211, 17, 69, 0.2);
     cursor: pointer;
     white-space: nowrap !important;
+    text-transform: none !important; /* Force Title Case/Normal Case */
 }
-.btn-aia-primary:hover, .btn-action-save:hover, .btn-submit-red:hover { 
-    background: var(--aia-red-active); 
+.btn-standard-primary:hover, .btn-action-save:hover, .btn-submit-red:hover { 
+    background: var(--brand-red-active); 
     transform: translateY(-1px); 
 }
-.btn-aia-primary i, .btn-action-save i, .btn-confirm i {
+.btn-standard-primary i, .btn-action-save i, .btn-confirm i, .btn-submit-red i, .btn-brand i {
     color: #fff !important;
 }
 
 /* 2. GHOST BUTTONS (WHITE/BORDER) */
-.btn-aia-ghost, .btn-action-discard, .btn-today-white, .btn-project-white { 
+.btn-standard-ghost, .btn-action-discard, .btn-today-white, .btn-project-white, .btn-neutral-ghost { 
     background: #fff; 
     border: 1px solid #E1E3EA; 
     border-radius: 12px; 
@@ -42,33 +43,35 @@
     transition: all 0.2s;
     cursor: pointer;
     white-space: nowrap !important;
+    text-transform: none !important;
 }
-.btn-aia-ghost:hover { 
+.btn-standard-ghost:hover { 
     background: #F9FAFB; 
     border-color: #D1D3E0; 
     color: #181C32; 
 }
 
 /* 3. INFO BUTTONS (LIGHT RED) */
-.btn-aia-info {
+.btn-standard-info {
     background: #F4F7FB; 
     border: 0; 
     border-radius: 12px; 
     height: 48px; 
     padding: 0 30px;
     font-weight: 800; 
-    color: var(--aia-red); 
+    color: var(--brand-red); 
     display: inline-flex; 
     align-items: center; 
     justify-content: center; 
     gap: 8px; 
     transition: all 0.2s;
     cursor: pointer;
+    text-transform: none !important;
 }
-.btn-aia-info:hover { background: #E9ECEF; }
+.btn-standard-info:hover { background: #E9ECEF; }
 
 /* 4. NAVIGATION BUTTONS (CIRCLE) */
-.btn-aia-nav {
+.btn-standard-nav {
     width: 44px; 
     height: 44px; 
     border-radius: 50%; 
@@ -81,10 +84,10 @@
     transition: all 0.2s;
     cursor: pointer;
 }
-.btn-aia-nav:hover { 
+.btn-standard-nav:hover { 
     background: #F9FAFB; 
-    border-color: var(--aia-red); 
-    color: var(--aia-red); 
+    border-color: var(--brand-red); 
+    color: var(--brand-red); 
     box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
 }
 
@@ -106,12 +109,12 @@
 .btn-add-row:hover { background: #3F4254; color: #fff; }
  
  /* 6. COMPACT VARIANTS (FOR CARD HEADERS/TOOLBARS) */
- .btn-aia-sm {
+ .btn-standard-sm {
      height: 38px !important;
      padding: 0 16px !important;
      font-size: 0.8rem !important;
      border-radius: 10px !important;
  }
- .btn-aia-sm i {
+ .btn-standard-sm i {
      font-size: 0.9rem !important;
  }

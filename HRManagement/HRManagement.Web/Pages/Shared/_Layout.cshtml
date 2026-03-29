@@ -23,16 +23,17 @@ Website: http://www.keenthemes.com
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 	
 	<!-- 1. CORE BRAND IDENTITY -->
-	<link href="/apps/shared/identity/brand-tokens.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/identity/brand-identity-tokens.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 	
 	<!-- 2. GLOBAL UI COMPONENTS -->
-	<link href="/apps/shared/buttons/buttons.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/buttons/standard-action-buttons.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 	<link href="/apps/shared/badges/status-badges.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-	<link href="/apps/shared/notifications/toasts.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-	<link href="/apps/shared/forms/dropdowns.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-	<link href="/apps/shared/layout/layout-components.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-	<link href="/apps/shared/modals/aia-modals.css" rel="stylesheet" type="text/css" asp-append-version="true" />
-	<link href="/apps/shared/footers/aia-footers.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/notifications/global-toast-notifications.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/forms/common-input-dropdowns.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/layout/base-layout-styling.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/layout/centralized-page-header.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/modals/confirmation-action-modals.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+	<link href="/apps/shared/footers/standard-corporate-footers.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 	@await RenderSectionAsync("Styles", required: false)
 </head>
@@ -67,11 +68,12 @@ Website: http://www.keenthemes.com
 
 	<!-- Modal Placeholder -->
 	@await Html.PartialAsync("Modals/_PartialModal")
+	@await Html.PartialAsync("Layout/_CalendarPopovers")
 
 	<!-- Global Scritps -->
 	<script src="/assets/plugins/global/plugins.bundle.js"></script>
 	<script src="/assets/js/scripts.bundle.js"></script>
-	<script src="/apps/shared/core/shared.js" asp-append-version="true"></script>
+	<script src="/apps/shared/core/shared-global-logic.js" asp-append-version="true"></script>
 
 	@await RenderSectionAsync("Scripts", required: false)
 </body>

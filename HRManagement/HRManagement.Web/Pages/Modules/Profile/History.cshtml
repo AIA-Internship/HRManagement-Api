@@ -5,9 +5,9 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/css/modules/profile/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
     <style>
-        .text-aia { color: #D31145 !important; }
+        .text-brand { color: #D31145 !important; }
         .bg-aia { background-color: #D31145 !important; }
         .badge-light-pending { background-color: #FFF4DE; color: #FFA800; }
         .badge-light-approved { background-color: #E8FFF3; color: #50CD89; }
@@ -28,7 +28,7 @@
                 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
                     <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
                         <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
-                        <li class="breadcrumb-item active text-aia" aria-current="page">Request History</li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Request History</li>
                     </ol>
                 </nav>
                 <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
@@ -88,6 +88,6 @@
 </div>
 
 @section Scripts {
-    <script src="~/apps/js/modules/profile/layout.js" asp-append-version="true"></script>
-    <script src="~/apps/js/modules/profile/history.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/history.js" asp-append-version="true"></script>
 }

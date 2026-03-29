@@ -2,7 +2,7 @@
 @model dynamic
 @{
     /*
-     * REUSABLE AIA BUTTON COMPONENT (V1.3 - Dynamic Attributes Edition)
+     * DYNAMIC STANDARD BUTTON COMPONENT (V1.4 - Specialized Edition)
      */
     var dict = new RouteValueDictionary(Model);
     
@@ -18,11 +18,11 @@
     var extraAttrs = dict.Where(kv => !knownKeys.Contains(kv.Key));
 
     string cssClass = type switch {
-        "primary" => "btn-aia-primary",
-        "ghost" => "btn-aia-ghost",
-        "info" => "btn-aia-info",
-        "nav" => "btn-aia-nav",
-        _ => "btn-aia-primary"
+        "primary" => "btn-standard-primary",
+        "ghost" => "btn-standard-ghost",
+        "info" => "btn-standard-info",
+        "nav" => "btn-standard-nav",
+        _ => "btn-standard-primary"
     } + " " + extraClass;
 }
 

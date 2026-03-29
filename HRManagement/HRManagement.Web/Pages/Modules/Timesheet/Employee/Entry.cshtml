@@ -12,10 +12,15 @@
     <div id="kt_app_content" class="app-content flex-column-fluid">
         <div id="kt_app_content_container" class="app-container container-fluid">
             
-            <!-- GIANT DATE HEADER -->
-            <div class="px-4">
-                <h1 class="entry-form-header" id="entry_date_label"></h1>
-            </div>
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Daily Registration",
+                Subtitle = "Enter your work activities and durations for today",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Management", Url = "/Timesheet/Employee/Management" },
+                    new BreadcrumbItem { Title = "Entry" }
+                }
+            })
 
             <!-- SHARED INFO BAR (INTERN & SUPERVISOR) -->
             <div class="intern-supervisor-card shadow-sm">

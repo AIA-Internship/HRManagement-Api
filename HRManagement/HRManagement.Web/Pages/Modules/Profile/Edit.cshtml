@@ -7,40 +7,24 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="~/apps/css/modules/profile/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
 }
 
 <div class="d-flex flex-column flex-column-fluid">
-    <!--begin::Toolbar-->
-    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
-        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
-            <!--begin::Page title-->
-            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
-                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
-                        <li class="breadcrumb-item"><a href="/Profile" class="text-decoration-none text-muted text-hover-primary">Personal Information</a></li>
-                        <li class="breadcrumb-item active text-aia" aria-current="page">Edit Profile</li>
-                    </ol>
-                </nav>
-                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-                    Edit Profile
-                    <span class="text-muted fs-7 fw-normal mt-1">Update your personal details for verification</span>
-                </h1>
-            </div>
-            <!--end::Page title-->
-
-            <!--begin::Actions-->
-            <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <a href="/Profile" class="btn btn-sm btn-light fw-bold">Cancel</a>
-                <button type="button" onclick="updateProfile()" class="btn btn-sm btn-aia fw-bold">
-                    <i class="bi bi-check2-circle text-white fs-4 me-1"></i> Submit for Approval
-                </button>
-            </div>
-            <!--end::Actions-->
-        </div>
-    </div>
-    <!--end::Toolbar-->
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+        Title = "Personal Information",
+        Subtitle = "View and manage your personal information",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Profile", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Personal Information", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Edit Profile" }
+        },
+        RenderActions = Html.Raw(@"
+            <a href='/Profile' class='btn btn-sm btn-light fw-bold'>Cancel</a>
+            <button type='button' onclick='updateProfile()' class='btn btn-sm btn-brand fw-bold'>
+                <i class='bi bi-check2-circle text-white fs-4 me-1'></i> Submit for Approval
+            </button>")
+    })
 
     <!--begin::Content-->
     <div id="kt_app_content" class="app-content flex-column-fluid">
@@ -74,7 +58,7 @@
                     <!-- PERSONAL DETAILS TAB -->
                     <div class="tab-pane fade show active" id="kt_tab_personal" role="tabpanel">
                         <div class="d-flex align-items-center mb-10">
-                            <i class="ki-duotone ki-address-book fs-1 text-aia me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <i class="ki-duotone ki-address-book fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                             <h3 class="fw-bold mb-0">Personal Details</h3>
                         </div>   
 
@@ -145,7 +129,7 @@
                     <!-- EMPLOYMENT DETAILS TAB -->
                     <div class="tab-pane fade" id="kt_tab_employment" role="tabpanel">
                         <div class="d-flex align-items-center mb-10">
-                            <i class="ki-duotone ki-briefcase fs-1 text-aia me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <i class="ki-duotone ki-briefcase fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
                             <h3 class="fw-bold mb-0">Employment Details</h3>
                         </div>
 
@@ -178,7 +162,7 @@
                     <!-- EMERGENCY CONTACT TAB -->
                     <div class="tab-pane fade" id="kt_tab_emergency" role="tabpanel">
                         <div class="d-flex align-items-center mb-10">
-                            <i class="ki-duotone ki-phone fs-1 text-aia me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <i class="ki-duotone ki-phone fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
                             <h3 class="fw-bold mb-0">Emergency Contact</h3>
                         </div>
 
@@ -203,7 +187,7 @@
                     <!-- ATTACHMENTS TAB -->
                     <div class="tab-pane fade" id="kt_tab_attachment" role="tabpanel">
                         <div class="d-flex align-items-center mb-10">
-                            <i class="ki-duotone ki-paper-clip fs-1 text-aia me-3"></i>
+                            <i class="ki-duotone ki-paper-clip fs-1 text-brand me-3"></i>
                             <h3 class="fw-bold mb-0">Attachments</h3>
                         </div>
 
@@ -228,6 +212,6 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="~/apps/js/modules/profile/layout.js" asp-append-version="true"></script>
-    <script src="~/apps/js/modules/profile/profile.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
 }

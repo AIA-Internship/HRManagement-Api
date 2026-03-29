@@ -68,4 +68,64 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 10px 30px rgba(211,17,69,0.2);
 }
-.btn-confirm:hover { background: #b60f3a; transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(211,17,69,0.3); }
+.btn-confirm:hover { background: #b60f3a; transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(211, 17, 69, 0.3); }
+
+/* AIA ACTION MODAL (CENTERED ACTIONABLE POPUPS) */
+.action-modal {
+    border-radius: 24px !important;
+    border: 0;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.modal-action-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #181C32;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+}
+
+.modal-action-message {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #7E8299;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.modal-action-textarea {
+    border: 1.5px solid #F1F4F9;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #3F4254;
+    transition: all 0.2s;
+    background: #fff;
+    resize: none;
+}
+
+.modal-action-textarea:focus {
+    border-color: #D31145;
+    box-shadow: 0 5px 15px rgba(211, 17, 69, 0.05);
+    outline: none;
+}
+
+/* Label for Action Modals */
+.form-label-custom {
+    font-size: 0.75rem;
+    font-weight: 850;
+    color: #181C32;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    display: block;
+    letter-spacing: 1px;
+}
+
+/* Ensure consistent button weights in action modals */
+.action-modal .btn {
+    font-weight: 850;
+    font-size: 0.95rem;
+}

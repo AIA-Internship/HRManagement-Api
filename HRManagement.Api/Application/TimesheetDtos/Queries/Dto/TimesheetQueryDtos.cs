@@ -179,6 +179,7 @@ public class DayCommentResponseDto
 public class DashboardResponseDto
 {
     public string EmployeeName { get; set; } = string.Empty;
+    public string SupervisorName { get; set; } = string.Empty;
     public int DaysUntilDeadline { get; set; }
     public SubmissionStatusDto CurrentMonthSubmission { get; set; } = new();
     public List<ProjectSummaryDto> AssignedProjects { get; set; } = new();

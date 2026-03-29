@@ -125,7 +125,7 @@
         .status-body { padding: 35px 30px; }
         .data-label-small { font-size: 0.65rem; font-weight: 850; color: #A1A5B7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
         .data-value-main { font-size: 1.85rem; font-weight: 900; color: #181C32; line-height: 1; }
-        .text-aia-red { color: #D31145 !important; }
+        .text-brand-red { color: #D31145 !important; }
 
         /* ALLOCATION HUB */
         .allocation-hub-card { flex-grow: 1; display: flex; flex-direction: column; }
@@ -168,7 +168,7 @@
                     <div class="todo-title">
                         <i class="bi bi-list-check text-danger text-opacity-75 fs-3"></i> To Do List
                     </div>
-                    @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-aia-sm", Id = "new_task_btn", data_bs_toggle = "modal", data_bs_target = "#modal_new_task" })
+                    @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-brand-sm", Id = "new_task_btn", data_bs_toggle = "modal", data_bs_target = "#modal_new_task" })
                 </div>
                 <div class="todo-content">
                     <img src="/assets/media/illustrations/sigma-1/17.png" class="todo-illustration" />
@@ -177,7 +177,7 @@
                 </div>
                 <div class="todo-footer">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="fw-boldest fs-8 text-aia-red">0 of 0 tasks completed</span>
+                        <span class="fw-boldest fs-8 text-brand-red">0 of 0 tasks completed</span>
                     </div>
                     <div class="progress h-8px w-100 rounded-pill" style="background: #F1F4F9;">
                         <div class="progress-bar" id="todo_progress_bar" style="width: 0%; background: #D31145;"></div>
@@ -189,13 +189,15 @@
         <!-- RIGHT PANEL -->
         <div class="col-lg-8 equal-height-col">
             
-            <div class="greeting-section">
-                <div class="greeting-text">
-                    <h1 id="welcome_text">...</h1>
-                    <span id="current_date_label">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
-                </div>
-                @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "New Entry", Icon = "plus-lg", OnClick = "window.location.href='/Timesheet/Employee/Entry'" })
-            </div>
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "...",
+                Subtitle = "Monitor your daily tasks and monthly timesheet progress",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Dashboard" }
+                },
+                RenderActions = Html.Raw("<a href='/Timesheet/Employee/Entry' class='btn-brand fw-boldest px-6 py-3'><i class='bi bi-plus-lg me-2'></i> New Entry</a>")
+            })
 
             <!-- SUBMISSION STATUS -->
             <div class="aia-glass-card submission-status-card">
@@ -211,11 +213,11 @@
                         </div>
                         <div class="col-md-3 border-start ps-10">
                             <span class="data-label-small">Deadline</span>
-                            <span class="data-value-main text-aia-red" id="active_deadline">...</span>
+                            <span class="data-value-main text-brand-red" id="active_deadline">...</span>
                         </div>
                         <div class="col-md-6 d-flex justify-content-end gap-3 px-0">
-                            @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "ghost", Title = "Review Logs", Class = "btn-aia-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
-                            @await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { Type = "primary", Title = "Submit Now", Class = "btn-aia-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                            @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "ghost", Title = "Review Logs", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                            @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "primary", Title = "Submit Now", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
                         </div>
                     </div>
                 </div>
@@ -228,7 +230,7 @@
                         <i class="bi bi-bar-chart-line-fill text-primary fs-3"></i> Project Allocation Hub
                     </div>
                     <div class="fs-8 fw-boldest text-muted">
-                        Total <span class="text-aia-red fs-5 ms-2" id="total_hours_display">0 h</span>
+                        Total <span class="text-brand-red fs-5 ms-2" id="total_hours_display">0 h</span>
                     </div>
                 </div>
                 <div class="allocation-grid" id="allocation_container">
@@ -257,6 +259,25 @@
 
              // 2. Initialize Task Modal
              if (typeof initTaskModal === 'function') initTaskModal();
+
+             // 3. Personalized Greeting (Good ..., [Name])
+             const userInfoRaw = localStorage.getItem('aia_user_info');
+             if (userInfoRaw) {
+                 const u = JSON.parse(userInfoRaw);
+                 
+                 // Support common JWT claim names for the user's full name
+                 const rawName = u.fullname || u.fullName || u.name || u.unique_name || u["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || u.email || "Intern";
+                 const name = rawName.split(' ')[0];
+                 
+                 const hour = new Date().getHours();
+                 let greet = "Good Morning";
+                 if (hour >= 12 && hour < 17) greet = "Good Afternoon";
+                 else if (hour >= 17 && hour < 21) greet = "Good Evening";
+                 else if (hour >= 21 || hour < 5) greet = "Good Night";
+                 
+                 const titleEl = document.getElementById('page_title_text');
+                 if (titleEl) titleEl.innerText = `${greet}, ${name}`;
+             }
         });
     </script>
 }

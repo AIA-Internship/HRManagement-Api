@@ -2,6 +2,7 @@ using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Application.Queries.Timesheet;
 
@@ -27,6 +28,7 @@ public class GetEmployeeDashboardQuery : IRequest<ApiResponse<DashboardResponseD
 
             // 1. Sequentially fetch data to avoid DbContext concurrency issues
             var employee = await appDbContext.Employees.FindAsync(new object[] { employeeId }, cancellationToken);
+            var employmentInfo = await appDbContext.EmploymentInformation.FirstOrDefaultAsync(ei => ei.EmployeeId == employeeId, cancellationToken);
             var submission = await timesheetRepository.GetSubmissionAsync(employeeId, year, month);
             var monthlyEntries = await timesheetRepository.GetEntriesByMonthAsync(employeeId, year, month);
             var missingDates = await timesheetRepository.GetMissingEntryDatesAsync(employeeId, year, month);
@@ -79,6 +81,7 @@ public class GetEmployeeDashboardQuery : IRequest<ApiResponse<DashboardResponseD
             var response = new DashboardResponseDto
             {
                 EmployeeName = employee?.FullName ?? "Employee",
+                SupervisorName = employmentInfo?.SupervisorName ?? "---",
                 DaysUntilDeadline = daysUntilDeadline,
                 CurrentMonthSubmission = submissionStatus,
                 ProjectAllocations = projectAllocations,

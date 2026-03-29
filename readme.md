@@ -11,7 +11,12 @@
 ### 2. Frontend (`HRManagement.Web`)
 - **Framework**: ASP.NET Core Razor Pages.
 - **UI Engine**: Metronic v8.3.3 + AIA Design System.
-- **Modular Assets**: Folder-in-Folder modular system for safe collaboration.
+- **Project Structure**:
+    - `Pages/Account/`: Core Authentication & Security.
+    - `Pages/Dashboard/`: Central Application Hub.
+    - `Pages/Modules/`: Independent Business Modules (Timesheet, Profile).
+    - `Pages/General/`: Supporting System Pages (Error, Privacy).
+    - `Pages/Shared/`: Global UI Components.
 
 ---
 
@@ -36,14 +41,14 @@ To ensure zero conflicts across multiple teams, we follow a strict **"Folder-in-
 
 | Category | HTML Path (`Pages/Shared/`) | Asset Path (`wwwroot/apps/shared/`) |
 | :--- | :--- | :--- |
-| **Core Identity** | - | `identity/brand-tokens.css` |
-| **Global Logic** | - | **`core/shared.js`** |
-| **Buttons** | `Buttons/_ButtonAia.cshtml` | `buttons/buttons.css` |
-| **Layout** | `Layout/_PartialHeader.cshtml` | `layout/layout-components.css` |
-| **Modals** | `Modals/_PartialModal.cshtml` | `modals/aia-modals.css` |
-| **Badges / Toasts** | - | `badges/` & `notifications/` |
-| **Forms / Dropdown** | - | `forms/dropdowns.css` |
-| **Footers** | - | `footers/aia-footers.css` |
+| **Core Identity** | - | `identity/brand-identity-tokens.css` |
+| **Global Logic** | - | **`core/shared-global-logic.js`** |
+| **Buttons** | `Buttons/_StandardButton.cshtml` | `buttons/standard-action-buttons.css` |
+| **Layout** | `Layout/_PartialHeader.cshtml` | `layout/base-layout-styling.css` |
+| **Modals** | `Modals/_ActionModal.cshtml` | `modals/confirmation-action-modals.css` |
+| **Badges / Toasts** | - | `badges/status-badges.css` & `notifications/` |
+| **Forms / Dropdown** | - | `forms/common-input-dropdowns.css` |
+| **Footers** | - | `footers/standard-corporate-footers.css` |
 | **Validations** | `Layout/_ValidationScriptsPartial.cshtml` | - |
 
 ---
@@ -52,7 +57,7 @@ To ensure zero conflicts across multiple teams, we follow a strict **"Folder-in-
 Call the standardized Razor Partial:
 
 ```html
-@await Html.PartialAsync("Shared/Buttons/_ButtonAia", new { 
+@await Html.PartialAsync("Shared/Buttons/_StandardButton", new { 
     Type = "primary",  // primary, ghost, info, nav
     Title = "Save Record", 
     Icon = "check2-circle" 

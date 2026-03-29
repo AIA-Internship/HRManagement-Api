@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
     <style>
         .report-card { background: #fff; border-radius: 20px; border: 1px solid #ECEFF4; padding: 2rem; margin-bottom: 2rem; }
         .tab-nav { display: flex; gap: 30px; border-bottom: 2px solid #F1F4F9; margin-bottom: 2.5rem; }
@@ -14,26 +15,30 @@
         .history-table td { padding: 16px 0; border-bottom: 1px solid #F1F4F9; vertical-align: middle; }
         .history-table tr:last-child td { border-bottom: 0; }
         
-        .status-pill { padding: 6px 14px; border-radius: 8px; font-weight: 850; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.3px; display: inline-block; min-width: 90px; text-align: center; }
-        .status-approved { background: #E8FFF3; color: #50CD89; border: 1px solid rgba(80,205,137,0.2); }
-        .status-revision { background: #FFF5F8; color: #D31145; border: 1px solid rgba(211,17,69,0.2); }
-        .status-missing { background: #FFF8E9; color: #ca8a04; border: 1px solid rgba(202,138,4,0.2); }
+        /* Use global badge-pill-status classes from status-badges.css. 
+           Local aliases below for backward compat. */
+        .status-pill { padding: 7px 18px; border-radius: 50px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px; }
+        .status-approved { background: #D1FAE5; color: #2B8B15; border: 0; }
+        .status-revision { background: #FFE4E6; color: #D31145; border: 0; }
+        .status-missing  { background: #FEF3C7; color: #92400E; border: 0; }
 
         .missing-intern { background: #FDFDFD; border: 1px dashed #ECEFF4; border-radius: 16px; padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
         .overdue-count { background: #FFF5F8; color: #D31145; padding: 4px 10px; border-radius: 6px; font-weight: 950; font-size: 0.75rem; }
     </style>
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full">
     <div id="kt_app_content" class="app-content flex-column-fluid">
         <div id="kt_app_content_container" class="app-container container-fluid">
 
-            <div class="d-flex align-items-center justify-content-between mb-8">
-                <div>
-                    <h1 class="text-gray-900 fw-boldest fs-1 mb-1 ls-n1">Team Reports & History</h1>
-                    <p class="text-gray-400 fw-bold fs-7">Audit and track your approval decisions and intern compliance.</p>
-                </div>
-            </div>
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Report",
+                Subtitle = "Audit and track your approval decisions and intern compliance",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Reports" }
+                }
+            })
 
             <div class="tab-nav">
                 <a href="#" class="tab-link active" onclick="switchReportTab(event, 'approval_history')">Approval History</a>

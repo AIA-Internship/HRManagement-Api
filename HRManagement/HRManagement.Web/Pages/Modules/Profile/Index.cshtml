@@ -5,12 +5,12 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/css/modules/profile/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
     <style>
-        .text-aia { color: #D31145 !important; }
+        .text-brand { color: #D31145 !important; }
         .bg-aia { background-color: #D31145 !important; }
-        .btn-aia { background-color: #D31145 !important; color: #fff !important; }
-        .btn-aia:hover { filter: brightness(0.9); color: #fff !important; }
+        .btn-brand { background-color: #D31145 !important; color: #fff !important; }
+        .btn-brand:hover { filter: brightness(0.9); color: #fff !important; }
         .nav-line-tabs .nav-link.active { border-bottom-color: #D31145; color: #D31145; }
         .nav-line-tabs .nav-link:hover { color: #D31145; }
         .field-label { font-size: 13px; color: #7e8299; font-weight: 500; margin-bottom: 0.25rem; }
@@ -28,7 +28,7 @@
                 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
                     <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
                         <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
-                        <li class="breadcrumb-item active text-aia" aria-current="page">Personal Information</li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Personal Information</li>
                     </ol>
                 </nav>
                 <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
@@ -38,7 +38,7 @@
             </div>
             <!-- Action Button -->
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <a href="/Profile/Edit" class="btn btn-sm btn-aia fw-bold">
+                <a href="/Profile/Edit" class="btn btn-sm btn-brand fw-bold">
                     <i class="bi bi-pencil text-white me-2"></i> Edit Profile
                 </a>
             </div>
@@ -53,7 +53,7 @@
             <div class="bg-white rounded shadow-sm p-0 mb-6 sticky-top" style="top: 80px; z-index: 10;">
                 <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold ms-5" id="profileTabs" role="tablist">
                     <li class="nav-item mt-2">
-                        <a class="nav-link text-active-primary ms-0 me-10 py-4 active text-aia" data-bs-toggle="tab" href="#kt_tab_personal">Personal Details</a>
+                        <a class="nav-link text-active-primary ms-0 me-10 py-4 active text-brand" data-bs-toggle="tab" href="#kt_tab_personal">Personal Details</a>
                     </li>
                     <li class="nav-item mt-2">
                         <a class="nav-link text-active-primary ms-0 me-10 py-4" data-bs-toggle="tab" href="#kt_tab_employment">Employment Details</a>
@@ -75,7 +75,7 @@
                     <div class="card shadow-sm mb-5 mb-xl-10">
                         <div class="card-header border-0 cursor-pointer">
                             <div class="card-title m-0">
-                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-address-book fs-2 text-aia me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Personal Details</h3>
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-address-book fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Personal Details</h3>
                             </div>
                         </div>
                         <div class="card-body border-top p-9">
@@ -180,7 +180,7 @@
                     <div class="card shadow-sm mb-5 mb-xl-10">
                         <div class="card-header border-0 cursor-pointer">
                             <div class="card-title m-0">
-                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-briefcase fs-2 text-aia me-3"><span class="path1"></span><span class="path2"></span></i> Employment Details</h3>
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-briefcase fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span></i> Employment Details</h3>
                             </div>
                         </div>
                         <div class="card-body border-top p-9">
@@ -223,7 +223,7 @@
                     <div class="card shadow-sm mb-5 mb-xl-10">
                         <div class="card-header border-0 cursor-pointer">
                             <div class="card-title m-0">
-                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-phone fs-2 text-aia me-3"><span class="path1"></span><span class="path2"></span></i> Emergency Contact</h3>
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-phone fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span></i> Emergency Contact</h3>
                             </div>
                         </div>
                         <div class="card-body border-top p-9">
@@ -250,7 +250,7 @@
                     <div class="card shadow-sm mb-5 mb-xl-10">
                         <div class="card-header border-0 cursor-pointer">
                             <div class="card-title m-0">
-                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-paper-clip fs-2 text-aia me-3"></i> Attachments</h3>
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-paper-clip fs-2 text-brand me-3"></i> Attachments</h3>
                             </div>
                         </div>
                         <div class="card-body border-top p-9">
@@ -268,6 +268,6 @@
 </div>
 
 @section Scripts {
-    <script src="~/apps/js/modules/profile/layout.js" asp-append-version="true"></script>
-    <script src="~/apps/js/modules/profile/profile.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
 }

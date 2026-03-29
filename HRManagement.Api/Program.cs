@@ -63,7 +63,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudiences = validAudiences,
     };
 
-    // DEBUGGING EVENT (PENTING UNTUK MELIHAT ERROR DI SWAGGER)
+    // JWT EVENT HANDLERS (CRITICAL FOR AUTHENTICATION DEBUGGING)
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
@@ -109,7 +109,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // ==========================================
-// 4. CORS Configuration (Penting: Izin koneksi Frontend ke API)
+// 4. CORS Configuration (Allows Frontend to connect to the API)
 // ==========================================
 builder.Services.AddCors(options =>
 {
@@ -181,9 +181,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ==========================================
-// URUTAN MIDDLEWARE YANG BENAR (PIPELINE)
-// ==========================================
+// MIDDLEWARE PIPELINE ORDER
 
 // 1. Exception Handling
 app.UseMiddleware<ExceptionMiddleware>();
@@ -210,7 +208,7 @@ app.UseHttpsRedirection();
 // 4. Routing
 app.UseRouting();
 
-// 4.1. CORS (Harus setelah Routing dan sebelum Auth)
+// 4.1. CORS (Must be placed after Routing and before Auth)
 app.UseCors("AllowAll");
 // 5. Authentication & Authorization
 app.UseAuthentication();

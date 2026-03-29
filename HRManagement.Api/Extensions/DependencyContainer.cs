@@ -32,6 +32,7 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<ITimesheetRepository, TimesheetRepository>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
 

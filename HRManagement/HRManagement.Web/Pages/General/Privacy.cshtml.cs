@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HRManagement.Web.Pages.General
@@ -9,5 +8,4 @@ namespace HRManagement.Web.Pages.General
         {
         }
     }
-
 }
