@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Config;
@@ -14,7 +13,10 @@ using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Seeder;
-using Swashbuckle.AspNetCore.SwaggerUI;
+using Microsoft.OpenApi;
+
+// 1. ADD SCALAR USING
+using Scalar.AspNetCore; 
 
 var builder = WebApplication.CreateBuilder(args);
 var apiName = "Mini Project HR Management API";
@@ -37,7 +39,6 @@ var validAudiences = new[]
     jwtSettings.Audience3,
     jwtSettings.Audience4
 }.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray();
-
 
 // ==========================================
 // 2. JWT Configuration
@@ -100,7 +101,6 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
-
 // ==========================================
 // 3. Database & Services
 // ==========================================
@@ -148,34 +148,43 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-
 // ==========================================
-// 6. Swagger Setup
+// 6. OpenAPI & Scalar Setup
 // ==========================================
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddOpenApi(options =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = apiName, Version = "v1" });
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        Description = "JWT Authorization header using the Bearer scheme.",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+        document.Info ??= new OpenApiInfo();
+        document.Info.Title = apiName;
+        document.Info.Version = "v1";
+        
+        document.Components ??= new OpenApiComponents();
+        if (document.Components.SecuritySchemes == null)
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            new string[] {}
+            document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>();
         }
+        
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            In = ParameterLocation.Header,
+            Description = "JWT Authorization header using the Bearer scheme."
+        };
+        
+        if (document.Security == null)
+        {
+            document.Security = new List<OpenApiSecurityRequirement>();
+        }
+
+        document.Security.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+        });
+
+        return Task.CompletedTask;
     });
 });
 
@@ -192,13 +201,18 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// 2. Swagger
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.MapOpenApi(); 
+    
+    app.MapScalarApiReference(options =>
     {
-        c.DefaultModelsExpandDepth(-1);
+        options.WithTitle(apiName)
+            .WithTheme(ScalarTheme.Mars)
+            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+            .AddPreferredSecuritySchemes("Bearer")
+            .HideModels()
+            .ExpandAllTags();
     });
 }
 

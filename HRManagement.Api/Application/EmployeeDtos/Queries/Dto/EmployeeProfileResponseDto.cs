@@ -34,7 +34,7 @@ public class EmployeeProfileResponseDto
     public string EmploymentType { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
-    public string SupervisorDisplayId { get; set; } = string.Empty;
+    // public string SupervisorDisplayId { get; set; } = string.Empty;
     public string SupervisorName { get; set; } = string.Empty;
     public string EmployeeDisplayId { get; set; } = string.Empty;
     
