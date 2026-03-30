@@ -52,7 +52,6 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
             }
             
             var token = GenerateToken(user, request.RememberMe, roleName);
-            
             return ApiHelperResponse.Success("Login successful", new TokenResponseDto { Token = token });
         }
         
