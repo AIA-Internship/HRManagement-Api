@@ -119,7 +119,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 // ==========================================
-// 6. OpenAPI (Replaces Swagger Setup)
+// 6. OpenAPI & Scalar Setup
 // ==========================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
