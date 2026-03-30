@@ -194,12 +194,27 @@ async function renderMonthlyGrid() {
         // Find data for this specific day from API result
         const dayData = data?.days?.find(day => new Date(day.date).getDate() === d);
         const hasWork = dayData && dayData.totalMinutes > 0;
+        
+        let workSummary = '';
+        if (hasWork && dayData.projects) {
+            workSummary = `<div class="cell-work-summary">
+                ${dayData.projects.slice(0, 2).map(p => `
+                    <div class="work-item-small">
+                        <span class="work-pname text-truncate">${p.projectName}</span>
+                        <span class="work-pdur ms-auto">${p.durationFormatted}</span>
+                    </div>
+                `).join('')}
+                ${dayData.projects.length > 2 ? `<div class="work-more-label">+ ${dayData.projects.length - 2} more</div>` : ''}
+            </div>`;
+        }
 
         container.innerHTML += `
             <div class="grid-cell ${isToday ? 'is-today' : ''} ${hasWork ? 'has-data' : ''}" 
                  onclick="${window.selectedInternId ? '' : `window.location.href='/Timesheet/Employee/Entry?date=${dateParam}'`}">
-                <span class="cell-date-num">${d}</span>
-                ${hasWork ? '<div class="data-indicator"></div>' : ''}
+                <div class="d-flex justify-content-between">
+                    <span class="cell-date-num">${d}</span>
+                </div>
+                ${workSummary}
             </div>`;
     }
 }
@@ -750,7 +765,9 @@ async function initDashboard() {
             const cms = actualData.currentMonthSubmission || actualData.CurrentMonthSubmission;
             if (cms) {
                 document.getElementById('active_period').innerText = `${cms.monthName} ${cms.year}`;
-                document.getElementById('active_deadline').innerText = `${cms.daysRemaining} Days Remaining`;
+                
+                const deadlineHeader = document.getElementById('header_deadline_text');
+                if (deadlineHeader) deadlineHeader.innerText = `${cms.daysRemaining} Days Left`;
 
                 // Map API status string to design badge
                 const s = (cms.status || 'Not Submitted').toLowerCase();
@@ -802,20 +819,23 @@ function renderProjectAllocations(allocations) {
     allocations.forEach((p, idx) => {
         const pMins = p.totalMinutes || p.TotalMinutes || 0;
         totalMins += pMins;
-        const hrs = (pMins / 60).toFixed(0);
+        const hrs = (pMins / 60).toFixed(1); // One decimal for clarity
         const perc = p.allocationPercentage || p.AllocationPercentage || 10;
         const c = colors[idx % colors.length];
         const pName = p.projectName || p.ProjectName || "Project";
 
         htmlBuffer += `
            <div class="proj-card">
-               <div class="proj-label">${pName}</div>
+               <div class="proj-label" title="Project Name">${pName}</div>
                <div class="proj-hours">
                    <span class="num">${hrs}</span>
                    <span class="unit">h</span>
                </div>
-               <div class="proj-bar-container">
-                   <div class="proj-bar-inner" style="width: ${perc}%; background: ${c};"></div>
+               <div class="mt-auto">
+                   <div class="fs-9 text-muted fw-bold mb-1">Total Logged Hours</div>
+                   <div class="proj-bar-container">
+                       <div class="proj-bar-inner" style="width: ${perc}%; background: ${c};"></div>
+                   </div>
                </div>
            </div>
         `;

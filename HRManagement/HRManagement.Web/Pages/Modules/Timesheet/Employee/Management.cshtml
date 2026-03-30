@@ -53,7 +53,7 @@
                     <div class="btn-group-actions d-flex align-items-center gap-3">
                         <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
                         <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" data-bs-toggle="modal" data-bs-target="#modal_review_submit"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
+                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" onclick="window.location.href='/Timesheet/Employee/Review?year=' + currentDate.getFullYear() + '&month=' + (currentDate.getMonth() + 1)"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
                     </div>
                 </div>
 

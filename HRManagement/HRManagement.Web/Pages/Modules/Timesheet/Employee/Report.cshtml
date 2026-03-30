@@ -71,14 +71,6 @@
             border-bottom: 1px solid #E1E3EA;
         }
         .header-title-box { display: flex; align-items: center; gap: 14px; }
-        .header-icon-square {
-            background: #181C32;
-            color: #fff;
-            width: 42px; height: 42px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-        }
         .header-title-box h3 { font-size: 1.1rem; font-weight: 900; color: #181C32; margin: 0; }
 
         /* Filter Dropdown */
@@ -138,7 +130,8 @@
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; padding: 70px 40px; text-align: center;
         }
-        .empty-state-icon  { font-size: 3.5rem; color: #E1E3EA; margin-bottom: 16px; }
+        .empty-state-icon  { font-size: 5rem !important; color: #E1E3EA; margin-bottom: 16px; }
+        .empty-state-icon i { font-size: 5rem !important; }
         .empty-state-title { font-size: 1.1rem; font-weight: 850; color: #181C32; margin-bottom: 6px; }
         .empty-state-desc  { font-size: 0.875rem; color: #7E8299; font-weight: 600; max-width: 340px; }
     </style>
@@ -172,16 +165,26 @@
             </div>
 
             <!-- ── HISTORY CARD (always visible) ── -->
-            <div class="history-card mb-10">
-                <div class="history-main-header">
-                    <div class="header-title-box">
-                        <div class="header-icon-square">
-                            <i class="bi bi-file-earmark-arrow-down"></i>
+            <div class="history-card shadow-sm">
+                <div class="history-header d-flex justify-content-between align-items-center mb-10 p-6">
+                    <div class="d-flex align-items-center gap-10">
+                        <div class="d-flex flex-column gap-2">
+                            <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">From Period</span>
+                            <input type="month" id="filter_from" class="form-control form-control-solid fw-boldest h-45px" style="width:160px; border-radius:10px" />
                         </div>
-                        <h3>Timesheet History</h3>
+                        <div class="d-flex flex-column gap-2">
+                            <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">To Period</span>
+                            <input type="month" id="filter_to" class="form-control form-control-solid fw-boldest h-45px" style="width:160px; border-radius:10px" />
+                        </div>
+                        <div class="d-flex align-items-end gap-3 mt-6">
+                            <button class="btn btn-brand fw-boldest px-8 h-45px" onclick="applyPeriodFilter()" style="border-radius:10px">Search</button>
+                            <button class="btn btn-light fw-boldest px-8 h-45px" onclick="resetReportFilters()" style="border-radius:10px">Reset</button>
+                        </div>
                     </div>
-                    <div>
-                        <select class="filter-select" id="status_filter" onchange="applyFilter(this.value)">
+                    
+                    <div class="d-flex flex-column gap-2">
+                        <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">Status Filter</span>
+                        <select class="form-select form-select-solid fw-boldest h-45px" style="width:200px; border-radius:10px" onchange="applyFilter(this.value)">
                             <option value="All">All Status</option>
                             <option value="Approved">Approved</option>
                             <option value="Needs Approval">Needs Approval</option>
@@ -192,9 +195,10 @@
                 <table class="history-table">
                     <thead>
                         <tr>
-                            <th style="width:30%">Month/Period</th>
-                            <th style="width:28%">Submission Date</th>
-                            <th style="width:32%">Approval Status</th>
+                            <th style="width:20%">Month/Period</th>
+                            <th style="width:20%">Submission Date</th>
+                            <th style="width:25%">Supervisor</th>
+                            <th style="width:25%">Approval Status</th>
                             <th style="width:10%" class="text-center">Export</th>
                         </tr>
                     </thead>
@@ -316,19 +320,59 @@
                 tr.innerHTML = `
                     <td><span class="fw-boldest">${MONTHS[item.month - 1]} ${item.year}</span></td>
                     <td><span class="sub-date">${item.submittedDate || '—'}</span></td>
+                    <td><span class="fw-bold text-gray-700">${item.supervisorName || '—'}</span></td>
                     <td>
                         <span class="badge-pill-status ${badge.cls}">
                             <i class="bi ${badge.icon}"></i> ${badge.label}
                         </span>
                     </td>
                     <td class="text-center">
-                        <div class="export-btn ${isApproved ? '' : 'disabled'}"
+                        <div class="export-btn ${isApproved ? '' : 'disabled'}" onclick="${isApproved ? 'downloadApprovedTimesheet(' + item.id + ')' : ''}"
                              title="${isApproved ? 'Download Report' : 'Only available for approved reports'}">
                             <i class="bi bi-file-earmark-arrow-down"></i>
                         </div>
                     </td>`;
                 tbody.appendChild(tr);
             });
+        }
+
+        // ── NEW PERIOD FILTER FUNCTIONS ──────────────────────────────────────
+        function applyPeriodFilter() {
+            const from = document.getElementById('filter_from').value; // YYYY-MM
+            const to = document.getElementById('filter_to').value; // YYYY-MM
+            
+            if (!from && !to) {
+                renderHistoryTable(allHistoryData);
+                return;
+            }
+
+            const filtered = allHistoryData.filter(item => {
+                const itemDate = new Date(item.year, item.month - 1);
+                
+                if (from) {
+                    const fromDate = new Date(from);
+                    if (itemDate < fromDate) return false;
+                }
+                
+                if (to) {
+                    const toDate = new Date(to);
+                    if (itemDate > toDate) return false;
+                }
+                
+                return true;
+            });
+            renderHistoryTable(filtered);
+        }
+
+        function resetReportFilters() {
+            document.getElementById('filter_from').value = '';
+            document.getElementById('filter_to').value = '';
+            document.querySelector('.form-select-solid').value = 'All';
+            renderHistoryTable(allHistoryData);
+        }
+        
+        function downloadApprovedTimesheet(id) {
+            showToast("Approved timesheet download started.", "success");
         }
 
         // ── FILTER ────────────────────────────────────────────────────────────

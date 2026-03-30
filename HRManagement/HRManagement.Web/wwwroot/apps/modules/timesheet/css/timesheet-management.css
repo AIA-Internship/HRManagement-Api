@@ -147,6 +147,25 @@
 .grid-cell.outside .cell-date-num { opacity: 0.3; }
 .grid-cell.weekend .cell-date-num { color: #F1416C; }
 
+/* WORK SUMMARY IN MONTHLY CELL */
+.cell-work-summary { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.work-item-small {
+    background: rgba(241, 65, 108, 0.05);
+    border-radius: 6px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    border: 1px solid rgba(241, 65, 108, 0.08);
+    transition: all 0.2s;
+}
+.work-item-small:hover { background: rgba(241, 65, 108, 0.1); transform: translateX(2px); }
+.work-pname { color: #3F4254; max-width: 60%; }
+.work-pdur { color: var(--brand-red); font-weight: 950; }
+.work-more-label { font-size: 0.6rem; font-weight: 800; color: #A1A5B7; padding: 2px 8px; text-align: center; }
+
 /* TODAY HIGHLIGHT (REPLICATING SCREENSHOT) */
 .grid-cell.is-today .cell-date-num {
     background: #181C32;
