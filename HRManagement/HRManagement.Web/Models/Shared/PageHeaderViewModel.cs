@@ -7,6 +7,7 @@ namespace HRManagement.Web.Models.Shared
     {
         public string Title { get; set; } = string.Empty;
         public string? Subtitle { get; set; }
+        public string? Id { get; set; }
         public List<BreadcrumbItem> Breadcrumbs { get; set; } = new List<BreadcrumbItem>();
         
         /// <summary>

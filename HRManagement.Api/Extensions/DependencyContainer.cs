@@ -20,7 +20,13 @@ namespace HRManagement.Api.Extensions
             // 1. Database Setup
             var connectionString = configuration["AppSetting:DbConnectionString"] ?? throw new InvalidOperationException("Database Connection String is missing!");
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                }));
             
             services.AddScoped<IApplicationDbContext>(provider => 
                 provider.GetRequiredService<AppDbContext>());

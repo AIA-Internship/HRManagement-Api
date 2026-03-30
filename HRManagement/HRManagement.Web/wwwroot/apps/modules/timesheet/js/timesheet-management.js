@@ -1,4 +1,28 @@
-const API_BASE_URL = 'https://localhost:7089/api/timesheet';
+const API_BASE_URL = 'https://127.0.0.1:7089/api';
+
+// GLOBAL APP OBJECT (FALLBACK IF SHARED IS MISSING)
+window.app = window.app || {
+    loading: {
+        show: function(msg) {
+            let overlay = document.getElementById('app_loading_overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'app_loading_overlay';
+                overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,sans-serif;";
+                overlay.innerHTML = `
+                    <div class="spinner-border text-brand" role="status" style="width: 3rem; height: 3rem; color:#D31145"></div>
+                    <div class="mt-4 fw-boldest text-gray-800 fs-4">${msg || 'Processing...'}</div>
+                `;
+                document.body.appendChild(overlay);
+            }
+            overlay.style.display = 'flex';
+        },
+        hide: function() {
+            const overlay = document.getElementById('app_loading_overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+    }
+};
 
 let currentDate = new Date();
 let pickerDate = new Date();
@@ -9,41 +33,7 @@ const englishMonths = ["January", "February", "March", "April", "May", "June", "
 const englishDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const englishDaysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-async function fetchAPI(endpoint, options = {}) {
-    try {
-        const token = localStorage.getItem('aia_jwt_token');
-        const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-            ...options,
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '',
-                ...options.headers
-            }
-        });
 
-        // 401 Unauthorized handling
-        if (response.status === 401) {
-            localStorage.removeItem('aia_jwt_token');
-            window.location.href = '/Account/Login';
-            return null;
-        }
-
-        const result = await response.json();
-        
-        if (!response.ok || (result && result.isError)) {
-            const errorMsg = result.statusMessage || result.message || 'Access Denied: Please contact your administrator.';
-            showToast(errorMsg, 'error');
-            return null;
-        }
-
-        return result.content || result.data || result;
-    } catch (error) {
-        console.error('API Error:', error);
-        showToast('Network error or server is unreachable.', 'error');
-        return null;
-    }
-}
 
 function showToast(message, type = 'error') {
     if (window.Swal) {
@@ -130,6 +120,17 @@ function switchView(viewName, btn) {
     renderCurrentState();
 }
 
+function jumpToDaily(dateStr) {
+    currentDate = new Date(dateStr);
+    const dailyBtn = Array.from(document.querySelectorAll('.timesheet-tabs-nav button')).find(b => b.innerText.toLowerCase().includes('daily'));
+    if (dailyBtn) {
+        switchView('daily', dailyBtn);
+    } else {
+        // Fallback if triggered from a page without tabs (like Entry)
+        window.location.href = `/Timesheet/Employee/Management?view=daily&date=${dateStr}`;
+    }
+}
+
 function renderCurrentState() {
     updateDateLabel();
     if (activeView === 'monthly') renderMonthlyGrid();
@@ -177,7 +178,7 @@ async function renderMonthlyGrid() {
 
     const y = currentDate.getFullYear(), m = currentDate.getMonth();
     const targetParam = window.selectedInternId ? `&targetEmployeeId=${window.selectedInternId}` : '';
-    const data = await fetchAPI(`monthly?year=${y}&month=${m + 1}${targetParam}`);
+    const data = await fetchAPI(`timesheet/monthly?year=${y}&month=${m + 1}${targetParam}`);
 
     container.innerHTML = "";
     const firstDay = new Date(y, m, 1).getDay();
@@ -192,25 +193,29 @@ async function renderMonthlyGrid() {
         const dateParam = `${y}-${(m + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
 
         // Find data for this specific day from API result
-        const dayData = data?.days?.find(day => new Date(day.date).getDate() === d);
+        const dayData = data?.days?.find(day => {
+            const dDate = new Date(day.date);
+            return dDate.getFullYear() === y && dDate.getMonth() === m && dDate.getDate() === d;
+        });
         const hasWork = dayData && dayData.totalMinutes > 0;
         
         let workSummary = '';
-        if (hasWork && dayData.projects) {
+        if (hasWork && dayData.projectMinutes) {
+            const projectEntries = Object.entries(dayData.projectMinutes);
             workSummary = `<div class="cell-work-summary">
-                ${dayData.projects.slice(0, 2).map(p => `
+                ${projectEntries.slice(0, 2).map(([pName, mins]) => `
                     <div class="work-item-small">
-                        <span class="work-pname text-truncate">${p.projectName}</span>
-                        <span class="work-pdur ms-auto">${p.durationFormatted}</span>
+                        <span class="work-pname text-truncate">${pName || 'Unknown'}</span>
+                        <span class="work-pdur ms-auto">${Math.floor(mins/60)}h ${mins%60}m</span>
                     </div>
                 `).join('')}
-                ${dayData.projects.length > 2 ? `<div class="work-more-label">+ ${dayData.projects.length - 2} more</div>` : ''}
+                ${projectEntries.length > 2 ? `<div class="work-more-label">+ ${projectEntries.length - 2} more</div>` : ''}
             </div>`;
         }
 
         container.innerHTML += `
             <div class="grid-cell ${isToday ? 'is-today' : ''} ${hasWork ? 'has-data' : ''}" 
-                 onclick="${window.selectedInternId ? '' : `window.location.href='/Timesheet/Employee/Entry?date=${dateParam}'`}">
+                 onclick="${hasWork ? `jumpToDaily('${dateParam}')` : `window.location.href='/Timesheet/Employee/Entry?date=${dateParam}'`}">
                 <div class="d-flex justify-content-between">
                     <span class="cell-date-num">${d}</span>
                 </div>
@@ -226,7 +231,7 @@ async function renderWeeklyGrid() {
 
     const dateStr = currentDate.toISOString().split('T')[0];
     const targetParam = window.selectedInternId ? `&targetEmployeeId=${window.selectedInternId}` : '';
-    const data = await fetchAPI(`weekly?weekStartDate=${dateStr}${targetParam}`);
+    const data = await fetchAPI(`timesheet/weekly?weekStartDate=${dateStr}${targetParam}`);
 
     const middleHeaders = Array.from(headerRow.children).slice(1, -1);
     middleHeaders.forEach((col, idx) => {
@@ -236,7 +241,19 @@ async function renderWeeklyGrid() {
         const dateString = `${englishMonths[d.getMonth()].substr(0, 3)} ${d.getDate()}`;
         const isToday = (d.toDateString() === new Date().toDateString());
         const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-        col.className = isToday ? "today-col-highlight" : (isWeekend ? "weekend-th" : "");
+        
+        let headerCls = "";
+        if (isToday) {
+            headerCls = isWeekend ? "today-col-highlight-red" : "today-col-highlight-gray";
+        } else if (isWeekend) {
+            headerCls = "weekend-th";
+        }
+        
+        const dateStrParam = d.toISOString().split('T')[0];
+        
+        col.className = headerCls;
+        col.style.cursor = "pointer";
+        col.onclick = () => jumpToDaily(dateStrParam);
         col.innerHTML = `<div class="day-title-wrap"><span class="day-short-label ${isWeekend ? 'text-brand' : ''}">${dayLabel}</span><span class="day-full-date ${isWeekend ? 'text-brand' : ''}">${dateString}</span></div>`;
     });
 
@@ -255,8 +272,15 @@ async function renderWeeklyGrid() {
         const mins = proj.dailyMinutes[dKey] || 0;
         const isToday = (d.toDateString() === new Date().toDateString());
         const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-        let cls = isToday ? 'today-cell-highlight' : (isWeekend ? 'weekend-td text-danger opacity-50' : '');
-        return `<td class="p-4 text-center ${cls}" style="cursor:pointer" onclick="${window.selectedInternId ? '' : `window.location.href='/Timesheet/Employee/Entry?date=${dKey}'`}">
+        
+        let cls = "";
+        if (isToday) {
+            cls = isWeekend ? 'today-cell-highlight-red' : 'today-cell-highlight-gray';
+        } else if (isWeekend) {
+            cls = 'weekend-td text-danger opacity-50';
+        }
+
+        return `<td class="p-4 text-center ${cls}" style="cursor:pointer" onclick="jumpToDaily('${dKey}')">
                             <span class="duration-text-large">${mins > 0 ? (Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm') : '-'}</span>
                         </td>`;
     }).join('')}
@@ -274,7 +298,7 @@ async function renderDailyGrid() {
 
     const dateStr = currentDate.toISOString().split('T')[0];
     const targetParam = window.selectedInternId ? `&targetEmployeeId=${window.selectedInternId}` : '';
-    const data = await fetchAPI(`daily?date=${dateStr}${targetParam}`);
+    const data = await fetchAPI(`timesheet/daily?date=${dateStr}${targetParam}`);
 
     if (!data || !data.entries || data.entries.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10 text-muted">No entries found for this date.</td></tr>';
@@ -294,7 +318,7 @@ async function renderDailyGrid() {
 }
 
 async function syncProfileInfo() {
-    const data = await fetchAPI('dashboard');
+    const data = await fetchAPI('timesheet/dashboard');
     if (data) {
         employeeInfo = data;
         
@@ -310,10 +334,20 @@ function toggleDatePopup(event) {
     event.stopPropagation();
     closeDatePopup();
     pickerDate = new Date(currentDate);
+
+    const trigger = event.currentTarget || event.target;
     const popover = document.getElementById('popover_' + activeView);
     const backdrop = document.getElementById('datepicker_focal_backdrop');
+
     if (popover && backdrop) {
         renderPickerLayout(popover);
+        
+        // ANCHOR BELOW THE TRIGGER (Centered for 290px width)
+        const rect = trigger.getBoundingClientRect();
+        popover.style.position = 'fixed';
+        popover.style.top = (rect.bottom + 10) + 'px';
+        popover.style.left = (rect.left + (rect.width / 2) - 145) + 'px';
+
         popover.classList.add('active');
         backdrop.classList.add('active');
     }
@@ -463,14 +497,19 @@ function selectAiaOption(option) {
     const val = option.getAttribute('data-value');
     const id = option.getAttribute('data-id');
     const lead = option.getAttribute('data-lead');
+    const leadId = option.getAttribute('data-lead-id');
 
     trigger.querySelector('.trigger-text').innerText = val;
     hiddenInput.value = val;
     if (hiddenIdInput) hiddenIdInput.value = id;
 
-    if (lead) {
-        const leadInput = option.closest('tr').querySelector('.bg-light-gray');
+    const row = option.closest('tr');
+    if (lead && row) {
+        const leadInput = row.querySelector('input[placeholder="Project Lead"]');
         if (leadInput) leadInput.value = lead;
+
+        const leadIdInput = row.querySelector('.aia-select-lead-id');
+        if (leadIdInput) leadIdInput.value = leadId || "1";
     }
 
     wrap.querySelectorAll('.aia-select-option').forEach(o => o.classList.remove('selected'));
@@ -480,47 +519,53 @@ function selectAiaOption(option) {
     trigger.classList.remove('active');
 }
 
-function addNewLogEntry() {
+function addNewLogEntry(existingData = null) {
     const tbody = document.getElementById('log_entry_tbody');
     if (!tbody) return;
+
+    const projectHtml = (window.projectsList || []).map(p => 
+        `<div class="aia-select-option ${existingData && existingData.projectId == p.id ? 'selected' : ''}" 
+              data-id="${p.id}" data-value="${p.name}" data-lead="${p.projectLeadName}" data-lead-id="${p.projectLeadId}" 
+              onclick="selectAiaOption(this)">${p.name}</div>`
+    ).join('');
+
     const row = document.createElement('tr');
     row.className = "align-middle";
     row.innerHTML = `
         <td class="p-4 position-relative">
             <div class="d-flex align-items-center justify-content-center gap-2">
-                <input type="text" class="entry-input text-center duration-trigger" value="00h 00m" style="width:100px; cursor:pointer" readonly onclick="toggleDurationPicker(this, event)">
+                <input type="text" class="entry-input text-center duration-trigger" value="${existingData ? existingData.durationFormatted : '00h 00m'}" style="width:100px; cursor:pointer" readonly onclick="toggleDurationPicker(this, event)">
             </div>
             <div class="duration-picker-popover shadow-lg">
                 <div class="duration-columns">
-                    <div class="duration-col"><span class="duration-col-label">HH</span><div class="duration-items-scroll">${Array.from({ length: 24 }, (_, i) => `<div class="duration-item ${i === 0 ? 'selected' : ''}" onclick="selectHH(this, ${i})">${i.toString().padStart(2, '0')}</div>`).join('')}</div></div>
-                    <div class="duration-col"><span class="duration-col-label">MM</span><div class="duration-items-scroll">${Array.from({ length: 12 }, (_, i) => `<div class="duration-item ${i === 0 ? 'selected' : ''}" onclick="selectMM(this, ${i * 5})">${(i * 5).toString().padStart(2, '0')}</div>`).join('')}</div></div>
+                    <div class="duration-col"><span class="duration-col-label">HH</span><div class="duration-items-scroll">${Array.from({ length: 24 }, (_, i) => `<div class="duration-item" onclick="selectHH(this, ${i})">${i.toString().padStart(2, '0')}</div>`).join('')}</div></div>
+                    <div class="duration-col"><span class="duration-col-label">MM</span><div class="duration-items-scroll">${Array.from({ length: 12 }, (_, i) => `<div class="duration-item" onclick="selectMM(this, ${i * 5})">${(i * 5).toString().padStart(2, '0')}</div>`).join('')}</div></div>
                 </div>
             </div>
         </td>
         <td class="p-4">
             <div class="aia-custom-select-wrap">
-                <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)"><span class="trigger-text">Select Project</span><i class="bi bi-chevron-down"></i></div>
+                <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)"><span class="trigger-text">${existingData ? existingData.projectName : 'Select Project'}</span><i class="bi bi-chevron-down"></i></div>
                 <div class="aia-select-popover">
-                    <div class="aia-select-option" data-id="1" data-value="Insurable Interest" data-lead="Novia" onclick="selectAiaOption(this)">Insurable Interest</div>
-                    <div class="aia-select-option" data-id="2" data-value="Click Revamp" data-lead="Hansen" onclick="selectAiaOption(this)">Click Revamp</div>
-                    <div class="aia-select-option" data-id="3" data-value="iRecruit" data-lead="Hansen" onclick="selectAiaOption(this)">iRecruit 3.0</div>
+                    ${projectHtml || '<div class="p-4 text-muted small">No projects found</div>'}
                 </div>
-                <input type="hidden" class="aia-select-value" value="">
-                <input type="hidden" class="aia-select-id" value="">
+                <input type="hidden" class="aia-select-value" value="${existingData ? existingData.projectName : ''}">
+                <input type="hidden" class="aia-select-id" value="${existingData ? existingData.projectId : ''}">
+                <input type="hidden" class="aia-select-lead-id" value="${existingData ? existingData.projectLeadId : ''}">
             </div>
         </td>
-        <td class="p-4"><input type="text" class="entry-input" placeholder="App Used"></td>
-        <td class="p-4"><textarea class="entry-input" style="height:48px; min-height:48px" placeholder="Describe what you do...."></textarea></td>
-        <td class="p-4"><input type="text" class="entry-input bg-light-gray" placeholder="Project Lead" readonly></td>
+        <td class="p-4"><input type="text" class="entry-input" placeholder="App Used" value="${existingData ? existingData.applicationUsed : ''}"></td>
+        <td class="p-4"><textarea class="entry-input" style="height:48px; min-height:48px" placeholder="Describe what you do....">${existingData ? existingData.taskDescription : ''}</textarea></td>
+        <td class="p-4"><input type="text" class="entry-input bg-light-gray" placeholder="Project Lead" value="${existingData ? existingData.projectLeadName : ''}" readonly></td>
         <td class="p-4">
             <div class="aia-custom-select-wrap">
-                <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)"><span class="trigger-text">Location</span><i class="bi bi-chevron-down"></i></div>
+                <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)"><span class="trigger-text">${existingData ? (existingData.location === 1 ? 'WFH' : 'AIA Central') : 'Location'}</span><i class="bi bi-chevron-down"></i></div>
                 <div class="aia-select-popover">
-                    <div class="aia-select-option" data-id="0" data-value="AIA Central" onclick="selectAiaOption(this)">AIA Central (Office)</div>
-                    <div class="aia-select-option" data-id="1" data-value="WFH" onclick="selectAiaOption(this)">WFH</div>
+                    <div class="aia-select-option ${existingData && existingData.location === 0 ? 'selected' : ''}" data-id="0" data-value="AIA Central" onclick="selectAiaOption(this)">AIA Central (Office)</div>
+                    <div class="aia-select-option ${existingData && existingData.location === 1 ? 'selected' : ''}" data-id="1" data-value="WFH" onclick="selectAiaOption(this)">WFH</div>
                 </div>
-                <input type="hidden" class="aia-select-value" value="">
-                <input type="hidden" class="aia-select-id" value="">
+                <input type="hidden" class="aia-select-value" value="${existingData ? (existingData.location === 1 ? 'WFH' : 'AIA Central') : ''}">
+                <input type="hidden" class="aia-select-id" value="${existingData ? existingData.location : ''}">
             </div>
         </td>
         <td class="p-4 text-center">
@@ -559,29 +604,41 @@ document.addEventListener('click', (e) => {
     }
 });
 
-function initEntryPage() {
+async function initEntryPage() {
     const label = document.getElementById('entry_date_label');
     if (!label) return;
 
     const urlParams = new URLSearchParams(window.location.search);
-    const dateStr = urlParams.get('date');
-    let targetDate = new Date();
+    let dateStr = urlParams.get('date');
+    if (!dateStr) dateStr = new Date().toISOString().split('T')[0];
 
-    // Check if valid date passed in URL (YYYY-MM-DD or similar)
-    if (dateStr && dateStr.length >= 8) {
-        const d = new Date(dateStr);
-        if (!isNaN(d.getTime())) {
-            targetDate = d;
-        }
-    }
-
-    // FORMAL CORPORATE LABELS
+    const targetDate = new Date(dateStr);
     const englishDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     label.innerText = `${englishDays[targetDate.getDay()]}, ${targetDate.getDate()} ${englishMonths[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
 
-    // SYNC NAMES DYNAMICALLY
+    // 1. Fetch Projects & Existing Entries
+    app.loading.show('Preparing Entry Table...');
+    const [projectData, dailyData] = await Promise.all([
+        fetchAPI('timesheet/projects'),
+        fetchAPI(`timesheet/daily?date=${dateStr}`)
+    ]);
+    
+    if (projectData) window.projectsList = projectData;
+
+    const tbody = document.getElementById('log_entry_tbody');
+    if (tbody) {
+        tbody.innerHTML = '';
+        if (dailyData && dailyData.entries && dailyData.entries.length > 0) {
+            dailyData.entries.forEach(entry => addNewLogEntry(entry));
+        } else {
+            // Default row if none exists
+            addNewLogEntry();
+        }
+    }
+
+    app.loading.hide();
     syncProfileInfo();
     calculateTotalLogHours();
 }
@@ -593,51 +650,114 @@ function initEntryPage() {
  * Moves "basic" checks to frontend to prevent "lemot" performance.
  * Keeps "complex" checks for the backend.
  */
+function toggleDayType(radio) {
+    const tableWrap = document.querySelector('.entry-table-wrap');
+    const addBtn = document.getElementById('add_entry_btn');
+    const type = radio.value;
+
+    // Only Public Holiday blocks the entire table
+    if (type === 'holiday') {
+        tableWrap.classList.add('not-working');
+        if (addBtn) addBtn.style.display = 'none';
+    } else {
+        tableWrap.classList.remove('not-working');
+        if (addBtn) addBtn.style.display = 'inline-flex';
+        
+        // If leave, we can add a visual hint but keep it editable
+        if (type === 'leave') {
+            tableWrap.classList.add('on-leave');
+        } else {
+            tableWrap.classList.remove('on-leave');
+        }
+    }
+}
+
+async function fetchAPI(endpoint, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30s timeout
+
+    try {
+        const token = localStorage.getItem('aia_jwt_token');
+        const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+            ...options,
+            signal: controller.signal,
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : '',
+                ...options.headers
+            }
+        });
+        clearTimeout(timeoutId);
+
+        if (response.status === 401) {
+            localStorage.removeItem('aia_jwt_token');
+            window.location.href = '/Account/Login';
+            return null;
+        }
+
+        const result = await response.json();
+        
+        if (!response.ok || (result && result.isError)) {
+            const errorMsg = result.statusMessage || result.message || 'Access Denied: Please contact your administrator.';
+            showToast(errorMsg, 'error');
+            return null;
+        }
+
+        return result.content || result.data || result;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('API Error:', error);
+        if (error.name === 'AbortError') {
+            showToast('Request timed out after 30 seconds. Please check your connection or server status.', 'error');
+        } else {
+            showToast('Network error or server is unreachable.', 'error');
+        }
+        return null;
+    }
+}
+
 async function saveDailyTimesheet() {
+    app.loading.show('Saving Daily Entry...');
+    
     const urlParams = new URLSearchParams(window.location.search);
     let dateStr = urlParams.get('date');
     if (!dateStr) {
         dateStr = new Date().toISOString().split('T')[0];
     }
 
-    // 1. Basic Validation: Future Date
-    const today = new Date();
-    today.setHours(today.getHours() + 7); // WIB Adjustment
-    const entryDate = new Date(dateStr);
-    
-    if (entryDate > today) {
-        showToast(`You cannot fill timesheet for a future date (${dateStr}).`, 'error');
-        return;
-    }
-
-    // 2. Gather Data from DOM
     const rows = document.querySelectorAll('#log_entry_tbody tr');
-    const entries = [];
+    let entries = [];
     let totalMinutes = 0;
 
     for (const row of rows) {
         const durationStr = row.querySelector('.duration-trigger')?.value || "00h 00m";
-        const projectIdRaw = row.querySelector('.aia-select-id')?.value || "0";
+        const projectIdRaw = row.querySelector('.aia-select-id')?.value;
         const appUsed = row.querySelector('input[placeholder="App Used"]')?.value || "";
         const taskDescription = row.querySelector('textarea')?.value || "";
-        const projectLead = row.querySelector('input[placeholder="Project Lead"]')?.value || "";
-        const locationIdRaw = row.querySelectorAll('.aia-select-id')[1]?.value || "0";
+        const projectLeadIdRaw = row.querySelector('.aia-select-lead-id')?.value || "1";
+        
+        // Find the second custom select (Location)
+        const selects = row.querySelectorAll('.aia-custom-select-wrap');
+        const locationIdRaw = selects.length > 1 ? selects[1].querySelector('.aia-select-id')?.value || "0" : "0";
 
-        // Basic Validation: Empty Fields
+        // Basic Validation
         if (durationStr === "00h 00m") {
-            showToast("Work duration cannot be 00h 00m. Please enter valid duration.", 'error');
+            app.loading.hide();
+            showToast("Work duration cannot be 00h 00m.", 'error');
             return;
         }
-        if (projectIdRaw === "0" || !projectIdRaw) {
+        if (!projectIdRaw || projectIdRaw === "0") {
+            app.loading.hide();
             showToast("Please select a project for all entries.", 'error');
             return;
         }
         if (!taskDescription.trim()) {
+            app.loading.hide();
             showToast("Task description cannot be empty.", 'error');
             return;
         }
 
-        // Parse duration
         const match = durationStr.match(/(\d+)h\s+(\d+)m/);
         const mins = match ? (parseInt(match[1]) * 60 + parseInt(match[2])) : 0;
         totalMinutes += mins;
@@ -647,33 +767,32 @@ async function saveDailyTimesheet() {
             projectId: parseInt(projectIdRaw),
             applicationUsed: appUsed,
             taskDescription: taskDescription,
-            projectLeadId: 0, // Placeholder
+            projectLeadId: parseInt(projectLeadIdRaw),
             location: parseInt(locationIdRaw)
         });
     }
 
-    // 3. Basic Validation: Total Hours
-    if (totalMinutes > 1440) { // 24 hours
+    if (totalMinutes > 1440) {
+        app.loading.hide();
         showToast("Total daily duration cannot exceed 24 hours.", 'error');
         return;
     }
 
     if (entries.length === 0) {
+        app.loading.hide();
         showToast("At least one entry is required to save.", 'error');
         return;
     }
 
-    // 4. API Call
-    app.loading.show('Saving Timesheet...');
-    const result = await fetchAPI('entry', {
+    const result = await fetchAPI('timesheet/entry', {
         method: 'POST',
         body: JSON.stringify({
             date: dateStr,
             entries: entries
         })
     });
-    app.loading.hide();
 
+    app.loading.hide();
     if (result) {
         Swal.fire({
             title: 'Success!',
@@ -709,7 +828,7 @@ async function submitTimesheetApproval() {
 
     // 2. API Call (Complex validations like missing days are handled in Backend)
     app.loading.show('Submitting Timesheet...');
-    const result = await fetchAPI('submit', {
+    const result = await fetchAPI('timesheet/submit', {
         method: 'POST',
         body: JSON.stringify({
             year: y,
@@ -739,7 +858,7 @@ async function submitTimesheetApproval() {
 
 async function initDashboard() {
     try {
-        const data = await fetchAPI('dashboard');
+        const data = await fetchAPI('timesheet/dashboard');
         if (!data) return;
 
         const h = new Date().getHours();
@@ -766,8 +885,8 @@ async function initDashboard() {
             if (cms) {
                 document.getElementById('active_period').innerText = `${cms.monthName} ${cms.year}`;
                 
-                const deadlineHeader = document.getElementById('header_deadline_text');
-                if (deadlineHeader) deadlineHeader.innerText = `${cms.daysRemaining} Days Left`;
+                const activeDeadline = document.getElementById('active_deadline');
+                if (activeDeadline) activeDeadline.innerText = `${cms.daysRemaining} Days Remaining`;
 
                 // Map API status string to design badge
                 const s = (cms.status || 'Not Submitted').toLowerCase();
@@ -1028,15 +1147,7 @@ async function confirmNewTask() {
         if (modal) modal.hide();
         
         taskNameInput.value = ""; // Reset input
-        
-        Swal.fire({
-            title: 'Success!',
-            text: 'New task focus has been successfully added.',
-            icon: 'success',
-            confirmButtonColor: '#D31145'
-        }).then(() => {
-            initDashboard(); // Refresh tasks without page reload
-        });
+        initDashboard(); // Refresh tasks without page reload
     }
     if (confirmBtn) confirmBtn.disabled = false;
 }
@@ -1050,3 +1161,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('welcome_text')) initDashboard();
     }, 50);
 });
+
+function showReviewModal() {
+    const periodLabel = document.getElementById('review_period_label');
+    if (periodLabel) {
+        const m = englishMonths[currentDate.getMonth()];
+        periodLabel.innerText = `${m} ${currentDate.getFullYear()}`;
+    }
+    const modalEl = document.getElementById('modal_review_submit');
+    if (modalEl) {
+        let modal = bootstrap.Modal.getInstance(modalEl);
+        if (!modal) modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+}
+
+async function submitTimesheetApproval() {
+    const check = document.getElementById('certify_check');
+    if (!check) return;
+    
+    if (!check.checked) {
+        Swal.fire({
+            title: 'Certification Required',
+            text: 'Please check the box to certify that your logs are accurate.',
+            icon: 'warning',
+            confirmButtonColor: '#D31145'
+        });
+        return;
+    }
+
+    const payload = {
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth() + 1
+    };
+
+    const res = await fetchAPI('timesheet/submit', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+
+    if (res) {
+        const modalEl = document.getElementById('modal_review_submit');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        Swal.fire({
+            title: 'Successfully Submitted!',
+            text: 'Your work logs have been sent to your supervisor for review.',
+            icon: 'success',
+            confirmButtonColor: '#D31145'
+        }).then(() => {
+            window.location.reload();
+        });
+    }
+}

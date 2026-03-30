@@ -1,27 +1,27 @@
 @page "/Timesheet/Employee/Management"
 @model HRManagement.Web.Pages.Modules.Timesheet.ManagementModel
 @{
-    ViewData["Title"] = "Timesheet Management";
+    ViewData["Title"] = "Timesheet Daily Log";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full bg-white">
+<div class="d-flex flex-column flex-column-fluid app-container-full bg-white">
     <div id="kt_app_content" class="app-content flex-column-fluid">
         <div id="kt_app_content_container" class="app-container container-fluid">
             
             @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
-                Title = "Timesheet Management",
+                Title = "Timesheet Daily Log",
                 Subtitle = "Monitor and manage your monthly work logs with ease",
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
-                    new BreadcrumbItem { Title = "Management" }
+                    new BreadcrumbItem { Title = "Daily Log" }
                 }
             })
             <!-- PERFECT BASELINE CONTAINER (v8.1) -->
-            <div class="px-4 py-5">
+            <div class="px-0 py-5">
                 
                 <!-- UNIFIED TOOLBAR NAV (1-Line Layout Match with Supervisor) -->
                 <!-- UNIFIED TOOLBAR NAV (SLIDER FORMAT) -->
@@ -53,7 +53,7 @@
                     <div class="btn-group-actions d-flex align-items-center gap-3">
                         <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
                         <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" onclick="window.location.href='/Timesheet/Employee/Review?year=' + currentDate.getFullYear() + '&month=' + (currentDate.getMonth() + 1)"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
+                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" onclick="showReviewModal()"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
                     </div>
                 </div>
 
@@ -126,36 +126,27 @@
                     </div>
 
                     <div id="view_daily" class="timesheet-view d-none">
-                        @if (Model.DailyLogCount == 0) {
-                            <div class="card shadow-sm border-0 py-12 px-8" style="background: rgba(211, 17, 69, 0.03); border-radius: 12px; border: 1px dashed rgba(211, 17, 69, 0.2) !important;">
-                                <div class="text-center">
-                                    <div class="mb-4"><i class="bi bi-exclamation-triangle-fill text-brand fs-3x"></i></div>
-                                    <h3 class="fw-bolder text-gray-800 mb-2">Daily Activities Not Found</h3>
-                                    <p class="text-gray-600 fw-bold fs-6 mx-auto" style="max-width: 450px;">@Model.DailyLogErrorMessage</p>
-                                    <div class="mt-6">
-                                        <a href="/Timesheet/Employee/Entry" class="btn btn-sm btn-brand fw-boldest px-8" style="border-radius: 8px;"><i class="bi bi-plus-lg me-2"></i> Record New Activity</a>
-                                    </div>
-                                </div>
-                            </div>
-                        } else {
-                            <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-                                <table class="daily-master-table w-100">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 15%">Duration</th>
-                                            <th style="width: 20%">Project</th>
-                                            <th style="width: 15%">Apps Used</th>
-                                            <th>Task Description</th>
-                                            <th style="width: 15%">Project Lead</th>
-                                            <th style="width: 15%">Location</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="daily_log_tbody">
-                                        <!-- Populated dynamically by JS if count > 0 -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <table class="daily-master-table w-100">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%">Duration</th>
+                                        <th style="width: 20%">Project</th>
+                                        <th style="width: 15%">Apps Used</th>
+                                        <th>Task Description</th>
+                                        <th style="width: 15%">Project Lead</th>
+                                        <th style="width: 15%">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view_daily_tbody">
+                                    <tr class="align-middle">
+                                        <td colspan="6" class="text-center p-20">
+                                            <div class="spinner-border text-danger" role="status"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 

@@ -154,6 +154,20 @@
         .proj-bar-inner { height: 100%; border-radius: 10px; }
 
         /* BUTTONS */
+        .btn-brand-sm, .btn-standard-sm { 
+            height: 48px !important; 
+            padding: 0 28px !important; 
+            font-size: 0.9rem !important; 
+            border-radius: 12px !important; 
+            font-weight: 850 !important;
+            transition: all 0.2s;
+        }
+
+        .btn-brand-sm:hover, .btn-standard-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
         .btn-dashboard-row { padding: 0 24px !important; height: 44px !important; font-size: 0.8rem !important; }
     </style>
 }
@@ -192,21 +206,12 @@
             @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
                 Title = "...",
                 Subtitle = "Monitor your daily tasks and monthly timesheet progress",
+                Id = "page_title_text",
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
                     new BreadcrumbItem { Title = "Dashboard" }
                 },
-                RenderActions = Html.Raw(@"
-                    <div class='d-flex align-items-center gap-4'>
-                        <div class='bg-white px-4 py-2 rounded-3 border shadow-sm d-flex align-items-center gap-3'>
-                            <i class='bi bi-clock-history text-brand fs-4'></i>
-                            <div class='d-flex flex-column'>
-                                <span class='text-muted fw-bold' style='font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px'>Submission Deadline</span>
-                                <span class='fw-bolder' id='header_deadline_text' style='font-size:0.9rem'>Loading...</span>
-                            </div>
-                        </div>
-                        <a href='/Timesheet/Employee/Entry' class='btn-brand fw-boldest px-6 py-3'><i class='bi bi-plus-lg me-2'></i> New Entry</a>
-                    </div>")
+                RenderActions = Html.Raw("<a href='/Timesheet/Employee/Entry' class='btn-brand fw-boldest px-6 py-3 shadow-sm'><i class='bi bi-plus-lg me-2'></i> New Entry</a>")
             })
 
             <!-- SUBMISSION STATUS -->
@@ -217,9 +222,13 @@
                 </div>
                 <div class="status-body">
                     <div class="row align-items-center">
-                        <div class="col-md-3 border-start ps-10">
+                        <div class="col-md-3">
                             <span class="data-label-small">Reporting Month</span>
                             <span class="data-value-main" id="active_period">...</span>
+                        </div>
+                        <div class="col-md-3 border-start ps-10">
+                            <span class="data-label-small">Deadline</span>
+                            <span class="data-value-main text-brand-red" id="active_deadline">...</span>
                         </div>
                         <div class="col-md-6 d-flex justify-content-end gap-3 px-0">
                             @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "ghost", Title = "View Timesheet", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })

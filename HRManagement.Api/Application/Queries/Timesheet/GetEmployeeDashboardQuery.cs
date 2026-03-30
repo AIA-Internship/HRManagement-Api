@@ -42,11 +42,11 @@ public class GetEmployeeDashboardQuery : IRequest<ApiResponse<DashboardResponseD
             var submissionStatus = MapSubmissionStatus(submission, year, month, daysUntilDeadline);
 
             var projectSummary = monthlyEntries
-                .GroupBy(e => new { e.ProjectId, e.Project.Name })
+                .GroupBy(e => new { e.ProjectId, ProjectName = e.Project?.Name ?? "Unknown Project" })
                 .Select(g => new ProjectSummaryDto
                 {
                     ProjectId = g.Key.ProjectId,
-                    ProjectName = g.Key.Name,
+                    ProjectName = g.Key.ProjectName,
                     TotalLoggedMinutes = g.Sum(e => e.DurationMinutes),
                     TotalLoggedFormatted = FormatMinutes(g.Sum(e => e.DurationMinutes))
                 })

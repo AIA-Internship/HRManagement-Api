@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:7089/api/timesheet';
+const API_BASE_URL = 'https://127.0.0.1:7089/api';
 const token = localStorage.getItem('aia_jwt_token');
 
 let currentDate = new Date();
@@ -52,7 +52,7 @@ async function loadInterns() {
     if (!dropdown || !supervisorLabel) return;
     
     // Attempt loading intern list from dashboard
-    const data = await fetchAPI('supervisor/dashboard');
+    const data = await fetchAPI('timesheet/supervisor/dashboard');
     if (data && data.internHoursBreakdown && Array.isArray(data.internHoursBreakdown)) {
         internsList = data.internHoursBreakdown;
         supervisorLabel.innerText = data.supervisorName || '---';
@@ -176,7 +176,7 @@ async function renderMonthlyGrid() {
     container.innerHTML = `<div class="w-100 text-center p-10"><span class="spinner-border spinner-border-sm me-2 text-aia"></span>Reading logs...</div>`;
 
     const y = currentDate.getFullYear(), m = currentDate.getMonth();
-    const data = await fetchAPI(`monthly?year=${y}&month=${m + 1}&targetEmployeeId=${selectedInternId}`);
+    const data = await fetchAPI(`timesheet/monthly?year=${y}&month=${m + 1}&targetEmployeeId=${selectedInternId}`);
 
     container.innerHTML = "";
     const firstDay = new Date(y, m, 1).getDay();
@@ -205,7 +205,7 @@ async function renderWeeklyGrid() {
     if (!headerRow || !tableBody) return;
 
     const dateStr = currentDate.toISOString().split('T')[0];
-    const data = await fetchAPI(`weekly?weekStartDate=${dateStr}&targetEmployeeId=${selectedInternId}`);
+    const data = await fetchAPI(`timesheet/weekly?weekStartDate=${dateStr}&targetEmployeeId=${selectedInternId}`);
 
     const middleHeaders = Array.from(headerRow.children).slice(1, -1);
     middleHeaders.forEach((col, idx) => {
@@ -245,7 +245,7 @@ async function renderDailyGrid() {
     tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10">Searching activities...</td></tr>';
 
     const dateStr = currentDate.toISOString().split('T')[0];
-    const data = await fetchAPI(`daily?date=${dateStr}&targetEmployeeId=${selectedInternId}`);
+    const data = await fetchAPI(`timesheet/daily?date=${dateStr}&targetEmployeeId=${selectedInternId}`);
 
     if (!data || !data.entries || data.entries.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10 text-muted">No entries found for this specific date.</td></tr>';

@@ -125,15 +125,14 @@
         .export-btn:hover { color: var(--brand-red); transform: translateY(-1px); }
         .export-btn.disabled { color: #D9DCE3; cursor: not-allowed; pointer-events: none; }
 
-        /* ── EMPTY STATE (in tbody) ── */
+        /* ── EMPTY STATE ── */
         .empty-state-cell {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 70px 40px; text-align: center;
+            padding: 120px 40px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .empty-state-icon  { font-size: 5rem !important; color: #E1E3EA; margin-bottom: 16px; }
-        .empty-state-icon i { font-size: 5rem !important; }
-        .empty-state-title { font-size: 1.1rem; font-weight: 850; color: #181C32; margin-bottom: 6px; }
-        .empty-state-desc  { font-size: 0.875rem; color: #7E8299; font-weight: 600; max-width: 340px; }
+        .empty-state-icon  { font-size: 5rem !important; color: #E1E3EA; margin-bottom: 24px; }
+        .empty-state-title { font-size: 1.25rem; font-weight: 850; color: #181C32; margin-bottom: 10px; }
+        .empty-state-desc  { font-size: 1rem; color: #7E8299; font-weight: 600; max-width: 420px; line-height: 1.6; }
     </style>
 }
 
@@ -168,14 +167,26 @@
             <div class="history-card shadow-sm">
                 <div class="history-header d-flex justify-content-between align-items-center mb-10 p-6">
                     <div class="d-flex align-items-center gap-10">
+                        <!-- From Period (Branded) -->
                         <div class="d-flex flex-column gap-2">
-                            <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">From Period</span>
-                            <input type="month" id="filter_from" class="form-control form-control-solid fw-boldest h-45px" style="width:160px; border-radius:10px" />
+                             <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">From Period</span>
+                             <div class="position-relative" style="width:160px;">
+                                 <input type="text" id="filter_from_label" class="form-control form-control-solid fw-boldest h-45px" value="---" style="border-radius:10px; cursor:pointer;" readonly onclick="openMonthPicker('from', event)" />
+                                 <input type="hidden" id="filter_from" />
+                                 <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-4 text-muted pointer-events-none"></i>
+                             </div>
                         </div>
+
+                        <!-- To Period (Branded) -->
                         <div class="d-flex flex-column gap-2">
-                            <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">To Period</span>
-                            <input type="month" id="filter_to" class="form-control form-control-solid fw-boldest h-45px" style="width:160px; border-radius:10px" />
+                             <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">To Period</span>
+                             <div class="position-relative" style="width:160px;">
+                                 <input type="text" id="filter_to_label" class="form-control form-control-solid fw-boldest h-45px" value="---" style="border-radius:10px; cursor:pointer;" readonly onclick="openMonthPicker('to', event)" />
+                                 <input type="hidden" id="filter_to" />
+                                 <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-4 text-muted pointer-events-none"></i>
+                             </div>
                         </div>
+
                         <div class="d-flex align-items-end gap-3 mt-6">
                             <button class="btn btn-brand fw-boldest px-8 h-45px" onclick="applyPeriodFilter()" style="border-radius:10px">Search</button>
                             <button class="btn btn-light fw-boldest px-8 h-45px" onclick="resetReportFilters()" style="border-radius:10px">Reset</button>
@@ -209,6 +220,21 @@
             </div>
 
         </div>
+    </div>
+</div>
+
+<!-- FLOATING MONTH PICKER (GLOBAL STYLE) -->
+<div id="datepicker_focal_backdrop" onclick="closeMonthPicker()"></div>
+<div id="report_month_picker" class="datepicker-popover shadow-lg" style="width: 250px; display:none; position:fixed; z-index:2100;">
+    <div class="datepicker-header">
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="movePickerYear(-1)"><i class="bi bi-chevron-left"></i></button>
+        <div class="title" id="report_picker_year">2026</div>
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="movePickerYear(1)"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="datepicker-grid-3">
+        @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+            <div class="datepicker-month-cell" onclick="selectMonthReport('@m')">@m</div>
+        }
     </div>
 </div>
 
@@ -302,9 +328,9 @@
             if (!data || data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" style="padding:0;border:0">
+                        <td colspan="5" style="padding:0;border:0">
                             <div class="empty-state-cell">
-                                <div class="empty-state-icon"><i class="bi bi-file-earmark-text"></i></div>
+                                <i class="bi bi-file-earmark-text empty-state-icon"></i>
                                 <h3 class="empty-state-title">No Submissions Found</h3>
                                 <p class="empty-state-desc">You haven't submitted any timesheets yet. Once you submit your first approval, your history will appear here.</p>
                             </div>
@@ -367,8 +393,64 @@
         function resetReportFilters() {
             document.getElementById('filter_from').value = '';
             document.getElementById('filter_to').value = '';
+            document.getElementById('filter_from_label').value = '---';
+            document.getElementById('filter_to_label').value = '---';
             document.querySelector('.form-select-solid').value = 'All';
             renderHistoryTable(allHistoryData);
+        }
+
+        // ── BRANDED MONTH PICKER LOGIC ───────────────────────────────────────
+        let activePickerSide = 'from';
+        let pickerYear = new Date().getFullYear();
+
+        function openMonthPicker(side, e) {
+            e.stopPropagation();
+            activePickerSide = side;
+            const popover = document.getElementById('report_month_picker');
+            const backdrop = document.getElementById('datepicker_focal_backdrop');
+            const rect = e.target.getBoundingClientRect();
+            
+            // Fixed position means we use viewport coordinates, NOT document coordinates
+            popover.style.top = (rect.bottom + 5) + 'px';
+            popover.style.left = rect.left + 'px';
+            popover.style.display = 'block';
+            backdrop.style.display = 'block';
+
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
+            
+            updatePickerYearDisplay();
+        }
+
+        function closeMonthPicker() {
+            document.getElementById('report_month_picker').style.display = 'none';
+            document.getElementById('datepicker_focal_backdrop').style.display = 'none';
+            
+            // Unlock body scroll
+            document.body.style.overflow = '';
+        }
+
+        function movePickerYear(offset) {
+            pickerYear += offset;
+            updatePickerYearDisplay();
+        }
+
+        function updatePickerYearDisplay() {
+            document.getElementById('report_picker_year').innerText = pickerYear;
+        }
+
+        function selectMonthReport(mShort) {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const mIdx = months.indexOf(mShort) + 1;
+            const yyyymm = `${pickerYear}-${mIdx.toString().padStart(2, '0')}`;
+            
+            const targetInput = document.getElementById(`filter_${activePickerSide}`);
+            const targetLabel = document.getElementById(`filter_${activePickerSide}_label`);
+            
+            targetInput.value = yyyymm;
+            targetLabel.value = `${mShort} ${pickerYear}`;
+            
+            closeMonthPicker();
         }
         
         function downloadApprovedTimesheet(id) {

@@ -8,19 +8,39 @@
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full bg-white">
+<div class="d-flex flex-column flex-column-fluid app-container-full bg-white">
     <div id="kt_app_content" class="app-content flex-column-fluid">
         <div id="kt_app_content_container" class="app-container container-fluid">
             
             @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
                 Title = "Timesheet Daily Entry",
-                Subtitle = Html.Raw("Work activities for <span id='entry_date_label' class='fw-boldest text-brand'>...</span>").ToString(),
+                Subtitle = "Work activities for <span id='entry_date_label' class='fw-boldest text-brand'>...</span>",
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
-                    new BreadcrumbItem { Title = "Management", Url = "/Timesheet/Employee/Management" },
+                    new BreadcrumbItem { Title = "Daily Log", Url = "/Timesheet/Employee/Dashboard" },
                     new BreadcrumbItem { Title = "Entry" }
                 },
-                RenderActions = Html.Raw("<button class='btn btn-outline btn-outline-dashed btn-outline-brand btn-active-light-brand fw-boldest px-6' onclick='toggleDatePopup(event)'><i class='bi bi-calendar-check me-2'></i> Change Date</button>")
+                RenderActions = Html.Raw(@"
+                    <div class='day-type-group header-integrated shadow-sm'>
+                        <input type='radio' name='day_type' id='day_working' value='working' checked onchange='toggleDayType(this)'>
+                        <label for='day_working' class='day-type-btn'>
+                            <i class='bi bi-briefcase-fill'></i>
+                            <span>Working</span>
+                        </label>
+
+                        <input type='radio' name='day_type' id='day_holiday' value='holiday' onchange='toggleDayType(this)'>
+                        <label for='day_holiday' class='day-type-btn holiday'>
+                            <i class='bi bi-balloon-heart-fill'></i>
+                            <span>Holiday</span>
+                        </label>
+
+                        <input type='radio' name='day_type' id='day_leave' value='leave' onchange='toggleDayType(this)'>
+                        <label for='day_leave' class='day-type-btn leave'>
+                            <i class='bi bi-door-open-fill'></i>
+                            <span>Leave</span>
+                        </label>
+                    </div>
+                ")
             })
 
             <!-- SHARED INFO BAR (INTERN & SUPERVISOR) -->
@@ -86,12 +106,13 @@
                                         <i class="bi bi-chevron-down"></i>
                                     </div>
                                     <div class="aia-select-popover">
-                                        <div class="aia-select-option" data-id="1" data-value="Insurable Interest" data-lead="Novia" onclick="selectAiaOption(this)">Insurable Interest</div>
-                                        <div class="aia-select-option" data-id="2" data-value="Click Revamp" data-lead="Hansen" onclick="selectAiaOption(this)">Click Revamp</div>
-                                        <div class="aia-select-option" data-id="3" data-value="iRecruit" data-lead="Hansen" onclick="selectAiaOption(this)">iRecruit 3.0</div>
+                                        <div class="aia-select-option" data-id="1" data-value="Insurable Interest" data-lead="Novia" data-lead-id="1" onclick="selectAiaOption(this)">Insurable Interest</div>
+                                        <div class="aia-select-option" data-id="2" data-value="Click Revamp" data-lead="Hansen" data-lead-id="1" onclick="selectAiaOption(this)">Click Revamp</div>
+                                        <div class="aia-select-option" data-id="3" data-value="iRecruit" data-lead="Hansen" data-lead-id="1" onclick="selectAiaOption(this)">iRecruit 3.0</div>
                                     </div>
                                     <input type="hidden" class="aia-select-value" value="">
                                     <input type="hidden" class="aia-select-id" value="">
+                                    <input type="hidden" class="aia-select-lead-id" value="">
                                 </div>
                             </td>
                             <td class="p-4"><input type="text" class="entry-input" placeholder="App Used"></td>

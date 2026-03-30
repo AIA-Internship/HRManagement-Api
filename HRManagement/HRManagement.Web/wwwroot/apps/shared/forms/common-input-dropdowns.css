@@ -1,4 +1,8 @@
 /* AIA CUSTOM DROPDOWN & FORM SYSTEM (V17.1) */
+:root {
+    --aia-red: var(--brand-red, #D31145);
+    --aia-red-light: #FFF5F8;
+}
 
 .aia-custom-select-wrap { 
     position: relative; 
@@ -35,11 +39,11 @@
 }
 
 .aia-select-option:hover { 
-    background: var(--aia-red); 
+    background: var(--aia-red) !important; 
     color: #FFF !important; 
 }
 
 .aia-select-option.selected { 
-    background: #FFF5F8; 
+    background: var(--aia-red-light); 
     color: var(--aia-red); 
 }

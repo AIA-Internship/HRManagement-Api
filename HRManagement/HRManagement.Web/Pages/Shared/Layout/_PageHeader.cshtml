@@ -31,10 +31,10 @@
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-5">
         <div class="d-flex flex-column">
-            <h1 id="page_title_text" class="aia-page-title">@Model.Title</h1>
+            <h1 id="@(string.IsNullOrEmpty(Model.Id) ? "page_title_header" : Model.Id)" class="aia-page-title">@Model.Title</h1>
             @if (!string.IsNullOrEmpty(Model.Subtitle))
             {
-                <div class="aia-page-subtitle">@Model.Subtitle</div>
+                <div class="aia-page-subtitle">@Html.Raw(Model.Subtitle)</div>
             }
         </div>
 
