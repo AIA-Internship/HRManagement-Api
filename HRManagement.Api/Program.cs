@@ -14,13 +14,10 @@ using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Seeder;
 using Microsoft.OpenApi;
-
-// 1. ADD SCALAR USING
 using Scalar.AspNetCore; 
 
 var builder = WebApplication.CreateBuilder(args);
 var apiName = "Mini Project HR Management API";
-
 // ==========================================
 // 1. Config Setup
 // ==========================================
