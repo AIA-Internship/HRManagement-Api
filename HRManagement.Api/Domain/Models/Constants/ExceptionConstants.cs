@@ -13,5 +13,7 @@
         public const string UserNotFound = "User not found";
         public const string NotAuthorized = "Invalid email or password";
         public const string Conflict = "You cannot approve your own request.";
+        public const string ForbiddenUpload = "You are not authorized to upload files to another employee's profile.";
+        public const string BadRequestUpload = "No files were provided for upload.";
     }
 }

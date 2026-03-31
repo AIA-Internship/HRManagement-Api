@@ -226,18 +226,19 @@ public class EmployeeController : ValidateController<EmployeeController>
 
     [HttpPost("{id}/attachments")]
     [Authorize]
+    [Consumes( "multipart/form-data")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] string documentType, [FromForm] List<IFormFile> files)
+    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
     {
         string methodName = nameof(UploadAttachments);
         _logger.LogInformation("Start {Service}.", methodName);
     
-        var command = new UploadAttachmentCommand(id, documentType, files);
+        var command = new UploadAttachmentCommand(id, request.DocumentType, request.Files);
         return await this.ValidateAndExecute<ApiResponse>(command, async (c) =>
         {
             var result = await _mediator.Send((UploadAttachmentCommand)c);

@@ -1,4 +1,5 @@
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 using MediatR;
@@ -22,26 +23,60 @@ public class UploadEmployeeAttachmentsHandler : IRequestHandler<UploadAttachment
     public async Task<ApiResponse> Handle(UploadAttachmentCommand request, CancellationToken cancellationToken)
     {
         var employeeExists = await _context.Employees.AnyAsync(e => e.Id == request.Id, cancellationToken);
-        if (!employeeExists) return ApiHelperResponse.Failed("Employee not found.");
+        if (!employeeExists) 
+        {
+            throw new ApiException(
+                "Not Found", 
+                StatusCodes.Status404NotFound, 
+                ExceptionConstants.EmployeeNotFound
+            );
+        }
         
         bool isSupervisor = _service.Role == "Supervisor" || _service.Role == "0";
-
         if (!isSupervisor && _service.UserId != request.Id)
         {
-            return ApiHelperResponse.Failed("You are not authorized to upload files to another employee's profile.");
+            throw new ApiException(
+                "Forbidden",
+                StatusCodes.Status403Forbidden,
+                ExceptionConstants.ForbiddenUpload
+            );
         }
 
         var allowedExtensions = new[] { ".pdf", ".png", ".jpg", ".jpeg" };
         var maxFileSize = 5 * 1024 * 1024;
+        
+        if (request.Files == null || request.Files.Count == 0)
+        {
+            throw new ApiException(
+                "Bad Request", 
+                StatusCodes.Status400BadRequest,
+                ExceptionConstants.BadRequestUpload
+            );
+        }
 
         foreach (var file in request.Files)
         {
-            if (file.Length == 0) return ApiHelperResponse.Failed($"File {file.FileName} is empty.");
+            if (file.Length == 0) 
+                throw new ApiException(
+                    "Bad Request",
+                    StatusCodes.Status400BadRequest,
+                    $"File {file.FileName} is empty."
+                );
+                
             if (file.Length > maxFileSize)
-                return ApiHelperResponse.Failed($"File {file.FileName} exceeds the 5MB limit.");
+                throw new ApiException(
+                    "Bad Request",
+                    StatusCodes.Status400BadRequest,
+                    $"File {file.FileName} exceeds the 5MB limit."
+                );
 
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(ext)) return ApiHelperResponse.Failed($"File type {ext} is not allowed.");
+            if (!allowedExtensions.Contains(ext)) 
+                throw new ApiException(
+                    "Bad Request",
+                    StatusCodes.Status400BadRequest,
+                    $"File type {ext} is not allowed."
+                );
         }
 
         var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
@@ -73,7 +108,6 @@ public class UploadEmployeeAttachmentsHandler : IRequestHandler<UploadAttachment
 
         await _context.EmployeeAttachments.AddRangeAsync(attachments, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-
         return ApiHelperResponse.Success("Files uploaded successfully.");
     }
 }
