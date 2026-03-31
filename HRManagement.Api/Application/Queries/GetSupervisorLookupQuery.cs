@@ -9,10 +9,10 @@ public class GetSupervisorLookupQuery : IRequest<ApiResponse<List<SupervisorLook
 {
     public class Handler(IEmployeeRepository employeeRepository) : IRequestHandler<GetSupervisorLookupQuery, ApiResponse<List<SupervisorLookupDto>>>
     {
-        public async Task<ApiResponse<List<SupervisorLookupDto>>> Handle(GetSupervisorLookupQuery query, CancellationToken cancellationToken)
+        public async Task<ApiResponse<List<SupervisorLookupDto>>> Handle(GetSupervisorLookupQuery request, CancellationToken cancellationToken)
         {
-            var result = await employeeRepository.GetSupervisorLookupAsync(cancellationToken);
-            return ApiHelperResponse.Success(result);
+            var supervisors = await employeeRepository.GetSupervisorLookupAsync(cancellationToken);
+            return ApiHelperResponse.Success("Retrieved supervisors lookup successfully", supervisors);
         }
     }
 }

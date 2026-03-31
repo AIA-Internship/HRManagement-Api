@@ -19,5 +19,7 @@ public interface IApplicationDbContext
     public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }
     public DbSet<TodoTask> TodoTasks { get; set; }
     
+    DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
+    
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

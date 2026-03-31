@@ -1,5 +1,6 @@
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,12 @@ public class GetLookupValuesQueryHandler(IApplicationDbContext dbContext) : IReq
         
         if (!lookupData.Any())
         {
-            throw new ApiException("Not Found", 404, $"No active lookup values found for category '{request.Category}'.");
+            var errorMessage = string.Format(ExceptionConstants.LookupCategoryNotFound, request.Category);
+            throw new ApiException(
+                "Not Found", 
+                StatusCodes.Status404NotFound, 
+                errorMessage
+            );
         }
 
         return ApiHelperResponse.Success($"Retrieved {request.Category} successfully", lookupData);

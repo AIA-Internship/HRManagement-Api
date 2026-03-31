@@ -14,6 +14,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public DbSet<EmergencyContact> EmergencyContacts { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
+    public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
 
     // Timesheet Module (Sharding-ready/Decoupled)
     public DbSet<TimesheetProject> TimesheetProjects { get; set; }

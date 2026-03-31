@@ -1,5 +1,6 @@
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 
@@ -17,6 +18,33 @@ public class ReviewUpdateCommand(ReviewUpdateRequestDto decision) : IRequest<Api
             var hrActionerId = currentUserService.UserId;
             var hrEmail = currentUserService.Email;
             var request = await requestRepository.GetEmployeeUpdateRequestByIdAsync(command.Decision.RequestId);
+
+            if (request == null)
+            {
+                throw new ApiException(
+                    "Not Found", 
+                    StatusCodes.Status404NotFound, 
+                    ExceptionConstants.NotFound
+                );
+            }
+
+            if (request.Status != 0)
+            {
+                throw new ApiException(
+                    "Bad Request", 
+                    StatusCodes.Status400BadRequest, 
+                    ExceptionConstants.BadRequest
+                );
+            }
+
+            if (request.Employee.EmployeeEmail == hrEmail)
+            {
+                throw new ApiException(
+                    "Conflict", (int) 
+                    StatusCodes.Status409Conflict, 
+                    ExceptionConstants.Conflict
+                );
+            }
             
             if (request == null) throw new ApiException("Not Found", (int)System.Net.HttpStatusCode.NotFound, "Request Not Found");
             if (request.Status != 0) throw new ApiException("Bad Request", (int)System.Net.HttpStatusCode.BadRequest, "This request has already been processed");
