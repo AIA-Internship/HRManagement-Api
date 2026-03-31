@@ -9,101 +9,100 @@
 }
 
 <div class="dashboard-wrapper">
-    <div class="dashboard-container">
-        
-        @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
-            Title = "...",
-            Subtitle = "Monitor intern activities and manage timesheet approvals",
-            Id = "page_title_text",
-            Breadcrumbs = new List<BreadcrumbItem> {
-                new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
-                new BreadcrumbItem { Title = "Dashboard" }
-            },
-            RenderActions = Html.Raw("<div class='header-stat-pill shadow-sm py-2 px-6 d-flex align-items-center gap-4 bg-white rounded-4 border'><i class='bi bi-people-fill text-brand fs-4'></i><div class='d-flex flex-column'><span class='fs-10 fw-boldest text-muted text-uppercase ls-1'>Active Members</span><span class='fs-6 fw-black text-dark' id='active_intern_count'>0</span></div></div>")
-        })
+    <!-- Top Bar / Header -->
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+        Title = "Supervisor Dashboard",
+        Subtitle = "Track intern progress and manage timesheet approvals",
+        Id = "page_title_text",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+            new BreadcrumbItem { Title = "Overview" }
+        },
+        RenderActions = Html.Raw("<div class='d-flex align-items-center gap-3 bg-white px-5 py-3 rounded-3 border'><div class='symbol-circle bg-light-brand text-brand' style='width:35px; height:35px;'><i class='bi bi-people-fill fs-6'></i></div><div><div class='fs-tiny fw-bold text-muted ls-1'>ACTIVE MEMBERS</div><div class='fs-5 fw-bold text-dark lh-1' id='active_intern_count'>0</div></div></div>")
+    })
 
-        <div class="row g-8 mb-8 mt-2">
-            <!-- MISSING TIMESHEETS -->
-            <div class="col-xl-6">
-                <div class="aia-glass-card h-100">
-                    <div class="card-header-clean">
-                        <h3><i class="bi bi-info-circle fs-3"></i> Missing Timesheets</h3>
-                    </div>
-                    <div class="card-body-scrollable" id="missing_list_container">
-                        <!-- List injected by JS -->
-                    </div>
-                    <div class="card-body-main p-8 mt-auto d-flex justify-content-center border-top">
-                        <button class="btn-brand-solid w-75" onclick="window.location.href='/Timesheet/Supervisor/Review'">View All Submissions</button>
-                    </div>
+    <div class="row g-7 mt-2">
+        <!-- MISSING TIMESHEETS -->
+        <div class="col-xl-6">
+            <div class="aia-card">
+                <div class="card-header border-0 pt-6 pb-2">
+                    <h3><i class="bi bi-info-circle text-danger me-2"></i> Missing Submissions</h3>
+                    <span class="badge badge-light-danger fw-bold fs-tiny">URGENT</span>
                 </div>
-            </div>
-
-            <!-- APPROVAL STAT CARD -->
-            <div class="col-xl-6">
-                <div class="aia-glass-card h-100">
-                    <div class="card-header-clean">
-                        <div class="d-flex align-items-center justify-content-between w-100">
-                            <h3><i class="bi bi-send fs-3"></i> Pending Approvals</h3>
-                            <span class="badge badge-lg fw-boldest px-4 py-2" style="background: var(--brand-red-light); color: var(--brand-red); border-radius: 8px; font-size: 0.7rem;" id="needs_review_count_stat">0 / 0</span>
-                        </div>
-                    </div>
-                    <div class="card-body-scrollable" id="pending_approvals_list">
-                        <div class="text-center py-10 opacity-25 fw-bold">No submissions waiting for review.</div>
-                    </div>
-                    <div class="card-body-main p-8 mt-auto d-flex justify-content-center border-top">
-                        <button class="btn-brand-outline w-100" onclick="window.location.href='/Timesheet/Supervisor/Report'">View History & Reports</button>
-                    </div>
+                <div class="card-body card-body-scroll pt-4" id="missing_list_container">
+                    <div class="text-center py-10 opacity-25 fw-bold">Checking...</div>
+                </div>
+                <div class="p-6 text-center border-top">
+                    <button class="btn btn-sm btn-primary-red w-75" onclick="window.location.href='/Timesheet/Supervisor/Review'">Go to Submission Review</button>
                 </div>
             </div>
         </div>
 
-        <!-- HOURS BREAKDOWN (PIVOT) -->
-        <div class="aia-glass-card mb-10">
-            <div class="card-header-grey d-flex justify-content-between align-items-center">
-                <h3 class="m-0 fs-5 fw-boldest"><i class="bi bi-clock text-danger me-3 fs-3"></i> Intern Hours Breakdown</h3>
-                <select id="intern_filter_dropdown" class="form-select-sm border-0 bg-white shadow-sm" style="width: 170px; border-radius: 10px; font-weight: 850;">
-                    <option value="">All Interns</option>
-                </select>
-            </div>
-            <div class="table-responsive">
-                <table class="table-breakdown">
-                    <thead id="breakdown_header_row">
-                        <!-- headers injected by JS -->
-                    </thead>
-                    <tbody id="breakdown_body">
-                        <!-- rows injected by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- DONUT ALLOCATION CARD -->
-        <div class="aia-glass-card">
-            <div class="card-body-main p-10">
-                <div class="header-clean mb-12 d-flex align-items-center gap-3">
-                     <i class="bi bi-bar-chart-line-fill text-danger fs-3"></i>
-                     <h3 class="m-0 fs-5 fw-boldest">Intern Monthly Application Allocation</h3>
+        <!-- PENDING APPROVALS -->
+        <div class="col-xl-6">
+            <div class="aia-card">
+                <div class="card-header border-0 pt-6 pb-2">
+                    <h3><i class="bi bi-person-check text-brand me-2"></i> Pending Approvals</h3>
+                    <span class="badge badge-light fw-bold fs-7" id="needs_review_count_stat">0 / 0</span>
                 </div>
-                <div class="row align-items-center px-10">
-                    <div class="col-lg-5 d-flex justify-content-center">
-                        <div class="position-relative" style="width: 300px; height: 300px;">
-                            <canvas id="allocation_donut_chart"></canvas>
-                            <div class="donut-center-text d-flex align-items-center justify-content-center flex-column" style="position: absolute; top: 50%; left: 50%; width: 100%; transform: translate(-50%, -50%);">
-                                <span class="text-gray-900 fw-boldest m-0 lh-1" style="font-size: 2.8rem;">100%</span>
-                                <span class="text-gray-500 fw-bold fs-9 mt-2 text-uppercase text-center ls-1">TOTAL USAGE</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-7 d-flex flex-column gap-2">
-                        <div id="donut_legends" class="d-flex flex-column gap-2">
-                            <!-- Injected by JS -->
-                        </div>
-                    </div>
+                <div class="card-body card-body-scroll pt-4" id="pending_approvals_list">
+                    <div class="text-center py-10 opacity-25 fw-bold">Loading...</div>
+                </div>
+                <div class="p-6 text-center border-top">
+                    <button class="btn btn-sm btn-light-grey w-75" onclick="window.location.href='/Timesheet/Supervisor/Report'">View Full History</button>
                 </div>
             </div>
         </div>
-
     </div>
+
+    <!-- HOURS BREAKDOWN -->
+    <div class="aia-card mt-6">
+        <div class="card-header border-0 pt-7">
+            <h3><i class="bi bi-calendar3 text-brand me-2"></i> Intern Hours Breakdown</h3>
+            <select id="intern_filter_dropdown" class="form-select form-select-sm" style="width: 200px;">
+                <option value="">All Interns</option>
+            </select>
+        </div>
+        <div class="table-responsive px-5">
+            <table class="table-custom">
+                <thead id="breakdown_header_row">
+                    <!-- JS Injected -->
+                </thead>
+                <tbody id="breakdown_body">
+                    <!-- JS Injected -->
+                </tbody>
+            </table>
+        </div>
+        <div class="p-6 text-center border-top">
+            <span class="text-muted fs-tiny fw-bold">Totals based on approved monthly logs.</span>
+        </div>
+    </div>
+
+    <!-- DONUT CHART -->
+    <div class="aia-card mt-6 mb-0"> <!-- Removed mb-10 and set to 0. attempt 26 -->
+        <div class="card-header border-0 pt-7">
+            <h3><i class="bi bi-activity text-brand me-2"></i> Activity Allocation</h3>
+        </div>
+        <div class="card-body py-10">
+            <div class="row align-items-center">
+                <div class="col-lg-5 text-center">
+                    <div class="position-relative d-inline-block" style="width: 250px; height: 250px;">
+                        <canvas id="allocation_donut_chart"></canvas>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
+                            <div class="fs-2 fw-bold text-dark">100%</div>
+                            <div class="fs-tiny fw-bold text-muted mt-1">TOTAL USAGE</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div id="donut_legends" class="ps-10">
+                        <!-- JS Injected -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {

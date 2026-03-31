@@ -27,6 +27,7 @@ window.app = window.app || {
 let currentDate = new Date();
 let pickerDate = new Date();
 let activeView = 'monthly';
+
 let employeeInfo = null;
 
 const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

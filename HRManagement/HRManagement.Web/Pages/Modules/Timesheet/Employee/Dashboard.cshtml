@@ -286,9 +286,9 @@
                  
                  const hour = new Date().getHours();
                  let greet = "Good Morning";
-                 if (hour >= 12 && hour < 17) greet = "Good Afternoon";
-                 else if (hour >= 17 && hour < 21) greet = "Good Evening";
-                 else if (hour >= 21 || hour < 5) greet = "Good Night";
+                 if (hour >= 12 && hour < 16) greet = "Good Afternoon";
+                 else if (hour >= 16 && hour < 20) greet = "Good Evening";
+                 else if (hour >= 20 || hour < 5) greet = "Good Night";
                  
                  const titleEl = document.getElementById('page_title_text');
                  if (titleEl) titleEl.innerText = `${greet}, ${name}`;
