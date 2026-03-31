@@ -6,6 +6,7 @@ using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Application.Auth.DTOs;
 using HRManagement.Api.Application.Commands;
 using HRManagement.Api.Application.EmployeeDtos.Commands;
+using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 
@@ -78,6 +79,7 @@ public class LoginController : ValidateController<LoginController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse>> ResetPassword([FromBody] ResetPasswordRequestDto request)

@@ -2,6 +2,7 @@ using MediatR;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.Mappings;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,14 @@ public class GetUpdateRequestQuery(int? status) : IRequest<ApiResponse<List<Empl
             CancellationToken cancellationToken)
         {
             var domainRequests = await requestRepository.GetEmployeeUpdateRequestAsync(request.Status);
-            if (domainRequests.Count == 0) throw new ApiException("Nothing found", (int)System.Net.HttpStatusCode.NotFound, "No update request found");
+            if (domainRequests.Count == 0)
+            {
+                throw new ApiException(
+                    "Nothing found", 
+                    StatusCodes.Status404NotFound, 
+                    ExceptionConstants.UpdateRequestNotFound
+                );
+            }
             
             var lookups = await appDbContext.SystemLookups
                 .AsNoTracking()

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(string displayId, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
@@ -54,6 +56,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
@@ -75,6 +78,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeListItemDto>>>> GetAllEmployees()
@@ -95,6 +99,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
@@ -116,6 +121,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
@@ -137,6 +143,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
@@ -158,6 +165,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
@@ -177,6 +185,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> ReviewUpdate([FromBody] ReviewUpdateRequestDto decision)
@@ -198,6 +207,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> CreateEmployee([FromBody] CreateEmployeeRequestDto requestDto)
@@ -211,6 +221,28 @@ public class EmployeeController : ValidateController<EmployeeController>
             var result = await _mediator.Send((CreateEmployeeCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
+        });
+    }
+
+    [HttpPost("{id}/attachments")]
+    [Authorize]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] string documentType, [FromForm] List<IFormFile> files)
+    {
+        string methodName = nameof(UploadAttachments);
+        _logger.LogInformation("Start {Service}.", methodName);
+    
+        var command = new UploadAttachmentCommand(id, documentType, files);
+        return await this.ValidateAndExecute<ApiResponse>(command, async (c) =>
+        {
+            var result = await _mediator.Send((UploadAttachmentCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result); 
         });
     }
 }

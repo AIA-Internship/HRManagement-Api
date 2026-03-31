@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Application.Queries;
 
-public record VerifyForgotQuery(VerifyForgotRequestDto request) : IRequest<ApiResponse>;
+public record VerifyForgotQuery(VerifyForgotRequestDto Request) : IRequest<ApiResponse>;
 
 public class VerifyForgotHandler : IRequestHandler<VerifyForgotQuery, ApiResponse>
 {
@@ -19,10 +19,10 @@ public class VerifyForgotHandler : IRequestHandler<VerifyForgotQuery, ApiRespons
 
     public async Task<ApiResponse> Handle(VerifyForgotQuery request, CancellationToken cancellationToken)
     {
-        var UserExist = await _context.Employees
-            .AnyAsync(e => e.EmployeeEmail == request.request.Email &&
-                           e.DateOfBirth.Date == request.request.DateOfBirth.Date, cancellationToken); 
-        if (!UserExist) return ApiHelperResponse.Failed("Verification failed. Information does not match our records.");
+        var userExist = await _context.Employees
+            .AnyAsync(e => e.EmployeeEmail == request.Request.Email &&
+                           e.DateOfBirth.Date == request.Request.DateOfBirth.Date, cancellationToken); 
+        if (!userExist) return ApiHelperResponse.Failed("Verification failed. Information does not match our records.");
         return ApiHelperResponse.Success("Identity verified.");
     }
 }

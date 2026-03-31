@@ -1,5 +1,6 @@
 using FluentValidation;
 using HRManagement.Api.Application.EmployeeDtos.Commands;
+using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 
 namespace HRManagement.Api.Application.Validators;

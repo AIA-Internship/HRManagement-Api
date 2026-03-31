@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Config;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
@@ -66,16 +67,15 @@ builder.Services.AddAuthentication(options =>
         OnAuthenticationFailed = context =>
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "text/plain";
-            return context.Response.WriteAsync("DEBUG ERROR: " + context.Exception.Message);
+            return Task.CompletedTask;
         },
         OnChallenge = context =>
         {
-            if (!context.Response.HasStarted && context.AuthenticateFailure == null)
+            if (!context.Response.HasStarted)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return context.Response.WriteAsync("Token Missing or Invalid");
             }
+
             return Task.CompletedTask;
         }
     };
@@ -166,7 +166,22 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+
+            var errorResponse = new
+            {
+                error = "Internal Server Error",
+                message = ExceptionConstants.InternalServerError
+            };
+
+            await context.Response.WriteAsJsonAsync(errorResponse);
+        });
+    });
     app.UseHsts();
 }
 

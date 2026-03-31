@@ -8,6 +8,7 @@ using System.Text;
 
 using HRManagement.Api.Application.Auth.DTOs;
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 
@@ -30,10 +31,14 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 .AsNoTracking() 
                 .FirstOrDefaultAsync(u => u.EmployeeEmail == request.Email, cancellationToken);
 
-            if (user == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "User not found");
-            
-            bool isValid = passwordHasher.Verify(request.Password, user.PasswordHash);
-            if (!isValid) throw new ApiException("Unauthorized", (int)System.Net.HttpStatusCode.Unauthorized, "Invalid email or password");
+            if (user == null || !passwordHasher.Verify(request.Password, user.PasswordHash))
+            {
+                throw new ApiException(
+                    "Unauthorized", 
+                    StatusCodes.Status401Unauthorized, 
+                    ExceptionConstants.NotAuthorized 
+                );
+            }
 
             var roleName = await dbContext.SystemLookups
                 .AsNoTracking()

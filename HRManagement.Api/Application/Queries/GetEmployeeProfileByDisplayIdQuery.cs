@@ -1,6 +1,8 @@
+using System.Net;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.Mappings;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +19,14 @@ public class GetEmployeeProfileByDisplayIdQuery(string employeeDisplayId) : IReq
         {
             var profile = await employeeRepository.GetByDisplayIdAsync(request.EmployeeDisplayId);
 
-            if (profile == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "Employee not found");
+            if (profile == null)
+            {
+                throw new ApiException(
+                    "Not Found", 
+                    (int)HttpStatusCode.NotFound, 
+                    ExceptionConstants.EmployeeNotFound
+                );
+            }
             
             var lookups = await appDbContext.SystemLookups
                 .AsNoTracking()
