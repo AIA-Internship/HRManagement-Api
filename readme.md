@@ -80,3 +80,4 @@ Testing accounts for Brandon and Owen:
 2.  **Icon Visibility**: Ensure icons on red buttons prioritize white coloring (`color: #fff !important`).
 3.  **Strict Path Consistency**: Feature-specific logic MUST remain in **`apps/modules/[feature]/[js/css]/`**.
 4.  **No Direct Modification**: Do not add logic to `core/shared.js` unless it's truly global.
+5.  **CORS Issues Fix, (didalem Program.cs Backend ganti withOrigin jadi local kalian dulu).
