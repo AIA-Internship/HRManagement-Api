@@ -12,7 +12,6 @@ public class GetSupervisorLookupQueryHandler(IEmployeeRepository employeeReposit
     public async Task<ApiResponse<List<SupervisorLookupDto>>> Handle(GetSupervisorLookupQuery request, CancellationToken cancellationToken)
     {
         var supervisors = await employeeRepository.GetSupervisorLookupAsync(cancellationToken);
-
         return ApiHelperResponse.Success("Retrieved supervisors lookup successfully", supervisors);
     }
 }

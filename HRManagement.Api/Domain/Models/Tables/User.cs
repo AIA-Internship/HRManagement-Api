@@ -22,7 +22,7 @@ public class User : BaseTableModel
     public void ChangePassword(string passwordHash, long actionerId)
     {
         if(string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password cannot be empty");
-        PasswordHash = passwordHash;
+        this.PasswordHash = passwordHash;
         MarkAsModified(actionerId);
     }
 

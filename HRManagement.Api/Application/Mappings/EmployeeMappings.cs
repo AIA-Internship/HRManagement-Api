@@ -1,3 +1,4 @@
+using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Tables;
 
@@ -97,6 +98,60 @@ public static class EmployeeMappings
             NewEmergencyContactRelationship = request.NewEmergencyContactRelationship ?? string.Empty,
             CreatedAt = request.CreatedAt
         };
+    }
+
+    public static Employee ToEntity(this CreateEmployeeRequestDto dto, long actionerId, EmploymentInformation? employmentInfo, List<EmergencyContact> emergencyContacts)
+    {
+        return new Employee(
+            fullName: dto.FullName,
+            gender: dto.Gender,
+            personalEmail: dto.PersonalEmail,
+            employeeEmail: dto.EmployeeEmail,
+            phoneNumber: dto.PhoneNumber,
+            nik: dto.Nik,
+            placeOfBirth: dto.PlaceOfBirth,
+            dateOfBirth: dto.DateOfBirth,
+            maritalStatus: dto.MaritalStatus,
+            currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
+            residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
+            role: dto.Role,
+            actionerId: actionerId,
+            employmentInformation: employmentInfo,
+            emergencyContacts: emergencyContacts
+        );
+    }
+
+    public static EmploymentInformation ToEntity(this CreateEmploymentInfoDto infoDto, string displayId, int? supervisorId, long actionerId)
+    {
+        var employmentInfo = new EmploymentInformation(actionerId);
+        
+        employmentInfo.UpdateDetails(
+            infoDto.EmploymentStatus,
+            infoDto.StartDate,
+            infoDto.EmploymentType,
+            infoDto.Department,
+            infoDto.Position,
+            supervisorId,
+            displayId,
+            actionerId
+        );
+
+        return employmentInfo;
+    }
+
+    public static List<EmergencyContact> ToEntityList(this IEnumerable<CreateEmergencyContactDto>? contactDtos, long actionerId)
+    {
+        if (contactDtos == null || !contactDtos.Any())
+            return new List<EmergencyContact>();
+
+        return contactDtos.Select(dto => new EmergencyContact
+        {
+            Name = dto.Name,
+            Relationship = dto.Relationship,
+            PhoneNumber = dto.PhoneNumber,
+            CreatedBy = actionerId,
+            ModifiedBy = actionerId
+        }).ToList();
     }
 
     private static string GetLookupDisplayName(

@@ -13,6 +13,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
     public DbSet<EmploymentInformation> EmploymentInformations { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
+    public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

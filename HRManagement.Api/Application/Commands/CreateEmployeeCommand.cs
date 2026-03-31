@@ -3,6 +3,7 @@ using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 using System.Text.RegularExpressions;
+using HRManagement.Api.Application.Mappings;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;
@@ -33,53 +34,11 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.EmploymentInformation.SupervisorDisplayId);
                     supervisorId = supervisor?.Id;
                 }
-
-                employmentInfo = new EmploymentInformation(actionerId);
-                employmentInfo.UpdateDetails(
-                    dto.EmploymentInformation.EmploymentStatus,
-                    dto.EmploymentInformation.StartDate,
-                    dto.EmploymentInformation.EmploymentType,
-                    dto.EmploymentInformation.Department,
-                    dto.EmploymentInformation.Position,
-                    supervisorId,
-                    displayId,
-                    actionerId
-                );
+                employmentInfo = dto.EmploymentInformation.ToEntity(displayId, supervisorId, actionerId);
             }
             
-            var emergencyContacts = new List<EmergencyContact>();
-            if (dto.EmergencyContacts != null && dto.EmergencyContacts.Any())
-            {
-                foreach (var contactDto in dto.EmergencyContacts)
-                {
-                    emergencyContacts.Add(new EmergencyContact
-                    {
-                        Name = contactDto.Name,
-                        Relationship = contactDto.Relationship,
-                        PhoneNumber = contactDto.PhoneNumber,
-                        CreatedBy = actionerId,
-                        ModifiedBy = actionerId
-                    });
-                }
-            }
-            
-            var employee = new Employee(
-                fullName: dto.FullName,
-                gender: dto.Gender,
-                personalEmail: dto.PersonalEmail,
-                employeeEmail: dto.EmployeeEmail,
-                phoneNumber: dto.PhoneNumber,
-                nik: dto.Nik,
-                placeOfBirth: dto.PlaceOfBirth,
-                dateOfBirth: dto.DateOfBirth,
-                maritalStatus: dto.MaritalStatus,
-                currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
-                residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
-                role: dto.Role,
-                actionerId: actionerId,
-                employmentInformation: employmentInfo,
-                emergencyContacts: emergencyContacts
-            );
+            var emergencyContacts = dto.EmergencyContacts.ToEntityList(actionerId);
+            var employee = dto.ToEntity(actionerId, employmentInfo, emergencyContacts);
             
             var hashedPassword = passwordHasher.Hash(dto.DefaultPassword);
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);

@@ -1,5 +1,6 @@
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 
@@ -15,7 +16,14 @@ public class UpdateEmployeeInfoCommand(string employeeDisplayId, UpdateEmploymen
         public async Task<ApiResponse<string>> Handle(UpdateEmployeeInfoCommand command, CancellationToken cancellationToken)
         {
             var employee = await employeeRepository.GetByDisplayIdAsync(command.EmployeeDisplayId);
-            if (employee == null) throw new ApiException("Not found", 404, "Employee not found");
+            if (employee == null)
+            {
+                throw new ApiException(
+                    "Not found", 
+                    StatusCodes.Status404NotFound, 
+                    ExceptionConstants.EmployeeNotFound
+                );
+            }
             
             var actionerId = currentUserService.UserId;
             var dto = command.RequestDto;

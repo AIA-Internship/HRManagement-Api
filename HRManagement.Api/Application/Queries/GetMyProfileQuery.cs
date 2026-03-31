@@ -1,6 +1,7 @@
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.Mappings;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,24 @@ public class GetMyProfileQuery : IRequest<ApiResponse<EmployeeProfileResponseDto
         public async Task<ApiResponse<EmployeeProfileResponseDto>> Handle(GetMyProfileQuery request, CancellationToken cancellationToken)
         {
             var email = currentUserService.Email;
-            if (string.IsNullOrEmpty(email)) throw new ApiException("Unauthorized", (int)System.Net.HttpStatusCode.Unauthorized, "User not authenticated");
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ApiException(
+                    "Unauthorized", 
+                    StatusCodes.Status401Unauthorized, 
+                    ExceptionConstants.NotAuthorizedExcepction
+                );
+            }
         
             var profile = await employeeRepository.GetByEmailAsync(email);
-            if (profile == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "User not found");
+            if (profile == null)
+            {
+                throw new ApiException(
+                    "Not found", 
+                    StatusCodes.Status404NotFound, 
+                    ExceptionConstants.EmployeeNotFound
+                );
+            }
 
             var lookups = await appDbContext.SystemLookups
                 .AsNoTracking()
