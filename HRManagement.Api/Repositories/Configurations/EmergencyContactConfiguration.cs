@@ -31,6 +31,8 @@ public class EmergencyContactConfiguration : IEntityTypeConfiguration<EmergencyC
             .HasMaxLength(25)
             .IsRequired();
         
+        builder.HasIndex(e => e.EmployeeId);
+        
         builder.HasOne(e => e.Employee)
             .WithMany(emp => emp.EmergencyContacts)
             .HasForeignKey(e => e.EmployeeId)

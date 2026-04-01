@@ -9,6 +9,7 @@ public interface IApplicationDbContext
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
+    DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

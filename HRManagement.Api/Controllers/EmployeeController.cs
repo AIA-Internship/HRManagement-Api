@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,10 +30,33 @@ public class EmployeeController : ValidateController<EmployeeController>
         _logger = logger;
     }
     
+    [HttpPut("employment-info/{displayId}")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(string displayId, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
+    {
+        string methodName = nameof(UpdateEmploymentInformation);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var command = new UpdateEmployeeInfoCommand(displayId, commandDto);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
+        {
+            var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+    
     [HttpPut("me")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
@@ -49,32 +73,12 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
     
-    [HttpPut("employment-info/{id}")]
-    [Authorize(Roles = "Supervisor")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(int id, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
-    {
-        string methodName = nameof(UpdateEmploymentInformation);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new UpdateEmployeeInfoCommand(id, commandDto);
-        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
     [Authorize(Roles = "Supervisor")]
     [HttpGet("list")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeListItemDto>>>> GetAllEmployees()
@@ -95,6 +99,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
@@ -116,6 +121,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
@@ -132,25 +138,46 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{displayId}")]
     [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileById(int id)
+    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
     {
-        string methodName = nameof(GetEmployeeProfileById);
+        string methodName = nameof(GetEmployeeProfileByDisplayId);
         _logger.LogInformation("Start {Service}.", methodName);
         
-        var query = new GetEmployeeProfileByIdQuery(id);
+        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
         return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
         {
-            var result = await _mediator.Send((GetEmployeeProfileByIdQuery)q);
+            var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
+    }
+    
+    [HttpGet("supervisors-lookup")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
+    {
+        string methodName = nameof(GetSupervisorLookup);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var query = new GetSupervisorLookupQuery();
+        var result = await _mediator.Send(query);
+        
+        _logger.LogInformation("End {Service}.", methodName);
+        return Ok(result);
     }
     
     [HttpPost("review-update")]
@@ -158,6 +185,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> ReviewUpdate([FromBody] ReviewUpdateRequestDto decision)
@@ -179,6 +207,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> CreateEmployee([FromBody] CreateEmployeeRequestDto requestDto)
@@ -192,6 +221,29 @@ public class EmployeeController : ValidateController<EmployeeController>
             var result = await _mediator.Send((CreateEmployeeCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
+        });
+    }
+
+    [HttpPost("{id}/attachments")]
+    [Authorize]
+    [Consumes( "multipart/form-data")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
+    {
+        string methodName = nameof(UploadAttachments);
+        _logger.LogInformation("Start {Service}.", methodName);
+    
+        var command = new UploadAttachmentCommand(id, request.DocumentType, request.Files);
+        return await this.ValidateAndExecute<ApiResponse>(command, async (c) =>
+        {
+            var result = await _mediator.Send((UploadAttachmentCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result); 
         });
     }
 }

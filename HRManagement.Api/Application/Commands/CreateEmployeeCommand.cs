@@ -2,6 +2,8 @@ using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
+using System.Text.RegularExpressions;
+using HRManagement.Api.Application.Mappings;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands;
@@ -20,53 +22,23 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             EmploymentInformation? employmentInfo = null;
             if (dto.EmploymentInformation != null)
             {
-                employmentInfo = new EmploymentInformation(actionerId);
-                employmentInfo.UpdateDetails(
-                    dto.EmploymentInformation.EmploymentStatus,
-                    dto.EmploymentInformation.StartDate,
-                    dto.EmploymentInformation.EmploymentType,
-                    dto.EmploymentInformation.Department,
-                    dto.EmploymentInformation.Position,
-                    dto.EmploymentInformation.SupervisorName,
-                    actionerId
-                );
-            }
-            
-            var emergencyContacts = new List<EmergencyContact>();
-            if (dto.EmergencyContacts != null && dto.EmergencyContacts.Any())
-            {
-                foreach (var contactDto in dto.EmergencyContacts)
+                var displayId = dto.EmploymentInformation.EmployeeDisplayId;
+                if (string.IsNullOrWhiteSpace(displayId))
                 {
-                    emergencyContacts.Add(new EmergencyContact
-                    {
-                        Name = contactDto.Name,
-                        Relationship = contactDto.Relationship,
-                        PhoneNumber = contactDto.PhoneNumber,
-                        CreatedBy = actionerId,
-                        ModifiedBy = actionerId
-                    });
+                    displayId = await GenerateNextDisplayId(employeeRepository);
                 }
+
+                int? supervisorId = null;
+                if (!string.IsNullOrWhiteSpace(dto.EmploymentInformation.SupervisorDisplayId))
+                {
+                    var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.EmploymentInformation.SupervisorDisplayId);
+                    supervisorId = supervisor?.Id;
+                }
+                employmentInfo = dto.EmploymentInformation.ToEntity(displayId, supervisorId, actionerId);
             }
             
-            var employee = new Employee(
-                fullName: dto.FullName,
-                gender: dto.Gender,
-                personalEmail: dto.PersonalEmail,
-                employeeEmail: dto.EmployeeEmail,
-                phoneNumber: dto.PhoneNumber,
-                nik: dto.Nik,
-                placeOfBirth: dto.PlaceOfBirth,
-                dateOfBirth: dto.DateOfBirth,
-                maritalStatus: dto.MaritalStatus,
-                streetAddress: dto.StreetAddress,
-                city: dto.City,
-                province: dto.Province,
-                postalCode: dto.PostalCode,
-                role: dto.Role,
-                actionerId: actionerId,
-                employmentInformation: employmentInfo,
-                emergencyContacts: emergencyContacts
-            );
+            var emergencyContacts = dto.EmergencyContacts.ToEntityList(actionerId);
+            var employee = dto.ToEntity(actionerId, employmentInfo, emergencyContacts);
             
             var hashedPassword = passwordHasher.Hash(dto.DefaultPassword);
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);
@@ -74,6 +46,32 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             await employeeRepository.AddEmployeeAsync(user, employee);
 
             return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
+        }
+
+        private static async Task<string> GenerateNextDisplayId(IEmployeeRepository repository)
+        {
+            var lastId = await repository.GetLastEmployeeDisplayIdAsync();
+            if (string.IsNullOrEmpty(lastId))
+            {
+                return "E0001";
+            }
+
+            var match = Regex.Match(lastId, @"(\D*)(\d+)");
+            if (match.Success)
+            {
+                var prefix = match.Groups[1].Value;
+                var numberStr = match.Groups[2].Value;
+
+                if (long.TryParse(numberStr, out var number))
+                {
+                    var nextNumber = number + 1;
+                    if (string.IsNullOrEmpty(prefix)) prefix = "E";
+
+                    return $"{prefix}{nextNumber.ToString().PadLeft(numberStr.Length, '0')}";
+                }
+            }
+
+            return "E0001";
         }
     }
 }

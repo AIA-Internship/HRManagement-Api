@@ -4,6 +4,10 @@ using CSharpFunctionalExtensions;
 using FluentValidation;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Application.Auth.DTOs;
+using HRManagement.Api.Application.Commands;
+using HRManagement.Api.Application.EmployeeDtos.Commands;
+using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
+using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Controllers;
@@ -46,6 +50,52 @@ public class LoginController : ValidateController<LoginController>
 
         _logger.LogInformation("End {Service}.", methodName);
         return response;
-        
+    }
+
+    [HttpPost("verify-forgot")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse>> VerifyForgot([FromBody] VerifyForgotRequestDto request)
+    {
+        string methodName = nameof(VerifyForgot);
+        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
+
+        var query = new VerifyForgotQuery(request);
+        var response = await ValidateAndExecute<ApiResponse>(query, async (q) =>
+        {
+            var apiResponse = await _mediator.Send((VerifyForgotQuery)q);
+            return Result.Success(apiResponse);
+
+        }).ConfigureAwait(false);
+
+        _logger.LogInformation("End {Service}.", methodName);
+        return response;
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        string methodName = nameof(ResetPassword);
+        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
+
+        var command = new ResetPasswordCommand(request);
+        var response = await ValidateAndExecute<ApiResponse>(command, async (c) =>
+        {
+            var apiResponse = await _mediator.Send((ResetPasswordCommand)c);
+            return Result.Success(apiResponse);
+
+        }).ConfigureAwait(false);
+
+        _logger.LogInformation("End {Service}.", methodName);
+        return response;
     }
 }
