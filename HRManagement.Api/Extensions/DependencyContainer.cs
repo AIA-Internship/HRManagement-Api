@@ -36,7 +36,7 @@ namespace HRManagement.Api.Extensions
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
 
-            // 3. MediatR, AutoMapper & FluentValidation
+            // 3. MediatR & FluentValidation
             var applicationAssembly = typeof(LoginQuery).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             

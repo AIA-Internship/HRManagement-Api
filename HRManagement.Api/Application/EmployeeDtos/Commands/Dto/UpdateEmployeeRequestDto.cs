@@ -14,14 +14,27 @@ public class UpdateEmployeeRequestDto
     public DateTime? DateOfBirth { get; set; }
     /// <example>1</example>
     public int? MaritalStatus { get; set; }
+    
+    // Current Address
     /// <example>Jl. Sudirman No. 1</example>
-    public string StreetAddress { get; set; } = string.Empty;
+    public string CurrentStreetAddress { get; set; } = string.Empty;
     /// <example>Jakarta Selatan</example>
-    public string City { get; set; } = string.Empty;
+    public string CurrentCity { get; set; } = string.Empty;
     /// <example>DKI Jakarta</example>
-    public string Province { get; set; } = string.Empty;
+    public string CurrentProvince { get; set; } = string.Empty;
     /// <example>12345</example>
-    public string PostalCode { get; set; } = string.Empty;
+    public string CurrentPostalCode { get; set; } = string.Empty;
+
+    // Residential Address
+    /// <example>Jl. Thamrin No. 10</example>
+    public string ResidentialStreetAddress { get; set; } = string.Empty;
+    /// <example>Bandung</example>
+    public string ResidentialCity { get; set; } = string.Empty;
+    /// <example>Jawa Barat</example>
+    public string ResidentialProvince { get; set; } = string.Empty;
+    /// <example>40123</example>
+    public string ResidentialPostalCode { get; set; } = string.Empty;
+
     /// <example>08123456789</example>
     public string PhoneNumber { get; set; } = string.Empty;
     /// <example>Jane Doe</example>

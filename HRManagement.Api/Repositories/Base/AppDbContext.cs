@@ -12,6 +12,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
+    public DbSet<EmploymentInformation> EmploymentInformations { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
 

@@ -38,15 +38,30 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(e => e.SupervisorName)
-            .HasColumnName("employment_supervisor_name")
-            .HasMaxLength(100)
+        builder.Property(e => e.SupervisorId)
+            .HasColumnName("employment_supervisor_id");
+
+        builder.HasIndex(e => e.SupervisorId);
+
+        builder.Property(e => e.EmployeeDisplayId)
+            .HasColumnName("employee_display_id")
+            .HasMaxLength(10)
             .IsRequired();
+        
+        builder.HasIndex(e => e.EmployeeDisplayId)
+            .IsUnique();
+        
+        builder.HasIndex(e => e.EmployeeId);
         
         builder.HasOne(e => e.Employee)
             .WithOne(emp => emp.EmploymentInformation)
             .HasForeignKey<EmploymentInformation>(e => e.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(e => e.Supervisor)
+            .WithMany()
+            .HasForeignKey(e => e.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
     
 }
