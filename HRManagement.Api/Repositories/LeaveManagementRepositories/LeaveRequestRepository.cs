@@ -1,5 +1,5 @@
 ﻿using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
-using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
@@ -40,11 +40,20 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 
         public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max)
         {
-            return await _dbContext.LeaveRequest
-            .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0 && x.IsEdit == 0)
-            .OrderByDescending(x => x.CreatedUtcDate)
-            .Take(max)
-            .ToListAsync();
+            try
+            {
+                return await _dbContext.LeaveRequest
+                    .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0 && x.IsEdit == 0)
+                    .OrderByDescending(x => x.CreatedUtcDate)
+                    .Take(max)
+                    .ToListAsync();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return new List<LeaveRequestModel>();
+            }
+
         }
 
         public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
@@ -71,17 +80,36 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<List<LeaveRequestModel>> getLeaveRequestByMonthRage(int year, int month)
+        public async Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month)
         {
             var startDate = new DateTime(year, month, 1);
             var endDate = startDate.AddMonths(1);
 
-            return await _dbContext.LeaveRequest
-                .Where(x => x.LeaveStartDate >= startDate
-                    && x.LeaveStartDate < endDate
-                    && x.IsDeleted == 0
-                    )
-                .ToListAsync();
+            return await (
+                from lr in _dbContext.LeaveRequest
+                join e in _dbContext.Employees on lr.RequesterId equals e.Id
+                where lr.LeaveStartDate >= startDate && lr.LeaveStartDate < endDate && lr.IsDeleted == 0 && lr.IsEdit == 0
+
+                select new GetLeaveRequestByMonthRangeDto
+                (
+                    
+                    lr.LeaveId,
+                    lr.RequesterId,
+                    lr.SupervisorId,
+                    lr.LeaveDescription,
+                    lr.LeaveStatus,
+                    lr.LeaveStartDate,
+                    lr.DayAmount,
+                    lr.LeaveType,
+                    lr.IsCompleted,
+                    lr.IsEdit,
+                    lr.InitialRequestId,
+                    lr.AttachmentPath,
+                    lr.CreatedUtcDate,
+                    e.FullName
+                )
+
+                ).ToListAsync();
         }
     }
 }

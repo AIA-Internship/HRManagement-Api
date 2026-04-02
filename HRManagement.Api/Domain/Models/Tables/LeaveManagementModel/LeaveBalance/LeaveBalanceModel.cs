@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveBalance
+namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance
 {
     
     public class LeaveBalanceModel

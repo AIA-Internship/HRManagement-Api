@@ -1,5 +1,4 @@
-﻿
-namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest
+﻿namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest
 {
     public class MappingHelper
     {

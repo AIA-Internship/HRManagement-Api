@@ -1,6 +1,6 @@
 ﻿using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Base;

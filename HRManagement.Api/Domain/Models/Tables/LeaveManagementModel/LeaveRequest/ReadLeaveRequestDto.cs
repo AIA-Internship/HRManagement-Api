@@ -1,4 +1,4 @@
-﻿namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest
+﻿namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest
 {
     public class ReadLeaveRequestDto
     {
@@ -15,8 +15,7 @@
         public int? initialRequestId { get; set; }
         public string[]? attachmentPath { get; set; }
         public DateTime createdUtcDate { get; set; }
-
-
+      
 
     }
         

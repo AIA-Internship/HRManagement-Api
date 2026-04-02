@@ -2,7 +2,7 @@
 using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.SeedWork;
 using MediatR;
 

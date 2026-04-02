@@ -3,7 +3,7 @@ using FluentValidation;
 using HRManagement.Api.Application.Commands.LeaveManagementCommands;
 using HRManagement.Api.Application.Queries.LeaveManagementQueries;
 using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -133,6 +133,7 @@ namespace HRManagement.Api.Controllers
 
         }
 
+
         [HttpGet]
         [Route("get-by-leave-id/{id}")]
         [ProducesResponseType(200)]
@@ -147,6 +148,33 @@ namespace HRManagement.Api.Controllers
                 _logger.LogInformation("Start {Service}.", objectName);
 
                 var command = new GetLeaveRequestByIdQuery(id);
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+    
+
+    [HttpGet]
+        [Route("get-by-month")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+
+        public async Task<ActionResult<ApiResponse>> readByMonth([FromQuery]int month,[FromQuery] int year )
+        {
+            string objectName = nameof(readByMonth).ToString();
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var command = new GetLeaveRequestByMonthRangeQuery(year, month);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);

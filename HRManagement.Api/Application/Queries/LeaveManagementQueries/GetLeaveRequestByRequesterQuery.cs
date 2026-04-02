@@ -2,7 +2,7 @@
 using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.SeedWork;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -53,8 +53,8 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                Console.WriteLine(ex.ToString());
+                return ApiHelperResponse.Failed("Failed to read leave request");
             }
         }
 

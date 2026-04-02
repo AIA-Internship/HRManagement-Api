@@ -1,0 +1,48 @@
+﻿@model dynamic
+
+<div class="modal fade" id="leaveCalendarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDate"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+
+                <!-- Approved -->
+                <div class="mb-3">
+                    <button class="btn btn-light w-100 text-start"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#approvedList">
+                        Approved leave
+                    </button>
+
+                    <div class="collapse show mt-2" id="approvedList">
+                        <!-- Inject by JS -->
+                    </div>
+                </div>
+
+                <!-- Pending -->
+                <div>
+                    <button class="btn btn-light w-100 text-start"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#pendingList">
+                        Pending request
+                    </button>
+
+                    <div class="collapse show mt-2" id="pendingList">
+                        <!-- Inject by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

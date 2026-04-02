@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HRManagement.Api.Domain.Models.Table.LeaveManagementModel.LeaveRequest;
+namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 
 public partial class    LeaveRequestModel
 {
@@ -58,4 +58,5 @@ public partial class    LeaveRequestModel
 
     [Column("modified_utc_date")]
     public DateTime ModifiedUtcDate { get; set; }
+
 }
