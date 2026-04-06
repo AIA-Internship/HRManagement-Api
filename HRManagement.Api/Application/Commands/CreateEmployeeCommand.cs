@@ -5,6 +5,9 @@ using HRManagement.Api.Domain.Models.Tables;
 using System.Text.RegularExpressions;
 using HRManagement.Api.Application.Mappings;
 using MediatR;
+using HRManagement.Api.Repositories.LeaveManagementRepositories;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 
 namespace HRManagement.Api.Application.Commands;
 
@@ -12,7 +15,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
 {
     public CreateEmployeeRequestDto RequestDto { get; } = commandDto;
     
-    public class Handler(IEmployeeRepository employeeRepository, ICurrentUserService currentUserService, IPasswordHasher passwordHasher) : IRequestHandler<CreateEmployeeCommand, ApiResponse<string>>
+    public class Handler(ILeaveBalanceRepository leaveRepo, IEmployeeRepository employeeRepository, ICurrentUserService currentUserService, IPasswordHasher passwordHasher) : IRequestHandler<CreateEmployeeCommand, ApiResponse<string>>
     {
         public async Task<ApiResponse<string>> Handle(CreateEmployeeCommand command, CancellationToken cancellationToken)
         {
@@ -44,6 +47,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);
             
             await employeeRepository.AddEmployeeAsync(user, employee);
+            await leaveRepo.createLeaveBalance(new LeaveBalanceModel { EmployeeId= user.Id, LeaveBalance = 0 });
 
             return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
         }

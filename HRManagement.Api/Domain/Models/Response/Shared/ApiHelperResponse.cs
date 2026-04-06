@@ -87,11 +87,10 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
         {
             return new ApiResponse()
             {
-                Title = "Data not found",
+                Title = "Error",
                 StatusCode = (int)HttpStatusCode.NotFound,
                 StatusMessage = errorMessage,
                 IsError = true,
-
             };
         }
     }

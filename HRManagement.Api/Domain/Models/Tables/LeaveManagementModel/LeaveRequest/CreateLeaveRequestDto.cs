@@ -6,7 +6,7 @@
         public int SupervisorId { get; set; }
         public string LeaveDescription { get; set; }
         public DateTime leaveStartDate { get; set; }
-        public int DayAmount { get; set; }
+        public decimal DayAmount { get; set; }
         public int LeaveType { get; set; }
         public string[] AttachmentPath { get; set; }
         

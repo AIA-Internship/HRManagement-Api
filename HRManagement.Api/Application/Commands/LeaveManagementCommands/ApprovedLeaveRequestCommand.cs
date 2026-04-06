@@ -1,0 +1,93 @@
+﻿using CSharpFunctionalExtensions;
+using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MediatR;
+using MimeKit;
+
+namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+{
+    public class ApprovedLeaveRequestCommand : IRequest<Result<ApiResponse>>
+    {
+        public int LeaveId{ get; set; }
+
+        public ApprovedLeaveRequestCommand(int id)
+        {
+            LeaveId = id;
+        }
+    }
+
+
+    internal class ApprovedLeaveRequestCommandHandler : IRequestHandler<ApprovedLeaveRequestCommand, Result<ApiResponse>>
+    {
+        private readonly ILogger<ApprovedLeaveRequestCommandHandler> _logger;
+        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveBalanceRepository _leaveBalanceRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+
+        public ApprovedLeaveRequestCommandHandler(
+            ILeaveRequestRepository repo
+            , ILogger<ApprovedLeaveRequestCommandHandler> logger
+            , ILeaveBalanceRepository leaveBalanceRepository
+            , IEmployeeRepository employeeRepository
+        )
+        {
+            _repo = repo;
+            _logger = logger;
+            _leaveBalanceRepository = leaveBalanceRepository;
+            _employeeRepository = employeeRepository;
+        }
+
+        public async Task<Result<ApiResponse>> Handle(ApprovedLeaveRequestCommand request, CancellationToken cancellationToken)
+        {
+            LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
+            Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
+            LeaveTableCOnfig config = await _repo.getLeaveTableCOnfig();
+
+            _logger.LogTrace("Executing handler for request : {request}", nameof(ApprovedLeaveRequestCommandHandler));
+            try
+            {
+
+                // balance -duration
+                var res = await _leaveBalanceRepository.getLeaveBalanceById(requester.Id);
+                _logger.LogInformation("EmployeeId: {id}", res?.EmployeeId);    
+                if (res == null)
+                    return ApiHelperResponse.NotFound("Leave balance not found");
+
+                res.LeaveBalance -= leaveRequest.DayAmount;
+                await _leaveBalanceRepository.updateLeaveBalance(res);
+
+                // change status to approve
+                leaveRequest.LeaveStatus = 2;
+                leaveRequest.IsCompleted = 1;
+                await _repo.updateLeaveRequest(leaveRequest);
+
+                //email send
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("Leave Management", config.email));
+                message.To.Add(MailboxAddress.Parse(requester.EmployeeEmail));
+
+                message.Subject = LeaveEmailTemplate.getApprovedEmailSubject();
+                message.Body = LeaveEmailTemplate.GetApprovedEmailBody(requester.FullName, leaveRequest.LeaveStartDate, config.redirect_link);
+
+                var smtpClient = new SmtpClient();
+                await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
+                await smtpClient.AuthenticateAsync(config.email, config.password);
+                await smtpClient.SendAsync(message);
+
+                return ApiHelperResponse.Success("yes");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Result.Failure<ApiResponse>(ex.Message); ;
+            }
+        }
+    }
+}

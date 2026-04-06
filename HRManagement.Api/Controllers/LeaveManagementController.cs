@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using FluentValidation;
 using HRManagement.Api.Application.Commands.LeaveManagementCommands;
+using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Application.Queries.LeaveManagementQueries;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
@@ -81,6 +82,8 @@ namespace HRManagement.Api.Controllers
             }
 
         }
+
+
 
         [HttpPost]
         [Route("edit")]
@@ -187,23 +190,51 @@ namespace HRManagement.Api.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("test/reminder-email")]
+        [HttpPost]
+        [Route("approve-request/{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> approvedEmail([FromRoute] int id) { 
+            string objectName = nameof(approvedEmail).ToString();
 
-        public async Task<ActionResult<ApiResponse>> testReminderEmail()
-        {
-            string objectName = nameof(testReminderEmail).ToString();
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var command = new ReminderEmailCommand();
+                var command = new ApprovedLeaveRequestCommand(id);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
-
                 _logger.LogInformation("End {Service}.", objectName);
+
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("rejected-request/{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> rejectedEmail([FromRoute] int id)
+        {
+            string objectName = nameof(rejectedEmail).ToString();
+
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var command = new RejectedLeaveRequestCommand(id);
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+                _logger.LogInformation("End {Service}.", objectName);
+
+
                 return response;
             }
             catch (Exception ex)
@@ -214,21 +245,24 @@ namespace HRManagement.Api.Controllers
         }
 
         [HttpGet]
-        [Route("test/get-config")]
+        [Route("generate-dummy-token")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<ApiResponse>> getConfig()
+        public async Task<ActionResult<ApiResponse>> generateToken()
         {
-            string objectName = nameof(getConfig).ToString();
+            string objectName = nameof(generateToken).ToString();
+
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var command = new GetLeaveConfig();
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+                var query = new GenerateDummyTokenQuery();
+                var response = await this.ValidateAndExecute(query, (c) => _mediator.Send(query)).ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
+
                 return response;
             }
             catch (Exception ex)
@@ -237,6 +271,8 @@ namespace HRManagement.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
 
     }
 }

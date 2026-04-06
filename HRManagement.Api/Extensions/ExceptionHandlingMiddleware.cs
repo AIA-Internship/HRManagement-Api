@@ -10,10 +10,12 @@ namespace HRManagement.Api.Extensions
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+        private readonly IWebHostEnvironment _env;
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext httpContext)
@@ -47,6 +49,12 @@ namespace HRManagement.Api.Extensions
                 IsError = true,
                 Content = new { correlationId }
             };
+
+            // In development include full exception details to help debugging
+            if (_env != null && _env.IsDevelopment())
+            {
+                errorResponse.Content = new { correlationId, details = exception.ToString() };
+            }
 
             if (exception.Message.Contains("No authenticationScheme was specified"))
             {

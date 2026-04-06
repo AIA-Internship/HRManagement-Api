@@ -2,6 +2,7 @@
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
 using MediatR;
 
 namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
@@ -35,7 +36,12 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                 var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.InitialRequestId ?? -1);
                 if (readResult == null) return ApiHelperResponse.Failed("request with {request.LeaveRequestDto.InitialRequestId} initial id not found");
                 
-                var updateResult = await _repo.createLeaveRequest(mapFromUpdateDto(request.LeaveRequestDto, readResult));
+                var history = mapToHistory(readResult);
+                var createResult = await _repo.createLeaveRequestHistory(history);
+                if (!createResult ) return ApiHelperResponse.Failed("failed create history");
+
+
+                var updateResult = await _repo.updateLeaveRequest(mapFromUpdateDto(request.LeaveRequestDto, readResult));
 
                 return ApiHelperResponse.Success("success created update");
                
@@ -61,14 +67,38 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                 LeaveType = dto.LeaveType ?? prev.LeaveType,
                 AttachmentPath = dto.AttachmentPath ?? prev.AttachmentPath,
 
-                IsEdit = 1,
                 IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
-                InitialRequestId = prev.InitialRequestId == -1 ? prev.LeaveId : prev.InitialRequestId,
 
                 CreatedBy = prev.CreatedBy,
                 CreatedUtcDate = prev.CreatedUtcDate,
 
                 ModifiedBy = dto.IsSupervisor ? prev.SupervisorId : prev.RequesterId,
+                ModifiedUtcDate = DateTime.UtcNow
+
+            };
+        }
+
+        private LeaveRequestHistory mapToHistory(LeaveRequestModel dto)
+        {
+            return new LeaveRequestHistory
+            {
+                RequesterId = dto.RequesterId,
+                SupervisorId = dto.SupervisorId,
+
+                LeaveStartDate = dto.LeaveStartDate,
+                LeaveStatus = dto.LeaveStatus ,
+                LeaveDescription = dto.LeaveDescription ,
+                DayAmount = dto.DayAmount ,
+                LeaveType = dto.LeaveType ,
+                AttachmentPath = dto.AttachmentPath,
+
+                IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
+                InitialRequestId = dto.LeaveId,
+
+                CreatedBy = dto.CreatedBy,
+                CreatedUtcDate = dto.CreatedUtcDate,
+
+                ModifiedBy = dto.RequesterId,
                 ModifiedUtcDate = DateTime.UtcNow
 
             };
