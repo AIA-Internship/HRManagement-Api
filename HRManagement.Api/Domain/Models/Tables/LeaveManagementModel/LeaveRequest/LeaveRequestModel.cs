@@ -27,7 +27,7 @@ public partial class    LeaveRequestModel
     public DateTime LeaveStartDate { get; set; }
 
     [Column("day_amount")]
-    public int DayAmount { get; set; }
+    public decimal DayAmount { get; set; }
 
     [Column("leave_type")]
     public int? LeaveType { get; set; }
@@ -37,12 +37,6 @@ public partial class    LeaveRequestModel
 
     [Column("is_completed")]
     public int IsCompleted { get; set; }
-
-    [Column("is_edit")]
-    public int IsEdit { get; set; }
-
-    [Column("initial_request_id")]
-    public int InitialRequestId { get; set; }
 
     [Column("attachment_path")]
     public string? AttachmentPath { get; set; }

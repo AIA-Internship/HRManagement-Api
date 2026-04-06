@@ -8,16 +8,14 @@
         public string? leaveDescription { get; set; }
         public string? leaveStatus { get; set; }
         public DateTime? leaveStartDate { get; set; }
-        public int? dayAmount { get; set; }
+        public decimal? dayAmount { get; set; }
         public string? leaveType { get; set; }
         public bool? isCompleted { get; set; }
-        public bool? isEdit { get; set; }
-        public int? initialRequestId { get; set; }
         public string[]? attachmentPath { get; set; }
         public DateTime createdUtcDate { get; set; }
         public string? requesterName { get; set; }
 
-        public GetLeaveRequestByMonthRangeDto(int? leaveId, int? requesterId, int? supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, int? dayAmount, int? leaveType, int? isCompleted, int? isEdit, int? initialRequestId, string? attachmentPath, DateTime createdUtcDate, string? requesterName)
+        public GetLeaveRequestByMonthRangeDto(int? leaveId, int? requesterId, int? supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, decimal? dayAmount, int? leaveType, int? isCompleted, string? attachmentPath, DateTime createdUtcDate, string? requesterName)
         {
             this.leaveId = leaveId;
             this.requesterId = requesterId;
@@ -28,8 +26,6 @@
             this.dayAmount = dayAmount;
             this.leaveType = leaveType.HasValue ? MappingHelper.leaveTypeFromInt(leaveType.Value).ToString() : null;
             this.isCompleted = isCompleted == 1;
-            this.isEdit = isEdit == 1;
-            this.initialRequestId = initialRequestId;
             this.attachmentPath = MappingHelper.splitAttachmentPath(attachmentPath);
             this.createdUtcDate = createdUtcDate;
             this.requesterName = requesterName;

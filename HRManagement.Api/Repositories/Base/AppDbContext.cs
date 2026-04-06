@@ -1,6 +1,9 @@
 ﻿using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Base;
@@ -15,6 +18,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<EmploymentInformation> EmploymentInformations { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
+    public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
+    public DbSet<LeaveRequestHistory> LeaveRequestHistory { get ; set ; }
+    public DbSet<LeaveTableCOnfig> LeaveTableCOnfig { get; set; }
+    public DbSet<LeaveBalanceModel> leaveBalanceModels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,5 +1,8 @@
-﻿using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+﻿using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
 using HRManagement.Api.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
@@ -34,7 +37,7 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
         public async Task<LeaveRequestModel> getLeaveRequestById(int id)
         {
             return await _dbContext.LeaveRequest
-                 .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0 && x.IsEdit == 0);
+                 .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0 );
 
         }
 
@@ -43,7 +46,7 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
             try
             {
                 return await _dbContext.LeaveRequest
-                    .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0 && x.IsEdit == 0)
+                    .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0)
                     .OrderByDescending(x => x.CreatedUtcDate)
                     .Take(max)
                     .ToListAsync();
@@ -62,13 +65,21 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<List<LeaveRequestModel>> getAllEditById(int leaveId)
+        public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
         {
-            return await _dbContext.LeaveRequest
-                .Where(x => x.InitialRequestId == leaveId && x.IsDeleted == 0 && x.IsEdit == 0)
+            return await _dbContext.LeaveRequestHistory
+                .Where(x => x.InitialRequestId == leaveId )
                 .ToListAsync();
         }
 
+        public async Task<bool> createLeaveRequestHistory(LeaveRequestHistory data)
+        {
+            await _dbContext.LeaveRequestHistory.AddAsync(data);
+
+            var affectedRows = await _dbContext.SaveChangesAsync();
+
+            return affectedRows > 0;
+        }
 
         public async Task<bool> softDelete(int id)
         {
@@ -88,7 +99,7 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
             return await (
                 from lr in _dbContext.LeaveRequest
                 join e in _dbContext.Employees on lr.RequesterId equals e.Id
-                where lr.LeaveStartDate >= startDate && lr.LeaveStartDate < endDate && lr.IsDeleted == 0 && lr.IsEdit == 0
+                where lr.LeaveStartDate >= startDate && lr.LeaveStartDate < endDate && lr.IsDeleted == 0 /*&& lr.IsEdit == 0*/
 
                 select new GetLeaveRequestByMonthRangeDto
                 (
@@ -102,8 +113,6 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
                     lr.DayAmount,
                     lr.LeaveType,
                     lr.IsCompleted,
-                    lr.IsEdit,
-                    lr.InitialRequestId,
                     lr.AttachmentPath,
                     lr.CreatedUtcDate,
                     e.FullName
@@ -111,5 +120,11 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 
                 ).ToListAsync();
         }
+
+        public async Task<LeaveTableCOnfig> getLeaveTableCOnfig()
+        {
+            return await _dbContext.LeaveTableCOnfig.FirstOrDefaultAsync();
+        }
+
     }
 }

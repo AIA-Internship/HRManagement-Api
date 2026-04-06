@@ -57,8 +57,6 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
                 dayAmount = model.DayAmount,
                 leaveType = MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
-                isEdit = model.IsEdit == 0 ? false : true,
-                initialRequestId = model.InitialRequestId,
                 attachmentPath = model.AttachmentPath != null
                     ? MappingHelper.splitAttachmentPath(model.AttachmentPath)
                     : null,

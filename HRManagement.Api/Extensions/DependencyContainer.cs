@@ -32,6 +32,8 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+            services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
@@ -45,9 +47,6 @@ namespace HRManagement.Api.Extensions
                 cfg.RegisterServicesFromAssembly(applicationAssembly);
             });
 
-            services.AddAutoMapper(typeof(EmployeeMappingProfile).Assembly);
-
-            services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
 
 
             return services;

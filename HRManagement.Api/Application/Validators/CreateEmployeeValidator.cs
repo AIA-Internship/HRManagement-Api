@@ -27,7 +27,6 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.EmployeeEmail)
             .NotEmpty().WithMessage("Employee email is required.")
             .EmailAddress().WithMessage("A valid email is required.")
-            .Must(email => email.EndsWith("@aia.com", StringComparison.OrdinalIgnoreCase))
             .WithMessage("Email must be a valid aia.com email")
             .MustAsync(async (email, _) => await employeeRepository.IsEmailUniqueAsync(email))
             .WithMessage(x => $"The work email '{x.RequestDto.EmployeeEmail}' is already in use.");
