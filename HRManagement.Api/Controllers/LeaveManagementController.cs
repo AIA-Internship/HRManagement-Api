@@ -159,15 +159,15 @@ namespace HRManagement.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
-    
 
-    [HttpGet]
+
+        [HttpGet]
         [Route("get-by-month")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
 
-        public async Task<ActionResult<ApiResponse>> readByMonth([FromQuery]int month,[FromQuery] int year )
+        public async Task<ActionResult<ApiResponse>> readByMonth([FromQuery] int month, [FromQuery] int year)
         {
             string objectName = nameof(readByMonth).ToString();
             try
@@ -186,5 +186,57 @@ namespace HRManagement.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet]
+        [Route("test/reminder-email")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+
+        public async Task<ActionResult<ApiResponse>> testReminderEmail()
+        {
+            string objectName = nameof(testReminderEmail).ToString();
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var command = new ReminderEmailCommand();
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("test/get-config")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> getConfig()
+        {
+            string objectName = nameof(getConfig).ToString();
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var command = new GetLeaveConfig();
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

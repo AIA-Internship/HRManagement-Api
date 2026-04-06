@@ -82,5 +82,17 @@ namespace HRManagement.Api.Domain.Models.Response.Shared
                 Content = listErrors
             };
         }
+
+        public static ApiResponse NotFound(string errorMessage)
+        {
+            return new ApiResponse()
+            {
+                Title = "Data not found",
+                StatusCode = (int)HttpStatusCode.NotFound,
+                StatusMessage = errorMessage,
+                IsError = true,
+
+            };
+        }
     }
 }

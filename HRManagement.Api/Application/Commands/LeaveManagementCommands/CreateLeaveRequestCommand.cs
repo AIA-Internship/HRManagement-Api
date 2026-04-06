@@ -1,10 +1,16 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Commands.LeaveManagementCommands.Helper;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.SeedWork;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using MediatR;
+using MimeKit;
 
 namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 {
@@ -20,14 +26,17 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     internal class CreateLeaveRequestCommandHandler : IRequestHandler<CreateLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<CreateLeaveRequestCommandHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
+        private readonly IEmployeeRepository _employeeRepo;
 
         public CreateLeaveRequestCommandHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo,
+            IEmployeeRepository employeeRepo
             , ILogger<CreateLeaveRequestCommandHandler> logger
         )
         {
             _repo = repo;
+            _employeeRepo = employeeRepo;
             _logger = logger;
         }
         public async Task<Result<ApiResponse>> Handle(CreateLeaveRequestCommand request, CancellationToken cancellationToken)
@@ -39,7 +48,9 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                 bool created = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
 
                 if(!created) return ApiHelperResponse.Failed("Failed to create leave request");
-                
+
+                sendEmail(request.LeaveRequestDto);
+
                 return ApiHelperResponse.Success("Leave request created successfully");
             }
             catch (Exception ex)
@@ -71,6 +82,41 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                 ModifiedUtcDate = DateTime.UtcNow
             };
 
+        }
+
+        public async void sendEmail(CreateLeaveRequestDto dto)
+        {
+            LeaveRequestModel request = mapFromCreateDto(dto);
+            LeaveConfig config = await _repo.getLeaveConfig();
+            Employee? supervisor = await _employeeRepo.GetByIdAsync(request.SupervisorId);
+            Employee? requester = await _employeeRepo.GetByIdAsync(request.RequesterId);
+            string subject = LeaveTemplate.NewRequestEmailSubject();
+            string body = LeaveTemplate.NewRequestEmailBody(request,requester, supervisor, config.RedirectLink);
+
+            try
+            {
+                var message = new MimeMessage();
+
+                message.From.Add(new MailboxAddress(subject, config.Email));
+                message.To.Add(MailboxAddress.Parse(supervisor.EmployeeEmail));
+
+                message.Body = new TextPart("plain")
+                {
+                    Text = body
+                };
+
+                var smtpClient = new SmtpClient();
+                await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
+                await smtpClient.AuthenticateAsync(config.Email, config.Password);
+                await smtpClient.SendAsync(message);
+
+                //return ApiHelperResponse.Success("yes");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                //return null;
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using MediatR;
@@ -17,9 +17,9 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     internal class DeleteLeaveRequestCommandHandler : IRequestHandler<DeleteLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<DeleteLeaveRequestCommandHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
         public DeleteLeaveRequestCommandHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo
             , ILogger<DeleteLeaveRequestCommandHandler> logger
         )
         {

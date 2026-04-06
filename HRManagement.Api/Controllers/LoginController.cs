@@ -1,14 +1,15 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using CSharpFunctionalExtensions;
 using FluentValidation;
-using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Application.Auth.DTOs;
 using HRManagement.Api.Application.Commands;
+using HRManagement.Api.Application.Commands.LeaveManagementCommands;
 using HRManagement.Api.Application.EmployeeDtos.Commands;
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagement.Api.Controllers;
 
@@ -97,5 +98,29 @@ public class LoginController : ValidateController<LoginController>
 
         _logger.LogInformation("End {Service}.", methodName);
         return response;
+    }
+
+    [HttpGet("generate-dummy-token")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(500)]
+
+    public async Task<ActionResult<ApiResponse>> GenerateDummyToken()
+    {
+        string objectName = nameof(GenerateDummyToken).ToString();
+        try
+        {
+            _logger.LogInformation("Start {Service}.", objectName);
+
+            var command = new GenerateDummyTokenCommand();
+            var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+            _logger.LogInformation("End {Service}.", objectName);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in {Service}.", objectName);
+            return BadRequest(ex.Message);
+        }
     }
 }

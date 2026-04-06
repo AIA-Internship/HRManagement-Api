@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using MediatR;
@@ -21,9 +21,9 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
         {
 
             private readonly ILogger<GetLeaveRequestByMonthRangeQuery> _logger;
-            private readonly ILeaveRequestRepository _repo;
+            private readonly ILeaveRepository _repo;
             public Handler(
-                ILeaveRequestRepository repo
+                ILeaveRepository repo
                 , ILogger<GetLeaveRequestByMonthRangeQuery> logger
                 )
             {

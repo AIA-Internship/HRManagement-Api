@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
@@ -20,10 +20,10 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
     internal class GetLeaveRequestByRequesterQueryHandler: IRequestHandler<GetLeaveRequestByRequesterQuery, Result<ApiResponse>>
     {
         private readonly ILogger<GetLeaveRequestByRequesterQueryHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
 
         public GetLeaveRequestByRequesterQueryHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo
             , ILogger<GetLeaveRequestByRequesterQueryHandler> logger
             , IUnitOfWork unitOfWork)
         {

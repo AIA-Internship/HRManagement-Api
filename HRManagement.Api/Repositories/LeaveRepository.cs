@@ -1,15 +1,16 @@
-﻿using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+﻿using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 
-namespace HRManagement.Api.Repositories.LeaveManagementRepositories
+namespace HRManagement.Api.Repositories
 {
-    public class LeaveRequestRepository : BaseRepository, ILeaveRequestRepository
+    public class LeaveRepository : BaseRepository, ILeaveRepository
     {
         private readonly AppDbContext _dbContext;
-        public LeaveRequestRepository(AppDbContext dbContext) : base(dbContext)
+        public LeaveRepository(AppDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
@@ -48,7 +49,7 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
                     .Take(max)
                     .ToListAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 return new List<LeaveRequestModel>();
@@ -92,7 +93,7 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
 
                 select new GetLeaveRequestByMonthRangeDto
                 (
-                    
+
                     lr.LeaveId,
                     lr.RequesterId,
                     lr.SupervisorId,
@@ -110,6 +111,60 @@ namespace HRManagement.Api.Repositories.LeaveManagementRepositories
                 )
 
                 ).ToListAsync();
+        }
+
+        public async Task<LeaveConfig> getLeaveConfig()
+        {
+            try
+            {
+                var response = _dbContext.LeaveTableConfig.FirstOrDefault();
+                    return new LeaveConfig
+                    {
+                        Email = response.Email,
+                        Password = response.Password,
+                        RedirectLink = response.RedirectLink
+                    };
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
+            
+        }
+
+        public async Task<bool> incrementAllEmployeeLeaveRequest()
+        {
+            var balances = await _dbContext.LeaveBalance.ToListAsync();
+
+            if (!balances.Any())
+                return false;
+
+            foreach (var balance in balances)
+            {
+                balance.LeaveBalance += 1; 
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<LeaveRequestModel>> getAllRequestNeedsReminder()
+        {
+            try
+            {
+                var targetDate = DateTime.Today.AddDays(2);
+                var response = await  _dbContext.LeaveRequest.Where(x => x.LeaveStartDate.Date == targetDate).ToListAsync();
+
+                Console.WriteLine(response);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+        return new List<LeaveRequestModel>();
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using MediatR;
@@ -17,9 +17,9 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
     internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse>>
     {
         private readonly ILogger<GetLeaveRequestByIdQuery> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
         public GetLeaveRequestByIdQueryHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo
             , ILogger<GetLeaveRequestByIdQuery> logger
             )
         {
@@ -31,7 +31,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
             try
             {
                 var result = await _repo.getLeaveRequestById(request.RequestId);
-                if(result == null) return ApiHelperResponse.Failed("Leave request not found");
+                if(result == null) return ApiHelperResponse.NotFound("Leave request not found");
 
 
                 return ApiHelperResponse.Success("read leave request successfully", mapToReadDto(result));
@@ -39,7 +39,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return ApiHelperResponse.Failed("Failed to delete leave request");
+                return ApiHelperResponse.Failed("Failed to get leave request");
             }
         }
 
