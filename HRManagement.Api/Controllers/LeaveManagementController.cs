@@ -244,34 +244,6 @@ namespace HRManagement.Api.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("generate-dummy-token")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(500)]
-        public async Task<ActionResult<ApiResponse>> generateToken()
-        {
-            string objectName = nameof(generateToken).ToString();
-
-
-            try
-            {
-                _logger.LogInformation("Start {Service}.", objectName);
-
-                var query = new GenerateDummyTokenQuery();
-                var response = await this.ValidateAndExecute(query, (c) => _mediator.Send(query)).ConfigureAwait(false);
-
-                _logger.LogInformation("End {Service}.", objectName);
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in {Service}.", objectName);
-                return BadRequest(ex.Message);
-            }
-        }
-
 
 
     }

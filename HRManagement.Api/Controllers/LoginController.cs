@@ -100,27 +100,5 @@ public class LoginController : ValidateController<LoginController>
         return response;
     }
 
-    [HttpGet("generate-dummy-token")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(500)]
 
-    public async Task<ActionResult<ApiResponse>> GenerateDummyToken()
-    {
-        string objectName = nameof(GenerateDummyToken).ToString();
-        try
-        {
-            _logger.LogInformation("Start {Service}.", objectName);
-
-            var command = new GenerateDummyTokenCommand();
-            var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
-
-            _logger.LogInformation("End {Service}.", objectName);
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in {Service}.", objectName);
-            return BadRequest(ex.Message);
-        }
-    }
 }
