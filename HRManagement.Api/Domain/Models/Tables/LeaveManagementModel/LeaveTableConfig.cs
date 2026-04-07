@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel
 {
     [Keyless]
-    public partial class LeaveTableCOnfig
+    public partial class LeaveTableConfig
     {
         [Column("email")]
         public string email { get; set; }

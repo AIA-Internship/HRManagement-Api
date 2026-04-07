@@ -26,6 +26,7 @@ namespace HRManagement.Api.Repositories.Services
 
                 //hitung next run untuk tanggal 1 bulan depan
                 var nextRun = new DateTime(now.Year, now.Month, 1).AddMonths(1);
+                //var nextRun = now.AddSeconds(10);
                 var duration = nextRun - now;
 
                 await Task.Delay(duration, stoppingToken);

@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
@@ -27,11 +26,11 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     internal class RejectedLeaveRequestCommandHandler : IRequestHandler<RejectedLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<RejectedLeaveRequestCommandHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
         private readonly IEmployeeRepository _employeeRepository;
 
         public RejectedLeaveRequestCommandHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo
             ,ILogger<RejectedLeaveRequestCommandHandler> logger
             ,IEmployeeRepository employeeRepository
         )
@@ -46,7 +45,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
             LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
             Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
-            LeaveTableCOnfig config = await _repo.getLeaveTableCOnfig();
+            LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(RejectedLeaveRequestCommandHandler));
             try

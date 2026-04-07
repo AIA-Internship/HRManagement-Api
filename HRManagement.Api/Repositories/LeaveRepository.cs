@@ -1,6 +1,8 @@
 ﻿using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
+using HRManagement.Api.Application.Interfaces;
+
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
+using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
 using HRManagement.Api.Repositories.Base;
@@ -121,10 +123,103 @@ namespace HRManagement.Api.Repositories
                 ).ToListAsync();
         }
 
-        public async Task<LeaveTableCOnfig> getLeaveTableCOnfig()
+        public async Task<LeaveTableConfig> getLeaveTableConfig()
         {
-            return await _dbContext.LeaveTableCOnfig.FirstOrDefaultAsync();
+            return await _dbContext.LeaveTableConfig.FirstOrDefaultAsync();
         }
 
+
+
+        public async Task<List<LeaveRequestModel>> getAllRequestNeedsReminder()
+        {
+            var targetDate = DateTime.Today.AddDays(2);
+
+            return await _dbContext.LeaveRequest
+                .Where(x => x.LeaveStartDate.Date == targetDate)
+                .ToListAsync();
+        }
+
+        public async Task<bool> createLeaveBalance(LeaveBalanceModel leaveBalance)
+        {
+            try
+            {
+                await _dbContext.leaveBalanceModels.AddAsync(leaveBalance);
+
+                var affectedRows = await _dbContext.SaveChangesAsync();
+
+                return affectedRows > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> deleteLeaveBalance(int id)
+        {
+            try
+            {
+                var res = await _dbContext.leaveBalanceModels.FindAsync(id);
+                if (res == null) return false;
+
+                _dbContext.leaveBalanceModels.Remove(res);
+
+                var affectedRows = await _dbContext.SaveChangesAsync();
+
+                return affectedRows > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<LeaveBalanceModel> getLeaveBalanceById(int id)
+        {
+            try
+            {
+                var res = await _dbContext.leaveBalanceModels.FirstOrDefaultAsync(x => x.EmployeeId == id);
+                if (res == null) return null;
+
+                return res;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        public async Task<bool> updateLeaveBalance(LeaveBalanceModel leaveBalance)
+        {
+            try
+            {
+
+                _dbContext.leaveBalanceModels.Update(leaveBalance);
+                return await _dbContext.SaveChangesAsync() > 0;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> incrementAllEmployeeLeaveRequest()
+        {
+            var balance = await _dbContext.leaveBalanceModels.ToListAsync();
+
+            foreach (var b in balance)
+            {
+                b.LeaveBalance += 1;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

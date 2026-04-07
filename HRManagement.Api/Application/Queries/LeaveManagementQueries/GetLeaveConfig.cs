@@ -33,7 +33,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
             }
             try
             {
-                var result = await _repo.getLeaveConfig();
+                var result = await _repo.getLeaveTableConfig();
                 if (result == null) return ApiHelperResponse.NotFound("Leave config not found");
 
 

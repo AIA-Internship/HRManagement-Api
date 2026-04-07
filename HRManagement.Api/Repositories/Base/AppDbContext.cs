@@ -20,7 +20,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
     public DbSet<LeaveRequestHistory> LeaveRequestHistory { get ; set ; }
-    public DbSet<LeaveTableCOnfig> LeaveTableCOnfig { get; set; }
+    public DbSet<LeaveTableConfig> LeaveTableConfig { get; set; }
     public DbSet<LeaveBalanceModel> leaveBalanceModels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

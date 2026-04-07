@@ -25,8 +25,7 @@ namespace HRManagement.Api.Repositories.Services
             {
                 var now = DateTime.Now;
 
-                //hitung next run untuk tanggal 1 bulan depan
-                var nextRun = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
+                var nextRun = now.AddDays(1);
 
                 if (now > nextRun)
                     nextRun = nextRun.AddDays(1);
@@ -37,7 +36,7 @@ namespace HRManagement.Api.Repositories.Services
                 using var scope = _serviceProvider.CreateScope();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                var result = await mediator.Send(new UpdateLeaveBalanceCommand(), stoppingToken);
+                var result = await mediator.Send(new ReminderEmailCommand(), stoppingToken);
 
                 _logger.LogInformation("Leave reminder job executed at {time}", DateTime.Now);
             }

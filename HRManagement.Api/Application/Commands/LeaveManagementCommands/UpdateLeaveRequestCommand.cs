@@ -55,33 +55,31 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
         private LeaveRequestModel mapFromUpdateDto(UpdateLeaveRequestDto dto, LeaveRequestModel prev)
         {
-            return new LeaveRequestModel
+            prev.LeaveStartDate = dto.LeaveStartDate ?? prev.LeaveStartDate;
+            prev.LeaveStatus = dto.LeaveStatus ?? prev.LeaveStatus;
+            prev.LeaveDescription = dto.LeaveDescription ?? prev.LeaveDescription;
+            prev.DayAmount = dto.DayAmount ?? prev.DayAmount;
+            prev.LeaveType = dto.LeaveType ?? prev.LeaveType;
+
+            // handle attachment null / kosong
+            if (dto.AttachmentPath != null && dto.AttachmentPath.Length > 0)
             {
-                RequesterId = prev.RequesterId,
-                SupervisorId = prev.SupervisorId,
+                prev.AttachmentPath = MappingHelper.joinAttachmentPath(dto.AttachmentPath);
+            }
 
-                LeaveStartDate = dto.LeaveStartDate ?? prev.LeaveStartDate,
-                LeaveStatus = dto.LeaveStatus ?? prev.LeaveStatus,
-                LeaveDescription = dto.LeaveDescription ?? prev.LeaveDescription,
-                DayAmount = dto.DayAmount ?? prev.DayAmount,
-                LeaveType = dto.LeaveType ?? prev.LeaveType,
-                AttachmentPath = dto.AttachmentPath ?? prev.AttachmentPath,
+            prev.IsCompleted = dto.LeaveStatus == 2 ? 1 : 0;
 
-                IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
+            prev.ModifiedBy = dto.IsSupervisor ? prev.SupervisorId : prev.RequesterId;
+            prev.ModifiedUtcDate = DateTime.UtcNow;
 
-                CreatedBy = prev.CreatedBy,
-                CreatedUtcDate = prev.CreatedUtcDate,
-
-                ModifiedBy = dto.IsSupervisor ? prev.SupervisorId : prev.RequesterId,
-                ModifiedUtcDate = DateTime.UtcNow
-
-            };
+            return prev;
         }
 
         private LeaveRequestHistory mapToHistory(LeaveRequestModel dto)
         {
             return new LeaveRequestHistory
             {
+
                 RequesterId = dto.RequesterId,
                 SupervisorId = dto.SupervisorId,
 

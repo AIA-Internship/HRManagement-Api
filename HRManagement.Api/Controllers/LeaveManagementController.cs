@@ -61,14 +61,14 @@ namespace HRManagement.Api.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
 
-        public async Task<ActionResult<ApiResponse>> createLeaveRequest([FromBody] CreateLeaveRequestCommand content)
+        public async Task<ActionResult<ApiResponse>> createLeaveRequest([FromBody] CreateLeaveRequestDto content)
         {
             string objectName = nameof(createLeaveRequest).ToString();
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var command = new CreateLeaveRequestCommand(content.LeaveRequestDto);
+                var command = new CreateLeaveRequestCommand(content);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);

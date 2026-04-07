@@ -78,17 +78,17 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
             public async void sendEmail(LeaveRequestModel request)
             {
-                LeaveConfig config = await _repo.getLeaveConfig();
+                LeaveTableConfig config = await _repo.getLeaveTableConfig();
                 Employee? supervisor = await _employeeRepo.GetByIdAsync(request.SupervisorId);
                 Employee? requester = await _employeeRepo.GetByIdAsync(request.RequesterId);
                 string subject = LeaveTemplate.ReminderEmailSubject();
-                string body = LeaveTemplate.ReminderEmailBody(request, requester, supervisor, config.RedirectLink);
+                string body = LeaveTemplate.ReminderEmailBody(request, requester, supervisor, config.redirect_link);
 
                 try
                 {
                     var message = new MimeMessage();
 
-                    message.From.Add(new MailboxAddress(subject, config.Email));
+                    message.From.Add(new MailboxAddress(subject, config.email));
                     message.To.Add(MailboxAddress.Parse(supervisor.EmployeeEmail));
 
                     message.Body = new TextPart("plain")
@@ -98,7 +98,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
                     var smtpClient = new SmtpClient();
                     await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
-                    await smtpClient.AuthenticateAsync(config.Email, config.Password);
+                    await smtpClient.AuthenticateAsync(config.email, config.password);
                     await smtpClient.SendAsync(message);
 
 

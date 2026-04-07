@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
@@ -27,14 +26,14 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     internal class ApprovedLeaveRequestCommandHandler : IRequestHandler<ApprovedLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<ApprovedLeaveRequestCommandHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
-        private readonly ILeaveBalanceRepository _leaveBalanceRepository;
+        private readonly ILeaveRepository _repo;
+        private readonly ILeaveRepository _leaveBalanceRepository;
         private readonly IEmployeeRepository _employeeRepository;
 
         public ApprovedLeaveRequestCommandHandler(
-            ILeaveRequestRepository repo
+            ILeaveRepository repo
             , ILogger<ApprovedLeaveRequestCommandHandler> logger
-            , ILeaveBalanceRepository leaveBalanceRepository
+            , ILeaveRepository leaveBalanceRepository
             , IEmployeeRepository employeeRepository
         )
         {
@@ -48,7 +47,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
         {
             LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
             Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
-            LeaveTableCOnfig config = await _repo.getLeaveTableCOnfig();
+            LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(ApprovedLeaveRequestCommandHandler));
             try

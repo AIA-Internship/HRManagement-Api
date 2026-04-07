@@ -1,7 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
-using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
@@ -28,19 +26,17 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
     internal class CreateLeaveRequestCommandHandler : IRequestHandler<CreateLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<CreateLeaveRequestCommandHandler> _logger;
-        private readonly ILeaveRequestRepository _repo;
+        private readonly ILeaveRepository _repo;
         private readonly IEmployeeRepository _employeeRepository;
 
 
         public CreateLeaveRequestCommandHandler(
-            ILeaveRepository repo,
-            IEmployeeRepository employeeRepo
+            ILeaveRepository repo
             , ILogger<CreateLeaveRequestCommandHandler> logger
             , IEmployeeRepository employeeRepository
         )
         {
             _repo = repo;
-            _employeeRepo = employeeRepo;
             _logger = logger;
             _employeeRepository = employeeRepository;
         }
@@ -50,7 +46,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
             Employee spv = await _employeeRepository.GetByIdAsync(req.SupervisorId);
             Employee emp = await _employeeRepository.GetByIdAsync(req.RequesterId);
-            LeaveTableCOnfig config = await _repo.getLeaveTableCOnfig();
+            LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
             try
@@ -109,27 +105,24 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
         public async void sendEmail(CreateLeaveRequestDto dto)
         {
             LeaveRequestModel request = mapFromCreateDto(dto);
-            LeaveConfig config = await _repo.getLeaveConfig();
-            Employee? supervisor = await _employeeRepo.GetByIdAsync(request.SupervisorId);
-            Employee? requester = await _employeeRepo.GetByIdAsync(request.RequesterId);
-            string subject = LeaveTemplate.NewRequestEmailSubject();
-            string body = LeaveTemplate.NewRequestEmailBody(request,requester, supervisor, config.RedirectLink);
+            LeaveTableConfig config = await _repo.getLeaveTableConfig();
+            Employee? supervisor = await _employeeRepository.GetByIdAsync(request.SupervisorId);
+            Employee? requester = await _employeeRepository.GetByIdAsync(request.RequesterId);
+            string subject = LeaveEmailTemplate.GetRequestApprovalToSpvSubject();
 
             try
             {
                 var message = new MimeMessage();
 
-                message.From.Add(new MailboxAddress(subject, config.Email));
+                message.From.Add(new MailboxAddress(subject, config.email));
                 message.To.Add(MailboxAddress.Parse(supervisor.EmployeeEmail));
 
-                message.Body = new TextPart("plain")
-                {
-                    Text = body
-                };
+                message.Body = LeaveEmailTemplate.GetRequestApprovalToSpv(supervisor.FullName,requester.FullName, request.CreatedUtcDate, request.LeaveType ?? 0, request.LeaveStartDate, request.LeaveStartDate.AddDays((double)request.DayAmount), config.redirect_link);
+
 
                 var smtpClient = new SmtpClient();
                 await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
-                await smtpClient.AuthenticateAsync(config.Email, config.Password);
+                await smtpClient.AuthenticateAsync(config.email, config.password);
                 await smtpClient.SendAsync(message);
 
                 //return ApiHelperResponse.Success("yes");

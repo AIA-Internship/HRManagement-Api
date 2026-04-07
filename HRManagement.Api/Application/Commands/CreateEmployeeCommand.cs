@@ -5,8 +5,6 @@ using HRManagement.Api.Domain.Models.Tables;
 using System.Text.RegularExpressions;
 using HRManagement.Api.Application.Mappings;
 using MediatR;
-using HRManagement.Api.Repositories.LeaveManagementRepositories;
-using HRManagement.Api.Application.Interfaces.LeaveManagementInterface;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 
 namespace HRManagement.Api.Application.Commands;
@@ -15,7 +13,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
 {
     public CreateEmployeeRequestDto RequestDto { get; } = commandDto;
     
-    public class Handler(ILeaveBalanceRepository leaveRepo, IEmployeeRepository employeeRepository, ICurrentUserService currentUserService, IPasswordHasher passwordHasher) : IRequestHandler<CreateEmployeeCommand, ApiResponse<string>>
+    public class Handler(ILeaveRepository leaveRepo, IEmployeeRepository employeeRepository, ICurrentUserService currentUserService, IPasswordHasher passwordHasher) : IRequestHandler<CreateEmployeeCommand, ApiResponse<string>>
     {
         public async Task<ApiResponse<string>> Handle(CreateEmployeeCommand command, CancellationToken cancellationToken)
         {

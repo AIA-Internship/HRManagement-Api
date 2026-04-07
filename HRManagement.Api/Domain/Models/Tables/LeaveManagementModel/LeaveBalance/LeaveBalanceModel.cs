@@ -7,7 +7,7 @@ namespace HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalanc
     [Table("LeaveBalance")]
     public class LeaveBalanceModel
     {
-        [Key]
+        [Key ]
         [Column("employee_id")]
         public int EmployeeId { get; set; }
         [Column("leave_balance")]

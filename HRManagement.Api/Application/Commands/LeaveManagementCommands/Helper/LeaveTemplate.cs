@@ -19,7 +19,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands.Helper
 
             Leave ID: {leaveRequest.LeaveId}
             Category: {MappingHelper.leaveTypeFromInt((int)leaveRequest!.LeaveType).ToString()}
-            Date: {leaveRequest.LeaveStartDate} - {leaveRequest.LeaveStartDate.AddDays(leaveRequest.DayAmount)}
+            Date: {leaveRequest.LeaveStartDate} - {leaveRequest.LeaveStartDate.AddDays((double)leaveRequest.DayAmount)}
 
             Please review and approve the request using the link below.
             {link}
@@ -66,7 +66,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands.Helper
 
             Leave ID: {leaveRequest.LeaveId}
             Category: {MappingHelper.leaveTypeFromInt((int)leaveRequest!.LeaveType).ToString()}
-            Date: {leaveRequest.LeaveStartDate} - {leaveRequest.LeaveStartDate.AddDays(leaveRequest.DayAmount)}
+            Date: {leaveRequest.LeaveStartDate} - {leaveRequest.LeaveStartDate.AddDays((double)leaveRequest.DayAmount)}
 
             Please review and approve the request using the link below:
             {link}
