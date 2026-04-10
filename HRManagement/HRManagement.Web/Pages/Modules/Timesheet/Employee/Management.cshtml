@@ -1,0 +1,235 @@
+@page "/Timesheet/Employee/Management"
+@model HRManagement.Web.Pages.Modules.Timesheet.ManagementModel
+@{
+    ViewData["Title"] = "Timesheet Daily Log";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid app-container-full bg-white">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Daily Log",
+                Subtitle = "Monitor and manage your monthly work logs with ease",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Daily Log" }
+                }
+            })
+            <!-- PERFECT BASELINE CONTAINER (v8.1) -->
+            <div class="px-0 py-5">
+                
+                <!-- UNIFIED TOOLBAR NAV (1-Line Layout Match with Supervisor) -->
+                <!-- UNIFIED TOOLBAR NAV (SLIDER FORMAT) -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
+                    
+                    <!-- View Segment Control -->
+                    <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
+                        <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
+                        <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
+                        <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                    </div>
+
+                    <!-- Date Scroller (Keep Intern Font) -->
+                    <div class="date-selector-container position-relative d-flex align-items-center gap-4">
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(-1, 'left')" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center; background: #fff;"><i class="bi bi-chevron-left fs-4"></i></button>
+                        
+                        <div class="d-flex flex-column align-items-center">
+                            <h1 class="current-date-title d-flex align-items-center gap-3 px-6 py-3 mb-0" style="cursor:pointer; background: #F8F9FA; border-radius: 14px;" onclick="toggleDatePopup(event)">
+                                <i class="bi bi-calendar3 text-brand fs-3"></i>
+                                <span id="current_view_label">...</span>
+                            </h1>
+                            @* GLOBAL POPOVERS NOW LOADED IN _LAYOUT *@
+                        </div>
+
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(1, 'right')" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center; background: #fff;"><i class="bi bi-chevron-right fs-4"></i></button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="btn-group-actions d-flex align-items-center gap-3">
+                        <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
+                        <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
+                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" onclick="showReviewModal()"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
+                    </div>
+                </div>
+
+                <!-- INTERN/SUPERVISOR INFO BAR -->
+                <div class="intern-supervisor-card shadow-sm mt-8">
+                    <div class="info-section border-right">
+                        <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
+                        <div class="info-text-block">
+                            <span class="info-title-label">Intern Identity</span>
+                            <span class="info-person-name" id="intern_name_label">---</span>
+                        </div>
+                    </div>
+                    <div class="info-section ps-10">
+                        <div class="info-icon-circle"><i class="bi bi-person-hearts"></i></div>
+                        <div class="info-text-block">
+                            <span class="info-title-label">Assigned Supervisor</span>
+                            <span class="info-person-name" id="supervisor_name_label">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN RESULTS PORT -->
+                <div class="mt-8 pb-10">
+                    <div id="view_monthly" class="timesheet-view">
+                        <div class="monthly-calendar-grid shadow-sm">
+                            <div class="grid-header">
+                                <div class="grid-header-cell">MON</div><div class="grid-header-cell">TUE</div><div class="grid-header-cell">WED</div>
+                                <div class="grid-header-cell">THU</div><div class="grid-header-cell">FRI</div>
+                                <div class="grid-header-cell text-danger">SAT</div><div class="grid-header-cell text-danger">SUN</div>
+                            </div>
+                            <!-- DYNAMICALLY POPULATED BY JS -->
+                            <div id="monthly_grid_container" style="display: flex; flex-wrap: wrap;"></div>
+                        </div>
+                    </div>
+
+                    <div id="view_weekly" class="timesheet-view d-none">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <table class="weekly-master-table">
+                                <thead class="bg-light">
+                                    <tr id="weekly_header_row">
+                                        <th style="width: 25%">Project</th>
+                                        <th id="weekly_h_mon"></th>
+                                        <th id="weekly_h_tue"></th>
+                                        <th id="weekly_h_wed"></th>
+                                        <th id="weekly_h_thu"></th>
+                                        <th id="weekly_h_fri"></th>
+                                        <th id="weekly_h_sat" class="weekend-th"></th>
+                                        <th id="weekly_h_sun" class="weekend-th"></th>
+                                        <th style="background: #F1F4F9">Week<br>Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weekly_log_tbody">
+                                    <!-- Populated dynamically by JS ONLY to prevent flickering -->
+                                </tbody>
+                                <tfoot style="background: #F9FAFB">
+                                    <tr>
+                                        <td class="p-8 fw-boldest fs-5 text-end">TOTAL</td>
+                                        <td id="weekly_total_mon" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_tue" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_wed" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_thu" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_fri" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_sat" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_sun" class="fw-boldest text-center">00h : 00m</td>
+                                        <td id="weekly_total_all" class="fw-boldest text-center text-brand fs-4">00h : 00m</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="view_daily" class="timesheet-view d-none">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <table class="daily-master-table w-100">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%">Duration</th>
+                                        <th style="width: 20%">Project</th>
+                                        <th style="width: 15%">Apps Used</th>
+                                        <th>Task Description</th>
+                                        <th style="width: 15%">Project Lead</th>
+                                        <th style="width: 15%">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view_daily_tbody">
+                                    <tr class="align-middle">
+                                        <td colspan="6" class="text-center p-20">
+                                            <div class="spinner-border text-danger" role="status"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- END PERFECT BASELINE WRAPPER -->
+        </div>
+    </div>
+</div>
+
+<!-- DATE PICKER MODALS (ANCHORED NEAR DATE) -->
+<div class="modal fade modal-anchored-date" id="modal_monthly_picker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="datepicker-header">
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
+                <div class="title" id="m_picker_year">...</div>
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="datepicker-grid-3">
+                @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+                    <div class="datepicker-month-cell @(m == "Mar" ? "selected" : "")">@m</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-anchored-date" id="modal_weekly_picker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="datepicker-header">
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
+                <div class="title" id="w_picker_month">...</div>
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="datepicker-grid-7 px-4">
+                @foreach (var d in new[] {"MO", "TU", "WE", "TH", "FR", "SA", "SU"}) { <div class="datepicker-day-head">@d</div> }
+                @for (int i=1; i<=31; i++) {
+                    <div class="datepicker-day-cell @(i >= 2 && i <= 8 ? "selected" : "")">@i</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-anchored-date" id="modal_daily_picker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="datepicker-header">
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-left"></i></button>
+                <div class="title" id="d_picker_month">...</div>
+                <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="datepicker-grid-7 px-4">
+                @foreach (var d in new[] {"MO", "TU", "WE", "TH", "FR", "SA", "SU"}) { <div class="datepicker-day-head">@d</div> }
+                @for (int i=1; i<=31; i++) {
+                    <div class="datepicker-day-cell @(i == 5 ? "selected" : "")">@i</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_review_submit" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-500px">
+        <div class="modal-content modal-review-submit shadow-lg">
+            <h2 class="modal-title">Review & Submit</h2>
+            <p class="modal-desc">Please review your logs for <strong id="review_period_label">...</strong> before final submission to your supervisor. You can</p>
+            
+            <a href="#" class="btn-download-draft w-100 shadow-sm mb-8"><i class="bi bi-file-earmark-excel-fill fs-3"></i> Download Draft (.xlsx) <span>to double-check.</span></a>
+            
+            <div class="certify-check-box mb-10">
+                <input type="checkbox" id="certify_check">
+                <label for="certify_check" class="certify-comment">I hereby certify that the hours logged above are accurate and represent my actual work time for this month.</label>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-6"><button class="btn btn-action-main btn-neutral-ghost w-100 fw-boldest" style="height:55px" data-bs-dismiss="modal">Back to Editing</button></div>
+                <div class="col-6"><button class="btn btn-brand w-100 fw-boldest" style="height:55px; border-radius:12px" onclick="submitTimesheetApproval()">Submit Now</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+}

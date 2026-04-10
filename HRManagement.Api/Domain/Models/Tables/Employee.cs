@@ -1,23 +1,30 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace HRManagement.Api.Domain.Models.Tables;
 
 public class Employee : BaseTableModel
 {
     public int Id { get; private set; } 
-    public string FullName { get; private set; }
+    public string FullName { get; private set; } = string.Empty;
     public int Gender { get; private set; }
-    public string PersonalEmail { get; private set; }
-    public string EmployeeEmail { get; private set; }
-    public string Nik { get; private set; }
-    public string PlaceOfBirth { get; private set; }
+    public string PersonalEmail { get; private set; } = string.Empty;
+    public string EmployeeEmail { get; private set; } = string.Empty;
+    public string Nik { get; private set; } = string.Empty;
+    public string PlaceOfBirth { get; private set; } = string.Empty;
     public DateTime DateOfBirth { get; private set; }
     public int MaritalStatus { get; private set; }
     public Address CurrentAddress { get; private set; } = new Address();
     public Address ResidentialAddress { get; private set; } = new Address();
-    public string PhoneNumber { get; private set; }
+    public string PhoneNumber { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
     public int Role { get; private set; }
-    public EmploymentInformation? EmploymentInformation { get; private set; }
-    public ICollection<EmergencyContact> EmergencyContacts { get; private set; } = new List<EmergencyContact>();
+    
+    // Physical decoupling: Managed at application level. Not Mapped in Database.
+    [NotMapped]
+    public EmploymentInformation? EmploymentInformation { get; set; }
+    
+    [NotMapped]
+    public ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
     
     protected Employee() { }
     
@@ -34,9 +41,7 @@ public class Employee : BaseTableModel
         Address currentAddress,
         Address residentialAddress,
         int role,
-        long actionerId,
-        EmploymentInformation? employmentInformation = null,
-        IEnumerable<EmergencyContact>? emergencyContacts = null)
+        long actionerId)
     {
         FullName = fullName;
         Gender = gender;
@@ -52,28 +57,16 @@ public class Employee : BaseTableModel
         Role = role;
         IsActive = true;
 
-        if (employmentInformation != null)
-        {
-            EmploymentInformation = employmentInformation;
-        }
-
-        if (emergencyContacts != null)
-        {
-            foreach (var contact in emergencyContacts)
-            {
-                EmergencyContacts.Add(new EmergencyContact
-                {
-                    Name = contact.Name,
-                    Relationship = contact.Relationship,
-                    PhoneNumber = contact.PhoneNumber,
-                    CreatedBy = actionerId,
-                    ModifiedBy = actionerId
-                });
-            }
-        }
-
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);
+    }
+
+    public void UpdateFullName(string fullName)
+    {
+        if (!string.IsNullOrWhiteSpace(fullName))
+        {
+            FullName = fullName;
+        }
     }
 
     public void ApplyUpdate(EmployeeUpdateRequest request, long actionerId)
@@ -97,35 +90,25 @@ public class Employee : BaseTableModel
         DateOfBirth = request.NewDateOfBirth ?? DateOfBirth;
         MaritalStatus = request.NewMaritalStatus ?? MaritalStatus;
         
-        if (!string.IsNullOrWhiteSpace(request.NewEmergencyContactName))
+        MarkAsModified(actionerId);
+    }
+
+    public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, string? supervisorName, string? employeeDisplayId, long actionerId)
+    {
+        if (EmploymentInformation == null)
         {
-            var contact = EmergencyContacts.FirstOrDefault();
-            if (contact == null)
-            {
-                contact = new EmergencyContact { EmployeeId = Id };
-                EmergencyContacts.Add(contact);
-            }
-
-            contact.Name = request.NewEmergencyContactName;
-            contact.PhoneNumber = UseIfProvided(request.NewEmergencyContactPhone, contact.PhoneNumber);
-            contact.Relationship = UseIfProvided(request.NewEmergencyContactRelationship, contact.Relationship);
+            EmploymentInformation = new EmploymentInformation(actionerId);
+            EmploymentInformation.EmployeeId = Id;
         }
-
+        
+        EmploymentInformation.UpdateDetails(status, startDate, type, department, position, supervisorName, employeeDisplayId, actionerId);
+    
         MarkAsModified(actionerId);
     }
 
     private static string UseIfProvided(string? newValue, string currentValue) =>
         string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
 
-    public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
-    {
-        if (EmploymentInformation == null)
-        {
-            EmploymentInformation = new EmploymentInformation(actionerId);
-        }
-        
-        EmploymentInformation.UpdateDetails(status, startDate, type, department, position, supervisorId, employeeDisplayId, actionerId);
-    
-        MarkAsModified(actionerId);
-    }
+    public void SetEmploymentInfo(EmploymentInformation? info) => EmploymentInformation = info;
+    public void AddEmergencyContact(EmergencyContact contact) => EmergencyContacts.Add(contact);
 }

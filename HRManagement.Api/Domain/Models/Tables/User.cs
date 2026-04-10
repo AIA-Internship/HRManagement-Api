@@ -1,10 +1,10 @@
-﻿namespace HRManagement.Api.Domain.Models.Tables;
+namespace HRManagement.Api.Domain.Models.Tables;
 
 public class User : BaseTableModel
 {
     public int Id { get; private set; }
-    public string EmployeeEmail { get; private set; }
-    public string PasswordHash { get; private set; }
+    public string EmployeeEmail { get; private set; } = string.Empty;
+    public string PasswordHash { get; private set; } = string.Empty;
     public int Role { get; private set; }
     
     protected User() { }

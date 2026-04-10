@@ -1,0 +1,120 @@
+/* GLOBAL BUTTON SYSTEM (REUSABLE COMPONENTS) */
+
+/* 1. PRIMARY BUTTONS (RED) */
+.btn-standard-primary, .btn-action-save, .btn-submit-red, .btn-confirm, .btn-brand { 
+    background: var(--brand-red); 
+    color: #fff !important; 
+    border: 0; 
+    border-radius: 12px; 
+    height: 48px; 
+    padding: 0 30px;
+    font-weight: 800; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(211, 17, 69, 0.2);
+    cursor: pointer;
+    white-space: nowrap !important;
+    text-transform: none !important; /* Force Title Case/Normal Case */
+}
+.btn-standard-primary:hover, .btn-action-save:hover, .btn-submit-red:hover { 
+    background: var(--brand-red-active); 
+    transform: translateY(-1px); 
+}
+.btn-standard-primary i, .btn-action-save i, .btn-confirm i, .btn-submit-red i, .btn-brand i {
+    color: #fff !important;
+}
+
+/* 2. GHOST BUTTONS (WHITE/BORDER) */
+.btn-standard-ghost, .btn-action-discard, .btn-today-white, .btn-project-white, .btn-neutral-ghost { 
+    background: #fff; 
+    border: 1px solid #E1E3EA; 
+    border-radius: 12px; 
+    height: 48px; 
+    padding: 0 30px;
+    font-weight: 800; 
+    color: #3F4254; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    transition: all 0.2s;
+    cursor: pointer;
+    white-space: nowrap !important;
+    text-transform: none !important;
+}
+.btn-standard-ghost:hover { 
+    background: #F9FAFB; 
+    border-color: #D1D3E0; 
+    color: #181C32; 
+}
+
+/* 3. INFO BUTTONS (LIGHT RED) */
+.btn-standard-info {
+    background: #F4F7FB; 
+    border: 0; 
+    border-radius: 12px; 
+    height: 48px; 
+    padding: 0 30px;
+    font-weight: 800; 
+    color: var(--brand-red); 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    transition: all 0.2s;
+    cursor: pointer;
+    text-transform: none !important;
+}
+.btn-standard-info:hover { background: #E9ECEF; }
+
+/* 4. NAVIGATION BUTTONS (CIRCLE) */
+.btn-standard-nav {
+    width: 44px; 
+    height: 44px; 
+    border-radius: 50%; 
+    border: 1px solid #E1E3EA; 
+    background: #fff;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #3F4254; 
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-standard-nav:hover { 
+    background: #F9FAFB; 
+    border-color: var(--brand-red); 
+    color: var(--brand-red); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+}
+
+/* 5. ADD ROW BUTTON (SLIM) */
+.btn-add-row {
+    background: #fff;
+    border: 1px solid #3F4254;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #3F4254;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-add-row:hover { background: #3F4254; color: #fff; }
+ 
+ /* 6. COMPACT VARIANTS (FOR CARD HEADERS/TOOLBARS) */
+ .btn-standard-sm {
+     height: 38px !important;
+     padding: 0 16px !important;
+     font-size: 0.8rem !important;
+     border-radius: 10px !important;
+ }
+ .btn-standard-sm i {
+     font-size: 0.9rem !important;
+ }

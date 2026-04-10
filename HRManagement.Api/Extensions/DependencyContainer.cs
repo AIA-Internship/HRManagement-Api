@@ -1,5 +1,6 @@
-﻿using FluentValidation;
+using FluentValidation;
 using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Application.Mappings;
 using HRManagement.Api.Application.Mappings;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Interfaces;
@@ -20,7 +21,13 @@ namespace HRManagement.Api.Extensions
             // 1. Database Setup
             var connectionString = configuration["AppSetting:DbConnectionString"] ?? throw new InvalidOperationException("Database Connection String is missing!");
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                }));
             
             services.AddScoped<IApplicationDbContext>(provider => 
                 provider.GetRequiredService<AppDbContext>());
@@ -29,13 +36,15 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
+            services.AddScoped<ITimesheetRepository, TimesheetRepository>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<ILeaveRepository, LeaveRepository>();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
 
-            // 3. MediatR & FluentValidation
+            // 3. MediatR, AutoMapper & FluentValidation
             var applicationAssembly = typeof(LoginQuery).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             

@@ -44,7 +44,7 @@ public static class EmployeeMappings
             Department = employment?.Department ?? string.Empty,
             Position = employment?.Position ?? string.Empty,
             // SupervisorDisplayId = employment?.Supervisor?.EmploymentInformation?.EmployeeDisplayId ?? string.Empty,
-            SupervisorName = employment?.Supervisor?.FullName ?? string.Empty,
+            SupervisorName = employment?.SupervisorName ?? string.Empty,
             EmployeeDisplayId = employment?.EmployeeDisplayId ?? string.Empty,
             EmergencyContactName = emergencyContact?.Name ?? string.Empty,
             EmergencyContactPhone = emergencyContact?.PhoneNumber ?? string.Empty,
@@ -102,7 +102,7 @@ public static class EmployeeMappings
 
     public static Employee ToEntity(this CreateEmployeeRequestDto dto, long actionerId, EmploymentInformation? employmentInfo, List<EmergencyContact> emergencyContacts)
     {
-        return new Employee(
+        var employee = new Employee(
             fullName: dto.FullName,
             gender: dto.Gender,
             personalEmail: dto.PersonalEmail,
@@ -115,13 +115,19 @@ public static class EmployeeMappings
             currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
             residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
             role: dto.Role,
-            actionerId: actionerId,
-            employmentInformation: employmentInfo,
-            emergencyContacts: emergencyContacts
+            actionerId: actionerId
         );
+
+        if (employmentInfo != null) employee.SetEmploymentInfo(employmentInfo);
+        if (emergencyContacts != null)
+        {
+            foreach (var contact in emergencyContacts) employee.AddEmergencyContact(contact);
+        }
+
+        return employee;
     }
 
-    public static EmploymentInformation ToEntity(this CreateEmploymentInfoDto infoDto, string displayId, int? supervisorId, long actionerId)
+    public static EmploymentInformation ToEntity(this CreateEmploymentInfoDto infoDto, string displayId, string? supervisorName, long actionerId)
     {
         var employmentInfo = new EmploymentInformation(actionerId);
         
@@ -131,7 +137,7 @@ public static class EmployeeMappings
             infoDto.EmploymentType,
             infoDto.Department,
             infoDto.Position,
-            supervisorId,
+            supervisorName,
             displayId,
             actionerId
         );

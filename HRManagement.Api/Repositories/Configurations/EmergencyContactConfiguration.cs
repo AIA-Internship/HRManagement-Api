@@ -31,11 +31,8 @@ public class EmergencyContactConfiguration : IEntityTypeConfiguration<EmergencyC
             .HasMaxLength(25)
             .IsRequired();
         
+        // Database isolation for enterprise-scale: Removing DB-level FK constraint.
+        // Relationship is managed at the application/logic level (Id-based).
         builder.HasIndex(e => e.EmployeeId);
-        
-        builder.HasOne(e => e.Employee)
-            .WithMany(emp => emp.EmergencyContacts)
-            .HasForeignKey(e => e.EmployeeId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,0 +1,130 @@
+/* AUTHENTICATION PAGES STYLE (Extracted from Raw Clone) */
+:root {
+    --primary-color: #D31145;
+}
+
+body.login-page {
+    background: #D31145;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    width: 450px;
+    background: #F5F7FA;
+    padding: 50px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo-box {
+    margin: 0 auto 30px;
+}
+
+.logo-img {
+    height: 60px;
+}
+
+.form-label {
+    text-align: left;
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.custom-input, .form-control {
+    height: 44px;
+    border-radius: 10px;
+    padding: 0 15px;
+    background-color: #F8FAFC;
+    border: 1px solid #d9d9d9;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    transition: 0.2s ease;
+}
+
+.form-control:focus {
+    background-color: #F5F7FA;
+    border: 1px solid #D31145;
+    box-shadow: 0 4px 8px rgba(211, 17, 69, 0.15);
+    outline: none;
+}
+
+.btn-login {
+    background: #D31145;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(211, 17, 69, 0.2);
+    transition: 0.2s ease;
+}
+
+.btn-login:hover {
+    background: #b60c33;
+    color: white;
+}
+
+.forgot-link {
+    font-size: 14px;
+    color: #D31145;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #7E8299;
+}
+
+/* Modal Style */
+.custom-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content-custom {
+    background: #fff;
+    padding: 30px;
+    width: 350px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.modal-icon {
+    background: #f8d7da;
+    color: #d70f3f;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px;
+    font-size: 24px;
+    font-weight: bold;
+}

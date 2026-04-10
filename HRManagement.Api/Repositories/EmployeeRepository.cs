@@ -42,66 +42,150 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
         return !await query.AnyAsync(e => e.Nik == nik);
     }
 
-    public async Task AddEmployeeAsync(User user, Employee employee)
+    public async Task AddEmployeeAsync(User user, Employee employee, EmploymentInformation? employmentInformation = null, IEnumerable<EmergencyContact>? emergencyContacts = null)
     {
         await dbContext.Users.AddAsync(user);
         await dbContext.Employees.AddAsync(employee);
         
+        await dbContext.SaveChangesAsync(); // Save to get the employee.Id
+
+        if (employmentInformation != null)
+        {
+            employmentInformation.EmployeeId = employee.Id;
+            await dbContext.EmploymentInformation.AddAsync(employmentInformation);
+        }
+
+        if (emergencyContacts != null && emergencyContacts.Any())
+        {
+            foreach (var contact in emergencyContacts)
+            {
+                contact.EmployeeId = employee.Id;
+                await dbContext.EmergencyContacts.AddAsync(contact);
+            }
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
     public async Task UpdateEmployeeAsync(Employee employee)
     {
+        if (employee.EmploymentInformation != null)
+        {
+            // Update or Add logical related record
+            var entry = await dbContext.EmploymentInformation.AsNoTracking().FirstOrDefaultAsync(i => i.EmployeeId == employee.Id);
+            if (entry == null)
+            {
+                await dbContext.EmploymentInformation.AddAsync(employee.EmploymentInformation);
+            }
+            else
+            {
+                dbContext.EmploymentInformation.Update(employee.EmploymentInformation);
+            }
+        }
+
+        // Emergency contacts are more complex (re-sync)
+        if (employee.EmergencyContacts.Any())
+        {
+            // Simple approach: Delete old, add current (if not using specific IDs)
+            foreach(var c in employee.EmergencyContacts)
+            {
+                if (c.Id == 0) await dbContext.EmergencyContacts.AddAsync(c);
+                else dbContext.EmergencyContacts.Update(c);
+            }
+        }
+
         await dbContext.SaveChangesAsync();
     }
     
     public async Task<List<EmployeeUpdateRequest>> GetPendingUpdateRequestsAsync()
     {
-        return await dbContext.EmployeeUpdateRequests
-            .Include(r => r.Employee)
+        var requests = await dbContext.EmployeeUpdateRequests
             .Where(r => r.Status == 0)
             .ToListAsync();
+
+        var empIds = requests.Select(r => r.EmployeeId).ToList();
+        var employees = await dbContext.Employees
+            .Where(e => empIds.Contains(e.Id))
+            .ToListAsync();
+
+        foreach (var req in requests)
+        {
+            req.Employee = employees.FirstOrDefault(e => e.Id == req.EmployeeId)!;
+        }
+
+        return requests;
     }
 
     public async Task<List<Employee>> GetAllEmployeesAsync()
     {
-        return await dbContext.Employees
+        var employees = await dbContext.Employees
             .AsNoTracking()
-            .Include(e => e.EmploymentInformation)
             .Where(e => e.IsActive == true)
             .ToListAsync();
+
+        var empIds = employees.Select(e => e.Id).ToList();
+        var allInfo = await dbContext.EmploymentInformation
+            .AsNoTracking()
+            .Where(i => empIds.Contains(i.EmployeeId))
+            .ToListAsync();
+
+        foreach (var emp in employees)
+        {
+            emp.EmploymentInformation = allInfo.FirstOrDefault(i => i.EmployeeId == emp.Id);
+        }
+
+        return employees;
     }
 
     public async Task<Employee?> GetByEmailAsync(string email)
     {
-        return await dbContext.Employees
-            .Include(e => e.EmploymentInformation)
-                .ThenInclude(ei => ei!.Supervisor)
-            .Include(e => e.EmergencyContacts)
+        var employee = await dbContext.Employees
             .FirstOrDefaultAsync(u => u.EmployeeEmail == email);
+
+        if (employee != null)
+        {
+            employee.EmploymentInformation = await dbContext.EmploymentInformation
+                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id);
+            
+            employee.EmergencyContacts = await dbContext.EmergencyContacts
+                .Where(c => c.EmployeeId == employee.Id && !c.IsDeleted)
+                .ToListAsync();
+        }
+
+        return employee;
     }
 
     public async Task<Employee?> GetByIdAsync(int id)
     {
-        return await dbContext.Employees
-            .Include(e => e.EmploymentInformation)
-                .ThenInclude(ei => ei!.Supervisor)
-            .Include(e => e.EmergencyContacts)
+        var employee = await dbContext.Employees
             .FirstOrDefaultAsync(e => e.Id == id);
+
+        if (employee != null)
+        {
+            employee.EmploymentInformation = await dbContext.EmploymentInformation
+                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id);
+            
+            employee.EmergencyContacts = await dbContext.EmergencyContacts
+                .Where(c => c.EmployeeId == employee.Id && !c.IsDeleted)
+                .ToListAsync();
+        }
+
+        return employee;
     }
 
     public async Task<Employee?> GetByDisplayIdAsync(string displayId)
     {
-        return await dbContext.Employees
-            .Include(e => e.EmploymentInformation)
-                .ThenInclude(ei => ei!.Supervisor)
-            .Include(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(e => e.EmploymentInformation!.EmployeeDisplayId == displayId);
+        var info = await dbContext.EmploymentInformation
+            .FirstOrDefaultAsync(ei => ei.EmployeeDisplayId == displayId);
+        
+        if (info == null) return null;
+
+        return await GetByIdAsync(info.EmployeeId);
     }
 
     public async Task<string?> GetLastEmployeeDisplayIdAsync()
     {
-        return await dbContext.EmploymentInformations
+        return await dbContext.EmploymentInformation
             .Where(e => e.EmployeeDisplayId != null && e.EmployeeDisplayId.StartsWith("E"))
             .OrderByDescending(e => e.Id)
             .Select(e => e.EmployeeDisplayId)
@@ -110,14 +194,23 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Employees
-            .Include(e => e.EmploymentInformation)
+        var supervisors = await dbContext.Employees
             .AsNoTracking()
-            .Where(e => e.Role == 0 && e.IsActive) // 0 = Supervisor Role
-            .Select(e => new SupervisorLookupDto(
-                e.EmploymentInformation!.EmployeeDisplayId,
-                e.FullName))
+            .Where(e => e.Role == 0 && e.IsActive)
             .ToListAsync(cancellationToken);
+
+        var empIds = supervisors.Select(e => e.Id).ToList();
+        var infos = await dbContext.EmploymentInformation
+            .AsNoTracking()
+            .Where(i => empIds.Contains(i.EmployeeId))
+            .ToListAsync(cancellationToken);
+
+        return supervisors.Select(s => {
+            var matchingInfo = infos.FirstOrDefault(i => i.EmployeeId == s.Id);
+            return new SupervisorLookupDto(
+                matchingInfo?.EmployeeDisplayId ?? string.Empty,
+                s.FullName);
+        }).ToList();
     }
 }
 

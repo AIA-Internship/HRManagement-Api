@@ -1,0 +1,167 @@
+@page "/Timesheet/Employee/Review"
+@model HRManagement.Web.Pages.Modules.Timesheet.ReviewModel
+@{
+    ViewData["Title"] = "Timesheet Review";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <style>
+        .review-container { max-width: 1000px; margin: 40px auto; background: #fff; padding: 60px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
+        .review-header { border-bottom: 2px solid #F1F4F9; padding-bottom: 30px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .aia-logo-placeholder { font-weight: 950; font-size: 2.5rem; color: #D31145; letter-spacing: -2px; }
+        .review-meta { text-align: right; }
+        .review-meta h1 { font-size: 1.75rem; font-weight: 900; color: #181C32; margin-bottom: 5px; }
+        .review-meta p { font-size: 1rem; color: #A1A5B7; font-weight: 700; margin: 0; }
+        
+        .review-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 50px; }
+        .review-info-box { background: #F9FAFB; padding: 25px; border-radius: 16px; border: 1px solid #F1F4F9; }
+        .info-label { font-size: 0.75rem; font-weight: 850; color: #A1A5B7; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
+        .info-value { font-size: 1.25rem; font-weight: 900; color: #181C32; }
+
+        .table-review { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 40px; }
+        .table-review th { background: #181C32; color: #fff; padding: 15px 20px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .table-review th:first-child { border-radius: 12px 0 0 12px; }
+        .table-review th:last-child { border-radius: 0 12px 12px 0; }
+        .table-review td { padding: 20px; border-bottom: 1px solid #F1F4F9; font-size: 0.95rem; font-weight: 600; color: #3F4254; vertical-align: middle; }
+        .table-review tr:last-child td { border-bottom: 0; }
+        
+        .review-footer { display: flex; justify-content: space-between; align-items: center; background: #F8F9FA; padding: 30px 40px; border-radius: 16px; margin-top: 20px; }
+        .grand-total-label { font-size: 1rem; font-weight: 850; color: #A1A5B7; }
+        .grand-total-value { font-size: 2.5rem; font-weight: 950; color: #181C32; }
+        
+        .actions-bar { display: flex; gap: 15px; margin-top: 40px; justify-content: flex-end; }
+    </style>
+}
+
+<div class="app-container container-xxl">
+    <div class="review-container">
+        <div class="review-header">
+            <div class="aia-logo-placeholder">AIA</div>
+            <div class="review-meta">
+                <h1>Timesheet Report</h1>
+                <p id="review_period">...</p>
+            </div>
+        </div>
+
+        <div class="review-info-grid">
+            <div class="review-info-box">
+                <span class="info-label">Intern Name</span>
+                <span class="info-value" id="intern_name">...</span>
+            </div>
+            <div class="review-info-box">
+                <span class="info-label">Current Status</span>
+                <span id="review_status_badge" class="badge badge-light-warning fw-boldest px-4 py-2 fs-7">UNSUBMITTED</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-review">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">Date</th>
+                        <th style="width: 20%">Project</th>
+                        <th>Task Description</th>
+                        <th style="width: 15%">Duration</th>
+                        <th style="width: 15%">Lead</th>
+                        <th style="width: 15%">Location</th>
+                    </tr>
+                </thead>
+                <tbody id="review_table_body">
+                    <!-- Dynamic -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="review-footer">
+            <div>
+                <span class="grand-total-label">Total Aggregated Hours</span>
+            </div>
+            <div class="grand-total-value" id="grand_total_hours">0.0h</div>
+        </div>
+
+        <div class="certify-check-box mt-10">
+            <input type="checkbox" id="certify_check">
+            <label for="certify_check" class="certify-comment text-dark">I hereby certify that the hours logged above are accurate and represent my actual work time for this month.</label>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn btn-outline btn-outline-dashed btn-outline-brand fw-boldest px-10 h-55px" onclick="history.back()">Back to Edit</button>
+            <button class="btn btn-light-success fw-boldest px-10 h-55px" onclick="downloadTimesheetExcel()"><i class="bi bi-file-earmark-excel-fill me-2 fs-3"></i> Download Draft</button>
+            <button class="btn btn-brand fw-boldest px-12 h-55px" onclick="finalSubmitTimesheet()"><i class="bi bi-send-fill me-2 fs-3"></i> Submit Now</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const y = urlParams.get('year') || new Date().getFullYear();
+            const m = urlParams.get('month') || (new Date().getMonth() + 1);
+            
+            const data = await fetchAPI(`review?year=${y}&month=${m}`);
+            if (!data) return;
+
+            document.getElementById('review_period').innerText = `${englishMonths[m-1]} ${y}`;
+            document.getElementById('intern_name').innerText = data.employeeName;
+            
+            const tbody = document.getElementById('review_table_body');
+            let totalMins = 0;
+            
+            if (data.entries && data.entries.length > 0) {
+                tbody.innerHTML = data.entries.map(e => {
+                    totalMins += e.durationMinutes;
+                    return `
+                        <tr>
+                            <td>${new Date(e.date).toLocaleDateString('en-GB', { day:'2-digit', month:'short' })}</td>
+                            <td>${e.projectName}</td>
+                            <td class="text-gray-600 fs-8">${e.taskDescription}</td>
+                            <td class="fw-boldest text-brand">${e.durationFormatted}</td>
+                            <td>${e.projectLeadName}</td>
+                            <td>${e.location == 0 ? 'Office' : 'WFH'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-10 text-muted">No entries found for this month.</td></tr>';
+            }
+            
+            document.getElementById('grand_total_hours').innerText = (totalMins / 60).toFixed(1) + 'h';
+        });
+
+        async function finalSubmitTimesheet() {
+            if (!document.getElementById('certify_check').checked) {
+                showToast("Please certify your timesheet accuracy first.", "error");
+                return;
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const y = urlParams.get('year') || new Date().getFullYear();
+            const m = urlParams.get('month') || (new Date().getMonth() + 1);
+            
+            app.loading.show('Finalizing Submission...');
+            const result = await fetchAPI('submit', {
+                method: 'POST',
+                body: JSON.stringify({ year: parseInt(y), month: parseInt(m) })
+            });
+            app.loading.hide();
+            
+            if (result) {
+                Swal.fire({
+                    title: 'Timesheet Submitted!',
+                    text: 'Your logs have been successfully sent to your supervisor.',
+                    icon: 'success',
+                    confirmButtonColor: '#D31145'
+                }).then(() => {
+                    window.location.href = '/Timesheet/Employee/Dashboard';
+                });
+            }
+        }
+        
+        function downloadTimesheetExcel() {
+            showToast("Draft download initialized. AIA Official Template will be generated.", "success");
+        }
+    </script>
+}

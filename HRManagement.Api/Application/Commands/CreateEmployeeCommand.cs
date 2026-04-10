@@ -29,17 +29,56 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                     displayId = await GenerateNextDisplayId(employeeRepository);
                 }
 
-                int? supervisorId = null;
+                string? supervisorName = null;
                 if (!string.IsNullOrWhiteSpace(dto.EmploymentInformation.SupervisorDisplayId))
                 {
                     var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.EmploymentInformation.SupervisorDisplayId);
-                    supervisorId = supervisor?.Id;
+                    supervisorName = supervisor?.FullName;
                 }
-                employmentInfo = dto.EmploymentInformation.ToEntity(displayId, supervisorId, actionerId);
+
+                employmentInfo = new EmploymentInformation(actionerId);
+                employmentInfo.UpdateDetails(
+                    dto.EmploymentInformation.EmploymentStatus,
+                    dto.EmploymentInformation.StartDate,
+                    dto.EmploymentInformation.EmploymentType,
+                    dto.EmploymentInformation.Department,
+                    dto.EmploymentInformation.Position,
+                    supervisorName,
+                    displayId,
+                    actionerId
+                );
             }
             
-            var emergencyContacts = dto.EmergencyContacts.ToEntityList(actionerId);
-            var employee = dto.ToEntity(actionerId, employmentInfo, emergencyContacts);
+            var emergencyContacts = new List<EmergencyContact>();
+            if (dto.EmergencyContacts != null && dto.EmergencyContacts.Any())
+            {
+                foreach (var contactDto in dto.EmergencyContacts)
+                {
+                    emergencyContacts.Add(new EmergencyContact
+                    {
+                        Name = contactDto.Name,
+                        Relationship = contactDto.Relationship,
+                        PhoneNumber = contactDto.PhoneNumber,
+                        CreatedBy = actionerId,
+                        ModifiedBy = actionerId
+                    });
+                }
+            }
+            
+            var employee = new Employee(
+                fullName: dto.FullName,
+                gender: dto.Gender,
+                personalEmail: dto.PersonalEmail,
+                employeeEmail: dto.EmployeeEmail,
+                phoneNumber: dto.PhoneNumber,
+                nik: dto.Nik,
+                placeOfBirth: dto.PlaceOfBirth,
+                dateOfBirth: dto.DateOfBirth,
+                maritalStatus: dto.MaritalStatus,
+                currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
+                residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
+                role: dto.Role,
+                actionerId: actionerId);
             
             var hashedPassword = passwordHasher.Hash(dto.DefaultPassword);
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);

@@ -1,0 +1,67 @@
+/* AIA PREMIUM FOOTER ACTION BARS */
+.btn-save-footer {
+     background: #fff;
+     border-top: 1px solid #F1F4F9;
+     padding: 20px 30px;
+     margin: 0 -30px -30px -30px; /* Offset the container padding if necessary */
+     border-bottom-left-radius: 16px;
+     border-bottom-right-radius: 16px;
+     box-shadow: 0 -10px 40px rgba(0,0,0,0.02);
+}
+
+.footer-icon-box {
+     width: 48px;
+     height: 48px;
+     border-radius: 14px;
+     background: rgba(211, 17, 69, 0.05);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     transition: all 0.3s ease;
+}
+.footer-icon-box i { font-size: 1.5rem; color: var(--aia-red); }
+
+.footer-label {
+     font-size: 0.7rem;
+     font-weight: 850;
+     color: #A1A5B7;
+     letter-spacing: 1.5px;
+     margin-bottom: 2px;
+}
+
+.footer-value {
+     font-size: 1.6 rem;
+     font-weight: 950;
+     color: var(--text-dark);
+     line-height: 1;
+}
+
+/* FOOTER BUTTON VARIANTS */
+.btn-action-discard {
+     background: #fff;
+     border: 1.5px solid #E1E3EA;
+     border-radius: 12px;
+     height: 48px;
+     padding: 0 25px;
+     font-weight: 800;
+     color: #7E8299;
+     transition: all 0.2s;
+}
+.btn-action-discard:hover { background: #F9FAFB; border-color: #D1D3E0; color: #3F4254; }
+
+.btn-action-save {
+     background: var(--aia-red);
+     border: 0;
+     border-radius: 12px;
+     height: 48px;
+     padding: 0 35px;
+     font-weight: 950;
+     color: #fff;
+     display: flex;
+     align-items: center;
+     gap: 12px;
+     transition: all 0.3s;
+     box-shadow: 0 8px 25px rgba(211, 17, 69, 0.25);
+}
+.btn-action-save:hover { background: #b60f3a; transform: translateY(-2px); box-shadow: 0 12px 35px rgba(211, 17, 69, 0.35); }
+.btn-action-save i { font-size: 1.25rem; color: #fff !important; }

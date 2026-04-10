@@ -9,13 +9,9 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     public void Configure(EntityTypeBuilder<Employee> builder)
     {
         builder.ToTable("Employees");
-        builder.HasOne(e => e.EmploymentInformation)
-            .WithOne(e => e.Employee)
-            .HasForeignKey<EmploymentInformation>(e => e.EmployeeId);
         
-        builder.HasMany(e => e.EmergencyContacts)
-            .WithOne(ec => ec.Employee)
-            .HasForeignKey(ec => ec.EmployeeId);
+        // Logical relationships: No physical DB Foreign Keys for enterprise modularity.
+        // Managed via IDs at the application level. (Removed HasOne/HasMany from master)
         
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("emp_id");
@@ -58,6 +54,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasColumnName("emp_marital_status")
             .IsRequired();
         
+        // Addresses (Owned Types from master)
         builder.OwnsOne(e => e.CurrentAddress, a =>
         {
             a.Property(p => p.Street).HasColumnName("emp_current_st_address").HasMaxLength(150).IsRequired();

@@ -22,7 +22,6 @@ public class CreateEmployeeRequestDto
     public DateTime DateOfBirth { get; set; }
     /// <example>1</example>
     public int MaritalStatus { get; set; }
-    
     // Current Address
     /// <example>Jl. Sudirman No. 1</example>
     public string CurrentStreetAddress { get; set; } = string.Empty;
@@ -42,7 +41,6 @@ public class CreateEmployeeRequestDto
     public string ResidentialProvince { get; set; } = string.Empty;
     /// <example>40123</example>
     public string ResidentialPostalCode { get; set; } = string.Empty;
-
     /// <example>1</example>
     public int Role { get; set; }
     public CreateEmploymentInfoDto? EmploymentInformation { get; set; }
@@ -63,7 +61,6 @@ public class CreateEmploymentInfoDto
     public string Position { get; set; } =  string.Empty;
     /// <example>E0001</example>
     public string? SupervisorDisplayId { get; set; }
-    /// <example>E00001</example>
     public string EmployeeDisplayId { get; set; } = string.Empty;
 }
 

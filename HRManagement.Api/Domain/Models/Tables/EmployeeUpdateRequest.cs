@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 
 namespace HRManagement.Api.Domain.Models.Tables;
@@ -6,7 +7,10 @@ public class EmployeeUpdateRequest : BaseTableModel
 {
     public int Id { get; private set; }
     public int EmployeeId { get; set; }
-    public Employee Employee { get; private set; }
+    
+    // Logical relationship: Decoupled for Enterprise Scale. 
+    [NotMapped]
+    public Employee? Employee { get; set; }
     
     public string? NewFullName { get; private set; }
     public int? NewGender { get; private set; }
@@ -29,13 +33,12 @@ public class EmployeeUpdateRequest : BaseTableModel
 
     public string? NewPhoneNumber { get; private set; }
     
-    
     public string? NewEmergencyContactName { get; private set; }
     public string? NewEmergencyContactPhone { get; private set; }
     public string? NewEmergencyContactRelationship { get; private set; }
 
     public int Status { get; private set; }
-    public string HrReason { get; private set; }
+    public string HrReason { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
     
     protected EmployeeUpdateRequest() { }
@@ -70,7 +73,7 @@ public class EmployeeUpdateRequest : BaseTableModel
         ModifiedBy = actionerId;
     }
 
-    public void Reject(string reason, long hrActionerId)
+    public void Reject(string? reason, long hrActionerId)
     {
         Status = 2; // Rejected
         HrReason = reason ?? "Rejected by Supervisor";
@@ -79,7 +82,7 @@ public class EmployeeUpdateRequest : BaseTableModel
         CreatedAt = DateTime.UtcNow.AddHours(7);
     }
 
-    public void Approve(string reason, long hrActionerId)
+    public void Approve(string? reason, long hrActionerId)
     {
         Status = 1; // Approved
         HrReason = reason ?? "Approved by Supervisor";

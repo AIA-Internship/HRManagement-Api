@@ -1,5 +1,6 @@
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
+using AutoMapper;
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Mappings;
@@ -14,7 +15,7 @@ public class UpdateEmployeeCommand(UpdateEmployeeRequestDto commandDto) : IReque
 {
     public UpdateEmployeeRequestDto RequestDto { get; } = commandDto;
 
-    public class Handler(IEmployeeRepository employeeRepository, IRequestRepository requestRepository, ICurrentUserService currentUserService, IApplicationDbContext appDbContext) : IRequestHandler<UpdateEmployeeCommand, ApiResponse<EmployeeProfileResponseDto>>
+    public class Handler(IEmployeeRepository employeeRepository, IRequestRepository requestRepository, ICurrentUserService currentUserService, IMapper mapper) : IRequestHandler<UpdateEmployeeCommand, ApiResponse<EmployeeProfileResponseDto>>
     {
         public async Task<ApiResponse<EmployeeProfileResponseDto>> Handle(UpdateEmployeeCommand command, CancellationToken cancellationToken)
         {
@@ -42,13 +43,8 @@ public class UpdateEmployeeCommand(UpdateEmployeeRequestDto commandDto) : IReque
             var request = new EmployeeUpdateRequest(employee.Id, command.RequestDto, actionerId);
             
             await requestRepository.SubmitUpdateRequestAsync(request);
-
-            var lookups = await appDbContext.SystemLookups
-                .AsNoTracking()
-                .Where(x => x.IsActive)
-                .ToListAsync(cancellationToken);
             
-            var response = employee.ToProfileResponse(lookups);
+            var response = mapper.Map<EmployeeProfileResponseDto>(employee);
             return ApiHelperResponse.Success("Update request submitted successfully. Pending HR Approval.", response);
         }
     }

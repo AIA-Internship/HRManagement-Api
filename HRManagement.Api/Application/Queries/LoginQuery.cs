@@ -29,8 +29,18 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
         {
             var user = await dbContext.Users
                 .AsNoTracking() 
-                .FirstOrDefaultAsync(u => u.EmployeeEmail == request.Email, cancellationToken);
+                .FirstOrDefaultAsync(u => u.EmployeeEmail.ToLower() == request.Email.ToLower(), cancellationToken);
 
+            if (user == null) throw new ApiException("Not found", (int)System.Net.HttpStatusCode.NotFound, "User not found");
+
+            var employeeName = await dbContext.Employees
+                .AsNoTracking()
+                .Where(e => e.EmployeeEmail.ToLower() == user.EmployeeEmail.ToLower())
+                .Select(e => e.FullName)
+                .FirstOrDefaultAsync(cancellationToken) ?? "Intern";
+            
+            bool isValid = passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!isValid) throw new ApiException("Unauthorized", (int)System.Net.HttpStatusCode.Unauthorized, "Invalid email or password");
             if (user == null || !passwordHasher.Verify(request.Password, user.PasswordHash))
             {
                 throw new ApiException(
@@ -56,11 +66,11 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 };
             }
             
-            var token = GenerateToken(user, request.RememberMe, roleName);
+            var token = GenerateToken(user, request.RememberMe, roleName, employeeName);
             return ApiHelperResponse.Success("Login successful", new TokenResponseDto { Token = token });
         }
         
-        private string GenerateToken(User user, bool rememberMe, string roleName)
+        private string GenerateToken(User user, bool rememberMe, string roleName, string fullName)
         {
             var jwtKey = configuration["AppSetting:Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing");
             var jwtIssuer = configuration["AppSetting:Jwt:Issuer"];
@@ -75,6 +85,8 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.EmployeeEmail),
+                new Claim(ClaimTypes.Name, fullName),
+                new Claim("fullname", fullName),
                 new Claim(ClaimTypes.Role, roleName),
                 new Claim("role_id", user.Role.ToString())
             };

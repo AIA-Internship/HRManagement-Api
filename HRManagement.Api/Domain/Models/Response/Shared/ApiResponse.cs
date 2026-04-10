@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace HRManagement.Api.Domain.Models.Response.Shared;
 
@@ -8,6 +8,8 @@ public class ApiResponse
     public int StatusCode { get; set; } = 200;
     public string StatusMessage { get; set; } = string.Empty;
     public bool IsError { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Content { get; set; }
 }
 

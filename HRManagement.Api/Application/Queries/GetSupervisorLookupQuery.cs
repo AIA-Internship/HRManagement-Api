@@ -5,13 +5,14 @@ using MediatR;
 
 namespace HRManagement.Api.Application.Queries;
 
-public record GetSupervisorLookupQuery() : IRequest<ApiResponse<List<SupervisorLookupDto>>>;
-
-public class GetSupervisorLookupQueryHandler(IEmployeeRepository employeeRepository) : IRequestHandler<GetSupervisorLookupQuery, ApiResponse<List<SupervisorLookupDto>>>
+public class GetSupervisorLookupQuery : IRequest<ApiResponse<List<SupervisorLookupDto>>>
 {
-    public async Task<ApiResponse<List<SupervisorLookupDto>>> Handle(GetSupervisorLookupQuery request, CancellationToken cancellationToken)
+    public class Handler(IEmployeeRepository employeeRepository) : IRequestHandler<GetSupervisorLookupQuery, ApiResponse<List<SupervisorLookupDto>>>
     {
-        var supervisors = await employeeRepository.GetSupervisorLookupAsync(cancellationToken);
-        return ApiHelperResponse.Success("Retrieved supervisors lookup successfully", supervisors);
+        public async Task<ApiResponse<List<SupervisorLookupDto>>> Handle(GetSupervisorLookupQuery request, CancellationToken cancellationToken)
+        {
+            var supervisors = await employeeRepository.GetSupervisorLookupAsync(cancellationToken);
+            return ApiHelperResponse.Success("Retrieved supervisors lookup successfully", supervisors);
+        }
     }
 }

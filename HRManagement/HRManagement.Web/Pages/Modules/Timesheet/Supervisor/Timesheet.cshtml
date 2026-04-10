@@ -1,0 +1,220 @@
+@page "/Timesheet/Supervisor/Timesheet"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.TimesheetModel
+@{
+    ViewData["Title"] = "Timesheet Supervisor";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <style>
+        /* SUPERVISOR-SPECIFIC UI TWEAKS */
+        .intern-dropdown-btn { background: transparent; border: 0; padding: 0; font-size: 1.35rem; font-weight: 900; color: #181C32; display: flex; align-items: center; gap: 8px; text-align: left; transition: color 0.2s; }
+        .intern-dropdown-btn:hover { color: #D31145; }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 0; padding: 8px; min-width: 250px; }
+        .dropdown-item { border-radius: 8px; padding: 12px 16px; font-weight: 700; color: #3F4254; cursor: pointer; }
+        .dropdown-item:hover { background: #FFF5F8; color: #D31145; }
+        .dropdown-item.active { background: #D31145; color: #fff; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full bg-white">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Review",
+                Subtitle = "Deep-dive into individual intern work logs and daily activities",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Review" }
+                }
+            })
+            <div class="px-4 py-5">
+                
+                <!-- UNIFIED TOOLBAR NAV (MIRRORING EMPLOYEE) -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
+                    
+                    <!-- View Segment Control -->
+                    <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
+                        <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
+                        <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
+                        <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                    </div>
+
+                    <!-- Date Scroller -->
+                    <div class="date-selector-container position-relative d-flex align-items-center gap-4">
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(-1)" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center;"><i class="bi bi-chevron-left fs-4"></i></button>
+                        
+                        <div class="d-flex flex-column align-items-center">
+                            <div id="datepicker_focal_backdrop" onclick="closeDatePopup()"></div>
+                            
+                            <h1 class="current-date-title d-flex align-items-center gap-3 px-6 py-3 mb-0" style="cursor:pointer; background: #F8F9FA; border-radius: 14px;" onclick="toggleDatePopup(event)">
+                                <i class="bi bi-calendar3 text-brand fs-3"></i>
+                                <span id="current_view_label">Maret 2026</span>
+                            </h1>
+
+                            <!-- COMPACT PICKERS -->
+                            <div id="popover_monthly" class="datepicker-popover">
+                                <div class="datepicker-header">
+                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
+                                    <div class="datepicker-header-title fw-bold" id="picker_year_label">2026</div>
+                                    <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
+                                </div>
+                                <div class="datepicker-grid-3">
+                                    @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+                                        <div class="datepicker-month-cell" onclick="selectMonth('@m')">@m</div>
+                                    }
+                                </div>
+                            </div>
+                            <div id="popover_weekly" class="datepicker-popover">...</div>
+                            <div id="popover_daily" class="datepicker-popover">...</div>
+                        </div>
+
+                        <button class="btn-nav-arrow rounded-circle shadow-sm" onclick="moveDate(1)" style="width: 44px; height: 44px; display: flex; align-items:center; justify-content: center;"><i class="bi bi-chevron-right fs-4"></i></button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="btn-group-actions d-flex align-items-center gap-3">
+                        <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
+                        <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
+                        <a href="/Timesheet/Supervisor/Review" id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;"><i class="bi bi-check-circle-fill me-2"></i> REVIEW SUBMISSION</a>
+                    </div>
+                </div>
+
+                <!-- SUPERVISOR INFO BAR (WITH DROPDOWN) -->
+                <div class="intern-supervisor-card shadow-sm mt-8">
+                    <div class="info-section border-right">
+                        <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
+                        <div class="info-text-block">
+                            <span class="info-title-label">Intern Access</span>
+                            <div class="dropdown">
+                                <button class="intern-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span id="intern_name_label">Select Intern</span>
+                                    <i class="bi bi-chevron-down fs-7 text-muted"></i>
+                                </button>
+                                <ul class="dropdown-menu mt-3 shadow-lg" id="intern_list_dropdown">
+                                    <li><div class="px-5 py-3 text-muted">Loading interns...</div></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-section ps-10">
+                        <div class="info-icon-circle"><i class="bi bi-person-hearts"></i></div>
+                        <div class="info-text-block">
+                            <span class="info-title-label">Supervisor</span>
+                            <span class="info-person-name" id="supervisor_name_label">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN WORKSPACE -->
+                <div class="mt-8 pb-10">
+                    <div id="view_monthly" class="timesheet-view">
+                        <div class="monthly-calendar-grid shadow-sm">
+                            <div class="grid-header">
+                                <div class="grid-header-cell">MON</div><div class="grid-header-cell">TUE</div><div class="grid-header-cell">WED</div>
+                                <div class="grid-header-cell">THU</div><div class="grid-header-cell">FRI</div>
+                                <div class="grid-header-cell text-danger">SAT</div><div class="grid-header-cell text-danger">SUN</div>
+                            </div>
+                            <div id="monthly_grid_container" style="display: flex; flex-wrap: wrap;"></div>
+                        </div>
+                    </div>
+
+                    <div id="view_weekly" class="timesheet-view d-none">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <table class="weekly-master-table">
+                                <thead class="bg-light">
+                                    <tr id="weekly_header_row">
+                                        <th style="width: 25%">Project</th>
+                                        <th id="weekly_h_mon"></th>
+                                        <th id="weekly_h_tue"></th>
+                                        <th id="weekly_h_wed"></th>
+                                        <th id="weekly_h_thu"></th>
+                                        <th id="weekly_h_fri"></th>
+                                        <th id="weekly_h_sat" class="weekend-th"></th>
+                                        <th id="weekly_h_sun" class="weekend-th"></th>
+                                        <th style="background: #F1F4F9">Week Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="view_daily" class="timesheet-view d-none">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <table class="daily-master-table w-100">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%">DURATION</th>
+                                        <th style="width: 20%">PROJECT</th>
+                                        <th style="width: 15%">APPS USED</th>
+                                        <th>TASK DESCRIPTION</th>
+                                        <th style="width: 15%">PROJECT LEAD</th>
+                                        <th style="width: 15%">LOCATION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view_daily_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        // SUPERVISOR LOGIC (Running alongside management script)
+        window.selectedInternId = null; 
+
+        async function fetchInterns() {
+            try {
+                const r = await fetch('https://localhost:7089/api/timesheet/supervisor/dashboard', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('aia_jwt_token')}` }
+                });
+                const json = await r.json();
+                if (json.data) {
+                    const data = json.data;
+                    document.getElementById('supervisor_name_label').innerText = data.supervisorName;
+                    const list = document.getElementById('intern_list_dropdown');
+                    if (data.internHoursBreakdown && data.internHoursBreakdown.length > 0) {
+                        list.innerHTML = data.internHoursBreakdown.map(i => `
+                            <li><a class="dropdown-item" onclick="selectIntern(${i.employeeId}, '${i.employeeName}')">${i.employeeName}</a></li>
+                        `).join('');
+                        
+                        // Select first by default to trigger render
+                        selectIntern(data.internHoursBreakdown[0].employeeId, data.internHoursBreakdown[0].employeeName);
+                    } else {
+                        list.innerHTML = '<li><div class="px-5 py-3 text-muted">No interns assigned.</div></li>';
+                    }
+                }
+            } catch (e) { console.error("Failed to load interns", e); }
+        }
+
+        function selectIntern(id, name) {
+            window.selectedInternId = id;
+            document.getElementById('intern_name_label').innerText = name;
+            
+            // Highlight active in dropdown
+            document.querySelectorAll('#intern_list_dropdown .dropdown-item').forEach(el => {
+                el.classList.toggle('active', el.innerText.trim() === name);
+            });
+
+            // Trigger re-render from the shared production script
+            if (typeof renderCurrentState === 'function') {
+                renderCurrentState();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchInterns();
+        });
+
+        // Global exposing
+        window.selectIntern = selectIntern;
+    </script>
+}

@@ -1,0 +1,298 @@
+@page "/Timesheet/Employee/Dashboard"
+@model HRManagement.Web.Pages.Modules.Timesheet.DashboardModel
+@{
+    ViewData["Title"] = "Intern Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <style>
+        /* MAIN LAYOUT WRAPPER */
+        .intern-dashboard-container { 
+            padding: 30px; 
+            background-color: #F8F9FA; 
+            min-height: calc(100vh - 70px); 
+        }
+
+        /* FLEX STRETCH FIX (FORCE EQUAL HEIGHT) */
+        .equal-height-row { display: flex !important; flex-wrap: wrap; align-items: stretch; }
+        .equal-height-col { display: flex !important; flex-direction: column; }
+
+        /* AIA SIGNATURE CARDS */
+        .aia-glass-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* CARDS MUST FILL PARENT HEIGHT */
+        .todo-sidebar-card { height: 100%; flex: 1 1 auto; }
+        .allocation-hub-card { flex: 1 1 auto; }
+        
+        .todo-header, .status-header, .allocation-header { flex-shrink: 0; }
+        .todo-content, .status-body, .allocation-grid { flex-grow: 1; display: flex; flex-direction: column; }
+        .todo-header {
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F4F9;
+        }
+        .todo-title {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #181C32;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .todo-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 30px;
+            color: #A1A5B7;
+            font-weight: 600;
+            text-align: center;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .todo-illustration {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 24px;
+            filter: grayscale(1) opacity(0.15);
+        }
+        .todo-footer {
+            padding: 24px 30px;
+            border-top: 1px solid #F1F4F9;
+        }
+
+        /* RIGHT PANEL COMPONENTS */
+        .greeting-section {
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .greeting-text h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #181C32;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+        .greeting-text span {
+            font-size: 0.85rem;
+            font-weight: 850;
+            color: #A1A5B7;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .submission-status-card { margin-bottom: 25px; }
+        .status-header {
+            padding: 22px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F4F9;
+        }
+        .status-header h3 {
+            font-size: 1.15rem;
+            font-weight: 850;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #181C32;
+        }
+        .status-pill-lite {
+            background: #FEFCE8; color: #854D0E; border-radius: 8px; padding: 6px 14px; border: 1px solid #FEF9C3;
+            font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .status-body { padding: 35px 30px; }
+        .data-label-small { font-size: 0.65rem; font-weight: 850; color: #A1A5B7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        .data-value-main { font-size: 1.85rem; font-weight: 900; color: #181C32; line-height: 1; }
+        .text-brand-red { color: #D31145 !important; }
+
+        /* ALLOCATION HUB */
+        .allocation-hub-card { flex-grow: 1; display: flex; flex-direction: column; }
+        .allocation-header { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .allocation-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            padding: 0 30px 30px 30px; 
+            flex-grow: 1;
+        }
+        .empty-allocation-state {
+            grid-column: span 3;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 40px; color: #A1A5B7; font-weight: 600; text-align: center;
+            background: rgba(244,246,249,0.3); border-radius: 16px; border: 1px dashed #E1E3EA;
+        }
+        
+        .proj-card { background: #fff; border-radius: 16px; padding: 22px; border: 1px solid #F1F4F9; transition: transform 0.2s; }
+        .proj-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.03); }
+        .proj-label { font-size: 0.65rem; font-weight: 850; color: #BBB; text-transform: uppercase; margin-bottom: 12px; }
+        .proj-hours { display: flex; align-items: baseline; gap: 4px; margin-bottom: 15px; }
+        .proj-hours .num { font-size: 1.5rem; font-weight: 900; color: #181C32; }
+        .proj-hours .unit { font-size: 0.9rem; font-weight: 800; color: #BBB; }
+        .proj-bar-container { height: 4px; border-radius: 10px; background: #F1F4F9; overflow: hidden; }
+        .proj-bar-inner { height: 100%; border-radius: 10px; }
+
+        /* BUTTONS */
+        .btn-brand-sm, .btn-standard-sm { 
+            height: 48px !important; 
+            padding: 0 28px !important; 
+            font-size: 0.9rem !important; 
+            border-radius: 12px !important; 
+            font-weight: 850 !important;
+            transition: all 0.2s;
+        }
+
+        .btn-brand-sm:hover, .btn-standard-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .btn-dashboard-row { padding: 0 24px !important; height: 44px !important; font-size: 0.8rem !important; }
+    </style>
+}
+
+<div class="intern-dashboard-container">
+    <div class="row g-8 equal-height-row">
+        
+        <!-- LEFT PANEL: TO DO LIST -->
+        <div class="col-lg-4 equal-height-col">
+            <div class="aia-glass-card todo-sidebar-card">
+                <div class="todo-header">
+                    <div class="todo-title">
+                        <i class="bi bi-list-check text-danger text-opacity-75 fs-3"></i> To Do List
+                    </div>
+                    @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "primary", Title = "New Task", Icon = "plus-lg", Class = "btn-brand-sm", Id = "new_task_btn", data_bs_toggle = "modal", data_bs_target = "#modal_new_task" })
+                </div>
+                <div class="todo-content">
+                    <img src="/assets/media/illustrations/sigma-1/17.png" class="todo-illustration" />
+                    <span class="fs-6 mb-1">No tasks yet. Add one!</span>
+                    <p class="text-muted fs-8 fw-bold">Keep track of your daily priorities.</p>
+                </div>
+                <div class="todo-footer">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-boldest fs-8 text-brand-red">0 of 0 tasks completed</span>
+                    </div>
+                    <div class="progress h-8px w-100 rounded-pill" style="background: #F1F4F9;">
+                        <div class="progress-bar" id="todo_progress_bar" style="width: 0%; background: #D31145;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="col-lg-8 equal-height-col">
+            
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "...",
+                Subtitle = "Monitor your daily tasks and monthly timesheet progress",
+                Id = "page_title_text",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Dashboard" }
+                },
+                RenderActions = Html.Raw("<a href='/Timesheet/Employee/Entry' class='btn-brand fw-boldest px-6 py-3 shadow-sm'><i class='bi bi-plus-lg me-2'></i> New Entry</a>")
+            })
+
+            <!-- SUBMISSION STATUS -->
+            <div class="aia-glass-card submission-status-card">
+                <div class="status-header">
+                    <h3><i class="bi bi-journal-text text-danger fs-3"></i> Monthly Submission Status</h3>
+                    <span class="status-pill-lite" id="active_status_label">Draft Submission</span>
+                </div>
+                <div class="status-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <span class="data-label-small">Reporting Month</span>
+                            <span class="data-value-main" id="active_period">...</span>
+                        </div>
+                        <div class="col-md-3 border-start ps-10">
+                            <span class="data-label-small">Deadline</span>
+                            <span class="data-value-main text-brand-red" id="active_deadline">...</span>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-end gap-3 px-0">
+                            @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "ghost", Title = "View Timesheet", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                            @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "primary", Title = "Submit Log", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALLOCATION HUB -->
+            <div class="aia-glass-card allocation-hub-card">
+                <div class="allocation-header">
+                    <div class="todo-title">
+                        <i class="bi bi-bar-chart-line-fill text-primary fs-3"></i> Project Allocation Hub
+                    </div>
+                    <div class="fs-8 fw-boldest text-muted">
+                        Total <span class="text-brand-red fs-5 ms-2" id="total_hours_display">0 h</span>
+                    </div>
+                </div>
+                <div class="allocation-grid" id="allocation_container">
+                    <div class="empty-allocation-state" id="no_projects_msg">
+                        <div class="empty-icon-box" style="width: 60px; height: 60px; border-radius: 12px; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                            <i class="bi bi-inbox fs-2x text-muted opacity-50"></i>
+                        </div>
+                        <span class="fs-6">No project allocation recorded yet.</span>
+                        <p class="fs-8 mt-2 text-muted">Start logging your daily activities to see your contribution overview here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("Modules/Timesheet/Employee/_ModalNewTask")
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // 1. Fetch data & Render UI
+             if (typeof initDashboard === 'function') initDashboard();
+
+             // 2. Initialize Task Modal
+             if (typeof initTaskModal === 'function') initTaskModal();
+
+             // 3. Personalized Greeting (Good ..., [Name])
+             const userInfoRaw = localStorage.getItem('aia_user_info');
+             if (userInfoRaw) {
+                 const u = JSON.parse(userInfoRaw);
+                 
+                 // Support common JWT claim names for the user's full name
+                 const rawName = u.fullname || u.fullName || u.name || u.unique_name || u["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || u.email || "Intern";
+                 const name = rawName.split(' ')[0];
+                 
+                 const hour = new Date().getHours();
+                 let greet = "Good Morning";
+                 if (hour >= 12 && hour < 16) greet = "Good Afternoon";
+                 else if (hour >= 16 && hour < 20) greet = "Good Evening";
+                 else if (hour >= 20 || hour < 5) greet = "Good Night";
+                 
+                 const titleEl = document.getElementById('page_title_text');
+                 if (titleEl) titleEl.innerText = `${greet}, ${name}`;
+             }
+        });
+    </script>
+}

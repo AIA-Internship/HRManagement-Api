@@ -2,9 +2,10 @@ namespace HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 
 public class EmployeeProfileResponseDto
 {
+    public int EmployeeId { get; set; }
     //Personal Information & Address
     public string FullName { get; set; } = string.Empty;
-    public string Gender { get; set; }
+    public string Gender { get; set; } = string.Empty;
     public string PersonalEmail { get; set; } = string.Empty;
     public string EmployeeEmail { get; set; } =  string.Empty;
 
@@ -24,13 +25,13 @@ public class EmployeeProfileResponseDto
     public string Nik { get; set; } =  string.Empty;
     public string PlaceOfBirth { get; set; } =   string.Empty;
     public DateTime DateOfBirth { get; set; }
-    public string MaritalStatus { get; set; }
+    public string MaritalStatus { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     
     //Employment Information
-    public string EmployeeStatus { get; set; }
+    public string EmployeeStatus { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
-    public string EmploymentType { get; set; }
+    public string EmploymentType { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
     public string Position { get; set; } = string.Empty;
     // public string SupervisorDisplayId { get; set; } = string.Empty;
@@ -41,5 +42,4 @@ public class EmployeeProfileResponseDto
     public string EmergencyContactName { get; set; } = string.Empty;
     public string EmergencyContactPhone { get; set; } = string.Empty;
     public string Relationship { get; set; } = string.Empty;
-    
 }

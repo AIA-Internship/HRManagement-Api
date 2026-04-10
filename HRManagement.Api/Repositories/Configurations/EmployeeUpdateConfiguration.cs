@@ -91,7 +91,6 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
         
         builder.Property(e => e.Status)
             .HasColumnName("request_status")
-            .HasConversion<string>() 
             .IsRequired();
 
         builder.Property(e => e.HrReason)
@@ -103,12 +102,8 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
             .HasDefaultValueSql("GETUTCDATE()")
             .HasColumnName("created_at")
             .IsRequired();
-        
+            
+        // Logical Relationship: Decoupled for Enterprise Scale. No physical Foreign Keys.
         builder.HasIndex(e => e.EmployeeId);
-        
-        builder.HasOne(e => e.Employee)
-            .WithMany() 
-            .HasForeignKey(e => e.EmployeeId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

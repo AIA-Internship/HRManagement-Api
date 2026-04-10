@@ -7,14 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Pages\LeaveManagement\**" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.5" />
+    <!-- <Compile Remove="Pages\LeaveManagement\**" />
     <Compile Remove="Pages\NewFolder\**" />
     <Content Remove="Pages\LeaveManagement\**" />
     <Content Remove="Pages\NewFolder\**" />
     <EmbeddedResource Remove="Pages\LeaveManagement\**" />
     <EmbeddedResource Remove="Pages\NewFolder\**" />
     <None Remove="Pages\LeaveManagement\**" />
-    <None Remove="Pages\NewFolder\**" />
+    <None Remove="Pages\NewFolder\**" /> -->
   </ItemGroup>
 
 </Project>

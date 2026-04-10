@@ -1,0 +1,217 @@
+@page "/Profile/Edit"
+@model HRManagement.Web.Pages.Modules.Profile.EditModel
+@{
+    var currentPath = HttpContext.Request.Path.Value;
+    ViewData["Title"] = "Edit Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+        Title = "Personal Information",
+        Subtitle = "View and manage your personal information",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Profile", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Personal Information", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Edit Profile" }
+        },
+        RenderActions = Html.Raw(@"
+            <a href='/Profile' class='btn btn-sm btn-light fw-bold'>Cancel</a>
+            <button type='button' onclick='updateProfile()' class='btn btn-sm btn-brand fw-bold'>
+                <i class='bi bi-check2-circle text-white fs-4 me-1'></i> Submit for Approval
+            </button>")
+    })
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            <!--begin::Card Navigation (Tabs List)-->
+            <div class="card shadow-sm mb-6">
+                <div class="card-body p-0">
+                    <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold ms-5" id="profileEditTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5 active" data-bs-toggle="tab" href="#kt_tab_personal" role="tab">Personal Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_employment" role="tab">Employment Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_emergency" role="tab">Emergency Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_attachment" role="tab">Attachments</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!--end::Card Navigation-->
+
+            <!--begin::Tab Content Content Card-->
+            <div class="card shadow-sm">
+                <div class="card-body p-10 tab-content" id="profileEditTabsContent">
+                    
+                    <!-- PERSONAL DETAILS TAB -->
+                    <div class="tab-pane fade show active" id="kt_tab_personal" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-address-book fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <h3 class="fw-bold mb-0">Personal Details</h3>
+                        </div>   
+
+                        <div class="sub-section-heading fs-7 text-muted text-uppercase fw-bold mb-7 border-bottom pb-2">Identity & Contact</div>
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Full Name<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editFullName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-block">Gender<span class="required-star text-danger">*</span></label>
+                                <div class="nav-group nav-group-outline d-inline-flex">
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-3 me-3">
+                                        <input class="btn-check" type="radio" name="gender" id="genderMale" value="Male" checked>
+                                        <span class="fw-bold fs-6">Male</span>
+                                    </label>
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-3">
+                                        <input class="btn-check" type="radio" name="gender" id="genderFemale" value="Female">
+                                        <span class="fw-bold fs-6">Female</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Personal Email<span class="required-star text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg form-control-solid" id="editPersonalEmail" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Company Email</label>
+                                <input type="email" class="form-control form-control-lg form-control-solid" id="editCompanyEmail" readonly disabled>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-10">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone Number<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editPhoneNumber" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">National ID (NIK)</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editNik" required>
+                            </div>
+                        </div>
+
+                        <div class="sub-section-heading fs-7 text-muted text-uppercase fw-bold mb-7 border-bottom pb-2">Address Information</div>
+                        <div class="row g-9">
+                            <div class="col-12 mb-8">
+                                <label class="form-label fw-bold">Street Address<span class="required-star text-danger">*</span></label>
+                                <textarea class="form-control form-control-lg form-control-solid" id="editCurrentStreet" rows="3" required></textarea>
+                            </div>
+                            <div class="col-md-6 mb-8">
+                                <label class="form-label fw-bold">City<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editCurrentCity" required>
+                            </div>
+                            <div class="col-md-3 mb-8">
+                                <label class="form-label fw-bold">Province<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editCurrentProvince" required>
+                            </div>
+                            <div class="col-md-3 mb-8">
+                                <label class="form-label fw-bold">Postal Code<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editCurrentPostal" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMPLOYMENT DETAILS TAB -->
+                    <div class="tab-pane fade" id="kt_tab_employment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-briefcase fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Employment Details</h3>
+                        </div>
+
+                        <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-10">
+                             <i class="ki-duotone ki-information-4 fs-2tx text-warning me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                             <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-semibold text-gray-700 fs-6">Employment data is managed by HR. If there is a discrepancy, please contact your manager.</div>
+                             </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Employee ID</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editEmployeeId" readonly disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Department</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editDepartment" readonly disabled>
+                            </div>
+                        </div>
+
+                        <div class="row g-9">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Supervisor Name</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editSupervisorName" readonly disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMERGENCY CONTACT TAB -->
+                    <div class="tab-pane fade" id="kt_tab_emergency" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-phone fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Emergency Contact</h3>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Contact Name<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Relationship<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyRelationship" required>
+                            </div>
+                        </div>
+                        <div class="row g-9">
+                           <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone Number<span class="required-star text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyPhone" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ATTACHMENTS TAB -->
+                    <div class="tab-pane fade" id="kt_tab_attachment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-paper-clip fs-1 text-brand me-3"></i>
+                            <h3 class="fw-bold mb-0">Attachments</h3>
+                        </div>
+
+                        <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mb-10">
+                             <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-bold text-gray-800">Please provide high-quality scans of your documents for verification.</div>
+                             </div>
+                        </div>
+
+                        <div id="attachmentList" class="row g-6">
+                            <!-- Dynamic from JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--end::Tab Content Container-->
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
+}

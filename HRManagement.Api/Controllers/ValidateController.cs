@@ -24,7 +24,7 @@ namespace HRManagement.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="validators"/> class.
         /// </summary>
-        /// <param name="logger">The validation helpers.</param>
+        /// <param name="validators">The validation helpers.</param>
         /// <param name="logger">The logger.</param>
         public ValidateController(IEnumerable<IValidator> validators, ILogger<TController> logger)
         {
@@ -138,7 +138,7 @@ namespace HRManagement.Api.Controllers
             return validators
                 .Where(x => x.CanValidateInstancesOfType(request.GetType()))
                    .Select(v => v.Validate(context))
-                   .FirstOrDefault();
+                   .FirstOrDefault() ?? new FluentValidation.Results.ValidationResult();
         }
     }
 }

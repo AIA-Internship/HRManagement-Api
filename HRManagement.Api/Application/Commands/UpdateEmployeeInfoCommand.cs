@@ -28,11 +28,11 @@ public class UpdateEmployeeInfoCommand(string employeeDisplayId, UpdateEmploymen
             var actionerId = currentUserService.UserId;
             var dto = command.RequestDto;
 
-            int? supervisorId = null;
+            string? supervisorName = null;
             if (!string.IsNullOrWhiteSpace(dto.SupervisorDisplayId))
             {
                 var supervisor = await employeeRepository.GetByDisplayIdAsync(dto.SupervisorDisplayId);
-                supervisorId = supervisor?.Id;
+                supervisorName = supervisor?.FullName;
             }
             
             employee.UpdateEmploymentInfo(
@@ -41,7 +41,7 @@ public class UpdateEmployeeInfoCommand(string employeeDisplayId, UpdateEmploymen
                 dto.EmploymentType,
                 dto.Department,
                 dto.Position,
-                supervisorId,
+                supervisorName,
                 dto.EmployeeDisplayId,
                 actionerId
             );

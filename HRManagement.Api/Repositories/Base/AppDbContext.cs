@@ -1,4 +1,4 @@
-﻿using HRManagement.Api.Application.Interfaces;
+using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
@@ -15,7 +15,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<EmployeeUpdateRequest> EmployeeUpdateRequests { get; set; }
-    public DbSet<EmploymentInformation> EmploymentInformations { get; set; }
+    public DbSet<EmploymentInformation> EmploymentInformation { get; set; }
+    public DbSet<EmergencyContact> EmergencyContacts { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
@@ -23,11 +24,18 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<LeaveTableConfig> LeaveTableConfig { get; set; }
     public DbSet<LeaveBalanceModel> leaveBalanceModels { get; set; }
 
+    // Timesheet Module (Sharding-ready/Decoupled)
+    public DbSet<TimesheetProject> TimesheetProjects { get; set; }
+    public DbSet<TimesheetEntry> TimesheetEntries { get; set; }
+    public DbSet<TimesheetSubmission> TimesheetSubmissions { get; set; }
+    public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }
+    public DbSet<TodoTask> TodoTasks { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
-        //Configuration
+        // Configuration
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

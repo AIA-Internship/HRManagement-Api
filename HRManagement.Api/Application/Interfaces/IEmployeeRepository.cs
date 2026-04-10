@@ -10,7 +10,7 @@ public interface IEmployeeRepository
     Task<bool> IsPersonalEmailUniqueAsync(string personalEmail, int? excludeEmployeeId = null);
     Task<bool> IsPhoneNumberUniqueAsync(string phoneNumber, int? excludeEmployeeId = null);
     Task<bool> IsNikUniqueAsync(string nik, int? excludeEmployeeId = null);
-    Task AddEmployeeAsync(User user, Employee employee);
+    Task AddEmployeeAsync(User user, Employee employee, EmploymentInformation? employmentInformation = null, IEnumerable<EmergencyContact>? emergencyContacts = null);
     Task<List<Employee>> GetAllEmployeesAsync();
     Task<Employee?> GetByEmailAsync(string email);
     Task<Employee?> GetByIdAsync(int id);

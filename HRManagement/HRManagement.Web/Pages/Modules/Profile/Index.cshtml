@@ -1,0 +1,273 @@
+@page "/Profile"
+@model HRManagement.Web.Pages.Modules.Profile.IndexModel
+@{
+    ViewData["Title"] = "Personal Information";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+    <style>
+        .text-brand { color: #D31145 !important; }
+        .bg-aia { background-color: #D31145 !important; }
+        .btn-brand { background-color: #D31145 !important; color: #fff !important; }
+        .btn-brand:hover { filter: brightness(0.9); color: #fff !important; }
+        .nav-line-tabs .nav-link.active { border-bottom-color: #D31145; color: #D31145; }
+        .nav-line-tabs .nav-link:hover { color: #D31145; }
+        .field-label { font-size: 13px; color: #7e8299; font-weight: 500; margin-bottom: 0.25rem; }
+        .field-value { font-size: 14px; color: #181c32; font-weight: 600; }
+        body { font-family: 'Open Sans', 'Inter', sans-serif; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!-- Toolbar -->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <!-- Breadcrumb & Title -->
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Personal Information</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Personal Information
+                    <span class="text-muted fs-7 fw-normal mt-1">View and manage your personal information</span>
+                </h1>
+            </div>
+            <!-- Action Button -->
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <a href="/Profile/Edit" class="btn btn-sm btn-brand fw-bold">
+                    <i class="bi bi-pencil text-white me-2"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!-- Tabs Navigation -->
+            <div class="bg-white rounded shadow-sm p-0 mb-6 sticky-top" style="top: 80px; z-index: 10;">
+                <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold ms-5" id="profileTabs" role="tablist">
+                    <li class="nav-item mt-2">
+                        <a class="nav-link text-active-primary ms-0 me-10 py-4 active text-brand" data-bs-toggle="tab" href="#kt_tab_personal">Personal Details</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <a class="nav-link text-active-primary ms-0 me-10 py-4" data-bs-toggle="tab" href="#kt_tab_employment">Employment Details</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <a class="nav-link text-active-primary ms-0 me-10 py-4" data-bs-toggle="tab" href="#kt_tab_emergency">Emergency Contact</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <a class="nav-link text-active-primary ms-0 me-10 py-4" data-bs-toggle="tab" href="#kt_tab_attachments">Attachments</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tab Content (Cards Section) -->
+            <div class="tab-content" id="profileTabContent">
+                
+                <!-- PERSONAL INFORMATION TAB -->
+                <div class="tab-pane fade show active" id="kt_tab_personal" role="tabpanel">
+                    <div class="card shadow-sm mb-5 mb-xl-10">
+                        <div class="card-header border-0 cursor-pointer">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-address-book fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Personal Details</h3>
+                            </div>
+                        </div>
+                        <div class="card-body border-top p-9">
+                            
+                            <!-- Identity & Contact -->
+                            <h4 class="fs-5 text-gray-800 fw-bold mb-6">Identity & Contact</h4>
+                            <div class="row g-6 mb-10">
+                                <div class="col-md-6">
+                                    <label class="field-label">Full Name</label>
+                                    <div class="field-value" id="fullName">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Gender</label>
+                                    <div class="field-value" id="gender">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Personal Email</label>
+                                    <div class="field-value" id="personalEmail">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Company Email</label>
+                                    <div class="field-value" id="companyEmail">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Phone Number</label>
+                                    <div class="field-value" id="phoneNumber">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">National ID (NIK)</label>
+                                    <div class="field-value" id="nik">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Tax ID (NPWP)</label>
+                                    <div class="field-value" id="npwp">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Place of Birth</label>
+                                    <div class="field-value" id="placeOfBirth">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Date of Birth</label>
+                                    <div class="field-value" id="dateOfBirth">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Marital Status</label>
+                                    <div class="field-value" id="maritalStatus">-</div>
+                                </div>
+                            </div>
+
+                            <div class="separator separator-dashed my-8"></div>
+
+                            <!-- Current Address -->
+                            <h4 class="fs-5 text-gray-800 fw-bold mb-6">Current Address</h4>
+                            <div class="row g-6 mb-10">
+                                <div class="col-12">
+                                    <label class="field-label">Street Address</label>
+                                    <div class="field-value" id="currentStreet">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">City</label>
+                                    <div class="field-value" id="currentCity">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="field-label">Province</label>
+                                    <div class="field-value" id="currentProvince">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="field-label">Postal Code</label>
+                                    <div class="field-value" id="currentPostal">-</div>
+                                </div>
+                            </div>
+
+                            <div class="separator separator-dashed my-8"></div>
+
+                            <!-- Residential Address -->
+                            <h4 class="fs-5 text-gray-800 fw-bold mb-6">Residential Address</h4>
+                            <div class="row g-6 mb-4">
+                                <div class="col-12">
+                                    <label class="field-label">Street Address</label>
+                                    <div class="field-value" id="residentialStreet">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">City</label>
+                                    <div class="field-value" id="residentialCity">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="field-label">Province</label>
+                                    <div class="field-value" id="residentialProvince">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="field-label">Postal Code</label>
+                                    <div class="field-value" id="residentialPostal">-</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMPLOYMENT DETAILS TAB -->
+                <div class="tab-pane fade" id="kt_tab_employment" role="tabpanel">
+                    <div class="card shadow-sm mb-5 mb-xl-10">
+                        <div class="card-header border-0 cursor-pointer">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-briefcase fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span></i> Employment Details</h3>
+                            </div>
+                        </div>
+                        <div class="card-body border-top p-9">
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label class="field-label">Employee ID</label>
+                                    <div class="field-value" id="employeeId">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Employee Status</label>
+                                    <div class="field-value" id="employeeStatus">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Start Date</label>
+                                    <div class="field-value" id="startDate">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Employment Type</label>
+                                    <div class="field-value" id="employmentType">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Department</label>
+                                    <div class="field-value" id="department">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Position</label>
+                                    <div class="field-value" id="position">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Supervisor Name</label>
+                                    <div class="field-value" id="supervisorName">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMERGENCY CONTACT TAB -->
+                <div class="tab-pane fade" id="kt_tab_emergency" role="tabpanel">
+                    <div class="card shadow-sm mb-5 mb-xl-10">
+                        <div class="card-header border-0 cursor-pointer">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-phone fs-2 text-brand me-3"><span class="path1"></span><span class="path2"></span></i> Emergency Contact</h3>
+                            </div>
+                        </div>
+                        <div class="card-body border-top p-9">
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label class="field-label">Name</label>
+                                    <div class="field-value" id="emergencyName">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Relationship</label>
+                                    <div class="field-value" id="emergencyRelationship">-</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="field-label">Phone Number</label>
+                                    <div class="field-value" id="emergencyPhone">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATTACHMENTS TAB -->
+                <div class="tab-pane fade" id="kt_tab_attachments" role="tabpanel">
+                    <div class="card shadow-sm mb-5 mb-xl-10">
+                        <div class="card-header border-0 cursor-pointer">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0"><i class="ki-duotone ki-paper-clip fs-2 text-brand me-3"></i> Attachments</h3>
+                            </div>
+                        </div>
+                        <div class="card-body border-top p-9">
+                            <div id="attachmentList" class="text-muted fw-semibold fs-6">
+                                <!-- Nanti diisi dari JS / Backend -->
+                                No attachments available yet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
+}

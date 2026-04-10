@@ -1,0 +1,155 @@
+@page "/Timesheet/Supervisor/Report"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.ReportModel
+@{
+    ViewData["Title"] = "Approval History & Team Reports";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
+    <style>
+        .report-card { background: #fff; border-radius: 20px; border: 1px solid #ECEFF4; padding: 2rem; margin-bottom: 2rem; }
+        .tab-nav { display: flex; gap: 30px; border-bottom: 2px solid #F1F4F9; margin-bottom: 2.5rem; }
+        .tab-link { padding: 12px 0; font-weight: 850; font-size: 0.85rem; color: #A1A5B7; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; text-decoration: none; }
+        .tab-link.active { color: #D31145; border-bottom-color: #D31145; }
+        
+        .history-table td { padding: 16px 0; border-bottom: 1px solid #F1F4F9; vertical-align: middle; }
+        .history-table tr:last-child td { border-bottom: 0; }
+        
+        /* Use global badge-pill-status classes from status-badges.css. 
+           Local aliases below for backward compat. */
+        .status-pill { padding: 7px 18px; border-radius: 50px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 6px; }
+        .status-approved { background: #D1FAE5; color: #2B8B15; border: 0; }
+        .status-revision { background: #FFE4E6; color: #D31145; border: 0; }
+        .status-missing  { background: #FEF3C7; color: #92400E; border: 0; }
+
+        .missing-intern { background: #FDFDFD; border: 1px dashed #ECEFF4; border-radius: 16px; padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .overdue-count { background: #FFF5F8; color: #D31145; padding: 4px 10px; border-radius: 6px; font-weight: 950; font-size: 0.75rem; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Timesheet Report",
+                Subtitle = "Audit and track your approval decisions and intern compliance",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Reports" }
+                }
+            })
+
+            <div class="tab-nav">
+                <a href="#" class="tab-link active" onclick="switchReportTab(event, 'approval_history')">Approval History</a>
+                <a href="#" class="tab-link" onclick="switchReportTab(event, 'missing_submissions')">Missing Submissions</a>
+            </div>
+
+            <!-- APPROVAL HISTORY TAB -->
+            <div id="approval_history_tab" class="report-tab-content">
+                <div class="report-card shadow-sm">
+                    <table class="history-table w-100">
+                        <thead>
+                            <tr class="text-gray-400 fw-boldest fs-8 text-uppercase">
+                                <th style="width: 25%">Intern Name</th>
+                                <th style="width: 20%">Period</th>
+                                <th style="width: 25%">Status & Feedback</th>
+                                <th style="width: 20%">Decision Date</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history_tbody">
+                            <!-- JS Driven -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MISSING SUBMISSIONS TAB -->
+            <div id="missing_submissions_tab" class="report-tab-content d-none">
+                <div class="row g-6" id="missing_list_container">
+                    <!-- JS Driven Cards -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        async function loadReportData() {
+            const data = await fetchAPI('supervisor/report');
+            if (!data) return;
+
+            // 1. Render History
+            const histBody = document.getElementById('history_tbody');
+            histBody.innerHTML = '';
+            if (data.approvalHistory.length === 0) {
+                histBody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-gray-400">No approval history found.</td></tr>';
+            } else {
+                data.approvalHistory.forEach(h => {
+                    const statusClass = h.status === 'Approved' ? 'status-approved' : 'status-revision';
+                    histBody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="fw-boldest text-gray-800 fs-6">${h.employeeName}</div>
+                                <small class="text-gray-400 fs-9 fw-bold">ID: ${h.employeeId}</small>
+                            </td>
+                            <td>
+                                <span class="period-pill">${indonesianMonths[h.month-1]} ${h.year}</span>
+                            </td>
+                            <td>
+                                <span class="status-pill ${statusClass}">${h.status}</span>
+                                ${h.revisionNote ? `<div class="fs-8 text-muted mt-1 fw-bold">${h.revisionNote}</div>` : ''}
+                            </td>
+                            <td class="text-gray-600 fs-7 fw-bold">${h.reviewedDate || '--'}</td>
+                            <td class="text-end">
+                                <a href="/Timesheet/Supervisor/Review?id=${h.submissionId}" class="btn btn-sm btn-light-primary fw-boldest">VIEW LOGS</a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 2. Render Missing
+            const missingContainer = document.getElementById('missing_list_container');
+            missingContainer.innerHTML = '';
+            if (data.missingSubmissions.length === 0) {
+                missingContainer.innerHTML = '<div class="col-12"><div class="text-center py-20 text-gray-400">All interns have submitted their timesheets. Well done!</div></div>';
+            } else {
+                data.missingSubmissions.forEach(m => {
+                    missingContainer.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="missing-intern shadow-sm">
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="avatar-circle" style="width:40px; height:40px; font-size:0.9rem">${m.employeeName.charAt(0)}</div>
+                                    <div>
+                                        <div class="fw-boldest text-gray-800 fs-6">${m.employeeName}</div>
+                                        <div class="fs-8 text-gray-400 fw-bold">Target Period: ${indonesianMonths[m.month-1]} ${m.year}</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="overdue-count">${m.overdueDays} Days Missing</div>
+                                    <small class="text-gray-400 fw-bold fs-9">Remind Intern</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function switchReportTab(e, tabId) {
+            e.preventDefault();
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+            e.target.classList.add('active');
+
+            document.querySelectorAll('.report-tab-content').forEach(c => c.classList.add('d-none'));
+            document.getElementById(tabId + '_tab').classList.remove('d-none');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReportData);
+    </script>
+}

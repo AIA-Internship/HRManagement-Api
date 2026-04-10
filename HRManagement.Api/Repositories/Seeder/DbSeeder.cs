@@ -2,6 +2,7 @@ using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Seeder;
 
@@ -9,6 +10,11 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(AppDbContext context, IPasswordHasher passwordHasher)
     {
+        // ==========================================
+        // 0. ENSURE SCHEMA IS UPDATED (Migration Guard)
+        // ==========================================
+        await EnsureSchemaUpdatedAsync(context);
+
         // ==========================================
         // 1. SEED SYSTEM LOOKUPS (Dropdown Data)
         // ==========================================
@@ -27,7 +33,7 @@ public static class DbSeeder
                 // UserRole
                 new SystemLookup { Category = "ROLE", Value = 0, DisplayName = "Supervisor", IsActive = true },
                 new SystemLookup { Category = "ROLE", Value = 1, DisplayName = "Employee", IsActive = true },
-
+                
                 // EmployeeStatus
                 new SystemLookup { Category = "EMPLOYMENT_STATUS", Value = 0, DisplayName = "Inactive", IsActive = true },
                 new SystemLookup { Category = "EMPLOYMENT_STATUS", Value = 1, DisplayName = "Active", IsActive = true },
@@ -50,172 +56,127 @@ public static class DbSeeder
         }
         
         // ==========================================
-        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
+        // 2. SEED DEFAULT USERS (Enforce Password Reset if Needed)
         // ==========================================
-        bool employeesExist = context.Employees.Any();
-        bool usersExist = context.Users.Any();
-
-        if (employeesExist && usersExist)
+        var adminsToSeed = new List<(string Email, string Password, string FullName, string DisplayId)>
         {
-            return; 
-        }
-        
-        var adminDto = new CreateEmployeeRequestDto
-        {
-            EmployeeEmail = "Brandon@aia.com",
-            PersonalEmail = "brandon.personal@email.com",
-            DefaultPassword = "AdminPass123!",
-            FullName = "Brandon Admin",
-            Gender = 0, // Male
-            PhoneNumber = "081234567890",
-            Nik = "HR-0001",
-            PlaceOfBirth = "Jakarta",
-            DateOfBirth = new DateTime(1998, 1, 15).ToUniversalTime(),
-            MaritalStatus = 0, // Single
-            CurrentStreetAddress = "Jl. Sudirman No. 1",
-            CurrentCity = "Jakarta",
-            CurrentProvince = "DKI Jakarta",
-            CurrentPostalCode = "10220",
-            ResidentialStreetAddress = "Jl. Sudirman No. 1",
-            ResidentialCity = "Jakarta",
-            ResidentialProvince = "DKI Jakarta",
-            ResidentialPostalCode = "10220",
-            Role = 0, // Supervisor
-            EmploymentInformation = new CreateEmploymentInfoDto
-            {
-                EmploymentStatus = 1, // Active
-                StartDate = DateTime.UtcNow,
-                EmploymentType = 1, // Fulltime
-                Department = "Human Resources",
-                Position = "HR Manager",
-                SupervisorDisplayId = null,
-                EmployeeDisplayId = "E0001"
-            },
-            EmergencyContacts = new List<CreateEmergencyContactDto>
-            {
-                new() { Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" }
-            }
+            ("Brandon@aia.com", "AdminPass123!", "Brandon", "E0001")
         };
 
-        var internDto = new CreateEmployeeRequestDto
+        var internsToSeed = new List<(string Email, string Password, string FullName, string DisplayId, string SupervisorName)>
         {
-            EmployeeEmail = "Owen@aia.com",
-            PersonalEmail = "owen.personal@email.com",
-            DefaultPassword = "WorkerPass123!",
-            FullName = "Owen Intern",
-            Gender = 0, // Male
-            PhoneNumber = "081298765432",
-            Nik = "INT-0001",
-            PlaceOfBirth = "Bandung",
-            DateOfBirth = new DateTime(2002, 5, 20).ToUniversalTime(),
-            MaritalStatus = 0, // Single
-            CurrentStreetAddress = "Jl. Thamrin No. 10",
-            CurrentCity = "Jakarta",
-            CurrentProvince = "DKI Jakarta",
-            CurrentPostalCode = "10350",
-            ResidentialStreetAddress = "Jl. Thamrin No. 10",
-            ResidentialCity = "Jakarta",
-            ResidentialProvince = "DKI Jakarta",
-            ResidentialPostalCode = "10350",
-            Role = 1, // Employee
-            EmploymentInformation = new CreateEmploymentInfoDto
-            {
-                EmploymentStatus = 1, // Active
-                StartDate = DateTime.UtcNow,
-                EmploymentType = 3, // Intern
-                Department = "Development",
-                Position = "Software Engineering Intern",
-                SupervisorDisplayId = null,
-                EmployeeDisplayId = "E0002"
-            },
-            EmergencyContacts = new List<CreateEmergencyContactDto>
-            {
-                new() { Name = "Sarah Intern", Relationship = "Mother", PhoneNumber = "087712345678" }
-            }
+            ("Owen@aia.com", "WorkerPass123!", "Owen", "E0002", "Brandon")
         };
 
-        // ==========================================
-        // 3. SEED EMPLOYEES (If missing)
-        // ==========================================
-        if (!employeesExist)
+        // Seed Admins
+        foreach (var u in adminsToSeed)
         {
-            var adminEmployee = CreateEmployeeEntity(adminDto, 1);
-            var internEmployee = CreateEmployeeEntity(internDto, 1);
-
-            if (internEmployee.EmploymentInformation != null)
+            var existingUser = await context.Users.FirstOrDefaultAsync(user => user.EmployeeEmail == u.Email);
+            if (existingUser == null)
             {
-                internEmployee.EmploymentInformation.Supervisor = adminEmployee;
-            }
-
-            context.Employees.AddRange(adminEmployee, internEmployee);
-        }
-
-        // ==========================================
-        // 4. SEED USERS (If missing)
-        // ==========================================
-        if (!usersExist)
-        {
-            var adminUser = new User(
-                email: adminDto.EmployeeEmail, 
-                passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
-                role: adminDto.Role, 
-                actionerId: 1);
+                var user = new User(u.Email, passwordHasher.Hash(u.Password), 0, 1);
+                context.Users.Add(user);
                 
-            var internUser = new User(
-                email: internDto.EmployeeEmail, 
-                passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
-                role: internDto.Role, 
-                actionerId: 1);
+                var emp = new Employee(
+                    u.FullName, 0, u.Email.Replace("@aia.com", "@personal.com"), u.Email, "081234567890", u.DisplayId, "Jakarta", 
+                    new DateTime(1998, 1, 15), 0, new Address("Jl. Sudirman No. 1", "Jakarta", "DKI Jakarta", "10220"), 
+                    new Address("Jl. Sudirman No. 1", "Jakarta", "DKI Jakarta", "10220"), 0, 1);
+                
+                context.Employees.Add(emp);
+                await context.SaveChangesAsync(); 
 
-            context.Users.AddRange(adminUser, internUser);
+                var info = new EmploymentInformation(1)
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeDisplayId = u.DisplayId,
+                    Position = "HR Manager",
+                    Department = "Human Resources",
+                    StartDate = DateTime.UtcNow,
+                    EmploymentStatus = 1,
+                    EmploymentType = 1,
+                    SupervisorName = string.Empty
+                };
+                context.EmploymentInformation.Add(info);
+                
+                var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" };
+                context.EmergencyContacts.Add(contact);
+            }
+            else
+            {
+                // Sync name for existing user
+                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == u.Email);
+                if (emp != null) emp.UpdateFullName(u.FullName);
+
+                // Force update password
+                existingUser.ChangePassword(passwordHasher.Hash(u.Password), 1);
+            }
         }
 
-        // ==========================================
-        // 5. COMMIT TRANSACTIONS
-        // ==========================================
-        // This will save both Employees and Users in a single database transaction
+        // Seed Interns
+        foreach (var u in internsToSeed)
+        {
+            var existingUser = await context.Users.FirstOrDefaultAsync(user => user.EmployeeEmail == u.Email);
+            if (existingUser == null)
+            {
+                var user = new User(u.Email, passwordHasher.Hash(u.Password), 1, 1);
+                context.Users.Add(user);
+                
+                var emp = new Employee(
+                    u.FullName, 0, u.Email.Replace("@aia.com", "@personal.com"), u.Email, "081298765432", u.DisplayId, "Bandung", 
+                    new DateTime(2002, 5, 20), 0, new Address("Jl. Thamrin No. 10", "Jakarta", "DKI Jakarta", "10350"), 
+                    new Address("Jl. Thamrin No. 10", "Jakarta", "DKI Jakarta", "10350"), 1, 1);
+                
+                context.Employees.Add(emp);
+                await context.SaveChangesAsync(); 
+
+                var info = new EmploymentInformation(1)
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeDisplayId = u.DisplayId,
+                    Position = "Software Engineering Intern",
+                    Department = "Development",
+                    StartDate = DateTime.UtcNow,
+                    EmploymentStatus = 1,
+                    EmploymentType = 3,
+                    SupervisorName = u.SupervisorName
+                };
+                context.EmploymentInformation.Add(info);
+                
+                var contact = new EmergencyContact { EmployeeId = emp.Id, Name = "Sarah Intern", Relationship = "Mother", PhoneNumber = "087712345678" };
+                context.EmergencyContacts.Add(contact);
+            }
+            else
+            {
+                // Sync name for existing user
+                var emp = await context.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == u.Email);
+                if (emp != null) emp.UpdateFullName(u.FullName);
+
+                // Force update password & supervisor
+                existingUser.ChangePassword(passwordHasher.Hash(u.Password), 1);
+
+                if (emp != null)
+                {
+                    var empInfo = await context.EmploymentInformation.FirstOrDefaultAsync(ei => ei.EmployeeId == emp.Id);
+                    if (empInfo != null) empInfo.UpdateDetails(null, null, null, null, null, u.SupervisorName, null, 1);
+                }
+            }
+        }
+
         await context.SaveChangesAsync();
     }
 
-    private static Employee CreateEmployeeEntity(CreateEmployeeRequestDto dto, long actionerId)
+    private static async Task EnsureSchemaUpdatedAsync(AppDbContext context)
     {
-        var employmentInformation = dto.EmploymentInformation == null
-            ? null
-            : new EmploymentInformation(actionerId)
-            {
-                EmploymentStatus = dto.EmploymentInformation.EmploymentStatus,
-                StartDate = dto.EmploymentInformation.StartDate,
-                EmploymentType = dto.EmploymentInformation.EmploymentType,
-                Department = dto.EmploymentInformation.Department,
-                Position = dto.EmploymentInformation.Position,
-                SupervisorId = null, 
-                EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
-            };
+        // Guard against missing SupervisorName column in Azure SQL (where EnsureCreated doesn't update)
+        var sql = @"
+            IF NOT EXISTS (SELECT * FROM sys.columns 
+                          WHERE object_id = OBJECT_ID(N'[dbo].[EmploymentInformation]') 
+                          AND name = N'employment_supervisor_name')
+            BEGIN
+                ALTER TABLE [dbo].[EmploymentInformation] 
+                ADD [employment_supervisor_name] NVARCHAR(100) NOT NULL DEFAULT '';
+            END";
 
-        var emergencyContacts = dto.EmergencyContacts
-            .Select(x => new EmergencyContact
-            {
-                Name = x.Name,
-                Relationship = x.Relationship,
-                PhoneNumber = x.PhoneNumber
-            })
-            .ToList(); 
-
-        return new Employee(
-            fullName: dto.FullName,
-            gender: dto.Gender,
-            personalEmail: dto.PersonalEmail,
-            employeeEmail: dto.EmployeeEmail,
-            phoneNumber: dto.PhoneNumber,
-            nik: dto.Nik,
-            placeOfBirth: dto.PlaceOfBirth,
-            dateOfBirth: dto.DateOfBirth,
-            maritalStatus: dto.MaritalStatus,
-            currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
-            residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
-            role: dto.Role,
-            actionerId: actionerId,
-            employmentInformation: employmentInformation,
-            emergencyContacts: emergencyContacts);
+        await context.Database.ExecuteSqlRawAsync(sql);
     }
 }
