@@ -114,7 +114,7 @@ public static class EmployeeMappings
             maritalStatus: dto.MaritalStatus,
             currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
             residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
-            role: dto.Role,
+            roleId: dto.Role,
             actionerId: actionerId,
             employmentInformation: employmentInfo,
             emergencyContacts: emergencyContacts

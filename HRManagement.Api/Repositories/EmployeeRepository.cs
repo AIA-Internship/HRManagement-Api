@@ -113,7 +113,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
         return await dbContext.Employees
             .Include(e => e.EmploymentInformation)
             .AsNoTracking()
-            .Where(e => e.Role == 0 && e.IsActive) // 0 = Supervisor Role
+            .Where(e => e.RoleId == 0 && e.IsActive) // 0 = Supervisor Role
             .Select(e => new SupervisorLookupDto(
                 e.EmploymentInformation!.EmployeeDisplayId,
                 e.FullName))

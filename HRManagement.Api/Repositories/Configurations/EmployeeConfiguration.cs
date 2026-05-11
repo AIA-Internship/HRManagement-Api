@@ -79,8 +79,8 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasMaxLength(25)
             .IsRequired();
         
-        builder.Property(e => e.Role)
-            .HasColumnName("emp_role")
+        builder.Property(e => e.RoleId)
+            .HasColumnName("role_id")
             .IsRequired();
 
         builder.HasIndex(e => e.FullName).IsUnique();
