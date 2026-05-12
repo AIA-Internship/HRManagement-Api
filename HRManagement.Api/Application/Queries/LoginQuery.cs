@@ -28,6 +28,9 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
         public async Task<ApiResponse<TokenResponseDto>> Handle(LoginQuery request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users
+                .Include(u => u.SystemRole)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
                 .AsNoTracking() 
                 .FirstOrDefaultAsync(u => u.EmployeeEmail == request.Email, cancellationToken);
 
@@ -40,27 +43,26 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 );
             }
 
-            var roleName = await dbContext.SystemLookups
-                .AsNoTracking()
-                .Where(x => x.Category == "ROLE" && x.Value == user.Role && x.IsActive)
-                .Select(x => x.DisplayName)
-                .FirstOrDefaultAsync(cancellationToken);
+            var roleName = user.SystemRole?.Name;
+            var permissions = user.SystemRole?.RolePermissions
+                .Select(rp => rp.Permission.Name)
+                .ToList() ?? new List<string>();
 
             if (string.IsNullOrWhiteSpace(roleName))
             {
-                roleName = user.Role switch
+                roleName = user.RoleId switch
                 {
                     0 => "Supervisor",
                     1 => "Employee",
-                    _ => user.Role.ToString()
+                    _ => user.RoleId.ToString()
                 };
             }
             
-            var token = GenerateToken(user, request.RememberMe, roleName);
+            var token = GenerateToken(user, request.RememberMe, roleName, permissions);
             return ApiHelperResponse.Success("Login successful", new TokenResponseDto { Token = token });
         }
         
-        private string GenerateToken(User user, bool rememberMe, string roleName)
+        private string GenerateToken(User user, bool rememberMe, string roleName, List<string> permissions)
         {
             var jwtKey = configuration["AppSetting:Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing");
             var jwtIssuer = configuration["AppSetting:Jwt:Issuer"];
@@ -71,13 +73,18 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.EmployeeEmail),
                 new Claim(ClaimTypes.Role, roleName),
-                new Claim("role_id", user.Role.ToString())
+                new Claim("role_id", user.RoleId.ToString())
             };
+
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim("permission", permission));
+            }
             
             var expirationTime = rememberMe ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddMinutes(durationInMinutes);
 

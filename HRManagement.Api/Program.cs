@@ -223,6 +223,7 @@ using (var scope = app.Services.CreateScope())
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
         context.Database.Migrate();
+        await RbacSeeder.SeedAsync(context);
         await DbSeeder.SeedAsync(context, passwordHasher);
     }
     catch (Exception ex)

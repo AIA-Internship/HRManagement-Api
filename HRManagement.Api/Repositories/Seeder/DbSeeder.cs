@@ -1,7 +1,9 @@
 using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
 using HRManagement.Api.Repositories.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Seeder;
 
@@ -48,7 +50,11 @@ public static class DbSeeder
             context.SystemLookups.AddRange(lookups);
             await context.SaveChangesAsync();
         }
-        
+
+        var roles = await context.Set<Role>().ToListAsync();
+        var supervisorRoleId = roles.FirstOrDefault(r => r.Name == "Supervisor")?.Id ?? 0;
+        var employeeRoleId = roles.FirstOrDefault(r => r.Name == "Employee")?.Id ?? 1;
+
         // ==========================================
         // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
         // ==========================================
@@ -80,7 +86,7 @@ public static class DbSeeder
             ResidentialCity = "Jakarta",
             ResidentialProvince = "DKI Jakarta",
             ResidentialPostalCode = "10220",
-            Role = 0, // Supervisor
+            Role = supervisorRoleId,
             EmploymentInformation = new CreateEmploymentInfoDto
             {
                 EmploymentStatus = 1, // Active
@@ -117,7 +123,7 @@ public static class DbSeeder
             ResidentialCity = "Jakarta",
             ResidentialProvince = "DKI Jakarta",
             ResidentialPostalCode = "10350",
-            Role = 1, // Employee
+            Role = employeeRoleId,
             EmploymentInformation = new CreateEmploymentInfoDto
             {
                 EmploymentStatus = 1, // Active
@@ -158,13 +164,13 @@ public static class DbSeeder
             var adminUser = new User(
                 email: adminDto.EmployeeEmail, 
                 passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
-                role: adminDto.Role, 
+                roleId: adminDto.Role, 
                 actionerId: 1);
                 
             var internUser = new User(
                 email: internDto.EmployeeEmail, 
                 passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
-                role: internDto.Role, 
+                roleId: internDto.Role, 
                 actionerId: 1);
 
             context.Users.AddRange(adminUser, internUser);
