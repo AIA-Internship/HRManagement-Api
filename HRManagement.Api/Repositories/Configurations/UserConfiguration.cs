@@ -25,10 +25,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnName("role_id")
             .IsRequired();
 
-        builder.HasOne(e => e.SystemRole)
-            .WithMany()
-            .HasForeignKey(e => e.RoleId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // builder.HasOne(e => e.SystemRole)
+        //     .WithMany()
+        //     .HasForeignKey(e => e.RoleId)
+        //     .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => e.EmployeeEmail).IsUnique();
     }

@@ -58,14 +58,6 @@ public static class DbSeeder
         // ==========================================
         // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
         // ==========================================
-        bool employeesExist = context.Employees.Any();
-        bool usersExist = context.Users.Any();
-
-        if (employeesExist && usersExist)
-        {
-            return; 
-        }
-        
         var adminDto = new CreateEmployeeRequestDto
         {
             EmployeeEmail = "Brandon@aia.com",
@@ -102,6 +94,40 @@ public static class DbSeeder
                 new() { Name = "Jane Doe", Relationship = "Sister", PhoneNumber = "089876543210" }
             }
         };
+
+        // ==========================================
+        // 2. CHECK IF EVERYTHING IS ALREADY SEEDED
+        // ==========================================
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.EmployeeEmail == adminDto.EmployeeEmail);
+        if (existingUser != null)
+        {
+            bool needsUpdate = false;
+            
+            // Update RoleId if it doesn't match the current database IDs
+            if (existingUser.RoleId != supervisorRoleId && supervisorRoleId != 0)
+            {
+                existingUser.ChangeRole(supervisorRoleId, 1);
+                needsUpdate = true;
+            }
+
+            // Ensure password matches the seeded value
+            if (!passwordHasher.Verify(adminDto.DefaultPassword, existingUser.PasswordHash))
+            {
+                var expectedHash = passwordHasher.Hash(adminDto.DefaultPassword);
+                existingUser.ChangePassword(expectedHash, 1);
+                needsUpdate = true;
+            }
+            
+            if (needsUpdate)
+            {
+                await context.SaveChangesAsync();
+            }
+            return; 
+        }
+        else
+        {
+            // Admin user NOT found
+        }
 
         var internDto = new CreateEmployeeRequestDto
         {
@@ -143,38 +169,32 @@ public static class DbSeeder
         // ==========================================
         // 3. SEED EMPLOYEES (If missing)
         // ==========================================
-        if (!employeesExist)
+        var adminEmployee = CreateEmployeeEntity(adminDto, 1);
+        var internEmployee = CreateEmployeeEntity(internDto, 1);
+
+        if (internEmployee.EmploymentInformation != null)
         {
-            var adminEmployee = CreateEmployeeEntity(adminDto, 1);
-            var internEmployee = CreateEmployeeEntity(internDto, 1);
-
-            if (internEmployee.EmploymentInformation != null)
-            {
-                internEmployee.EmploymentInformation.Supervisor = adminEmployee;
-            }
-
-            context.Employees.AddRange(adminEmployee, internEmployee);
+            internEmployee.EmploymentInformation.Supervisor = adminEmployee;
         }
+
+        context.Employees.AddRange(adminEmployee, internEmployee);
 
         // ==========================================
         // 4. SEED USERS (If missing)
         // ==========================================
-        if (!usersExist)
-        {
-            var adminUser = new User(
-                email: adminDto.EmployeeEmail, 
-                passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
-                roleId: adminDto.Role, 
-                actionerId: 1);
-                
-            var internUser = new User(
-                email: internDto.EmployeeEmail, 
-                passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
-                roleId: internDto.Role, 
-                actionerId: 1);
+        var adminUser = new User(
+            email: adminDto.EmployeeEmail, 
+            passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
+            roleId: adminDto.Role, 
+            actionerId: 1);
+            
+        var internUser = new User(
+            email: internDto.EmployeeEmail, 
+            passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
+            roleId: internDto.Role, 
+            actionerId: 1);
 
-            context.Users.AddRange(adminUser, internUser);
-        }
+        context.Users.AddRange(adminUser, internUser);
 
         // ==========================================
         // 5. COMMIT TRANSACTIONS

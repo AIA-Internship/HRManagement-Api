@@ -83,10 +83,10 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasColumnName("role_id")
             .IsRequired();
 
-        builder.HasOne(e => e.SystemRole)
-            .WithMany(r => r.Employees)
-            .HasForeignKey(e => e.RoleId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // builder.HasOne(e => e.SystemRole)
+        //     .WithMany(r => r.Employees)
+        //     .HasForeignKey(e => e.RoleId)
+        //     .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => e.FullName).IsUnique();
         builder.HasIndex(e => e.PersonalEmail).IsUnique();
