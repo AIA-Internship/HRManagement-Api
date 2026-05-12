@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
@@ -9,39 +10,24 @@ namespace HRManagement.Api.Repositories;
 public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 {
 
-    public async Task<bool> IsEmailUniqueAsync(string email)
-    {
-        return !await dbContext.Users.AnyAsync(u => u.EmployeeEmail == email);
-    }
-
-    public async Task<bool> IsFullNameUniqueAsync(string fullName, int? excludeEmployeeId = null)
+    public async Task<bool> IsUniqueAsync<TProperty>(
+        Expression<Func<Employee, TProperty>> propertySelector, 
+        TProperty value, 
+        int? excludeId = null)
     {
         var query = dbContext.Employees.AsQueryable();
-        if (excludeEmployeeId.HasValue) query = query.Where(e => e.Id != excludeEmployeeId.Value);
-        return !await query.AnyAsync(e => e.FullName == fullName);
+        
+        if (excludeId.HasValue) 
+            query = query.Where(e => e.Id != excludeId.Value);
+        
+        var parameter = Expression.Parameter(typeof(Employee), "e");
+        var property = Expression.Invoke(propertySelector, parameter);
+        var constant = Expression.Constant(value);
+        var body = Expression.Equal(property, constant);
+        var lambda = Expression.Lambda<Func<Employee, bool>>(body, parameter);
+        return !await query.AnyAsync(lambda);
     }
-
-    public async Task<bool> IsPersonalEmailUniqueAsync(string personalEmail, int? excludeEmployeeId = null)
-    {
-        var query = dbContext.Employees.AsQueryable();
-        if (excludeEmployeeId.HasValue) query = query.Where(e => e.Id != excludeEmployeeId.Value);
-        return !await query.AnyAsync(e => e.PersonalEmail == personalEmail);
-    }
-
-    public async Task<bool> IsPhoneNumberUniqueAsync(string phoneNumber, int? excludeEmployeeId = null)
-    {
-        var query = dbContext.Employees.AsQueryable();
-        if (excludeEmployeeId.HasValue) query = query.Where(e => e.Id != excludeEmployeeId.Value);
-        return !await query.AnyAsync(e => e.PhoneNumber == phoneNumber);
-    }
-
-    public async Task<bool> IsNikUniqueAsync(string nik, int? excludeEmployeeId = null)
-    {
-        var query = dbContext.Employees.AsQueryable();
-        if (excludeEmployeeId.HasValue) query = query.Where(e => e.Id != excludeEmployeeId.Value);
-        return !await query.AnyAsync(e => e.Nik == nik);
-    }
-
+    
     public async Task AddEmployeeAsync(User user, Employee employee)
     {
         await dbContext.Users.AddAsync(user);
@@ -110,10 +96,19 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
     {
+        var supervisorRole = await dbContext.Roles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Name == "Supervisor", cancellationToken);
+
+        if (supervisorRole == null)
+        {
+            return new List<SupervisorLookupDto>();
+        }
+
         return await dbContext.Employees
             .Include(e => e.EmploymentInformation)
             .AsNoTracking()
-            .Where(e => e.Role == 0 && e.IsActive) // 0 = Supervisor Role
+            .Where(e => e.RoleId == supervisorRole.Id && e.IsActive)
             .Select(e => new SupervisorLookupDto(
                 e.EmploymentInformation!.EmployeeDisplayId,
                 e.FullName))

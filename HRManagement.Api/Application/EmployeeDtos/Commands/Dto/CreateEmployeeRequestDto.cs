@@ -14,7 +14,7 @@ public class CreateEmployeeRequestDto
     public string PersonalEmail { get; set; } = string.Empty;
     /// <example>08123456789</example>
     public string PhoneNumber { get; set; } = string.Empty;
-    /// <example>1234567890123456</example>
+    /// <example>"1234567890123456"</example>
     public string Nik { get; set; } = string.Empty;
     /// <example>Jakarta</example>
     public string PlaceOfBirth { get; set; } = string.Empty;
@@ -30,7 +30,7 @@ public class CreateEmployeeRequestDto
     public string CurrentCity { get; set; } = string.Empty;
     /// <example>DKI Jakarta</example>
     public string CurrentProvince { get; set; } = string.Empty;
-    /// <example>12345</example>
+    /// <example>"12345"</example>
     public string CurrentPostalCode { get; set; } = string.Empty;
 
     // Residential Address
@@ -40,7 +40,7 @@ public class CreateEmployeeRequestDto
     public string ResidentialCity { get; set; } = string.Empty;
     /// <example>Jawa Barat</example>
     public string ResidentialProvince { get; set; } = string.Empty;
-    /// <example>40123</example>
+    /// <example>"40123"</example>
     public string ResidentialPostalCode { get; set; } = string.Empty;
 
     /// <example>1</example>

@@ -1,3 +1,5 @@
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
+
 namespace HRManagement.Api.Domain.Models.Tables;
 
 public class Employee : BaseTableModel
@@ -15,7 +17,9 @@ public class Employee : BaseTableModel
     public Address ResidentialAddress { get; private set; } = new Address();
     public string PhoneNumber { get; private set; }
     public bool IsActive { get; private set; }
-    public int Role { get; private set; }
+    public int RoleId { get;  private set; }
+    public Role SystemRole { get;  private set; }
+    // public int Role { get; private set; }
     public EmploymentInformation? EmploymentInformation { get; private set; }
     public ICollection<EmergencyContact> EmergencyContacts { get; private set; } = new List<EmergencyContact>();
     
@@ -33,7 +37,7 @@ public class Employee : BaseTableModel
         int maritalStatus,
         Address currentAddress,
         Address residentialAddress,
-        int role,
+        int roleId,
         long actionerId,
         EmploymentInformation? employmentInformation = null,
         IEnumerable<EmergencyContact>? emergencyContacts = null)
@@ -49,7 +53,7 @@ public class Employee : BaseTableModel
         MaritalStatus = maritalStatus;
         CurrentAddress = currentAddress;
         ResidentialAddress = residentialAddress;
-        Role = role;
+        RoleId = roleId;
         IsActive = true;
 
         if (employmentInformation != null)

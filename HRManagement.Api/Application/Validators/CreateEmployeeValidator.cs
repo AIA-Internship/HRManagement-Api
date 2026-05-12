@@ -11,7 +11,7 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
         RuleFor(x => x.RequestDto.FullName)
             .NotEmpty().WithMessage("Full name is required.")
             .MaximumLength(100).WithMessage("Full name cannot exceed 100 characters.")
-            .MustAsync(async (name, _) => await employeeRepository.IsFullNameUniqueAsync(name))
+            .MustAsync(async (name, _) => await employeeRepository.IsUniqueAsync(e => e.FullName, name))
             .WithMessage(x => $"The full name '{x.RequestDto.FullName}' is already in use.");
 
         RuleFor(x => x.RequestDto.Gender)
@@ -21,7 +21,7 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
             .NotEmpty().WithMessage("Email is required.")
             .EmailAddress().WithMessage("A valid email is required.")
             .NotEqual(x => x.RequestDto.EmployeeEmail).WithMessage("Personal email cannot be the same as the employee email.")
-            .MustAsync(async (email, _) => await employeeRepository.IsPersonalEmailUniqueAsync(email))
+            .MustAsync(async (email, _) => await employeeRepository.IsUniqueAsync(e => e.PersonalEmail, email))
             .WithMessage(x => $"The personal email '{x.RequestDto.PersonalEmail}' is already in use.");
 
         RuleFor(x => x.RequestDto.EmployeeEmail)
@@ -29,14 +29,14 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
             .EmailAddress().WithMessage("A valid email is required.")
             .Must(email => email.EndsWith("@aia.com", StringComparison.OrdinalIgnoreCase))
             .WithMessage("Email must be a valid aia.com email")
-            .MustAsync(async (email, _) => await employeeRepository.IsEmailUniqueAsync(email))
+            .MustAsync(async (email, _) => await employeeRepository.IsUniqueAsync(e => e.EmployeeEmail, email))
             .WithMessage(x => $"The work email '{x.RequestDto.EmployeeEmail}' is already in use.");
         
         RuleFor(x => x.RequestDto.Nik)
             .NotEmpty().WithMessage("Nik is required.")
             .Length(16).WithMessage("Nik must be exactly 16 digits.") 
             .Matches("^[0-9]+$").WithMessage("Nik can only contain numbers.")
-            .MustAsync(async (nik, _) => await employeeRepository.IsNikUniqueAsync(nik))
+            .MustAsync(async (nik, _) => await employeeRepository.IsUniqueAsync(e => e.Nik, nik))
             .WithMessage(x => $"The NIK '{x.RequestDto.Nik}' is already in use.");
         
         RuleFor(x => x.RequestDto.PlaceOfBirth)
@@ -89,7 +89,7 @@ public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
             .NotEmpty().WithMessage("Phone number is required.")
             .MaximumLength(25).WithMessage("Phone number cannot exceed 25 characters.")
             .Matches(@"^\+?[0-9\s\-]+$").WithMessage("Invalid phone number format.")
-            .MustAsync(async (phone, _) => await employeeRepository.IsPhoneNumberUniqueAsync(phone))
+            .MustAsync(async (phone, _) => await employeeRepository.IsUniqueAsync(e => e.PhoneNumber, phone))
             .WithMessage(x => $"The phone number '{x.RequestDto.PhoneNumber}' is already in use.");
         
         RuleFor(x => x.RequestDto.EmploymentInformation)

@@ -1,19 +1,22 @@
-﻿namespace HRManagement.Api.Domain.Models.Tables;
+﻿using HRManagement.Api.Domain.Models.Tables.MasterRole;
+
+namespace HRManagement.Api.Domain.Models.Tables;
 
 public class User : BaseTableModel
 {
     public int Id { get; private set; }
     public string EmployeeEmail { get; private set; }
     public string PasswordHash { get; private set; }
-    public int Role { get; private set; }
+    public int RoleId { get; private set; }
+    public Role SystemRole { get; private set; }
     
     protected User() { }
     
-    public User(string email, string passwordHash, int role, long actionerId)
+    public User(string email, string passwordHash, int roleId, long actionerId)
     {
         EmployeeEmail = email;
         PasswordHash = passwordHash;
-        Role = role;
+        RoleId = roleId;
         
         CreatedBy = actionerId;
         ModifiedBy = actionerId;
@@ -26,9 +29,9 @@ public class User : BaseTableModel
         MarkAsModified(actionerId);
     }
 
-    public void ChangeRole(int role, long actionerId)
+    public void ChangeRole(int roleId, long actionerId)
     {
-        Role = role;
+        RoleId = roleId;
         MarkAsModified(actionerId);
     }
 }
