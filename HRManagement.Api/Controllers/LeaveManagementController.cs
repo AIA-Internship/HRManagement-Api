@@ -6,7 +6,9 @@ using HRManagement.Api.Application.Queries.LeaveManagementQueries;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HRManagement.Api.Controllers
 {
@@ -190,8 +192,83 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("get-leave-balance")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> getLeaveBalance()
+        {
+            string objectName = nameof(getLeaveBalance).ToString();
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                Console.WriteLine(userIdClaim);
+
+                int userId = int.Parse(userIdClaim);
+
+                var command = new getLeaveBalanceQuery(userId);
+
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("get-all-amount-type")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> getAllTypeAmount()
+        {
+            string objectName = nameof(getAllTypeAmount).ToString();
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int userId = int.Parse(userIdClaim);
+
+                var command = new getEmployeeTypeAmountQuery(userId);
+
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
         [HttpPost]
-        [Route("approve-request/{id}")]
+        [Route("approve-request")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
@@ -202,10 +279,15 @@ namespace HRManagement.Api.Controllers
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int userId = int.Parse(userIdClaim);
                 var command = new ApprovedLeaveRequestCommand(id);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
                 _logger.LogInformation("End {Service}.", objectName);
-
 
                 return response;
             }

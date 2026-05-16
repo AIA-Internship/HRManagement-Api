@@ -34,6 +34,8 @@ public partial class    LeaveRequestModel
 
     [Column("is_deleted")]
     public int IsDeleted { get; set; }
+    [Column("is_edited")]
+    public int IsEdited { get; set; }
 
     [Column("is_completed")]
     public int IsCompleted { get; set; }

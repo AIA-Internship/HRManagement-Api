@@ -1,0 +1,64 @@
+﻿/* Dashboard styles for Leave module */
+
+.leave-quota-card {
+    background: linear-gradient(180deg, #e73a4a 0%, #d92f44 100%);
+    border: none;
+    border-radius: 12px;
+}
+.leave-quota-card .quota-number {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.leave-quota-card .quota-days {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.95);
+    margin-top: 0.25rem;
+}
+.leave-quota-card .quota-content small,
+.leave-quota-card .quota-content h6 {
+    color: rgba(255,255,255,0.9);
+}
+
+.leave-distribution-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+.leave-distribution-card .dist-icon {
+    flex: 0 0 40px;
+}
+.leave-distribution-card h6 {
+    font-weight: 600;
+}
+.dist-progress .progress-bar {
+    border-radius: 6px;
+}
+.dist-progress {
+    background: rgba(231,58,74,0.08);
+    border-radius: 6px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .leave-quota-card .quota-number { font-size: 2.6rem; }
+}
+
+.popover.info-popover {
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    max-width: 320px;
+}
+
+    .popover.info-popover .popover-body {
+        color: #333;
+        font-size: 0.9rem;
+        padding-left: 1.2rem;
+        margin-top: 1rem;
+        margin-right: 0.9rem;
+    }
+
+.popover .popover-arrow::before,
+.popover .popover-arrow::after {
+    background: transparent;
+}

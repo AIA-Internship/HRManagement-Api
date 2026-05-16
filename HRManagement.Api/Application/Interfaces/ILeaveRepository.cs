@@ -23,6 +23,8 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<LeaveTableConfig> getLeaveTableConfig();
         public Task<List<LeaveRequestModel>> getAllRequestNeedsReminder();
         public Task<bool> incrementAllEmployeeLeaveRequest();
+        public Task<LeaveTypeCountDto> GetLeaveTypeCounts(int employeeId);
+
 
         public Task<LeaveBalanceModel> getLeaveBalanceById(int id);
         public Task<bool> createLeaveBalance(LeaveBalanceModel leaveRequest);

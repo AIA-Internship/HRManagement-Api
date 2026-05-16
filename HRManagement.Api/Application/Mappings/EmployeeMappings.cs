@@ -24,6 +24,7 @@ public static class EmployeeMappings
             CurrentPostalCode = employee.CurrentAddress.ZipCode,
 
             ResidentialStreetAddress = employee.ResidentialAddress.Street,
+
             ResidentialCity = employee.ResidentialAddress.City,
             ResidentialProvince = employee.ResidentialAddress.Province,
             ResidentialPostalCode = employee.ResidentialAddress.ZipCode,

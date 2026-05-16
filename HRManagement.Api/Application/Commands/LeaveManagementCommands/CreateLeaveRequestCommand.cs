@@ -93,6 +93,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                 LeaveType = dto.LeaveType,
                 AttachmentPath = MappingHelper.joinAttachmentPath(dto.AttachmentPath),
                 IsDeleted = 0,
+                IsEdited = 0,
                 IsCompleted = 0,
                 CreatedBy = dto.RequesterId,
                 CreatedUtcDate = DateTime.UtcNow,

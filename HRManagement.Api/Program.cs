@@ -15,7 +15,7 @@ using HRManagement.Api.Extensions;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Seeder;
 using Microsoft.OpenApi;
-using Scalar.AspNetCore; 
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var apiName = "Mini Project HR Management API";
@@ -54,10 +54,10 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-        ValidateIssuer = true, 
+        ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromMinutes(2), 
+        ClockSkew = TimeSpan.FromMinutes(2),
         ValidIssuer = jwtIssuer,
         ValidAudiences = validAudiences,
     };
@@ -106,6 +106,7 @@ builder.Services.AddAuthorization();
 builder.Services.RegisterServices(builder.Configuration);
 builder.Services.AddMemoryCache();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // ==========================================
 // 4. CORS Configuration (Allows Frontend to connect to the API)
@@ -135,7 +136,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     {
         var errors = actionContext.ModelState.Where(e => e.Value!.Errors.Count > 0)
             .Select(e => e.Value!.Errors.First().ErrorMessage).ToList();
-            
+
         return new BadRequestObjectResult(new ApiResponse()
         {
             Title = "Error",
@@ -158,13 +159,13 @@ builder.Services.AddOpenApi(options =>
         document.Info ??= new OpenApiInfo();
         document.Info.Title = apiName;
         document.Info.Version = "v1";
-        
+
         document.Components ??= new OpenApiComponents();
         if (document.Components.SecuritySchemes == null)
         {
             document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>();
         }
-        
+
         document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.Http,
@@ -172,7 +173,7 @@ builder.Services.AddOpenApi(options =>
             In = ParameterLocation.Header,
             Description = "JWT Authorization header using the Bearer scheme."
         };
-        
+
         if (document.Security == null)
         {
             document.Security = new List<OpenApiSecurityRequirement>();
@@ -217,8 +218,8 @@ if (!app.Environment.IsDevelopment())
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); 
-    
+    app.MapOpenApi();
+
     app.MapScalarApiReference(options =>
     {
         options.WithTitle(apiName)

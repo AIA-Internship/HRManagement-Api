@@ -221,5 +221,24 @@ namespace HRManagement.Api.Repositories
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<LeaveTypeCountDto> GetLeaveTypeCounts(int employeeId)
+        {
+            var result = await _dbContext.LeaveRequest
+                .Where(x => x.RequesterId == employeeId
+                         && x.IsDeleted == 0
+                         && x.IsCompleted == 1) 
+                .GroupBy(x => 1)
+                .Select(g => new LeaveTypeCountDto
+                {
+                    AnnualLeave = g.Count(x => x.LeaveType == 1),
+                    SickLeave = g.Count(x => x.LeaveType == 2),
+                    EmergencyLeave = g.Count(x => x.LeaveType == 3)
+                })
+                .FirstOrDefaultAsync();
+
+            return result ?? new LeaveTypeCountDto();
+        }
+
     }
 }

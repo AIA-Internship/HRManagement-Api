@@ -145,6 +145,8 @@
                 localStorage.setItem('aia_jwt_token', token);
                 localStorage.setItem('aia_user_info', JSON.stringify(payload));
                 
+                document.cookie = `access_token=${token}; path=/; max-age=3600`;
+
                 console.log("API Login Success!", payload);
                 
                 // Force perfect routing for these specific test cases
