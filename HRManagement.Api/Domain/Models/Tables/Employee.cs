@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
 
 namespace HRManagement.Api.Domain.Models.Tables;
 
@@ -17,14 +17,11 @@ public class Employee : BaseTableModel
     public Address ResidentialAddress { get; private set; } = new Address();
     public string PhoneNumber { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
-    public int Role { get; private set; }
-    
-    // Physical decoupling: Managed at application level. Not Mapped in Database.
-    [NotMapped]
-    public EmploymentInformation? EmploymentInformation { get; set; }
-    
-    [NotMapped]
-    public ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
+    public int RoleId { get;  private set; }
+    public Role SystemRole { get;  private set; }
+    // public int Role { get; private set; }
+    public EmploymentInformation? EmploymentInformation { get; private set; }
+    public ICollection<EmergencyContact> EmergencyContacts { get; private set; } = new List<EmergencyContact>();
     
     protected Employee() { }
     
@@ -40,8 +37,10 @@ public class Employee : BaseTableModel
         int maritalStatus,
         Address currentAddress,
         Address residentialAddress,
-        int role,
-        long actionerId)
+        int roleId,
+        long actionerId,
+        EmploymentInformation? employmentInformation = null,
+        IEnumerable<EmergencyContact>? emergencyContacts = null)
     {
         FullName = fullName;
         Gender = gender;
@@ -54,7 +53,7 @@ public class Employee : BaseTableModel
         MaritalStatus = maritalStatus;
         CurrentAddress = currentAddress;
         ResidentialAddress = residentialAddress;
-        Role = role;
+        RoleId = roleId;
         IsActive = true;
 
         MarkAsCreated(actionerId);

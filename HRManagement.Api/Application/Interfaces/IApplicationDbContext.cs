@@ -1,4 +1,5 @@
 using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
@@ -15,6 +16,11 @@ public interface IApplicationDbContext
     public DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public DbSet<EmergencyContact> EmergencyContacts { get; set; }
     public DbSet<SystemLookup> SystemLookups { get; set; }
+    public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
+    
 
     // Timesheet Module
     public DbSet<TimesheetProject> TimesheetProjects { get; set; }

@@ -9,8 +9,8 @@ using HRManagement.Api.Repositories;
 using HRManagement.Api.Repositories.Authentications;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Services;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using HRManagement.Api.Application.Auth.Permissions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HRManagement.Api.Extensions
 {
@@ -44,7 +44,11 @@ namespace HRManagement.Api.Extensions
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
             services.AddHttpContextAccessor();
 
-            // 3. MediatR, AutoMapper & FluentValidation
+            // 3. Authorization
+            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+
+            // 4. MediatR & FluentValidation
             var applicationAssembly = typeof(LoginQuery).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             

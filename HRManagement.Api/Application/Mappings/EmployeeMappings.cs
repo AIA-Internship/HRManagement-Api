@@ -115,17 +115,11 @@ public static class EmployeeMappings
             maritalStatus: dto.MaritalStatus,
             currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
             residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
-            role: dto.Role,
-            actionerId: actionerId
+            roleId: dto.Role,
+            actionerId: actionerId,
+            employmentInformation: employmentInfo,
+            emergencyContacts: emergencyContacts
         );
-
-        if (employmentInfo != null) employee.SetEmploymentInfo(employmentInfo);
-        if (emergencyContacts != null)
-        {
-            foreach (var contact in emergencyContacts) employee.AddEmergencyContact(contact);
-        }
-
-        return employee;
     }
 
     public static EmploymentInformation ToEntity(this CreateEmploymentInfoDto infoDto, string displayId, string? supervisorName, long actionerId)

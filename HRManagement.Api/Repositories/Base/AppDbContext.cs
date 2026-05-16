@@ -1,5 +1,6 @@
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
 using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
@@ -20,6 +21,9 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<SystemLookup> SystemLookups { get; set; }
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<LeaveRequestHistory> LeaveRequestHistory { get ; set ; }
     public DbSet<LeaveTableConfig> LeaveTableConfig { get; set; }
     public DbSet<LeaveBalanceModel> leaveBalanceModels { get; set; }

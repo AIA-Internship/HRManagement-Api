@@ -21,10 +21,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(500)
             .IsRequired();
         
-        builder.Property(e => e.Role)
-            .HasColumnName("user_role")
+        builder.Property(e => e.RoleId)
+            .HasColumnName("role_id")
             .IsRequired();
-        
+
+        // builder.HasOne(e => e.SystemRole)
+        //     .WithMany()
+        //     .HasForeignKey(e => e.RoleId)
+        //     .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(e => e.EmployeeEmail).IsUnique();
     }
     
