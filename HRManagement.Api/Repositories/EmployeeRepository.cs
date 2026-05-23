@@ -30,20 +30,23 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
     
     public async Task AddEmployeeAsync(User user, Employee employee)
     {
+        // Add User first
         await dbContext.Users.AddAsync(user);
-        await dbContext.Employees.AddAsync(employee);
-        
-        await dbContext.SaveChangesAsync(); // Save to get the employee.Id
+        await dbContext.SaveChangesAsync();
 
-        if (employmentInformation != null)
+        // Add Employee and related entities
+        await dbContext.Employees.AddAsync(employee);
+        await dbContext.SaveChangesAsync(); // Persist to get employee.Id
+
+        if (employee.EmploymentInformation != null)
         {
-            employmentInformation.EmployeeId = employee.Id;
-            await dbContext.EmploymentInformation.AddAsync(employmentInformation);
+            employee.EmploymentInformation.EmployeeId = employee.Id;
+            await dbContext.EmploymentInformation.AddAsync(employee.EmploymentInformation);
         }
 
-        if (emergencyContacts != null && emergencyContacts.Any())
+        if (employee.EmergencyContacts != null && employee.EmergencyContacts.Any())
         {
-            foreach (var contact in emergencyContacts)
+            foreach (var contact in employee.EmergencyContacts)
             {
                 contact.EmployeeId = employee.Id;
                 await dbContext.EmergencyContacts.AddAsync(contact);
@@ -117,7 +120,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
         foreach (var emp in employees)
         {
-            emp.EmploymentInformation = allInfo.FirstOrDefault(i => i.EmployeeId == emp.Id);
+            emp.SetEmploymentInfo(allInfo.FirstOrDefault(i => i.EmployeeId == emp.Id));
         }
 
         return employees;
@@ -130,12 +133,16 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
         if (employee != null)
         {
-            employee.EmploymentInformation = await dbContext.EmploymentInformation
-                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id);
-            
-            employee.EmergencyContacts = await dbContext.EmergencyContacts
+            employee.SetEmploymentInfo(await dbContext.EmploymentInformation
+                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id));
+
+            var contacts = await dbContext.EmergencyContacts
                 .Where(c => c.EmployeeId == employee.Id && !c.IsDeleted)
                 .ToListAsync();
+
+            employee.EmergencyContacts.Clear();
+            foreach (var c in contacts)
+                employee.EmergencyContacts.Add(c);
         }
 
         return employee;
@@ -148,12 +155,16 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
         if (employee != null)
         {
-            employee.EmploymentInformation = await dbContext.EmploymentInformation
-                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id);
-            
-            employee.EmergencyContacts = await dbContext.EmergencyContacts
+            employee.SetEmploymentInfo(await dbContext.EmploymentInformation
+                .FirstOrDefaultAsync(i => i.EmployeeId == employee.Id));
+
+            var contacts = await dbContext.EmergencyContacts
                 .Where(c => c.EmployeeId == employee.Id && !c.IsDeleted)
                 .ToListAsync();
+
+            employee.EmergencyContacts.Clear();
+            foreach (var c in contacts)
+                employee.EmergencyContacts.Add(c);
         }
 
         return employee;
@@ -197,13 +208,6 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
                 e.EmploymentInformation!.EmployeeDisplayId,
                 e.FullName))
             .ToListAsync(cancellationToken);
-
-        return supervisors.Select(s => {
-            var matchingInfo = infos.FirstOrDefault(i => i.EmployeeId == s.Id);
-            return new SupervisorLookupDto(
-                matchingInfo?.EmployeeDisplayId ?? string.Empty,
-                s.FullName);
-        }).ToList();
     }
 }
 

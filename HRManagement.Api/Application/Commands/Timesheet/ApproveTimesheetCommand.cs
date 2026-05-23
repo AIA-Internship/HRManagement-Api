@@ -3,6 +3,7 @@ using HRManagement.Api.Application.TimesheetDtos.Commands.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using HRManagement.Api.Domain.Models.Tables;
 
 namespace HRManagement.Api.Application.Commands.Timesheet;
 
@@ -39,15 +40,16 @@ public class ApproveTimesheetCommand(ApproveTimesheetRequestDto requestDto)
             var intern = await appDbContext.Employees
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == submission.EmployeeId, cancellationToken);
-            
+
+            EmploymentInformation? internEmploymentInfo = null;
             if (intern != null)
             {
-                intern.EmploymentInformation = await appDbContext.EmploymentInformation
+                internEmploymentInfo = await appDbContext.EmploymentInformation
                     .AsNoTracking()
                     .FirstOrDefaultAsync(ei => ei.EmployeeId == intern.Id, cancellationToken);
             }
 
-            if (intern?.EmploymentInformation?.SupervisorName != supervisor?.FullName)
+            if (internEmploymentInfo?.SupervisorName != supervisor?.FullName)
             {
                 return ApiHelperResponse.Failed<string>("Access Denied: You are not authorized to approve this submission.");
             }

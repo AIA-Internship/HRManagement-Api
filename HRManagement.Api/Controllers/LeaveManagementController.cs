@@ -30,21 +30,32 @@ namespace HRManagement.Api.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
-        [Route("get-by-requester-id/{requesterId}")]
+        [Route("get-by-requester-id")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-
-        public async Task<ActionResult<ApiResponse>> getByRequesterId([FromRoute] int requesterId, [FromQuery] int max = 10)
+        public async Task<ActionResult<ApiResponse>> getByRequesterId([FromQuery] int max = 10)
         {
             string objectName = nameof(getByRequesterId).ToString();
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int requesterId = int.Parse(userIdClaim);
+
                 var query = new GetLeaveRequestByRequesterQuery(requesterId, max);
-                var response = await this.ValidateAndExecute(query, (c) => _mediator.Send(query)).ConfigureAwait(false);
+
+                var response = await this
+                    .ValidateAndExecute(query, (c) => _mediator.Send(query))
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
 

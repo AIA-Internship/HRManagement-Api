@@ -1,7 +1,8 @@
 using FluentValidation;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.Mappings;
-using HRManagement.Api.Application.Mappings;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.SeedWork;

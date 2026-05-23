@@ -68,11 +68,17 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 };
             }
             
-            var token = GenerateToken(user, request.RememberMe, roleName, permissions);
+            var employee = await dbContext.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.EmployeeEmail.ToLower() == user.EmployeeEmail.ToLower());
+
+            var fullName = employee?.FullName ?? string.Empty;
+
+            var token = GenerateToken(user, request.RememberMe, roleName, permissions, fullName);
             return ApiHelperResponse.Success("Login successful", new TokenResponseDto { Token = token });
         }
-        
-        private string GenerateToken(User user, bool rememberMe, string roleName, List<string> permissions)
+
+        private string GenerateToken(User user, bool rememberMe, string roleName, List<string> permissions, string fullName)
         {
             var jwtKey = configuration["AppSetting:Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing");
             var jwtIssuer = configuration["AppSetting:Jwt:Issuer"];

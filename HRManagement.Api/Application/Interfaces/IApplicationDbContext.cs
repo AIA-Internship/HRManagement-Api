@@ -29,7 +29,7 @@ public interface IApplicationDbContext
     public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }
     public DbSet<TodoTask> TodoTasks { get; set; }
     
-    DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
+    //DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
     public DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     public DbSet<LeaveRequestHistory> LeaveRequestHistory { get; set;  }
     public DbSet<LeaveTableConfig> LeaveTableConfig { get; set; }

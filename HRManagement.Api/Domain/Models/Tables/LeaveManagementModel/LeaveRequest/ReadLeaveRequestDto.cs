@@ -8,13 +8,11 @@
         public string? leaveDescription { get; set; }
         public string? leaveStatus { get; set; }
         public DateTime? leaveStartDate { get; set; }
+        public DateTime? endDate { get; set; }
         public decimal? dayAmount { get; set; }
         public string? leaveType { get; set; }
         public bool? isCompleted { get; set; }
         public string[]? attachmentPath { get; set; }
         public DateTime createdUtcDate { get; set; }
-      
-
     }
-        
 }

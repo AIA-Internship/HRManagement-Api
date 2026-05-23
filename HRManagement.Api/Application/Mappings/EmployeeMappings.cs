@@ -101,7 +101,7 @@ public static class EmployeeMappings
         };
     }
 
-    public static Employee ToEntity(this CreateEmployeeRequestDto dto, long actionerId, EmploymentInformation? employmentInfo, List<EmergencyContact> emergencyContacts)
+        public static Employee ToEntity(this CreateEmployeeRequestDto dto, long actionerId, EmploymentInformation? employmentInfo, List<EmergencyContact> emergencyContacts)
     {
         var employee = new Employee(
             fullName: dto.FullName,
@@ -120,6 +120,8 @@ public static class EmployeeMappings
             employmentInformation: employmentInfo,
             emergencyContacts: emergencyContacts
         );
+
+        return employee;
     }
 
     public static EmploymentInformation ToEntity(this CreateEmploymentInfoDto infoDto, string displayId, string? supervisorName, long actionerId)

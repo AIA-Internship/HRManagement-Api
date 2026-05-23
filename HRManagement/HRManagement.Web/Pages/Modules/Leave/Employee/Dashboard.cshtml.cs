@@ -12,11 +12,7 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
     {
         public int LeaveBalance { get; set; }
         public LeaveTypeCountDto LeaveTypeCount { get; set; } = new();
-
-        // Full list of leave requests (source)
         public List<LeaveRequestDto> LeaveRequests { get; set; } = new();
-
-        // Pagination properties
         public List<LeaveRequestDto> PagedRequests { get; set; } = new();
         public int PageSize { get; set; } = 5;
         public int CurrentPage { get; set; } = 1;
@@ -91,30 +87,93 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
                 }
             }
 
-            // For now provide dummy data (from the PageModel) so the page only shows records that exist
-            // Replace these with real data from your API as needed.
-            LeaveRequests = new List<LeaveRequestDto>
+            int requesterId = 1;
+            var reqQuery = Request.Query["requesterId"].ToString();
+            if (!int.TryParse(reqQuery, out requesterId))
             {
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,5,15), EndDate = new System.DateTime(2026,5,15), DurationDays = 1, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,5,11), EndDate = new System.DateTime(2026,5,14), DurationDays = 4, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,6,8), EndDate = new System.DateTime(2026,6,12), DurationDays = 5, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,4,1), EndDate = new System.DateTime(2026,4,1), DurationDays = 1, Status = "Rejected" },
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,3,2), EndDate = new System.DateTime(2026,3,2), DurationDays = 1, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,2,10), EndDate = new System.DateTime(2026,2,12), DurationDays = 3, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,1,5), EndDate = new System.DateTime(2026,1,5), DurationDays = 1, Status = "Rejected" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,7,1), EndDate = new System.DateTime(2026,7,5), DurationDays = 5, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,8,8), EndDate = new System.DateTime(2026,8,9), DurationDays = 2, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,9,15), EndDate = new System.DateTime(2026,9,17), DurationDays = 3, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,10,20), EndDate = new System.DateTime(2026,10,22), DurationDays = 3, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,11,11), EndDate = new System.DateTime(2026,11,11), DurationDays = 1, Status = "Rejected" }
-            };
+                var claim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? User?.FindFirst("sub");
+                if (claim != null && int.TryParse(claim.Value, out var cid)) requesterId = cid;
+            }
 
-            // Read page query parameter
+            using (var client3 = new HttpClient())
+            {
+                client3.BaseAddress = new Uri("https://localhost:7089/api/");
+                client3.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                try
+                {
+                    var resp = await client3.GetAsync($"leave/get-by-requester-id?max=1000");
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        var js = await resp.Content.ReadAsStringAsync();
+                        var r = JsonSerializer.Deserialize<ApiResponse<List<LeaveRequestDto>>>(js, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        LeaveRequests = r?.Content ?? new List<LeaveRequestDto>();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to fetch leave requests: " + resp.StatusCode);
+                        LeaveRequests = new List<LeaveRequestDto>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error fetching leave requests: " + ex.Message);
+                    LeaveRequests = new List<LeaveRequestDto>();
+                }
+            }
+
             var pageQuery = Request.Query["page"].ToString();
             if (!int.TryParse(pageQuery, out var page)) page = 1;
             CurrentPage = page < 1 ? 1 : page;
 
-            // Compute pagination
+            var sort = Request.Query["sort"].ToString();
+            var statusOrderQuery = Request.Query["statusOrder"].ToString();
+
+            var statusPriority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(statusOrderQuery))
+            {
+                var parts = statusOrderQuery.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                for (int i = 0; i < parts.Count; i++) statusPriority[parts[i]] = i;
+            }
+
+            if (statusPriority.Count == 0)
+            {
+                statusPriority["1"] = 0; // Needs Approval
+                statusPriority["2"] = 1; // Approved
+                statusPriority["3"] = 2; // Rejected
+            }
+
+            Func<LeaveRequestDto, int> getPriority = (lr) =>
+            {
+                var s = (lr.LeaveStatus ?? "").Trim().ToLowerInvariant();
+
+                string normalized = s switch
+                {
+                    "1" => "1",
+                    "2" => "2",
+                    "3" => "3",
+
+                    "needs approval" => "1",
+                    "need approval" => "1",
+                    "pending" => "1",
+
+                    "approved" => "2",
+
+                    "rejected" => "3",
+
+                    _ => "999"
+                };
+
+                return statusPriority.TryGetValue(normalized, out var p)
+                    ? p
+                    : int.MaxValue;
+            };
+
+            var isOldest = sort?.ToLowerInvariant() == "oldest";
+
+            LeaveRequests = isOldest
+                ? LeaveRequests.OrderBy(getPriority).ThenBy(x => x.CreatedUtcDate).ToList()
+                : LeaveRequests.OrderBy(getPriority).ThenByDescending(x => x.CreatedUtcDate).ToList();
+
             TotalItems = LeaveRequests.Count;
             TotalPages = (int)System.Math.Ceiling(TotalItems / (double)PageSize);
             if (TotalPages == 0) TotalPages = 1;
@@ -133,35 +192,44 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
             }
         }
 
-        // AJAX handler to return paged data as JSON for in-place table replacement
-        // Return paged data from the local dummy dataset so the client-side
-        // pagination can load pages without navigating away. This uses the same
-        // dummy data defined in OnGetAsync.
-        public async Task<IActionResult> OnGetPage([FromQuery(Name = "page")] int page = 1)
+        public async Task<IActionResult> OnGetPage([FromQuery(Name = "page")] int page = 1, [FromQuery] string sort = "newest", [FromQuery] string statusOrder = null)
         {
             Console.WriteLine($"OnGetPage called with page={page}");
-            // Create the same dummy data locally so this handler works when
-            // the real API is not available (and to satisfy the user's request
-            // to use dummy data stored in the PageModel file).
-            var leaveRequests = new List<LeaveRequestDto>
+
+            var token = Request.Cookies["access_token"];
+            int requesterId = 1;
+            var rq = Request.Query["requesterId"].ToString();
+            if (!int.TryParse(rq, out requesterId))
             {
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,5,15), EndDate = new System.DateTime(2026,5,15), DurationDays = 1, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,5,11), EndDate = new System.DateTime(2026,5,14), DurationDays = 4, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,6,8), EndDate = new System.DateTime(2026,6,12), DurationDays = 5, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,4,1), EndDate = new System.DateTime(2026,4,1), DurationDays = 1, Status = "Rejected" },
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,3,2), EndDate = new System.DateTime(2026,3,2), DurationDays = 1, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,2,10), EndDate = new System.DateTime(2026,2,12), DurationDays = 3, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,1,5), EndDate = new System.DateTime(2026,1,5), DurationDays = 1, Status = "Rejected" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,7,1), EndDate = new System.DateTime(2026,7,5), DurationDays = 5, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,8,8), EndDate = new System.DateTime(2026,8,9), DurationDays = 2, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,9,15), EndDate = new System.DateTime(2026,9,17), DurationDays = 3, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,10,20), EndDate = new System.DateTime(2026,10,22), DurationDays = 3, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,11,11), EndDate = new System.DateTime(2026,11,11), DurationDays = 1, Status = "Rejected" },
-                new LeaveRequestDto { LeaveType = "Sick Leave", StartDate = new System.DateTime(2026,8,8), EndDate = new System.DateTime(2026,8,9), DurationDays = 2, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,9,15), EndDate = new System.DateTime(2026,9,17), DurationDays = 3, Status = "Approved" },
-                new LeaveRequestDto { LeaveType = "Personal Leave", StartDate = new System.DateTime(2026,10,20), EndDate = new System.DateTime(2026,10,22), DurationDays = 3, Status = "Needs Approval" },
-                new LeaveRequestDto { LeaveType = "Emergency Leave", StartDate = new System.DateTime(2026,11,11), EndDate = new System.DateTime(2026,11,11), DurationDays = 1, Status = "Rejected" }
-            };
+                var claim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? User?.FindFirst("sub");
+                if (claim != null && int.TryParse(claim.Value, out var cid)) requesterId = cid;
+            }
+
+            List<LeaveRequestDto> leaveRequests;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7089/api/");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                try
+                {
+                    var resp = await client.GetAsync($"leave/get-by-requester-id?max=1000");
+                    if (!resp.IsSuccessStatusCode)
+                    {
+                        leaveRequests = new List<LeaveRequestDto>();
+                    }
+                    else
+                    {
+                        var js = await resp.Content.ReadAsStringAsync();
+                        var r = JsonSerializer.Deserialize<ApiResponse<List<LeaveRequestDto>>>(js, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        leaveRequests = r?.Content ?? new List<LeaveRequestDto>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("OnGetPage error: " + ex.Message);
+                    leaveRequests = new List<LeaveRequestDto>();
+                }
+            }
 
             // PAGINATION
             var totalItems = leaveRequests.Count;
@@ -170,18 +238,50 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
             if (page < 1) page = 1;
             if (page > totalPages) page = totalPages;
 
+            var statusPriority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(statusOrder))
+            {
+                var parts = statusOrder.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                for (int i = 0; i < parts.Count; i++) statusPriority[parts[i]] = i;
+            }
+            if (statusPriority.Count == 0)
+            {
+                statusPriority["1"] = 0;
+                statusPriority["2"] = 1;
+                statusPriority["3"] = 2;
+            }
+
+            Func<LeaveRequestDto, int> getPriority = (lr) =>
+            {
+                var s = lr.LeaveStatus ?? "1";
+                if (statusPriority.TryGetValue(s, out var p)) return p;
+                var sl = (s ?? string.Empty).ToLowerInvariant();
+                if (sl.Contains("approve") && statusPriority.TryGetValue("2", out var p2)) return p2;
+                if (sl.Contains("reject") && statusPriority.TryGetValue("3", out var p3)) return p3;
+                if ((sl.Contains("need") || sl.Contains("approval")) && statusPriority.TryGetValue("1", out var p1)) return p1;
+                return int.MaxValue;
+            };
+
+            var isOldest = sort?.ToLowerInvariant() == "oldest";
+
+            leaveRequests = isOldest
+                ? leaveRequests.OrderBy(getPriority).ThenBy(x => x.CreatedUtcDate).ToList()
+                : leaveRequests.OrderBy(getPriority).ThenByDescending(x => x.CreatedUtcDate).ToList();
+
             var paged = leaveRequests.Skip((page - 1) * PageSize).Take(PageSize).ToList();
 
-            // Return camel-cased properties that match the client-side script expectations
             return new JsonResult(new
             {
                 items = paged.Select(x => new {
                     leaveType = x.LeaveType,
-                    startDate = x.StartDate.ToString("dddd, d MMMM yyyy"),
-                    endDate = x.EndDate.ToString("dddd, d MMMM yyyy"),
-                    duration = x.DurationDays,
-                    status = x.Status
+                    startDate = x.LeaveStartDate.ToString("dddd, d MMMM yyyy"),
+
+                    endDate = x.endDate.ToString("dddd, d MMMM yyyy"),
+
+                    duration = x.DayAmount,
+                    status = x.LeaveStatus
                 }),
+
                 currentPage = page,
                 totalPages,
                 totalItems,
@@ -204,14 +304,22 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
         public int emergencyLeave { get; set; }
     }
 
-    // New DTO for individual leave requests
     public class LeaveRequestDto
     {
+        public int LeaveId { get; set; }
+        public int RequesterId { get; set; }
+        public string LeaveDescription { get; set; } = string.Empty;
+
+        public string LeaveStatus { get; set; } = string.Empty;
+
+        public DateTime LeaveStartDate { get; set; }
+
+        public DateTime endDate { get; set; }
+
+        public decimal DayAmount { get; set; }
+
         public string LeaveType { get; set; } = string.Empty;
-        public System.DateTime StartDate { get; set; }
-        public System.DateTime EndDate { get; set; }
-        public int DurationDays { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public DateTime CreatedUtcDate { get; set; }
     }
 
 

@@ -41,14 +41,15 @@ public class GiveRevisionCommand(GiveRevisionRequestDto requestDto)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == submission.EmployeeId, cancellationToken);
 
+            EmploymentInformation? internEmploymentInfo = null;
             if (intern != null)
             {
-                intern.EmploymentInformation = await appDbContext.EmploymentInformation
+                internEmploymentInfo = await appDbContext.EmploymentInformation
                     .AsNoTracking()
                     .FirstOrDefaultAsync(ei => ei.EmployeeId == intern.Id, cancellationToken);
             }
 
-            if (intern?.EmploymentInformation?.SupervisorName != supervisor?.FullName)
+            if (internEmploymentInfo?.SupervisorName != supervisor?.FullName)
             {
                 return ApiHelperResponse.Failed<string>("Access Denied: You are not authorized to give revision to this submission.");
             }

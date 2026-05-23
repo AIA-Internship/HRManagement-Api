@@ -60,7 +60,23 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
 
         public ReadLeaveRequestDto mapToReadDto(LeaveRequestModel model)
         {
+            DateTime endDate = model.LeaveStartDate;
 
+            if (model.DayAmount > 0.5m)
+            {
+                int remainingDays = (int)model.DayAmount - 1;
+
+                while (remainingDays > 0)
+                {
+                    endDate = endDate.AddDays(1);
+
+                    if (endDate.DayOfWeek != DayOfWeek.Saturday &&
+                        endDate.DayOfWeek != DayOfWeek.Sunday)
+                    {
+                        remainingDays--;
+                    }
+                }
+            }
 
             return new ReadLeaveRequestDto
             {
@@ -68,10 +84,11 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
                 requesterId = model.RequesterId,
                 supervisorId = model.SupervisorId,
                 leaveDescription = model.LeaveDescription,
-                leaveStatus = MappingHelper.leaveStatusFromInt(model.LeaveStatus).ToString(),
+                leaveStatus = model.LeaveStatus.ToString(),
                 leaveStartDate = model.LeaveStartDate,
+                endDate = endDate,
                 dayAmount = model.DayAmount,
-                leaveType = MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0).ToString(),
+                leaveType = (model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
                 attachmentPath = model.AttachmentPath != null
                     ? MappingHelper.splitAttachmentPath(model.AttachmentPath)

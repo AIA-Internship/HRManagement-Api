@@ -18,6 +18,13 @@
             color: #fff !important;
             opacity: 1 !important;
         }
+        #leaveTableBody td {
+            padding: 1.1rem 2rem; 
+            vertical-align: middle; 
+        }
+        #leaveTableBody tr {
+            box-sizing: border-box;
+        }
     </style>
 }
 
@@ -132,11 +139,13 @@
             </div>
             <div class="d-flex align-items-center me-7">
                 <label class="me-2">Sort By:</label>
-                <select class="form-select form-select-sm me-3" style="width:160px;">
+                <select id="sortSelect" class="form-select form-select-sm me-3" style="width:160px;">
                     <option selected>newest</option>
                     <option>oldest</option>
                 </select>
-                <a class="btn btn-danger">+ New request</a>
+                <a href="/Leave/Employee/NewRequest" class="btn btn-danger">
+                    + New request
+                </a>
             </div>
         </div>
 
@@ -148,7 +157,7 @@
                     <th class="px-7"><strong>Start Date</strong></th>
                     <th class="px-7"><strong>End Date</strong></th>
                     <th class="px-7"><strong>Duration</strong></th>
-                    <th class="px-7"><strong>Status</strong></th>
+                        <th class="px-7 text-center"><strong>Status</strong></th>
                     </tr>
                 </thead>
                 <tbody id="leaveTableBody">
@@ -157,29 +166,63 @@
                         foreach (var req in Model.PagedRequests)
                         {
                             <tr>
-                                <td style="padding-left:2rem; padding-right:2rem;">@req.LeaveType</td>
-                                <td style="padding-left:2rem; padding-right:2rem;">@req.StartDate.ToString("dddd, d MMMM yyyy")</td>
-                                <td style="padding-left:2rem; padding-right:2rem;">@req.EndDate.ToString("dddd, d MMMM yyyy")</td>
-                                <td style="padding-left:2rem; padding-right:2rem;">@req.DurationDays @(req.DurationDays > 1 ? "Days" : "Day")</td>
                                 <td>
                                     @{
-                                        var status = req.Status ?? string.Empty;
-                                        if (status.Equals("Approved", System.StringComparison.OrdinalIgnoreCase))
+                                        var leaveTypeText = req.LeaveType switch
                                         {
-                                            <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center" style="height:2rem; width:8rem; color:#065F46; background-color:#D1FAE5">
-                                                <i class="bi bi-check-circle" style="color:#2B8B15"></i>
-                                                <Strong>Approved</Strong>
-                                            </span>
-                                        }
-                                        else if (status.Equals("Rejected", System.StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <span class="badge bg-danger">Rejected</span>;
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">Needs Approval</span>;
-                                        }
+                                            "1" => "Personal",
+                                            "2" => "Sick",
+                                            "3" => "Emergency",
+                                            _ => req.LeaveType
+                                        };
                                     }
+
+                                    @leaveTypeText
+                                </td>
+                                <td>
+                                    @req.LeaveStartDate.ToString("dddd, d MMMM yyyy")
+                                </td>
+
+                                <td>
+                                    @req.endDate.ToString("dddd, d MMMM yyyy")
+                                </td>
+
+                                <td>
+                                    @(req.DayAmount % 1 == 0
+                                        ? ((int)req.DayAmount).ToString()
+                                        : req.DayAmount.ToString())
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        @{
+                                            var status = req.LeaveStatus ?? "0";
+
+                                            if (status == "1")
+                                            {
+                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                                      style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
+                                                    <i class="bi bi-clock" style="color:#B77938"></i>
+                                                    <strong>Needs Approval</strong>
+                                                </span>
+                                            }
+                                            else if (status == "2")
+                                            {
+                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                                      style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
+                                                    <i class="bi bi-check-circle" style="color:#2B8B15"></i>
+                                                    <strong>Approved</strong>
+                                                </span>
+                                            }
+                                            else if (status == "3")
+                                            {
+                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                                      style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
+                                                    <i class="bi bi-x-circle" style="color:#D31145"></i>
+                                                    <strong>Rejected</strong>
+                                                </span>
+                                            }
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -228,15 +271,36 @@
     </script>
     <script src="~/apps/modules/leave/js/dashboard.js" asp-append-version="true"></script>
     <script>
-        // handle pagination clicks and fetch paged data without full page reload
         (function () {
             const paginationList = document.getElementById('paginationList');
             const tableBody = document.getElementById('leaveTableBody');
             const showingText = document.getElementById('showingText');
+            const sortSelect = document.getElementById('sortSelect');
 
             if (!paginationList || !tableBody || !showingText) {
-                // required elements not found; nothing to do
                 return;
+            }
+
+            let currentStatusOrder = '1,2,3';
+
+            const filterGroup = document.querySelector('.btn-group[aria-label="filters"]');
+            if (filterGroup) {
+                const buttons = Array.from(filterGroup.querySelectorAll('button'));
+                const priorityMap = {
+                    0: '1,2,3', // Needs Approval, Approved, Rejected
+                    1: '2,1,3', 
+                    2: '3,1,2'  
+                };
+
+                buttons.forEach((btn, idx) => {
+                    btn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentStatusOrder = priorityMap[idx] || currentStatusOrder;
+                        loadPage(1);
+                    });
+                });
             }
 
             function renderRows(items) {
@@ -245,21 +309,114 @@
                     return;
                 }
 
-                tableBody.innerHTML = items.map(i => {
+                tableBody.innerHTML = items.map(i => { 
+                
                     const badge = (function (status) {
-                        if (!status) return '<span class="badge bg-warning text-dark">Needs Approval</span>';
-                        const s = status.toLowerCase();
-                        if (s === 'approved') return '<span class="badge bg-success">Approved</span>';
-                        if (s === 'rejected') return '<span class="badge bg-danger">Rejected</span>';
-                        return '<span class="badge bg-warning text-dark">Needs Approval</span>';
-                    })(i.status);
+                        if (!status && status !== 0) {
+                            return `
+                                <div class="d-flex justify-content-center">
+                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                          style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
+                                        <i class="bi bi-clock" style="color:#B77938"></i>
+                                        <strong>Needs Approval</strong>
+                                    </span>
+                                </div>`;
+                        }
 
-                    return `
-                        <tr>
-                            <td>${i.leaveType}</td>
+                        const n = Number(status);
+                        if (!Number.isNaN(n)) {
+                            switch (n) {
+                                case 2:
+                                    return `
+                                    <div class="d-flex justify-content-center">
+                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                              style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
+                                            <i class="bi bi-check-circle" style="color:#2B8B15"></i>
+                                            <strong>Approved</strong>
+                                        </span>
+                                    </div>`;
+                                case 3:
+                                    return `
+                                    <div class="d-flex justify-content-center">
+                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                              style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
+                                            <i class="bi bi-x-circle" style="color:#D31145"></i>
+                                            <strong>Rejected</strong>
+                                        </span>
+                                    </div>`;
+                                case 1:
+                                default:
+                                    return `
+                                    <div class="d-flex justify-content-center">
+                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                              style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
+                                            <i class="bi bi-clock" style="color:#B77938"></i>
+                                            <strong>Needs Approval</strong>
+                                        </span>
+                                    </div>`;
+                            }
+                        }
+
+                        const s = String(status).toLowerCase();
+                        if (s.includes('approve')) {
+                            return `
+                                <div class="d-flex justify-content-center">
+                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                          style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
+                                        <i class="bi bi-check-circle" style="color:#2B8B15"></i>
+                                        <strong>Approved</strong>
+                                    </span>
+                                </div>`;
+                        }
+                        if (s.includes('reject')) {
+                            return `
+                                <div class="d-flex justify-content-center">
+                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                          style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
+                                        <i class="bi bi-x-circle" style="color:#D31145"></i>
+                                        <strong>Rejected</strong>
+                                    </span>
+                                </div>`;
+                        }
+                        if (s.includes('need') || s.includes('approval')) {
+                            return `
+                                <div class="d-flex justify-content-center">
+                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                          style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
+                                        <i class="bi bi-clock" style="color:#B77938"></i>
+                                        <strong>Needs Approval</strong>
+                                    </span>
+                                </div>`;
+                        }
+
+                        return `
+                            <div class="d-flex justify-content-center">
+                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
+                                      style="border-radius:2rem; height:2.1rem; width:auto; color:#fff; background-color:#6c757d">
+                                    <strong>${status}</strong>
+                                </span>
+                            </div>`;
+
+                    })(i.status);
+            
+        const leaveTypeText = (function(type) {
+
+            const t = type?.toString() ?? "";
+
+            if (t === "1") return "Personal";
+            if (t === "2") return "Sick";
+            if (t === "3") return "Emergency";
+
+            return type;
+
+        })(i.leaveType);
+
+        return `
+            <tr>
+                <td>${leaveTypeText}</td>
                             <td>${i.startDate}</td>
                             <td>${i.endDate}</td>
-                            <td>${i.duration} ${i.duration > 1 ? 'Days' : 'Day'}</td>
+                            <td>${i.duration}</td>
                             <td>${badge}</td>
                         </tr>`;
                 }).join('');
@@ -270,7 +427,6 @@
                 const prevDisabled = currentPage <= 1;
                 const nextDisabled = currentPage >= totalPages;
 
-                // Show a sliding window of numeric page buttons (maxButtons)
                 const maxButtons = 3;
                 let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
                 let endPage = startPage + maxButtons - 1;
@@ -283,7 +439,6 @@
                 // Prev arrow
                 html += `<li class="${prevDisabled ? 'page-item disabled' : 'page-item'}"><a class="page-link" data-page="${prevDisabled ? currentPage : currentPage-1}" href="#" aria-label="Previous">&laquo;</a></li>`;
 
-                // Numeric buttons within window
                 for (let i = startPage; i <= endPage; i++) {
                     html += `<li class="${i === currentPage ? 'page-item active' : 'page-item'}"><a class="page-link" data-page="${i}" href="#">${i}</a></li>`;
                 }
@@ -295,30 +450,48 @@
             }
 
             async function loadPage(page) {
-                try {
-                    const url = `${window.location.pathname}?handler=Page&page=${encodeURIComponent(page)}`;
-                    console.log('loadPage url=', url);
-                    const resp = await fetch(url, { 
-                        credentials: 'same-origin',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-                    });
-                    console.log('fetch response', resp.status, resp.headers.get('content-type'));
-                    if (!resp.ok) throw new Error('Network error: ' + resp.status);
-                    const data = await resp.json();
-                    console.log('page data', data);
+            try {
 
-                    renderRows(data.items);
-                    renderPagination({ currentPage: data.currentPage, totalPages: data.totalPages });
-                    showingText.textContent = `Showing ${data.startItem}-${data.endItem} of ${data.totalItems} requests`;
-                }
-                catch (err) {
-                    console.error(err);
-                    // show user-visible hint in case of failure
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load page. See console for details.</td></tr>';
-                }
+                const sort = sortSelect.value;
+
+                const url = `${window.location.pathname}?handler=Page&page=${encodeURIComponent(page)}&sort=${encodeURIComponent(sort)}&statusOrder=${encodeURIComponent(currentStatusOrder)}`;
+
+                console.log('loadPage url=', url);
+
+                const resp = await fetch(url, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('fetch response', resp.status, resp.headers.get('content-type'));
+
+                if (!resp.ok) throw new Error('Network error: ' + resp.status);
+
+                const data = await resp.json();
+
+                console.log('page data', data);
+
+                renderRows(data.items);
+
+                renderPagination({
+                    currentPage: data.currentPage,
+                    totalPages: data.totalPages
+                });
+
+                showingText.textContent =
+                    `Showing ${data.startItem}-${data.endItem} of ${data.totalItems} requests`;
             }
+            catch (err) {
+                console.error(err);
 
-            // delegate click handler
+                tableBody.innerHTML =
+                    '<tr><td colspan="5" class="text-center text-danger">Failed to load page. See console for details.</td></tr>';
+            }
+        }
+
             paginationList.addEventListener('click', function (e) {
                 const a = e.target.closest ? e.target.closest('a.page-link') : null;
                 console.log('pagination click', e.target, a);
@@ -327,6 +500,9 @@
                 const page = parseInt(a.getAttribute('data-page'), 10) || 1;
                 console.log('loading page', page);
                 loadPage(page);
+            });
+                sortSelect.addEventListener('change', function () {
+                loadPage(1);
             });
         })();
     </script>

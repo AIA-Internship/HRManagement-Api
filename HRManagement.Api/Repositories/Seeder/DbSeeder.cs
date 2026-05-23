@@ -179,7 +179,8 @@ public static class DbSeeder
 
         if (internEmployee.EmploymentInformation != null)
         {
-            internEmployee.EmploymentInformation.Supervisor = adminEmployee;
+            // EmploymentInformation no longer exposes a Supervisor navigation property; set supervisor name instead
+            internEmployee.EmploymentInformation.SupervisorName = adminEmployee.FullName;
         }
 
         context.Employees.AddRange(adminEmployee, internEmployee);
@@ -208,7 +209,7 @@ public static class DbSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task EnsureSchemaUpdatedAsync(AppDbContext context)
+    private static Employee CreateEmployeeEntity(CreateEmployeeRequestDto dto, long actionerId)
     {
         var employmentInformation = dto.EmploymentInformation == null
             ? null
@@ -219,20 +220,21 @@ public static class DbSeeder
                 EmploymentType = dto.EmploymentInformation.EmploymentType,
                 Department = dto.EmploymentInformation.Department,
                 Position = dto.EmploymentInformation.Position,
-                SupervisorId = null, 
                 EmployeeDisplayId = dto.EmploymentInformation.EmployeeDisplayId
             };
 
-        var emergencyContacts = dto.EmergencyContacts
-            .Select(x => new EmergencyContact
+        var emergencyContacts = dto.EmergencyContacts == null
+            ? new List<EmergencyContact>()
+            : dto.EmergencyContacts.Select(x => new EmergencyContact
             {
                 Name = x.Name,
                 Relationship = x.Relationship,
-                PhoneNumber = x.PhoneNumber
-            })
-            .ToList(); 
+                PhoneNumber = x.PhoneNumber,
+                CreatedBy = actionerId,
+                ModifiedBy = actionerId
+            }).ToList();
 
-        return new Employee(
+        var employee = new Employee(
             fullName: dto.FullName,
             gender: dto.Gender,
             personalEmail: dto.PersonalEmail,
@@ -248,5 +250,13 @@ public static class DbSeeder
             actionerId: actionerId,
             employmentInformation: employmentInformation,
             emergencyContacts: emergencyContacts);
+
+        return employee;
+    }
+
+    private static async Task EnsureSchemaUpdatedAsync(AppDbContext context)
+    {
+        // Apply any pending migrations before seeding
+        await context.Database.MigrateAsync();
     }
 }

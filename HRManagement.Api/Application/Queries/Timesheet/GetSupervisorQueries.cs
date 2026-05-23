@@ -3,6 +3,7 @@ using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using HRManagement.Api.Domain.Models.Tables;
 
 namespace HRManagement.Api.Application.Queries.Timesheet;
 
@@ -39,7 +40,9 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
                 return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Akun Supervisor Anda tidak ditemukan di database. Harap hubungi administrator.");
             }
 
-            if (supervisor.Role != 0)
+            // Verify supervisor role via Roles table
+            var supervisorRole = await appDbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == "Supervisor", cancellationToken);
+            if (supervisorRole == null || supervisor.RoleId != supervisorRole.Id)
             {
                 return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Akses Ditolak. Halaman ini membutuhkan hak akses level Supervisor.");
             }
@@ -47,10 +50,15 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
             var supervisorName = supervisor.FullName;
 
             // Filter interns (Relaxed to show all active interns for data visibility)
-            var activeInterns = await appDbContext.Employees
-                .AsNoTracking()
-                .Where(e => e.Role == 1 && e.IsActive)
-                .ToListAsync(cancellationToken);
+            var employeeRole = await appDbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == "Employee", cancellationToken);
+            var activeInterns = new List<Employee>();
+            if (employeeRole != null)
+            {
+                activeInterns = await appDbContext.Employees
+                    .AsNoTracking()
+                    .Where(e => e.RoleId == employeeRole.Id && e.IsActive)
+                    .ToListAsync(cancellationToken);
+            }
             
             var internIds = activeInterns.Select(i => i.Id).ToList();
 
@@ -198,7 +206,8 @@ public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalRep
                 return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akun Supervisor Anda tidak ditemukan di database. Harap hubungi administrator.");
             }
 
-            if (supervisor.Role != 0)
+            var supRole = await appDbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == "Supervisor", cancellationToken);
+            if (supRole == null || supervisor.RoleId != supRole.Id)
             {
                 return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akses Ditolak. Anda tidak memiliki wewenang untuk melihat laporan izin ini.");
             }
@@ -206,10 +215,15 @@ public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalRep
             var supervisorName = supervisor.FullName;
 
             // All active interns
-            var interns = await appDbContext.Employees
-                .AsNoTracking()
-                .Where(e => e.Role == 1 && e.IsActive)
-                .ToListAsync(cancellationToken);
+            var employeeRole2 = await appDbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == "Employee", cancellationToken);
+            var interns = new List<Employee>();
+            if (employeeRole2 != null)
+            {
+                interns = await appDbContext.Employees
+                    .AsNoTracking()
+                    .Where(e => e.RoleId == employeeRole2.Id && e.IsActive)
+                    .ToListAsync(cancellationToken);
+            }
             
             var internIds = interns.Select(i => i.Id).ToHashSet();
 
