@@ -1,0 +1,263 @@
+:root {
+    /* ============================================
+       LEAVE MANAGEMENT - SUPERVISOR REQUEST LIST
+    ============================================ */
+
+    /* Primary Theme */
+    --leave-supervisor-primary: #C62828;
+    --leave-supervisor-primary-light: #FDECEC;
+
+    /* Surface */
+    --leave-supervisor-bg: #F9FAFB;
+    --leave-supervisor-surface: #FFFFFF;
+
+    /* Text */
+    --leave-supervisor-text-primary: #1F2937;
+    --leave-supervisor-text-secondary: #6B7280;
+
+    /* Border / Divider */
+    --leave-supervisor-border-light: #E5E7EB;
+    --leave-supervisor-border-medium: #D1D5DB;
+    --leave-supervisor-header-bg: #F3F4F6;
+
+    /* Request Status - Pending */
+    --leave-supervisor-status-pending-bg: #FFF3CD;
+    --leave-supervisor-status-pending-text: #856404;
+
+    /* Request Status - Approved */
+    --leave-supervisor-status-approved-bg: #D4EDDA;
+    --leave-supervisor-status-approved-text: #155724;
+
+    /* Request Status - Rejected */
+    --leave-supervisor-status-rejected-bg: #F8D7DA;
+    --leave-supervisor-status-rejected-text: #721C24;
+}
+
+body {
+    margin: 0;
+    padding: 32px;
+    font-family: Arial, sans-serif;
+    background: var(--leave-supervisor-bg);
+    color: var(--leave-supervisor-text-primary);
+}
+
+.page-container {
+    max-width: 1400px;
+    margin: auto;
+}
+
+.breadcrumb {
+    font-size: 14px;
+    margin-bottom: 24px;
+    color: var(--leave-supervisor-text-secondary);
+}
+
+.breadcrumb span:last-child {
+    color: var(--leave-supervisor-primary);
+    font-weight: 600;
+}
+
+.header h1 {
+    font-size: 48px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.header p {
+    color: var(--leave-supervisor-text-secondary);
+    margin-top: 8px;
+}
+
+.tabs {
+    display: flex;
+    gap: 32px;
+    margin: 32px 0 24px;
+    border-bottom: 1px solid var(--leave-supervisor-border-light);
+}
+
+.tab {
+    padding: 12px 0;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--leave-supervisor-text-secondary);
+    border-bottom: 3px solid transparent;
+}
+
+.tab.active {
+    color: var(--leave-supervisor-primary);
+    border-bottom-color: var(--leave-supervisor-primary);
+}
+
+.card {
+    background: var(--leave-supervisor-surface);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--leave-supervisor-border-light);
+}
+
+.toolbar {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.status-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.status-btn {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--leave-supervisor-border-medium);
+    cursor: pointer;
+    background: var(--leave-supervisor-surface);
+}
+
+.status-btn.active {
+    background: var(--leave-supervisor-primary);
+    color: var(--leave-supervisor-surface);
+}
+
+.search-sort {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.search-box input {
+    width: 400px;
+    max-width: 100%;
+    padding: 14px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--leave-supervisor-border-medium);
+    outline: none;
+}
+
+.sort-select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--leave-supervisor-border-medium);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: var(--leave-supervisor-header-bg);
+}
+
+th, td {
+    padding: 22px;
+    text-align: left;
+}
+
+tbody tr {
+    transition: 0.25s ease;
+    cursor: pointer;
+}
+
+tbody tr:hover {
+    background: var(--leave-supervisor-primary);
+    color: var(--leave-supervisor-surface);
+}
+
+tbody tr:hover .subtext,
+tbody tr:hover .status-badge {
+    color: var(--leave-supervisor-surface);
+}
+
+.employee-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: var(--leave-supervisor-primary-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.subtext {
+    color: var(--leave-supervisor-text-secondary);
+    font-size: 14px;
+}
+
+.status-badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pending {
+    background: var(--leave-supervisor-status-pending-bg);
+    color: var(--leave-supervisor-status-pending-text);
+}
+
+.approved {
+    background: var(--leave-supervisor-status-approved-bg);
+    color: var(--leave-supervisor-status-approved-text);
+}
+
+.rejected {
+    background: var(--leave-supervisor-status-rejected-bg);
+    color: var(--leave-supervisor-status-rejected-text);
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+}
+
+.page-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.page-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--leave-supervisor-border-medium);
+    border-radius: 8px;
+    background: var(--leave-supervisor-surface);
+    cursor: pointer;
+}
+
+.page-btn.active {
+    background: var(--leave-supervisor-primary);
+    color: var(--leave-supervisor-surface);
+}
+
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .header h1 {
+        font-size: 32px;
+    }
+}

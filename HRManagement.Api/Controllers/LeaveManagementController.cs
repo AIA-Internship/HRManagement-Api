@@ -68,6 +68,44 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("get-by-supervisor-id")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> getBySupervisorId([FromQuery] int max = 10)
+        {
+            string objectName = nameof(getBySupervisorId).ToString();
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int supervisorId = int.Parse(userIdClaim);
+
+                var query = new GetLeaveRequestBySupervisorId(supervisorId, max);
+
+                var response = await this
+                    .ValidateAndExecute(query, (c) => _mediator.Send(query))
+                    .ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         [Route("create")]
         [ProducesResponseType(200)]

@@ -14,6 +14,7 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<bool> updateLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> softDelete(int id);
         public Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month);
+        public Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max);
         //public Task<LeaveDetailDto> getLeaveDetailById(int leaveId);
 
         

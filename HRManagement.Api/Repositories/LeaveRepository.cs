@@ -67,6 +67,8 @@ namespace HRManagement.Api.Repositories
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+
+
         public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
         {
             return await _dbContext.LeaveRequestHistory
@@ -239,6 +241,16 @@ namespace HRManagement.Api.Repositories
 
             return result ?? new LeaveTypeCountDto();
         }
+        public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max)
+        {
+            var result = await _dbContext.LeaveRequest
+                .Where(x => x.SupervisorId == supervisorId && x.IsDeleted == 0)
+                .OrderBy(x => x.LeaveStatus)
+                .ThenBy(x => x.CreatedUtcDate)
+                .Take(max)
+                .ToListAsync();
 
+            return result;
+        }
     }
 }

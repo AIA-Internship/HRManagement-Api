@@ -84,7 +84,11 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
             var user = new User(dto.EmployeeEmail, hashedPassword, dto.Role, actionerId);
             
             await employeeRepository.AddEmployeeAsync(user, employee);
-            await leaveRepo.createLeaveBalance(new LeaveBalanceModel { EmployeeId= user.Id, LeaveBalance = 0 });
+            if (employee.RoleId != 1)
+            {
+                await leaveRepo.createLeaveBalance(new LeaveBalanceModel { EmployeeId= user.Id, LeaveBalance = 0 });
+            }
+           
 
             return ApiHelperResponse.Success("Employee and User Account created successfully", "Success");
         }
