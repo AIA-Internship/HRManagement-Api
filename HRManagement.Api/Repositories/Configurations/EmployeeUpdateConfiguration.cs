@@ -35,6 +35,11 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
             .HasMaxLength(150)
             .IsRequired(false);
         
+        builder.Property(e => e.NewNik)
+            .HasColumnName("new_nik")
+            .HasMaxLength(255)
+            .IsRequired(false);
+        
         builder.Property(e => e.NewDateOfBirth)
             .HasColumnName("new_date_of_birth")
             .HasColumnType("date")
@@ -91,7 +96,6 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
         
         builder.Property(e => e.Status)
             .HasColumnName("request_status")
-            .HasConversion<string>() 
             .IsRequired();
 
         builder.Property(e => e.HrReason)

@@ -1,0 +1,60 @@
+@* 
+    AIA GLOBAL CALENDAR GRID
+    Standardized Grid Layout for Timesheet Management
+    Supports Monthly Grid, Weekly Rows, and Daily Detail views via JS injection.
+*@
+
+<!-- MONTHLY GRID VIEW (7-COLUMNS) -->
+<div id="view_monthly" class="timesheet-view">
+    <div class="calendar-grid-header">
+        <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-danger">SAT</div><div class="text-danger">SUN</div>
+    </div>
+    <div id="monthly_grid_container" class="calendar-grid-body">
+        <!-- JS Injection point: renderMonthlyGrid() -->
+    </div>
+</div>
+
+<!-- WEEKLY VIEW (TABLE ROWS) -->
+<div id="view_weekly" class="timesheet-view d-none">
+    <div class="table-responsive">
+        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 weekly-master-table">
+            <thead>
+                <tr id="weekly_header_row" class="fw-boldest text-muted text-uppercase fs-7">
+                    <th class="min-w-150px ps-4">PROJECTS</th>
+                    <th class="min-w-100px text-center">MON</th>
+                    <th class="min-w-100px text-center">TUE</th>
+                    <th class="min-w-100px text-center">WED</th>
+                    <th class="min-w-100px text-center">THU</th>
+                    <th class="min-w-100px text-center">FRI</th>
+                    <th class="min-w-100px text-center">SAT</th>
+                    <th class="min-w-100px text-center">SUN</th>
+                    <th class="min-w-100px text-end pe-4">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JS Injection point: renderWeeklyGrid() -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- DAILY VIEW (DETAIL LOGS) -->
+<div id="view_daily" class="timesheet-view d-none">
+    <div class="table-responsive">
+        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 daily-master-table">
+            <thead>
+                <tr class="fw-boldest text-muted text-uppercase fs-7">
+                    <th class="min-w-100px text-center">DURATION</th>
+                    <th class="min-w-200px">PROJECT</th>
+                    <th class="min-w-150px">APP USED</th>
+                    <th class="min-w-300px">TASK DESCRIPTION</th>
+                    <th class="min-w-150px">PROJECT LEAD</th>
+                    <th class="min-w-100px">LOCATION</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JS Injection point: renderDailyGrid() -->
+            </tbody>
+        </table>
+    </div>
+</div>

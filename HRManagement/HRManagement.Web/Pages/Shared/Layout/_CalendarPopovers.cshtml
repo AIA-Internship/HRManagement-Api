@@ -1,0 +1,41 @@
+@* 
+    GLOBAL CALENDAR POPOVERS
+    Standardized - Used across Timesheet Management and Task Modals
+*@
+
+<div id="datepicker_focal_backdrop" onclick="closeDatePopup()"></div>
+
+<div id="popover_monthly" class="datepicker-popover">
+    <div class="datepicker-header">
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
+        <div class="datepicker-header-title fw-bold" id="picker_year_label">...</div>
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="datepicker-grid-3">
+        @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+            <div class="datepicker-month-cell" onclick="selectMonth('@m')">@m</div>
+        }
+    </div>
+</div>
+
+<div id="popover_weekly" class="datepicker-popover">
+    <div class="datepicker-header">
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
+        <div class="datepicker-header-title fw-bold" id="picker_weekly_label">...</div>
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="datepicker-grid-7 px-4">
+        <!-- DYNAMICALLY FILLED BY JS -->
+    </div>
+</div>
+
+<div id="popover_daily" class="datepicker-popover">
+    <div class="datepicker-header">
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
+        <div class="datepicker-header-title fw-bold" id="picker_daily_label">...</div>
+        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(1)"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="datepicker-grid-7 px-4">
+        <!-- DYNAMICALLY FILLED BY JS -->
+    </div>
+</div>

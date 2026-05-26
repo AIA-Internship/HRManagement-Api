@@ -1,0 +1,129 @@
+@page "/EmployeeManagement/RequestDetails"
+@model HRManagement.Web.Pages.Modules.EmployeeManagement.ManageRequestDetails
+
+@{
+ViewData["Title"] = "Request Details";
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/apps/modules/employee/css/request-details-styles.css" asp-append-version="true" />
+<style>
+    .text-brand { color: #D31145 !important; }
+    .bg-aia { background-color: #D31145 !important; }
+
+    /* Meta Cards (Matches screenshot) */
+    .meta-card { border: 1px solid #EFF2F5; border-radius: 12px; padding: 20px; background: #fff; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .meta-label { color: #7E8299; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+    .meta-value { color: #181C32; font-size: 18px; font-weight: 700; }
+
+    /* Changes Section */
+    .change-card { border: 1px solid #EFF2F5; border-radius: 12px; padding: 20px; margin-bottom: 12px; background: #fff; }
+    .change-text { font-size: 15px; color: #3F4254; }
+    .change-new { color: #D31145; font-weight: 700; }
+    .change-prev { color: #181C32; }
+
+    /* Action Buttons */
+    .btn-approve { color: #D31145; border: 1px solid #D31145; background: transparent; font-weight: 600; padding: 10px 24px; border-radius: 8px; }
+    .btn-approve:hover { background: #FFF5F8; color: #D31145; }
+    .btn-reject { background: #D31145; color: #fff; border: 0; font-weight: 600; padding: 10px 24px; border-radius: 8px; }
+    .btn-reject:hover { background: #B10E3A; color: #fff; }
+</style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><a href="/EmployeeManagement/ManageRequestList" class="text-decoration-none text-muted text-hover-primary">Manage Requests</a></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Request Details</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a href="/EmployeeManagement/ManageRequestList" class="btn btn-sm btn-light fw-bold">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <div class="row g-5 mb-8">
+                <div class="col-md-3">
+                    <div class="meta-card">
+                        <div class="meta-label">Request ID</div>
+                        <div class="meta-value" id="metaId">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="meta-card">
+                        <div class="meta-label">Submitted By</div>
+                        <div class="meta-value" id="metaSubmittedBy">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="meta-card">
+                        <div class="meta-label">Submitted Date</div>
+                        <div class="meta-value" id="metaSubmittedDate">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="meta-card">
+                        <div class="meta-label">Fields Changed</div>
+                        <div class="meta-value" id="metaCount">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header border-bottom pt-6 pb-4">
+                    <div class="card-title">
+                        <h3 class="fw-bold fs-4 m-0"><i class="bi bi-clock-history me-2"></i> Changes Requested</h3>
+                    </div>
+                </div>
+                <div class="card-body p-6" id="changesContainer">
+                    <div class="text-muted">Loading...</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-8" id="actionButtonsContainer" style="display: none !important;">
+                <button type="button" class="btn-approve" id="btnApprove">
+                    <i class="bi bi-check2 me-1"></i> Approve
+                </button>
+                <button type="button" class="btn-reject" id="btnReject">
+                    <i class="bi bi-x-circle me-1"></i> Reject
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header pb-0 border-0 justify-content-end">
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body px-10 pb-10 pt-0">
+                <h3 class="fw-bold mb-5 text-center">Reject Request</h3>
+                <p class="text-muted text-center mb-6">Please provide a reason for rejecting this change request. This will be visible to the employee.</p>
+
+                <textarea class="form-control form-control-solid" id="rejectReasonInput" rows="4" placeholder="Type reason here..."></textarea>
+
+                <div class="d-flex justify-content-center mt-8 gap-3">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmReject">Confirm Reject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/apps/modules/employee/js/managerequest-details.js" asp-append-version="true"></script>
+}

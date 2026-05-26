@@ -6,7 +6,7 @@ public interface IRequestRepository
 {
     Task UpdateRequestStatusAsync(EmployeeUpdateRequest request);
     
-    Task<List<EmployeeUpdateRequest>> GetEmployeeUpdateRequestAsync(int? status);
+    Task<List<EmployeeUpdateRequest>> GetEmployeeUpdateRequestAsync(int? status, int? employeeId = null);
     
     Task SubmitUpdateRequestAsync(EmployeeUpdateRequest request);
     

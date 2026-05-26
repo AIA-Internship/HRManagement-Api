@@ -155,6 +155,20 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
+// ==========================================
+// CORS OPTIONS
+// ==========================================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:7060") 
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // ==========================================
@@ -206,14 +220,17 @@ app.UseHttpsRedirection();
 // 4. Routing
 app.UseRouting();
 
-// 5. Authentication & Authorization
+// 5. Cors 
+app.UseCors("AllowFrontend");
+
+// 6. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 6. Endpoints
+// 7. Endpoints
 app.MapControllers();
 
-// 7. Database Seeding
+// 8. Database Seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

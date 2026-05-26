@@ -1,0 +1,227 @@
+@page "/EmployeeList"
+@model HRManagement.Web.Pages.Modules.EmployeeManagement.EmployeeListModel
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+@section Styles {
+    <style>
+        .text-brand { color: #D31145 !important; }
+        .bg-aia { background-color: #D31145 !important; }
+
+        /* Status badges */
+        .badge-status { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            padding: 6px 12px; 
+            border-radius: 999px; 
+            font-weight: 600; 
+            font-size: 12px; 
+        }
+        .badge-active { background-color: #E8FFF3; color: #1BC5BD; }
+        .badge-inactive { background-color: #FFF5F8; color: #F1416C; }
+        .badge-leave { background-color: #FFF4DE; color: #FFA800; }
+
+        /* Table & Sorting */
+        .table thead th {
+            background-color: #F9FAFB;
+            border-bottom: 0;
+            font-size: 12px;
+            letter-spacing: 0.4px;
+            font-weight: 700;
+            color: #7E8299;
+            padding: 14px 12px;
+            white-space: nowrap;
+        }
+        .table tbody td { 
+            vertical-align: middle; 
+            padding: 16px 12px; 
+            border-bottom: 1px solid #EFF2F5; 
+        }
+        .table tbody tr:last-child td { border-bottom: 0; }
+        
+        .th-sortable { cursor: pointer; user-select: none; }
+        .th-sortable .sort-ic { margin-left: 4px; font-size: 11px; color: #B5B5C3; }
+        .th-sortable.asc .sort-ic.asc,
+        .th-sortable.desc .sort-ic.desc { color: #181C32; }
+
+        /* Search Bar */
+        .search-container { position: relative; width: 250px; }
+        .search-container i { 
+            position: absolute; 
+            left: 14px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #A1A5B7; 
+        }
+        .search-container input { 
+            padding-left: 40px; 
+            border-radius: 8px; 
+            border: 1px solid #E4E6EF; 
+            font-size: 13px; 
+        }
+        .search-container input:focus { 
+            border-color: #D31145; 
+            box-shadow: none; 
+            outline: none; 
+        }
+        
+        /* Filter */
+        .filter-wrap { position: relative; display: inline-block; }
+        .filter-btn {
+            background: transparent; 
+            border: 0; 
+            color: #7E8299; 
+            font-weight: 700;
+            font-size: 12px; 
+            letter-spacing: 0.4px; 
+            display: inline-flex;
+            align-items: center; 
+            gap: 4px; 
+            cursor: pointer; 
+            padding: 0;
+        }
+        .filter-btn .filter-ic { font-size: 12px; }
+        .filter-btn.active { color: #D31145; }
+        
+        .filter-popup {
+            position: absolute; 
+            top: 100%; 
+            right: 0; 
+            margin-top: 6px; 
+            background: #fff;
+            border: 1px solid #EFF2F5; 
+            border-radius: 10px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 6px; 
+            min-width: 140px; 
+            z-index: 50; 
+            display: none;
+        }
+        .filter-popup.open { display: block; }
+        
+        .filter-option {
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 8px 10px;
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            color: #3F4254;
+        }
+        .filter-option:hover { background-color: #F9FAFB; }
+        .filter-option.selected { background-color: #FFF5F8; color: #D31145; font-weight: 600; }
+        .filter-option i { font-size: 12px; opacity: 0; }
+        .filter-option.selected i { opacity: 1; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><span class="text-muted">Employee Management</span></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Employee List</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Employee List
+                    <span class="text-muted fs-7 fw-normal mt-1">View and manage employees.</span>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            
+            <!-- Table Card -->
+            <div class="card shadow-sm">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <!-- Search Box (Lengthened to w-350px) -->
+                        <div class="search-container">
+                            <i class="bi bi-search fs-5"></i>
+                            <input type="text" id="searchInput" class="form-control form-control-solid w-350px" placeholder="Search employee..." />
+                        </div>
+                    </div>
+                    <div class="card-toolbar">
+                        <!-- Add Employee Button -->
+                        <button type="button" class="btn btn-primary bg-aia border-0" id="btnAddEmployee">
+                            <i class="bi bi-plus-lg"></i> Add Employee
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle fs-6 gy-3 mb-0" id="employeeTable">
+                            <thead>
+                                <tr>
+                                    <th class="th-sortable ps-4" data-sort="employeeId">
+                                        Employee ID
+                                        <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                    </th>
+                                    <th class="th-sortable" data-sort="name">
+                                        Name
+                                        <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                    </th>
+                                    <th class="th-sortable" data-sort="department">
+                                        Department
+                                        <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                    </th>
+                                    <th class="th-sortable" data-sort="position">
+                                        Position
+                                        <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                    </th>
+                                    <th class="pe-4" style="text-align:left;">
+                                        <div class="filter-wrap">
+                                            <button type="button" class="filter-btn" id="statusFilterBtn">
+                                                Status
+                                                <span class="filter-ic"><i class="bi bi-funnel"></i></span>
+                                            </button>
+                                            <div class="filter-popup" id="statusFilterPopup">
+                                                <div class="filter-option selected" data-value="all">
+                                                    <i class="bi bi-check2"></i>All
+                                                </div>
+                                                <div class="filter-option" data-value="active">
+                                                    <i class="bi bi-check2"></i>Active
+                                                </div>
+                                                <div class="filter-option" data-value="inactive">
+                                                    <i class="bi bi-check2"></i>Inactive
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTableBody" class="fw-semibold text-gray-700">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-5" id="paginationWrapper">
+                        <div class="fs-6 fw-semibold text-gray-700" id="paginationInfo">
+                            Showing 0 to 0 of 0 entries
+                        </div>
+                        <ul class="pagination mb-0" id="paginationControls">
+                            <!-- Buttons injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/employee/js/employeelist.js" asp-append-version="true"></script>
+}

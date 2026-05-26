@@ -13,13 +13,15 @@ public class RequestRepository(AppDbContext dbContext) : IRequestRepository
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<EmployeeUpdateRequest>> GetEmployeeUpdateRequestAsync(int? status)
+    public async Task<List<EmployeeUpdateRequest>> GetEmployeeUpdateRequestAsync(int? status, int? employeeId = null)
     {
         var query = dbContext.EmployeeUpdateRequests
             .Include(r => r.Employee)
+            .ThenInclude(e => e.EmploymentInformation)
             .AsQueryable();
 
         if (status.HasValue) query = query.Where(r => r.Status == status.Value);
+        if (employeeId.HasValue) query = query.Where(r => r.EmployeeId == employeeId.Value);
 
         return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
     }
@@ -28,8 +30,10 @@ public class RequestRepository(AppDbContext dbContext) : IRequestRepository
     {
         return await dbContext.EmployeeUpdateRequests
             .Include(r => r.Employee)
+            .ThenInclude(e => e.EmploymentInformation) 
+            .Include(r => r.Employee)
             .ThenInclude(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(r => r.Id == id);
+            .FirstOrDefaultAsync(r => r.Id == id);;
     }
 
     public async Task SubmitUpdateRequestAsync(EmployeeUpdateRequest request)

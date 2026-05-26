@@ -1,0 +1,50 @@
+/* BRAND IDENTITY - CORE TOKENS (V1.0) */
+:root {
+    /* PRIMARY BRAND COLOR TOKENS */
+    --brand-red: #D31145;
+    --brand-red-active: #b60c33;
+    --brand-red-light: #fdeef2;
+    
+    /* SYSTEM-WIDE OVERRIDES FOR METRONIC/BOOTSTRAP */
+    --kt-primary: var(--brand-red) !important;
+    --kt-primary-active: var(--brand-red-active) !important;
+    --kt-primary-light: var(--brand-red-light) !important;
+    --bs-primary: var(--brand-red) !important;
+    --bs-primary-rgb: 211, 17, 69 !important;
+
+    /* GLOBAL GRAYSCALE & UI TOKENS */
+    --brand-gray-title: #181C32;
+    --brand-gray-subtitle: #7E8299;
+    --brand-gray-muted: #5E6278;
+    --brand-gray-light: #A1A5B7;
+    --brand-bg-light: #F1F4F9;
+    --brand-border-color: #ECEFF4;
+}
+
+/* TYPOGRAPHY - 100% GLOBAL INTER ENFORCEMENT */
+body {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* BRAND UTILITIES */
+.text-brand { color: var(--brand-red) !important; }
+.bg-brand { background-color: var(--brand-red) !important; }
+.text-primary { color: var(--brand-red) !important; }
+
+/* LEGACY BUTTON ALIASES */
+.btn-brand { 
+    background-color: var(--brand-red) !important; 
+    color: #fff !important; 
+    border-radius: 8px;
+    font-weight: 700;
+}
+.btn-brand:hover { background-color: var(--brand-red-active) !important; }
+
+.btn-primary { 
+    background-color: var(--brand-red) !important; 
+    border-color: var(--brand-red) !important; 
+}
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus { 
+    background-color: var(--brand-red-active) !important; 
+    border-color: var(--brand-red-active) !important; 
+}

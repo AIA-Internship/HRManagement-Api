@@ -33,7 +33,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPut("employment-info/{displayId}")]
-    [HasPermission("ManageEmployees")]
+    [HasPermission(Permissions.Users.Edit)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -75,8 +75,8 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
     
-    [HasPermission("ViewEmployees")]
     [HttpGet("list")]
+    [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -118,8 +118,30 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
 
+    [HttpGet("my-requests")]
+    [HasPermission(Permissions.Employees.View)]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetMyRequests([FromQuery] int? status)
+    {
+        string methodName = nameof(GetMyRequests);
+        _logger.LogInformation("Start {Service}.", methodName);
+        
+        var query = new GetMyUpdateRequestQuery(status);
+        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) => 
+        {
+            var result = await _mediator.Send((GetMyUpdateRequestQuery)q);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
     [HttpGet("requests")]
-    [HasPermission("ManageEmployees")]
+    [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]

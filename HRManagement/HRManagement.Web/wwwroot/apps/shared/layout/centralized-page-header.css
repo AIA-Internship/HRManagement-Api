@@ -1,0 +1,63 @@
+/* AIA GLOBAL PAGE HEADER COMPONENT (V1.0) */
+
+.aia-page-header {
+    margin-bottom: 1.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Breadcrumbs Styling */
+.aia-breadcrumb {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.aia-breadcrumb-item {
+    color: #475569;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.aia-breadcrumb-item:hover {
+    color: var(--brand-red);
+}
+
+.aia-breadcrumb-item.active {
+    color: var(--brand-red) !important;
+    font-weight: 700;
+}
+
+.aia-breadcrumb-separator {
+    margin: 0 0.75rem;
+    color: #94A3B8;
+    font-size: 0.85rem;
+}
+
+/* Main Heading Styling */
+.aia-page-title {
+    color: #0F172A;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+/* Description/Subtitle Styling */
+.aia-page-subtitle {
+    color: #475569;
+    font-size: 1.15rem;
+    font-weight: 400;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+    .aia-page-title {
+        font-size: 2rem;
+    }
+}

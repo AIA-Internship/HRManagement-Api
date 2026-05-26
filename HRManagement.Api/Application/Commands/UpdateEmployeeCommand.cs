@@ -39,7 +39,7 @@ public class UpdateEmployeeCommand(UpdateEmployeeRequestDto commandDto) : IReque
             }
             
             var actionerId = currentUserService.UserId;
-            var request = new EmployeeUpdateRequest(employee.Id, command.RequestDto, actionerId);
+            var request = new EmployeeUpdateRequest(employee, command.RequestDto, actionerId);
             
             await requestRepository.SubmitUpdateRequestAsync(request);
 
