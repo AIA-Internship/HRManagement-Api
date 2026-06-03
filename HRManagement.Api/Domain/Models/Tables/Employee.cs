@@ -18,7 +18,7 @@ public class Employee : BaseTableModel
     public string PhoneNumber { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
     public int RoleId { get;  private set; }
-    public Role SystemRole { get;  private set; }
+    public Role SystemRole { get;  private set; } = null!;
     // public int Role { get; private set; }
     public EmploymentInformation? EmploymentInformation { get; set; }
     public ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();

@@ -19,9 +19,6 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
     public int? FilterEmployeeId { get; init; }
 
     public class Handler(
-        ITimesheetProjectRepository projectRepository,
-        ITimesheetEntryRepository entryRepository,
-        ITimesheetSubmissionRepository submissionRepository,
         IApplicationDbContext appDbContext,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetSupervisorDashboardQuery, ApiResponse<SupervisorDashboardResponseDto>>
@@ -222,8 +219,6 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
 public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalReportDto>>
 {
     public class Handler(
-        ITimesheetEntryRepository entryRepository,
-        ITimesheetSubmissionRepository submissionRepository,
         IApplicationDbContext appDbContext,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetApprovalReportQuery, ApiResponse<SupervisorApprovalReportDto>>

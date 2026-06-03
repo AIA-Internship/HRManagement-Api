@@ -23,8 +23,7 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
     public class Handler(
         IApplicationDbContext dbContext, 
         IConfiguration configuration,  
-        IPasswordHasher passwordHasher,
-        ILogger<Handler> logger) : IRequestHandler<LoginQuery, ApiResponse<TokenResponseDto>>
+        IPasswordHasher passwordHasher) : IRequestHandler<LoginQuery, ApiResponse<TokenResponseDto>>
     {
         public async Task<ApiResponse<TokenResponseDto>> Handle(LoginQuery request, CancellationToken cancellationToken)
         {
@@ -58,22 +57,6 @@ public class LoginQuery(string email, string password, bool rememberMe) : IReque
                 .Where(e => e.EmployeeEmail.ToLower() == user.EmployeeEmail.ToLower())
                 .Select(e => e.FullName)
                 .FirstOrDefaultAsync(cancellationToken) ?? "Intern";
-            {
-                throw new ApiException(
-                    "Unauthorized", 
-                    StatusCodes.Status401Unauthorized, 
-                    ExceptionConstants.NotAuthorized 
-                );
-            }
-
-            if (!passwordHasher.Verify(request.Password, user.PasswordHash))
-            {
-                throw new ApiException(
-                    "Unauthorized", 
-                    StatusCodes.Status401Unauthorized, 
-                    ExceptionConstants.NotAuthorized 
-                );
-            }
 
             var roleName = user.SystemRole?.Name;
             var permissions = user.SystemRole?.RolePermissions
