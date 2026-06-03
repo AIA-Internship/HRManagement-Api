@@ -7,21 +7,21 @@
      */
     var dict = new RouteValueDictionary(Model);
 
-    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : "modal_generic_action");
-    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : "Confirmation");
-    string message = (dict.ContainsKey("Message") ? dict["Message"]?.ToString() : "Are you sure you want to proceed?");
-    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : "confirm"); // info, confirm, input
+    string id = dict.ContainsKey("Id") ? (dict["Id"]?.ToString() ?? "modal_generic_action") : "modal_generic_action";
+    string title = dict.ContainsKey("Title") ? (dict["Title"]?.ToString() ?? "Confirmation") : "Confirmation";
+    string message = dict.ContainsKey("Message") ? (dict["Message"]?.ToString() ?? "Are you sure you want to proceed?") : "Are you sure you want to proceed?";
+    string type = dict.ContainsKey("Type") ? (dict["Type"]?.ToString() ?? "confirm") : "confirm"; // info, confirm, input
     
-    string confirmText = (dict.ContainsKey("ConfirmText") ? dict["ConfirmText"]?.ToString() : (type == "info" ? "OK" : "Confirm"));
-    string cancelText = (dict.ContainsKey("CancelText") ? dict["CancelText"]?.ToString() : "Cancel");
-    string confirmColor = (dict.ContainsKey("ConfirmColor") ? dict["ConfirmColor"]?.ToString() : "btn-standard-primary");
-    string confirmId = (dict.ContainsKey("ConfirmId") ? dict["ConfirmId"]?.ToString() : id + "_confirm_btn");
-    string onConfirm = (dict.ContainsKey("OnConfirm") ? dict["OnConfirm"]?.ToString() : "");
+    string confirmText = dict.ContainsKey("ConfirmText") ? (dict["ConfirmText"]?.ToString() ?? (type == "info" ? "OK" : "Confirm")) : (type == "info" ? "OK" : "Confirm");
+    string cancelText = dict.ContainsKey("CancelText") ? (dict["CancelText"]?.ToString() ?? "Cancel") : "Cancel";
+    string confirmColor = dict.ContainsKey("ConfirmColor") ? (dict["ConfirmColor"]?.ToString() ?? "btn-standard-primary") : "btn-standard-primary";
+    string confirmId = dict.ContainsKey("ConfirmId") ? (dict["ConfirmId"]?.ToString() ?? id + "_confirm_btn") : id + "_confirm_btn";
+    string onConfirm = dict.ContainsKey("OnConfirm") ? (dict["OnConfirm"]?.ToString() ?? "") : "";
     
     // Input Specific
-    string inputLabel = (dict.ContainsKey("InputLabel") ? dict["InputLabel"]?.ToString() : "Comment");
-    string inputId = (dict.ContainsKey("InputId") ? dict["InputId"]?.ToString() : id + "_input");
-    string inputPlaceholder = (dict.ContainsKey("InputPlaceholder") ? dict["InputPlaceholder"]?.ToString() : "");
+    string inputLabel = dict.ContainsKey("InputLabel") ? (dict["InputLabel"]?.ToString() ?? "Comment") : "Comment";
+    string inputId = dict.ContainsKey("InputId") ? (dict["InputId"]?.ToString() ?? id + "_input") : id + "_input";
+    string inputPlaceholder = dict.ContainsKey("InputPlaceholder") ? (dict["InputPlaceholder"]?.ToString() ?? "") : "";
 }
 
 <div class="modal fade" id="@id" tabindex="-1" aria-hidden="true">

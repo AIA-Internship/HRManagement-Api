@@ -1,0 +1,83 @@
+@page "/Timesheet/Supervisor/Projects"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.ProjectsModel
+@using HRManagement.Web.Models.Shared
+@{
+    ViewData["Title"] = "Master Project";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/master.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Master Project",
+                Subtitle = "View and manage all active projects in the system",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Master Project" }
+                },
+                RenderActions = new Microsoft.AspNetCore.Html.HtmlString(
+                    "<a href=\"/Timesheet/Supervisor/Projects/Edit\" class=\"btn-brand fw-boldest px-6 py-3 shadow-sm\" id=\"btn_go_edit\">" +
+                    "<i class=\"bi bi-pencil-square me-2\"></i> Edit Project</a>"
+                )
+            })
+
+            <!-- PROJECT LIST CARD -->
+            <div class="master-card mt-5">
+                <div id="project_table_wrap" style="overflow-x:auto;">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">#</th>
+                                <th>Project Name</th>
+                                <th>Project Leader</th>
+                            </tr>
+                        </thead>
+
+
+                        <tbody id="project_list_tbody">
+                            <tr>
+                                <td colspan="3" class="text-center py-8" style="color:#C4CAD4;font-size:0.85rem;font-weight:600;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                                        Loading projects...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="project_empty_state" class="master-empty-state" style="display:none;">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-folder-x"></i>
+                    </div>
+                    <h4>No Projects Found</h4>
+                    <p>There are currently no active projects. Click <strong>Edit Project</strong> to add one.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/master-project.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('aia_jwt_token');
+            const banner = document.getElementById('debug_token_banner');
+            if (!token) {
+                if (banner) banner.style.display = 'block';
+                console.error("CRITICAL: Token is missing from localStorage!");
+            } else {
+                console.log("DEBUG: Token found, length:", token.length);
+            }
+            await initProjectList();
+        });
+    </script>
+}

@@ -18,7 +18,7 @@ public class GetDailyTimesheetQuery(string date, int? targetEmployeeId = null)
     public int? TargetEmployeeId { get; } = targetEmployeeId;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetDailyTimesheetQuery, ApiResponse<DailyTimesheetResponseDto>>
     {
@@ -32,7 +32,7 @@ public class GetDailyTimesheetQuery(string date, int? targetEmployeeId = null)
             }
 
             var employeeId = request.TargetEmployeeId ?? currentUserService.UserId;
-            var entries = await timesheetRepository.GetEntriesByDateAsync(employeeId, entryDate);
+            var entries = await entryRepository.GetEntriesByDateAsync(employeeId, entryDate);
 
             var entryDtos = entries.Select(e => new TimesheetEntryResponseDto
             {
@@ -90,7 +90,7 @@ public class GetWeeklyTimesheetQuery(string weekStartDate, int? targetEmployeeId
     public int? TargetEmployeeId { get; } = targetEmployeeId;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetWeeklyTimesheetQuery, ApiResponse<WeeklyTimesheetResponseDto>>
     {
@@ -105,7 +105,7 @@ public class GetWeeklyTimesheetQuery(string weekStartDate, int? targetEmployeeId
 
             var weekEnd = weekStart.AddDays(6);
             var employeeId = request.TargetEmployeeId ?? currentUserService.UserId;
-            var entries = await timesheetRepository.GetEntriesByWeekAsync(employeeId, weekStart, weekEnd);
+            var entries = await entryRepository.GetEntriesByWeekAsync(employeeId, weekStart, weekEnd);
 
             // Group by project, then by date
             var projectGroups = entries
@@ -163,7 +163,8 @@ public class GetMonthlyTimesheetQuery(int year, int month, int? targetEmployeeId
     public int? TargetEmployeeId { get; } = targetEmployeeId;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
+        ITimesheetSubmissionRepository submissionRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetMonthlyTimesheetQuery, ApiResponse<MonthlyTimesheetResponseDto>>
     {
@@ -172,8 +173,8 @@ public class GetMonthlyTimesheetQuery(int year, int month, int? targetEmployeeId
             CancellationToken cancellationToken)
         {
             var employeeId = request.TargetEmployeeId ?? currentUserService.UserId;
-            var entries = await timesheetRepository.GetEntriesByMonthAsync(employeeId, request.Year, request.Month);
-            var submission = await timesheetRepository.GetSubmissionAsync(employeeId, request.Year, request.Month);
+            var entries = await entryRepository.GetEntriesByMonthAsync(employeeId, request.Year, request.Month);
+            var submission = await submissionRepository.GetSubmissionAsync(employeeId, request.Year, request.Month);
 
             // Build day cells
             var grouped = entries
@@ -200,11 +201,13 @@ public class GetMonthlyTimesheetQuery(int year, int month, int? targetEmployeeId
             {
                 Year = request.Year,
                 Month = request.Month,
+                SubmissionId = submission?.Id,
                 SubmissionStatus = submissionStatus,
                 Days = grouped
             };
 
             return ApiHelperResponse.Success("Monthly timesheet retrieved successfully.", result);
+
         }
     }
 }

@@ -1,11 +1,13 @@
 @* 
     GLOBAL CALENDAR POPOVERS
     Standardized - Used across Timesheet Management and Task Modals
+    NOTE: Inline styles ensure popovers are hidden/fixed on ALL pages,
+    even those that don't load timesheet-management.css.
 *@
 
-<div id="datepicker_focal_backdrop" onclick="closeDatePopup()"></div>
+<div id="datepicker_focal_backdrop" onclick="closeDatePopup()" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.02);z-index:1999;display:none;"></div>
 
-<div id="popover_monthly" class="datepicker-popover">
+<div id="popover_monthly" class="datepicker-popover" style="position:fixed;display:none;z-index:2000;background:#fff;border-radius:18px;box-shadow:0 15px 45px rgba(0,0,0,0.12);padding:8px;width:290px;">
     <div class="datepicker-header">
         <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
         <div class="datepicker-header-title fw-bold" id="picker_year_label">...</div>
@@ -18,7 +20,7 @@
     </div>
 </div>
 
-<div id="popover_weekly" class="datepicker-popover">
+<div id="popover_weekly" class="datepicker-popover" style="position:fixed;display:none;z-index:2000;background:#fff;border-radius:18px;box-shadow:0 15px 45px rgba(0,0,0,0.12);padding:8px;width:290px;">
     <div class="datepicker-header">
         <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
         <div class="datepicker-header-title fw-bold" id="picker_weekly_label">...</div>
@@ -29,7 +31,7 @@
     </div>
 </div>
 
-<div id="popover_daily" class="datepicker-popover">
+<div id="popover_daily" class="datepicker-popover" style="position:fixed;display:none;z-index:2000;background:#fff;border-radius:18px;box-shadow:0 15px 45px rgba(0,0,0,0.12);padding:8px;width:290px;">
     <div class="datepicker-header">
         <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="event.stopPropagation(); movePickerTime(-1)"><i class="bi bi-chevron-left"></i></button>
         <div class="datepicker-header-title fw-bold" id="picker_daily_label">...</div>

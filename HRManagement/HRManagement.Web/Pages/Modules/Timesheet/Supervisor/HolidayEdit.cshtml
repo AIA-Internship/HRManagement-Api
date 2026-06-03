@@ -1,0 +1,92 @@
+@page "/Timesheet/Supervisor/Holiday/Edit"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.HolidayEditModel
+@using HRManagement.Web.Models.Shared
+@{
+    ViewData["Title"] = "Edit Holiday Master";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/master.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Edit Master Holiday",
+                Subtitle = "Manage holidays or import from Excel",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Master Holiday", Url = "/Timesheet/Supervisor/Holiday" },
+                    new BreadcrumbItem { Title = "Edit" }
+                },
+                RenderActions = Html.Raw(@"
+                    <div class='d-flex gap-3'>
+                        <button class='btn-standard-ghost' id='btn_import_excel' type='button'>
+                            <i class='bi bi-file-earmark-excel me-2'></i> Import from Excel
+                        </button>
+                        <button class='btn-brand' id='btn_add_holiday' type='button'>
+                            <i class='bi bi-plus-lg me-2'></i> Add Holiday
+                        </button>
+                    </div>
+                    <input type='file' id='excel_input' accept='.xlsx, .xls, .csv' style='display:none;' />
+                ")
+            })
+
+            <!-- EDIT CARD -->
+            <div class="master-card mt-5">
+                <div id="holiday_table_wrap" style="overflow-x:auto;">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">#</th>
+                                <th style="width:180px;">DATE <span class="text-danger">*</span></th>
+                                <th>HOLIDAY NAME <span class="text-danger">*</span></th>
+                                <th>DESCRIPTION</th>
+                                <th style="width:100px;text-align:center;">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holiday_rows_container">
+                            <!-- Rows populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="master-action-bar">
+                    <button class="btn-standard-ghost" id="btn_discard_holiday" type="button">
+                        <i class="bi bi-x-circle"></i> Discard
+                    </button>
+                    <button class="btn-brand" id="btn_save_holiday" type="button">
+                        <i class="bi bi-check2-circle"></i> Save Holidays
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="confirm-modal-backdrop" id="confirm_modal_backdrop">
+    <div class="confirm-modal-box">
+        <div class="confirm-modal-title">Confirmation</div>
+        <p class="confirm-modal-desc" id="confirm_modal_desc">Are you sure?</p>
+        <div class="confirm-modal-actions">
+            <button class="btn-standard-ghost w-100" id="confirm_modal_cancel" type="button">Cancel</button>
+            <button class="btn-brand w-100" id="confirm_modal_confirm" type="button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Using SheetJS for client-side Excel parsing -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="~/apps/modules/timesheet/js/master-holiday.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            await initHolidayEdit();
+        });
+    </script>
+}

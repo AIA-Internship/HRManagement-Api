@@ -32,8 +32,12 @@ public class SaveDailyTimesheetRequestDto
     /// <summary>Date in ISO 8601 format (yyyy-MM-dd).</summary>
     public string Date { get; set; } = string.Empty;
 
+    /// <summary>working, holiday, or off.</summary>
+    public string DayType { get; set; } = "working";
+
     public List<TimesheetEntryRowDto> Entries { get; set; } = new();
 }
+
 
 // ── Timesheet Submission ─────────────────────────────────────────────────────
 
@@ -77,6 +81,7 @@ public class CreateProjectRequestDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string ProjectLeader { get; set; } = string.Empty;
 }
 
 /// <summary>Payload for updating an existing project (supervisor only).</summary>
@@ -84,9 +89,31 @@ public class UpdateProjectRequestDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string ProjectLeader { get; set; } = string.Empty;
 
     /// <summary>0 = Running, 1 = Finished.</summary>
     public int Status { get; set; }
+}
+
+/// <summary>
+/// Single project row in a bulk upsert payload.
+/// Id = null means "create new"; Id > 0 means "update existing".
+/// </summary>
+public class ProjectUpsertItemDto
+{
+    public int? Id { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string ProjectLeader { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+}
+
+/// <summary>
+/// Payload for the Edit Project page — replaces the full project list in one call.
+/// Existing IDs not present in the list will be soft-deleted.
+/// </summary>
+public class BulkUpsertProjectsRequestDto
+{
+    public List<ProjectUpsertItemDto> Projects { get; set; } = new();
 }
 
 // ── To-Do Tasks ──────────────────────────────────────────────────────────────

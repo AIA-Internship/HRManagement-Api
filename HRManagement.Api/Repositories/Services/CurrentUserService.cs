@@ -12,9 +12,9 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
     
-    public string? Email => _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+    public string? Email => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value;
     
-    public string? Role => _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
+    public string? Role => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
 
     public int UserId
     {

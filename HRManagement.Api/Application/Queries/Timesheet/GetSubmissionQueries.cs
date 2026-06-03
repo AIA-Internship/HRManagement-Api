@@ -17,7 +17,7 @@ public class GetSubmissionStatusQuery(int year, int month)
     public int Month { get; } = month;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetSubmissionRepository submissionRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetSubmissionStatusQuery, ApiResponse<SubmissionStatusDto>>
     {
@@ -26,8 +26,8 @@ public class GetSubmissionStatusQuery(int year, int month)
             CancellationToken cancellationToken)
         {
             var employeeId = currentUserService.UserId;
-            var submission = await timesheetRepository.GetSubmissionAsync(employeeId, request.Year, request.Month);
-
+            var submission = await submissionRepository.GetSubmissionAsync(employeeId, request.Year, request.Month);
+ 
             var result = submission == null
                 ? new SubmissionStatusDto { Year = request.Year, Month = request.Month, Status = "Not Submitted" }
                 : new SubmissionStatusDto
@@ -40,10 +40,10 @@ public class GetSubmissionStatusQuery(int year, int month)
                     ReviewedDate = submission.ReviewedDate?.ToString("yyyy-MM-dd HH:mm"),
                     RevisionNote = submission.RevisionNote
                 };
-
+ 
             return ApiHelperResponse.Success("Submission status retrieved successfully.", result);
         }
-
+ 
         private static string MapStatus(int status) => status switch
         {
             0 => "Waiting for Approval",
@@ -53,16 +53,16 @@ public class GetSubmissionStatusQuery(int year, int month)
         };
     }
 }
-
+ 
 // ── Submission History ────────────────────────────────────────────────────────
-
+ 
 /// <summary>
 /// Returns the full submission history for the logged-in employee.
 /// </summary>
 public class GetSubmissionHistoryQuery : IRequest<ApiResponse<List<SubmissionHistoryItemDto>>>
 {
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetSubmissionRepository submissionRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetSubmissionHistoryQuery, ApiResponse<List<SubmissionHistoryItemDto>>>
     {
@@ -71,7 +71,7 @@ public class GetSubmissionHistoryQuery : IRequest<ApiResponse<List<SubmissionHis
             CancellationToken cancellationToken)
         {
             var employeeId = currentUserService.UserId;
-            var submissions = await timesheetRepository.GetSubmissionsByEmployeeAsync(employeeId);
+            var submissions = await submissionRepository.GetSubmissionsByEmployeeAsync(employeeId);
 
             var result = submissions.Select(s => new SubmissionHistoryItemDto
             {

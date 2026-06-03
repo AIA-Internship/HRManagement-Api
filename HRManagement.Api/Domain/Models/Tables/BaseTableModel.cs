@@ -28,5 +28,12 @@ namespace HRManagement.Api.Domain.Models.Tables
             this.CreatedBy = actionerId;
             this.CreatedUtcDate = DateTime.UtcNow.AddHours(7);
         }
+
+        public void MarkAsDeleted(long actionerId)
+        {
+            this.IsDeleted = true;
+            this.ModifiedBy = actionerId;
+            this.ModifiedUtcDate = DateTime.UtcNow.AddHours(7);
+        }
     }
-}
+}

@@ -18,6 +18,8 @@ public interface IApplicationDbContext
     public DbSet<TimesheetSubmission> TimesheetSubmissions { get; set; }
     public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }
     public DbSet<TodoTask> TodoTasks { get; set; }
+    public DbSet<TimesheetHoliday> TimesheetHolidays { get; set; }
+
     
     public DbSet<EmployeeAttachment> EmployeeAttachments { get; set; }
     public DbSet<Role> Roles { get; set; }

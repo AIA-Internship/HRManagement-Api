@@ -23,6 +23,9 @@ public class TimesheetEntry : BaseTableModel
     /// <summary>0 = Office, 1 = WFH, 2 = Meeting Room</summary>
     public int Location { get; private set; }
 
+    /// <summary>working, holiday, off</summary>
+    public string DayType { get; private set; } = "working";
+
     // Relationship status: Logic-only. Not mapped in the physical database schema.
     [NotMapped]
     public Employee Employee { get; set; } = null!;
@@ -42,7 +45,8 @@ public class TimesheetEntry : BaseTableModel
         string taskDescription,
         int projectLeadId,
         int location,
-        long actionerId)
+        long actionerId,
+        string dayType = "working")
     {
         EmployeeId = employeeId;
         EntryDate = entryDate;
@@ -52,6 +56,7 @@ public class TimesheetEntry : BaseTableModel
         TaskDescription = taskDescription;
         ProjectLeadId = projectLeadId;
         Location = location;
+        DayType = dayType;
 
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);

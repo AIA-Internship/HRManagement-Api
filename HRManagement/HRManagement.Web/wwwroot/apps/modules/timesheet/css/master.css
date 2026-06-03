@@ -1,0 +1,302 @@
+/* ============================================================
+   MASTER MODULE — AIA HR MANAGEMENT
+   Covers: Project & Holiday management pages
+   Font system matches: supervisor-review.css (Inter, same scale)
+   ============================================================ */
+
+/* ── Page Container ────────────────────────────────────────── */
+.master-page-container {
+    padding: 28px 32px;
+    background-color: #F4F6F9;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── AIA Table Card ────────────────────────────────────────── */
+.master-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #EAECF0;
+    box-shadow: 0 1px 4px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.03);
+    overflow: hidden;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease;
+}
+.page-wrapper-stretch {
+    min-height: calc(100vh - 130px);
+}
+.master-card:hover {
+    box-shadow: 0 2px 8px rgba(16,24,40,0.06), 0 8px 28px rgba(16,24,40,0.05);
+}
+
+
+/* ── AIA Table ─────────────────────────────────────────────── */
+.master-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.master-table thead tr {
+    background: #F8FAFC;
+}
+.master-table th {
+    /* Matches .breakdown-table th: 0.72rem / 700 / uppercase */
+    padding: 13px 28px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9EA5B2;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    text-align: left;
+    border-bottom: 1px solid #EAECF0;
+    white-space: nowrap;
+}
+.master-table td {
+    /* Matches .breakdown-table td: 0.88rem / 600 */
+    padding: 16px 28px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #F4F6F9;
+    vertical-align: middle;
+}
+.master-table tbody tr:last-child td { border-bottom: none; }
+.master-table tbody tr { transition: all 0.2s ease; }
+.master-table tbody tr:hover { 
+    background: #FAFBFC; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16,24,40,0.02);
+}
+
+/* ── Row Number ────────────────────────────────────────────── */
+.row-num {
+    /* Matches .breakdown-table td:first-child: 0.75rem / 700 */
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #C4CAD4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 36px;
+}
+
+/* ── Project Name Cell ─────────────────────────────────────── */
+.project-name-cell {
+    /* Matches .missing-dash-name: 0.9rem / 600 */
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0D0F1C;
+}
+
+/* ── Project Leader Badge ──────────────────────────────────── */
+.leader-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #F8FAFC;
+    border: 1px solid #EAECF0;
+    border-radius: 20px;
+    padding: 5px 12px 5px 6px;
+    /* Matches .missing-dash-period: 0.88rem / 500 */
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #374151;
+}
+.leader-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #D31145;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+/* ── Empty State ───────────────────────────────────────────── */
+.master-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #FAFBFC;
+}
+.master-empty-state .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #FFF5F8;
+    color: #D31145;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+.master-empty-state .empty-state-icon i {
+    font-size: 2rem;
+    color: #D31145;
+    margin: 0;
+}
+.master-empty-state h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0D0F1C;
+    margin-bottom: 8px;
+}
+.master-empty-state p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6B7280;
+    margin: 0 auto;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+/* ── Edit Form Inputs ──────────────────────────────────────── */
+.edit-row-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0D0F1C;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+.edit-row-input::placeholder { color: #C4CAD4; font-weight: 500; }
+.edit-row-input:focus { 
+    background: #fff; 
+    border-color: #D31145;
+    box-shadow: 0 0 0 3px rgba(211,17,69,0.06);
+}
+.edit-row-input.is-invalid { border-color: #F1416C; background: #FFF5F8; }
+
+.edit-row-input[readonly] {
+    cursor: default;
+    color: #374151;
+}
+.edit-row-input[readonly]:focus {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.edit-row-edit, .edit-row-delete {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #C4CAD4;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.edit-row-edit:hover { background: #F0F4F8; color: #0093E9; }
+.edit-row-delete:hover { background: #FFF5F8; color: #D31145; }
+
+
+
+.edit-project-footer {
+    padding: 12px 0 24px 0;
+}
+
+
+/* ── Action Bar ────────────────────────────────────────────── */
+.master-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 28px;
+    border-top: 1px solid #F4F6F9;
+    background: #fff;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+}
+
+/* ── Confirmation Modal ────────────────────────────────────── */
+.confirm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 9000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+.confirm-modal-backdrop.active { display: flex; }
+.confirm-modal-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 40px 28px 40px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.14);
+    text-align: center;
+    animation: confirmPop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes confirmPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+.confirm-modal-title {
+    /* Matches .chart-title: 1.05rem / 700 */
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0D0F1C;
+    margin-bottom: 10px;
+    letter-spacing: -0.1px;
+}
+.confirm-modal-desc {
+    /* Matches .approval-metric-label: 0.88rem / 500 */
+    font-size: 0.88rem;
+    color: #6B7280;
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+.confirm-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+.confirm-modal-actions .btn-standard-ghost,
+.confirm-modal-actions .btn-brand {
+    flex: 1;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 0.9rem;
+}
+
+.master-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: #0D0F1C;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    /* Matches button label: 0.85rem / 700 */
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    letter-spacing: 0.1px;
+}
+.master-toast.show { transform: translateY(0); opacity: 1; }
+.master-toast.success { background: #10b981; }
+.master-toast.error { background: #D31145; }

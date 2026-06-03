@@ -17,4 +17,28 @@ public class ApiResponse<T> : ApiResponse
 {
     [JsonPropertyOrder(99)]
     public new T? Content { get; set; }
+
+    public static ApiResponse<T> Success(string message, T? content = default)
+    {
+        return new ApiResponse<T>
+        {
+            StatusMessage = message,
+            Content = content,
+            IsError = false,
+            StatusCode = 200
+        };
+    }
+
+    public static ApiResponse<T> Failed(string message, int statusCode = 400)
+    {
+        return new ApiResponse<T>
+        {
+            Title = "Error",
+            StatusMessage = message,
+            IsError = true,
+            StatusCode = statusCode
+        };
+    }
 }
+
+

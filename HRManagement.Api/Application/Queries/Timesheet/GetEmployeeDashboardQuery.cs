@@ -12,7 +12,9 @@ namespace HRManagement.Api.Application.Queries.Timesheet;
 public class GetEmployeeDashboardQuery : IRequest<ApiResponse<DashboardResponseDto>>
 {
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
+        ITimesheetSubmissionRepository submissionRepository,
+        ITodoTaskRepository todoRepository,
         IApplicationDbContext appDbContext,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetEmployeeDashboardQuery, ApiResponse<DashboardResponseDto>>
@@ -25,14 +27,14 @@ public class GetEmployeeDashboardQuery : IRequest<ApiResponse<DashboardResponseD
             var today = DateTime.UtcNow.AddHours(7);
             var year = today.Year;
             var month = today.Month;
-
+ 
             // 1. Sequentially fetch data to avoid DbContext concurrency issues
             var employee = await appDbContext.Employees.FindAsync(new object[] { employeeId }, cancellationToken);
             var employmentInfo = await appDbContext.EmploymentInformation.FirstOrDefaultAsync(ei => ei.EmployeeId == employeeId, cancellationToken);
-            var submission = await timesheetRepository.GetSubmissionAsync(employeeId, year, month);
-            var monthlyEntries = await timesheetRepository.GetEntriesByMonthAsync(employeeId, year, month);
-            var missingDates = await timesheetRepository.GetMissingEntryDatesAsync(employeeId, year, month);
-            var todoTasks = await timesheetRepository.GetTodoTasksByEmployeeAsync(employeeId);
+            var submission = await submissionRepository.GetSubmissionAsync(employeeId, year, month);
+            var monthlyEntries = await entryRepository.GetEntriesByMonthAsync(employeeId, year, month);
+            var missingDates = await entryRepository.GetMissingEntryDatesAsync(employeeId, year, month);
+            var todoTasks = await todoRepository.GetTodoTasksByEmployeeAsync(employeeId);
 
             // 2. Days until end of month (submission deadline)
             var lastDay = new DateTime(year, month, DateTime.DaysInMonth(year, month));

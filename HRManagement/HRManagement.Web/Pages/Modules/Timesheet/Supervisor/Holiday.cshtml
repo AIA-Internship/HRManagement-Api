@@ -1,0 +1,92 @@
+@page "/Timesheet/Supervisor/Holiday"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.HolidayModel
+@using HRManagement.Web.Models.Shared
+@{
+    ViewData["Title"] = "Holiday Master";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/master.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Master Holiday",
+                Subtitle = "View and manage public holidays",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Master Holiday" }
+                },
+                RenderActions = Html.Raw(@"
+                    <a href='/Timesheet/Supervisor/Holiday/Edit' class='btn-brand fw-boldest px-6 py-3 shadow-sm'>
+                        <i class='bi bi-pencil-square me-2'></i> Edit Holiday
+                    </a>
+                ")
+            })
+
+            <!-- HOLIDAY LIST CARD -->
+            <div class="master-card mt-5">
+                <div id="holiday_table_wrap" style="overflow-x:auto; display:none;">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">#</th>
+                                <th style="width:180px;">DATE</th>
+                                <th>HOLIDAY NAME</th>
+                                <th>DESCRIPTION</th>
+                            </tr>
+                        </thead>
+
+
+                        <tbody id="holiday_list_tbody">
+                            <!-- Data populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State (Now outside table for perfect centering) -->
+                <div id="holiday_empty_state" class="text-center py-20" style="display:none;">
+                    <div class="mb-5">
+                        <i class="bi bi-calendar-x" style="font-size: 4rem; color: #E4E7EB;"></i>
+                    </div>
+                    <h3 class="fw-bolder text-dark">No Holidays Configured</h3>
+                    <p class="text-gray-400 fs-6 fw-bold">Click <strong>Edit Holiday</strong> to start managing your list.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="holiday_loading" class="text-center py-20">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-4 text-gray-600 fw-bold">Fetching holidays...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="confirm-modal-backdrop" id="confirm_modal_backdrop">
+    <div class="confirm-modal-box">
+        <div class="confirm-modal-title">Confirmation</div>
+        <p class="confirm-modal-desc" id="confirm_modal_desc">Are you sure?</p>
+        <div class="confirm-modal-actions">
+            <button class="btn-standard-ghost w-100" id="confirm_modal_cancel" type="button">Cancel</button>
+            <button class="btn-brand w-100" id="confirm_modal_confirm" type="button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/master-holiday.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            await initHolidayList();
+        });
+    </script>
+}

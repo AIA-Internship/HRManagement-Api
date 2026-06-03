@@ -1,0 +1,102 @@
+@page "/Timesheet/Supervisor/Projects/Edit"
+@model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.ProjectsEditModel
+@using HRManagement.Web.Models.Shared
+@{
+    ViewData["Title"] = "Edit Project";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/master.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
+            <!-- DEBUG BANNER -->
+            <div id="debug_token_banner" style="display:none; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center;">
+                ⚠️ DEBUG: Access Token is MISSING! Please login again.
+            </div>
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Edit Project",
+                Subtitle = "Manage your master project list",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
+                    new BreadcrumbItem { Title = "Master Project", Url = "/Timesheet/Supervisor/Projects" },
+                    new BreadcrumbItem { Title = "Edit Project" }
+                },
+                RenderActions = Html.Raw(@"
+                    <button class='btn-brand' id='btn_add_project' type='button' style='padding: 10px 20px; font-weight: 700; border-radius: 8px;'>
+                        <i class='bi bi-plus-lg me-2'></i> Add New Project
+                    </button>
+                ")
+            })
+
+            <!-- EDIT CARD -->
+            <div class="master-card mt-5">
+
+                <div id="project_table_wrap" style="overflow-x:auto;">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">#</th>
+                                <th>Project Name <span class="text-danger">*</span></th>
+                                <th>Project Lead <span class="text-danger">*</span></th>
+                                <th style="width:100px;text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="project_rows_container">
+                            <tr>
+                                <td colspan="4" class="text-center py-8" id="rows_loading" style="color:#C4CAD4;font-size:0.85rem;font-weight:600;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                                        <span class="ms-2">Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="master-action-bar">
+                    <button class="btn-standard-ghost" id="btn_discard_changes" type="button">
+                        <i class="bi bi-x-circle"></i> Discard
+                    </button>
+                    <button class="btn-brand" id="btn_update_project" type="button">
+                        <i class="bi bi-check2-circle"></i> Save Projects
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="confirm-modal-backdrop" id="confirm_modal_backdrop">
+    <div class="confirm-modal-box">
+        <div class="confirm-modal-title">Confirmation</div>
+        <p class="confirm-modal-desc" id="confirm_modal_desc">Are you sure?</p>
+        <div class="confirm-modal-actions">
+            <button class="btn-standard-ghost w-100" id="confirm_modal_cancel" type="button">Cancel</button>
+            <button class="btn-brand w-100" id="confirm_modal_confirm" type="button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/timesheet/js/master-project.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('aia_jwt_token');
+            const banner = document.getElementById('debug_token_banner');
+            if (!token) {
+                if (banner) banner.style.display = 'block';
+                console.error("CRITICAL: Token is missing from localStorage!");
+            }
+            document.getElementById('rows_loading')?.remove();
+            await initEditProject();
+        });
+    </script>
+}

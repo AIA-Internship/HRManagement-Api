@@ -35,8 +35,12 @@ var validAudiences = new[]
     jwtSettings.Audience1,
     jwtSettings.Audience2,
     jwtSettings.Audience3,
-    jwtSettings.Audience4
-}.Where(a => !string.IsNullOrWhiteSpace(a)).ToArray();
+    jwtSettings.Audience4,
+    "https://localhost:7060", // Explicitly add the Web App's HTTPS origin
+    "http://localhost:7060",
+    "https://localhost:5060",
+    "http://localhost:5060"
+}.Where(a => !string.IsNullOrWhiteSpace(a)).Distinct().ToArray();
 
 // ==========================================
 // 2. JWT Configuration
@@ -67,6 +71,9 @@ builder.Services.AddAuthentication(options =>
     {
         OnAuthenticationFailed = context =>
         {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError("JWT Authentication Failed: {Message}. Exception: {Exception}", context.Exception.Message, context.Exception.ToString());
+            
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
             var result = JsonSerializer.Serialize(new ApiResponse

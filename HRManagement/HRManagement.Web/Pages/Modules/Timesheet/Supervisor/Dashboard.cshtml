@@ -1,111 +1,163 @@
 @page "/Timesheet/Supervisor/Dashboard"
 @model HRManagement.Web.Pages.Modules.Timesheet.Supervisor.DashboardModel
+@using HRManagement.Web.Models.Shared
 @{
     ViewData["Title"] = "Supervisor Dashboard";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-review.css" asp-append-version="true" />
 }
 
-<div class="dashboard-wrapper">
-    <!-- Top Bar / Header -->
-    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
-        Title = "Supervisor Dashboard",
-        Subtitle = "Track intern progress and manage timesheet approvals",
-        Id = "page_title_text",
-        Breadcrumbs = new List<BreadcrumbItem> {
-            new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
-            new BreadcrumbItem { Title = "Overview" }
-        },
-        RenderActions = Html.Raw("<div class='d-flex align-items-center gap-3 bg-white px-5 py-3 rounded-3 border'><div class='symbol-circle bg-light-brand text-brand' style='width:35px; height:35px;'><i class='bi bi-people-fill fs-6'></i></div><div><div class='fs-tiny fw-bold text-muted ls-1'>ACTIVE MEMBERS</div><div class='fs-5 fw-bold text-dark lh-1' id='active_intern_count'>0</div></div></div>")
-    })
+<div class="supervisor-dashboard-container">
 
-    <div class="row g-7 mt-2">
-        <!-- MISSING TIMESHEETS -->
-        <div class="col-xl-6">
-            <div class="aia-card">
-                <div class="card-header border-0 pt-6 pb-2">
-                    <h3><i class="bi bi-info-circle text-danger me-2"></i> Missing Submissions</h3>
-                    <span class="badge badge-light-danger fw-bold fs-tiny">URGENT</span>
-                </div>
-                <div class="card-body card-body-scroll pt-4" id="missing_list_container">
-                    <div class="text-center py-10 opacity-25 fw-bold">Checking...</div>
-                </div>
-                <div class="p-6 text-center border-top">
-                    <button class="btn btn-sm btn-primary-red w-75" onclick="window.location.href='/Timesheet/Supervisor/Review'">Go to Submission Review</button>
-                </div>
-            </div>
-        </div>
+    <!-- BREADCRUMB -->
+    <nav class="mb-5" aria-label="breadcrumb">
+        <ol class="breadcrumb" style="background: none; padding: 0; margin: 0; font-size: 0.8rem; font-weight: 600; gap: 6px;">
+            <li class="breadcrumb-item" style="color: #9EA5B2;">
+                <a href="/Timesheet/Supervisor/Dashboard" style="color: #9EA5B2; text-decoration: none;">Timesheet</a>
+            </li>
+            <li class="breadcrumb-item active" style="color: #D31145;" aria-current="page">Dashboard</li>
+        </ol>
+    </nav>
 
-        <!-- PENDING APPROVALS -->
-        <div class="col-xl-6">
-            <div class="aia-card">
-                <div class="card-header border-0 pt-6 pb-2">
-                    <h3><i class="bi bi-person-check text-brand me-2"></i> Pending Approvals</h3>
-                    <span class="badge badge-light fw-bold fs-7" id="needs_review_count_stat">0 / 0</span>
-                </div>
-                <div class="card-body card-body-scroll pt-4" id="pending_approvals_list">
-                    <div class="text-center py-10 opacity-25 fw-bold">Loading...</div>
-                </div>
-                <div class="p-6 text-center border-top">
-                    <button class="btn btn-sm btn-light-grey w-75" onclick="window.location.href='/Timesheet/Supervisor/Report'">View Full History</button>
-                </div>
-            </div>
-        </div>
+    <!-- 1. GREETING CARD -->
+    <div class="greeting-card">
+        <h1 id="welcome_text">Good Morning, Supervisor</h1>
+        <p id="active_intern_count_label">0 active members</p>
     </div>
 
-    <!-- HOURS BREAKDOWN -->
-    <div class="aia-card mt-6">
-        <div class="card-header border-0 pt-7">
-            <h3><i class="bi bi-calendar3 text-brand me-2"></i> Intern Hours Breakdown</h3>
-            <select id="intern_filter_dropdown" class="form-select form-select-sm" style="width: 200px;">
-                <option value="">All Interns</option>
+    <!-- 2. TWO CARDS ROW -->
+    <div class="row g-5 equal-height-row mb-0">
+
+        <!-- Missing Timesheets -->
+        <div class="col-lg-6 equal-height-col">
+            <div class="dashboard-card" style="margin-bottom: 24px; flex: 1;">
+                <div class="card-header-clean">
+                    <div class="card-title-clean">
+                        <i class="bi bi-exclamation-circle"></i> Missing Timesheets
+                    </div>
+                </div>
+                <div class="card-body-clean" id="missing_list_container">
+                    <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Hub -->
+        <div class="col-lg-6 equal-height-col">
+            <div class="dashboard-card" style="margin-bottom: 24px; flex: 1;">
+                <div class="card-header-clean">
+                    <div class="card-title-clean">
+                        <i class="bi bi-send"></i> Intern's Timesheet Approval
+                    </div>
+                </div>
+                <div class="card-body-clean" style="padding-top: 8px;">
+                    <div class="approval-metric-row">
+                        <span class="approval-metric-label">Months</span>
+                        <span class="approval-metric-value" id="approval_month_label">— —</span>
+                    </div>
+                    <div class="approval-metric-row">
+                        <span class="approval-metric-label">Waiting for Approval</span>
+                        <span class="approval-metric-value" id="approval_count_label">0/0</span>
+                    </div>
+                    <button class="btn-update-approval" onclick="window.location.href='/Timesheet/Supervisor/Report'">
+                        Update Approval
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 3. HOURS BREAKDOWN TABLE -->
+    <div class="breakdown-card">
+        <div class="breakdown-header">
+            <div class="breakdown-title">
+                <i class="bi bi-clock-history"></i> Intern Hours Breakdown
+            </div>
+            <select id="intern_filter_dropdown" class="form-select form-select-sm fw-bold"
+                    style="width: 160px; border-radius: 8px; font-size: 0.82rem; border-color: #EAECF0; color: #4B5563;">
+                <option value="">All Intern</option>
             </select>
         </div>
-        <div class="table-responsive px-5">
-            <table class="table-custom">
-                <thead id="breakdown_header_row">
-                    <!-- JS Injected -->
+        <div style="overflow-x: auto;">
+            <table class="breakdown-table">
+                <thead>
+                    <tr id="breakdown_header_row"></tr>
                 </thead>
-                <tbody id="breakdown_body">
-                    <!-- JS Injected -->
-                </tbody>
+                <tbody id="breakdown_body"></tbody>
             </table>
-        </div>
-        <div class="p-6 text-center border-top">
-            <span class="text-muted fs-tiny fw-bold">Totals based on approved monthly logs.</span>
         </div>
     </div>
 
-    <!-- DONUT CHART -->
-    <div class="aia-card mt-6 mb-0"> <!-- Removed mb-10 and set to 0. attempt 26 -->
-        <div class="card-header border-0 pt-7">
-            <h3><i class="bi bi-activity text-brand me-2"></i> Activity Allocation</h3>
-        </div>
-        <div class="card-body py-10">
+    <!-- 4. MONTHLY ALLOCATION CHART -->
+    <div class="dashboard-card" style="margin-bottom: 0;">
+        <div class="chart-container">
+            <div class="chart-title">Intern Monthly Application Allocation</div>
             <div class="row align-items-center">
-                <div class="col-lg-5 text-center">
-                    <div class="position-relative d-inline-block" style="width: 250px; height: 250px;">
+                <div class="col-lg-5 d-flex justify-content-center">
+                    <div class="donut-wrapper">
                         <canvas id="allocation_donut_chart"></canvas>
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
-                            <div class="fs-2 fw-bold text-dark">100%</div>
-                            <div class="fs-tiny fw-bold text-muted mt-1">TOTAL USAGE</div>
+                        <div class="donut-text-center">
+                            <div class="donut-val" id="donut_total_value">0%</div>
+                            <div class="donut-lbl">Total Usage</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-7">
-                    <div id="donut_legends" class="ps-10">
-                        <!-- JS Injected -->
-                    </div>
+                <div class="col-lg-7 mt-5 mt-lg-0 ps-lg-6">
+                    <div id="donut_legends"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- LIVE ACTIVITY FEED -->
+    <div class="row mt-8">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header-clean">
+                    <h3 class="card-title-clean">
+                        <i class="bi bi-broadcast text-danger pulse-effect"></i> Live Employee Activity
+                    </h3>
+                    <div class="d-flex align-items-center gap-4">
+                        <span class="badge badge-light-danger fw-boldest px-3 py-1 fs-9">LIVE MONITORING</span>
+                        <button class="btn btn-icon btn-sm btn-light-primary rounded-circle" onclick="initSupervisorDashboard()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body-clean">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
+                            <thead>
+                                <tr class="fw-boldest text-muted fs-8 text-uppercase">
+                                    <th class="min-w-150px">Employee</th>
+                                    <th class="min-w-140px">Project</th>
+                                    <th class="min-w-200px">Latest Task Description</th>
+                                    <th class="min-w-100px text-center">Duration</th>
+                                    <th class="min-w-100px text-end">Log Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live_activity_tbody">
+                                <!-- Loaded via JS -->
+                                <tr><td colspan="5" class="text-center py-10 text-muted">Listening for activities...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js" asp-append-version="true"></script>
     <script src="~/apps/modules/timesheet/js/dashboard.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initSupervisorDashboard === 'function') initSupervisorDashboard();
+        });
+    </script>
 }

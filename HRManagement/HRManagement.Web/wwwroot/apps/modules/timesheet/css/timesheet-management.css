@@ -574,7 +574,7 @@
     width: 100%;
     background: #fff;
     border: 1px solid #E1E3EA;
-    border-radius: 10px;
+    border-radius: 6px;
     padding: 10px 15px;
     font-size: 0.95rem;
     font-weight: 700;
@@ -608,7 +608,7 @@ select.entry-input {
 
 .entry-table-wrap {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 8px;
     border: 1px solid #F1F4F9;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
 }
@@ -1407,11 +1407,12 @@ select.entry-input {
 /* --- DAY TYPE SELECTION (HEADER INTEGRATED) --- */
 .day-type-group.header-integrated {
     display: flex;
-    gap: 4px;
-    background: #F9FAFB;
-    padding: 4px;
-    border-radius: 12px;
-    border: 1px solid #EFF2F5;
+    gap: 15px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none !important;
 }
 
 .day-type-group input {
@@ -1422,16 +1423,17 @@ select.entry-input {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 6px 4px 10px 4px;
+    border-radius: 0;
     cursor: pointer;
     background: transparent;
-    color: #7E8299;
-    font-size: 0.8rem;
+    color: #A1A5B7;
+    font-size: 0.9rem;
     font-weight: 800;
     transition: all 0.2s ease;
     user-select: none;
     line-height: 1;
+    border-bottom: 3px solid transparent;
 }
 
 .day-type-btn i {
@@ -1440,29 +1442,25 @@ select.entry-input {
 }
 
 .day-type-btn:hover {
-    background: rgba(255,255,255,0.8);
     color: #3F4254;
 }
 
 /* Selected States */
 input[id="day_working"]:checked + .day-type-btn {
-    background: #fff;
     color: var(--brand-red);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    border-bottom-color: var(--brand-red);
 }
 input[id="day_working"]:checked + .day-type-btn i { color: var(--brand-red); }
 
 input[id="day_holiday"]:checked + .day-type-btn {
-    background: #fff;
     color: #7239EA;
-    box-shadow: 0 3px 10px rgba(114, 57, 234, 0.1);
+    border-bottom-color: #7239EA;
 }
 input[id="day_holiday"]:checked + .day-type-btn i { color: #7239EA; }
 
 input[id="day_leave"]:checked + .day-type-btn {
-    background: #fff;
     color: #F1416C;
-    box-shadow: 0 3px 10px rgba(241, 65, 108, 0.1);
+    border-bottom-color: #F1416C;
 }
 input[id="day_leave"]:checked + .day-type-btn i { color: #F1416C; }
 
@@ -1496,3 +1494,52 @@ input[id="day_leave"]:checked + .day-type-btn i { color: #F1416C; }
 .entry-table-wrap.on-leave .daily-master-table thead {
     background: rgba(241, 65, 108, 0.05);
 }
+
+/* STICKY SAVE FOOTER (EXACT AIA MATCH) */
+.save-footer-sticky {
+    position: fixed;
+    bottom: 0;
+    left: 265px; /* Adjusted to match Sidebar exactly */
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #EFF2F5;
+    padding: 15px 0;
+    z-index: 1000;
+    animation: slideUp 0.4s ease-out;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.04);
+}
+
+
+
+.fw-950 { font-weight: 950 !important; }
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.save-footer-sticky .container-fluid {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.btn-add-row {
+    background: #fff;
+    border: 1px solid #3F4254;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #3F4254;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.btn-add-row:hover {
+    background: #3F4254;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+

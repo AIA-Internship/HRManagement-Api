@@ -1,5 +1,5 @@
 @{
-    var currentPath = ViewContext.HttpContext.Request.Path.Value;
+    var currentPath = ViewContext.HttpContext.Request.Path.Value ?? "";
 }
 
 <style>
@@ -134,7 +134,7 @@
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
                                     </span>
-                                    <span class="menu-title">Daily Log</span>
+                                    <span class="menu-title">Logbook</span>
                                 </a>
                             </div>
                             <div class="menu-item">
@@ -152,44 +152,76 @@
                     <div id="supervisor_section" style="display: none;">
                         <div class="menu-item pt-5 pb-2"></div>
 
-                        <!-- Dashboard -->
-                        <div class="menu-item">
-                            <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Dashboard" ? "active" : "")" href="/Timesheet/Supervisor/Dashboard">
+                        <!-- Timesheet Supervisor Submenu -->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(currentPath.Contains("/Timesheet/Supervisor") ? "here show" : "")">
+                            <span class="menu-link">
                                 <span class="menu-icon">
-                                    <i class="bi bi-grid fs-3"></i>
+                                    <i class="ki-duotone ki-calendar-8 fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                        <span class="path3"></span>
+                                        <span class="path4"></span>
+                                        <span class="path5"></span>
+                                        <span class="path6"></span>
+                                    </i>
                                 </span>
-                                <span class="menu-title" style="font-size: 1.1rem; font-weight: 600;">Dashboard</span>
-                            </a>
-                        </div>
+                                <span class="menu-title" style="font-size: 1.1rem; font-weight: 600;">Timesheet</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            
+                            <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/Timesheet/Supervisor") ? "show" : "")">
+                                
+                                <!-- Dashboard -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Dashboard" ? "active" : "")" href="/Timesheet/Supervisor/Dashboard">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Dashboard</span>
+                                    </a>
+                                </div>
 
-                        <!-- Timesheet -->
-                        <div class="menu-item">
-                            <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Timesheet" ? "active" : "")" href="/Timesheet/Supervisor/Timesheet">
-                                <span class="menu-icon">
-                                    <i class="bi bi-calendar4 fs-3"></i>
-                                </span>
-                                <span class="menu-title" style="font-size: 1.1rem; font-weight: 500;">Timesheet</span>
-                            </a>
-                        </div>
+                                <!-- Timesheet / Logbook -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Timesheet" ? "active" : "")" href="/Timesheet/Supervisor/Timesheet">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Employee Timesheet</span>
+                                    </a>
+                                </div>
 
-                        <!-- Reports -->
-                        <div class="menu-item">
-                            <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Report" ? "active" : "")" href="/Timesheet/Supervisor/Report">
-                                <span class="menu-icon">
-                                    <i class="bi bi-clipboard2-check fs-3"></i>
-                                </span>
-                                <span class="menu-title" style="font-size: 1.1rem; font-weight: 500;">Reports</span>
-                            </a>
-                        </div>
+                                <!-- Approval Management -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Report" ? "active" : "")" href="/Timesheet/Supervisor/Report">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Approval Management</span>
+                                    </a>
+                                </div>
 
-                        <!-- Projects -->
-                        <div class="menu-item">
-                            <a class="menu-link @(currentPath == "/Timesheet/Supervisor/Projects" ? "active" : "")" href="javascript:void(0)">
-                                <span class="menu-icon">
-                                    <i class="bi bi-diagram-3 fs-3"></i>
-                                </span>
-                                <span class="menu-title" style="font-size: 1.1rem; font-weight: 500;">Projects</span>
-                            </a>
+                                <!-- Master Project -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath.StartsWith("/Timesheet/Supervisor/Projects") ? "active" : "")" href="/Timesheet/Supervisor/Projects">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Master Project</span>
+                                    </a>
+                                </div>
+
+                                <!-- Master Holiday -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath.StartsWith("/Timesheet/Supervisor/Holiday") ? "active" : "")" href="/Timesheet/Supervisor/Holiday">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Master Holiday</span>
+                                    </a>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
 

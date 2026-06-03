@@ -1,14 +1,324 @@
-.review-header-card { background: #fff; border-radius: 20px; padding: 30px; border: 1px solid #ECEFF4; margin-bottom: 2rem; }
+/* ============================================================
+   SUPERVISOR MODULE — AIA HR MANAGEMENT
+   Covers: Review page + Dashboard styles
+   ============================================================ */
+
+/* ── Review Page ───────────────────────────────────────────── */
+.review-header-card { background: #fff; border-radius: 12px; padding: 28px 32px; border: 1px solid #ECEFF4; margin-bottom: 2rem; box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
 .intern-profile { display: flex; align-items: center; gap: 20px; }
-.avatar-circle { width: 64px; height: 64px; border-radius: 50%; background: #D31145; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; }
-
+.avatar-circle { width: 64px; height: 64px; border-radius: 10px; background: #D31145; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; }
 .action-container { display: flex; gap: 12px; margin-top: 2rem; border-top: 1px solid #F1F4F9; padding-top: 2rem; }
-.btn-approve { background: #10b981; color: #fff; border: 0; padding: 12px 30px; border-radius: 12px; font-weight: 850; font-size: 0.85rem; transition: all 0.2s; }
-.btn-approve:hover { background: #059669; box-shadow: 0 5px 20px rgba(16,185,129,0.3); }
-
-.btn-revision { background: #F1F4F9; color: #3F4254; border: 1px solid #E1E3EA; padding: 12px 30px; border-radius: 12px; font-weight: 850; font-size: 0.85rem; }
+.btn-approve { background: #10b981; color: #fff; border: 0; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+.btn-approve:hover { background: #059669; }
+.btn-revision { background: #F1F4F9; color: #3F4254; border: 1px solid #E1E3EA; padding: 12px 30px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
 .btn-revision:hover { background: #E1E3EA; }
-
 .comment-cell { position: relative; cursor: pointer; }
-.comment-badge { position: absolute; top: -5px; right: -5px; background: var(--aia-red); color: #fff; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 900; }
+.comment-badge { position: absolute; top: -5px; right: -5px; background: #D31145; color: #fff; width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 900; }
 .comment-input-area { width: 100%; border: 1px solid #E1E3EA; border-radius: 8px; padding: 10px; font-size: 0.85rem; resize: none; margin-top: 5px; }
+
+/* ── Dashboard Layout ─────────────────────────────────────── */
+.supervisor-dashboard-container {
+    padding: 28px 32px;
+    background-color: #F4F6F9;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Equal-height flex rows */
+.equal-height-row { display: flex !important; flex-wrap: wrap; align-items: stretch; }
+.equal-height-col { display: flex !important; flex-direction: column; }
+
+/* ── Base Card ────────────────────────────────────────────── */
+.dashboard-card {
+    background: #FFFFFF;
+    border-radius: 14px;
+    border: 1px solid #EAECF0;
+    box-shadow: 0 1px 4px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.03);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease;
+}
+.dashboard-card:hover {
+    box-shadow: 0 2px 8px rgba(16,24,40,0.06), 0 8px 28px rgba(16,24,40,0.05);
+}
+
+/* ── Greeting Card ────────────────────────────────────────── */
+.greeting-card {
+    padding: 36px 40px 30px 40px;
+    border-radius: 14px;
+    border: 1px solid #EAECF0;
+    border-bottom: 5px solid #D31145;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.03);
+    margin-bottom: 24px;
+}
+.greeting-card h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0D0F1C;
+    margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+.greeting-card p {
+    font-size: 0.82rem;
+    color: #9EA5B2;
+    font-weight: 500;
+    margin: 10px 0 0 0;
+    letter-spacing: 0.1px;
+}
+
+/* ── Card Inner Sections ──────────────────────────────────── */
+.card-header-clean {
+    padding: 22px 28px 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-title-clean {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0D0F1C;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.card-title-clean i {
+    font-size: 1.1rem;
+    color: #9EA5B2;
+}
+.card-body-clean {
+    padding: 4px 28px 28px 28px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Missing Timesheets List ──────────────────────────────── */
+.missing-dash-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #F4F6F9;
+}
+.missing-dash-row:last-child { border-bottom: none; }
+.missing-dash-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0D0F1C;
+    min-width: 90px;
+}
+.missing-dash-period {
+    font-weight: 500;
+    font-size: 0.88rem;
+    color: #6B7280;
+    flex-grow: 1;
+    margin-left: 4px;
+}
+.btn-view-timesheet {
+    background-color: #D31145;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+.btn-view-timesheet:hover {
+    background-color: #B80F3D;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(211,17,69,0.25);
+}
+
+/* ── Approval Hub Card ────────────────────────────────────── */
+.approval-divider {
+    height: 1px;
+    background: #F4F6F9;
+    margin: 4px 0 16px 0;
+}
+.approval-metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #F4F6F9;
+}
+.approval-metric-row:last-of-type { border-bottom: none; }
+.approval-metric-label {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #9EA5B2;
+}
+.approval-metric-value {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #0D0F1C;
+    letter-spacing: 0.3px;
+}
+.btn-update-approval {
+    background: #D31145;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    width: 100%;
+    margin-top: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+}
+.btn-update-approval:hover {
+    background: #B80F3D;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(211,17,69,0.3);
+}
+
+/* ── Hours Breakdown Table Card ───────────────────────────── */
+.breakdown-card {
+    border: 1px solid #EAECF0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(16,24,40,0.04), 0 4px 16px rgba(16,24,40,0.03);
+}
+.breakdown-header {
+    background-color: #F4F6F9;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #EAECF0;
+}
+.breakdown-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0D0F1C;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.breakdown-title i { color: #9EA5B2; }
+
+/* Breakdown Table */
+.breakdown-table { width: 100%; border-collapse: collapse; }
+.breakdown-table thead tr {
+    background-color: #F8FAFC;
+}
+.breakdown-table th {
+    padding: 13px 28px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9EA5B2;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    text-align: center;
+    border-bottom: 1px solid #EAECF0;
+}
+.breakdown-table th:first-child { text-align: left; }
+.breakdown-table tbody tr {
+    transition: background 0.15s;
+}
+.breakdown-table tbody tr:hover { background: #FAFBFC; }
+.breakdown-table td {
+    padding: 16px 28px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0D0F1C;
+    text-align: center;
+    border-bottom: 1px solid #F4F6F9;
+}
+.breakdown-table tbody tr:last-child td { border-bottom: none; }
+.breakdown-table td:first-child {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #9EA5B2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.breakdown-table .val-zero {
+    color: #D1D5DB;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+/* ── Donut Chart Card ─────────────────────────────────────── */
+.chart-container { padding: 28px 40px 32px 40px; }
+.chart-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0D0F1C;
+    margin-bottom: 32px;
+    letter-spacing: -0.1px;
+}
+.donut-wrapper {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto;
+}
+.donut-text-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+.donut-val {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #0D0F1C;
+    line-height: 1;
+    margin-bottom: 5px;
+    letter-spacing: -1px;
+}
+.donut-lbl {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #9EA5B2;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+/* Chart Legend Pills */
+.legend-pill {
+    background: #F8FAFC;
+    border: 1px solid #EAECF0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    transition: background 0.15s;
+}
+.legend-pill:hover { background: #F0F3F8; }
+.legend-pill-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4B5563;
+}
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.legend-val {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0D0F1C;
+}

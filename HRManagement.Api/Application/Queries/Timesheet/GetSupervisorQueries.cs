@@ -1,9 +1,11 @@
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Domain.Models.Tables;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using HRManagement.Api.Domain.Models.Tables.MasterRole;
+
 
 namespace HRManagement.Api.Application.Queries.Timesheet;
 
@@ -17,7 +19,9 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
     public int? FilterEmployeeId { get; init; }
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetProjectRepository projectRepository,
+        ITimesheetEntryRepository entryRepository,
+        ITimesheetSubmissionRepository submissionRepository,
         IApplicationDbContext appDbContext,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetSupervisorDashboardQuery, ApiResponse<SupervisorDashboardResponseDto>>
@@ -64,15 +68,18 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
             
             var internIds = activeInterns.Select(i => i.Id).ToList();
 
-            // Project summary
-            var allProjects = await timesheetRepository.GetAllProjectsAsync();
-            var totalProjects = allProjects.Count;
-            var runningProjects = allProjects.Count(p => p.Status == 0);
-            var finishedProjects = allProjects.Count(p => p.Status == 1);
+            // Project summary - Optimized
+            var totalProjects = await appDbContext.TimesheetProjects.CountAsync(p => !p.IsDeleted, cancellationToken);
+            var runningProjects = await appDbContext.TimesheetProjects.CountAsync(p => p.Status == 0 && !p.IsDeleted, cancellationToken);
+            var finishedProjects = totalProjects - runningProjects;
 
-            // Pending approvals for MY interns
-            var pending = await timesheetRepository.GetPendingSubmissionsAsync();
-            pending = pending.Where(s => internIds.Contains(s.EmployeeId)).ToList();
+            // Pending approvals for MY interns - Optimized (Filter in SQL)
+            var pending = await appDbContext.TimesheetSubmissions
+                .AsNoTracking()
+                .Include(s => s.Employee)
+                .Where(s => internIds.Contains(s.EmployeeId) && s.Status == 0 && !s.IsDeleted)
+                .ToListAsync(cancellationToken);
+
             var pendingDtos = pending.Select(s => new PendingApprovalItemDto
             {
                 SubmissionId = s.Id,
@@ -84,40 +91,49 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
                 Status = "Waiting for Approval"
             }).ToList();
 
-            // 1. Missing Submissions (Current Month) — interns who haven't submitted
-            var submittedEmployeeIds = pending.Select(s => s.EmployeeId).ToHashSet();
-            // Also check history for this month
-            var history = await timesheetRepository.GetAllSubmissionsAsync();
-            var monthHistoryIds = history
-                .Where(s => s.Year == today.Year && s.Month == today.Month)
-                .Select(s => s.EmployeeId);
-            
-            foreach(var id in monthHistoryIds) submittedEmployeeIds.Add(id);
+            // 1. Missing Submissions (Current Month) - Optimized
+            var submittedIds = await appDbContext.TimesheetSubmissions
+                .AsNoTracking()
+                .Where(s => s.Year == today.Year && s.Month == today.Month && internIds.Contains(s.EmployeeId) && !s.IsDeleted)
+                .Select(s => s.EmployeeId)
+                .ToListAsync(cancellationToken);
+
+            var submittedSet = submittedIds.ToHashSet();
 
             var missingSubmissions = activeInterns
-                .Where(i => !submittedEmployeeIds.Contains(i.Id))
+                .Where(i => !submittedSet.Contains(i.Id))
                 .Select(i => new MissingSubmissionItemDto
                 {
                     EmployeeId = i.Id,
                     EmployeeName = i.FullName,
                     Year = today.Year,
                     Month = today.Month,
-                    OverdueDays = 0 // Placeholder
+                    OverdueDays = 0 
                 }).ToList();
 
             // 2. Pending Approvals Summary
             var pendingCount = pendingDtos.Count;
-            var totalPotentialSubmissions = activeInterns.Count; // Simplified logic
+            var totalPotentialSubmissions = activeInterns.Count;
 
-            // 3. Intern hours breakdown for current month (ONLY for my interns)
-            var allMonthEntries = await timesheetRepository
-                .GetAllEntriesByMonthForAllEmployeesAsync(today.Year, today.Month);
+            // 3. Intern hours breakdown (Optimized: Filter in SQL)
+            var startOfMonth = new DateOnly(today.Year, today.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
 
-            allMonthEntries = allMonthEntries.Where(e => internIds.Contains(e.EmployeeId)).ToList();
+            var filteredEntries = await appDbContext.TimesheetEntries
+                .AsNoTracking()
+                .Include(e => e.Employee)
+                .Include(e => e.Project)
+                .Where(e => internIds.Contains(e.EmployeeId) 
+                    && e.EntryDate >= startOfMonth 
+                    && e.EntryDate <= endOfMonth 
+                    && !e.IsDeleted)
+                .ToListAsync(cancellationToken);
 
-            var filteredEntries = request.FilterEmployeeId.HasValue && internIds.Contains(request.FilterEmployeeId.Value)
-                ? allMonthEntries.Where(e => e.EmployeeId == request.FilterEmployeeId.Value).ToList()
-                : allMonthEntries;
+            // Optional further filtering by specific intern if requested
+            if (request.FilterEmployeeId.HasValue && internIds.Contains(request.FilterEmployeeId.Value))
+            {
+                filteredEntries = filteredEntries.Where(e => e.EmployeeId == request.FilterEmployeeId.Value).ToList();
+            }
 
             var internBreakdown = filteredEntries
                 .GroupBy(e => new { e.EmployeeId, EmployeeName = e.Employee?.FullName ?? string.Empty })
@@ -134,8 +150,8 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
                 .ToList();
 
             // 4. Project allocation donut chart data
-            var grandTotal = allMonthEntries.Sum(e => e.DurationMinutes);
-            var projectAllocations = allMonthEntries
+            var grandTotal = filteredEntries.Sum(e => e.DurationMinutes);
+            var projectAllocations = filteredEntries
                 .GroupBy(e => new { e.ProjectId, ProjectName = e.Project?.Name ?? string.Empty })
                 .Select(pg => new ProjectAllocationDto
                 {
@@ -151,6 +167,27 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
 
 
 
+
+            // 5. Recent Activity (Live Feed)
+            var recentEntries = await appDbContext.TimesheetEntries
+                .AsNoTracking()
+                .Include(e => e.Employee)
+                .Include(e => e.Project)
+                .Where(e => internIds.Contains(e.EmployeeId) && !e.IsDeleted)
+                .OrderByDescending(e => e.Id) // Assuming ID is incremental or use CreatedDate if available
+                .Take(5)
+                .ToListAsync(cancellationToken);
+
+            var recentActivity = recentEntries.Select(e => new RecentActivityDto
+            {
+                EmployeeName = e.Employee?.FullName ?? "Unknown",
+                ProjectName = e.Project?.Name ?? "General",
+                DurationFormatted = $"{e.DurationMinutes / 60}h {e.DurationMinutes % 60}m",
+                TaskDescription = e.TaskDescription,
+                EntryDate = e.EntryDate.ToString("yyyy-MM-dd"),
+                RelativeTime = "Just now" // Simplified for now
+            }).ToList();
+
             // Final Result object
             var result = new SupervisorDashboardResponseDto
             {
@@ -164,13 +201,16 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
                 ApprovalSummaryCount = $"{pendingCount} / {totalPotentialSubmissions}",
                 CurrentMonthLabel = today.ToString("MMM yyyy").ToUpper(),
                 InternHoursBreakdown = internBreakdown,
-                ProjectAllocations = projectAllocations
+                ProjectAllocations = projectAllocations,
+                RecentActivity = recentActivity
             };
 
             return ApiHelperResponse.Success("Supervisor dashboard retrieved successfully.", result);
         }
     }
 }
+
+
 
 
 // ── Supervisor: Approval List (Report Menu) ───────────────────────────────────
@@ -182,7 +222,8 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
 public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalReportDto>>
 {
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
+        ITimesheetSubmissionRepository submissionRepository,
         IApplicationDbContext appDbContext,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetApprovalReportQuery, ApiResponse<SupervisorApprovalReportDto>>
@@ -191,143 +232,249 @@ public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalRep
             GetApprovalReportQuery request,
             CancellationToken cancellationToken)
         {
-            var today = DateTime.UtcNow.AddHours(7);
-            var currentYear = today.Year;
-            var currentMonth = today.Month;
-
-            var supervisorEmail = currentUserService.Email;
-
-            if (string.IsNullOrEmpty(supervisorEmail))
+            try 
             {
-                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Sesi Anda telah kedaluwarsa atau tidak valid. Silakan login kembali.");
-            }
+                var today = DateTime.UtcNow.AddHours(7);
+                var currentYear = today.Year;
+                var currentMonth = today.Month;
 
-            var roles = await appDbContext.Roles.AsNoTracking().ToListAsync(cancellationToken);
-            var supervisorRole = roles.FirstOrDefault(r => r.Name == "Supervisor");
-            var employeeRole = roles.FirstOrDefault(r => r.Name == "Employee");
-            
-            if (supervisorRole == null || employeeRole == null)
-            {
-                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Role configuration tidak valid. Harap hubungi administrator.");
-            }
+                var supervisorEmail = currentUserService.Email;
 
-            var supervisor = await appDbContext.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == supervisorEmail, cancellationToken);
-            if (supervisor == null)
-            {
-                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akun Supervisor Anda tidak ditemukan di database. Harap hubungi administrator.");
-            }
-
-            if (supervisor.RoleId != supervisorRole.Id)
-            {
-                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akses Ditolak. Anda tidak memiliki wewenang untuk melihat laporan izin ini.");
-            }
-
-            var supervisorName = supervisor.FullName;
-
-            // All active interns
-            var interns = await appDbContext.Employees
-                .AsNoTracking()
-                .Where(e => e.RoleId == employeeRole.Id && e.IsActive)
-                .ToListAsync(cancellationToken);
-            
-            var internIds = interns.Select(i => i.Id).ToHashSet();
-
-            // All submissions for MY interns
-            var allSubmissions = await timesheetRepository.GetAllSubmissionsAsync();
-            allSubmissions = allSubmissions.Where(s => internIds.Contains(s.EmployeeId)).ToList();
-
-            // 1. Pending Approvals (status = 0)
-            var pending = allSubmissions
-                .Where(s => s.Status == 0)
-                .Select(s => new PendingApprovalItemDto
+                if (string.IsNullOrEmpty(supervisorEmail))
                 {
-                    SubmissionId = s.Id,
-                    EmployeeId = s.EmployeeId,
-                    EmployeeName = s.Employee?.FullName ?? string.Empty,
-                    Year = s.Year,
-                    Month = s.Month,
-                    SubmittedDate = s.SubmittedDate.ToString("yyyy-MM-dd HH:mm"),
-                    Status = "Waiting for Approval"
-                }).ToList();
+                    return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Sesi Anda telah kedaluwarsa. Silakan login kembali.");
+                }
 
-            // 2. Missing Submissions — interns who haven't submitted for the current month
-            var submittedEmployeeIds = allSubmissions
-                .Where(s => s.Year == currentYear && s.Month == currentMonth)
-                .Select(s => s.EmployeeId)
-                .ToHashSet();
-
-            var missingSubmissions = new List<MissingSubmissionItemDto>();
-            foreach (var intern in interns.Where(i => !submittedEmployeeIds.Contains(i.Id)))
-            {
-                var missingDays = await timesheetRepository
-                    .GetMissingEntryDatesAsync(intern.Id, currentYear, currentMonth);
-
-                missingSubmissions.Add(new MissingSubmissionItemDto
+                var roles = await appDbContext.Roles.AsNoTracking().ToListAsync(cancellationToken);
+                var supervisorRole = roles.FirstOrDefault(r => r.Name == "Supervisor");
+                var employeeRole = roles.FirstOrDefault(r => r.Name == "Employee");
+                
+                if (supervisorRole == null || employeeRole == null)
                 {
-                    EmployeeId = intern.Id,
-                    EmployeeName = intern.FullName,
-                    Year = currentYear,
-                    Month = currentMonth,
-                    OverdueDays = missingDays.Count
-                });
+                    return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Role configuration tidak valid. Harap hubungi administrator.");
+                }
+
+                var supervisor = await appDbContext.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == supervisorEmail, cancellationToken);
+                if (supervisor == null)
+                {
+                    return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akun Supervisor tidak ditemukan.");
+                }
+
+                // Internal role check
+                if (supervisor.RoleId != supervisorRole.Id)
+                {
+                    return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akses Ditolak. Halaman ini hanya untuk Supervisor.");
+                }
+
+                // All active interns
+                var interns = await appDbContext.Employees
+                    .AsNoTracking()
+                    .Where(e => e.RoleId == employeeRole.Id && e.IsActive)
+                    .ToListAsync(cancellationToken);
+                
+                var internIdList = interns.Select(i => i.Id).ToList();
+
+                // All submissions for these interns
+                var allSubmissions = await appDbContext.TimesheetSubmissions
+                    .AsNoTracking()
+                    .Where(s => internIdList.Contains(s.EmployeeId) && !s.IsDeleted)
+                    .OrderByDescending(s => s.SubmittedDate)
+                    .ToListAsync(cancellationToken);
+
+                // MANUALLY HYDRATE EMPLOYEES
+                var submissionEmployeeIds = allSubmissions.Select(s => s.EmployeeId).Distinct().ToList();
+                var submissionEmployees = await appDbContext.Employees
+                    .Where(e => submissionEmployeeIds.Contains(e.Id))
+                    .ToListAsync(cancellationToken);
+                foreach (var s in allSubmissions) s.Employee = submissionEmployees.FirstOrDefault(e => e.Id == s.EmployeeId);
+
+                // 1. Pending Approvals (status = 0)
+                var pending = allSubmissions
+                    .Where(s => s.Status == 0)
+                    .Select(s => new PendingApprovalItemDto
+                    {
+                        SubmissionId = s.Id,
+                        EmployeeId = s.EmployeeId,
+                        EmployeeName = s.Employee?.FullName ?? string.Empty,
+                        Year = s.Year,
+                        Month = s.Month,
+                        SubmittedDate = s.SubmittedDate.ToString("yyyy-MM-dd HH:mm"),
+                        Status = "Waiting for Approval"
+                    }).ToList();
+
+                // 2. Missing Submissions
+                var submittedEmployeeIdsCurrentMonth = allSubmissions
+                    .Where(s => s.Year == currentYear && s.Month == currentMonth)
+                    .Select(s => s.EmployeeId)
+                    .ToHashSet();
+
+                var start = new DateOnly(currentYear, currentMonth, 1);
+                var end = (today.Year == currentYear && today.Month == currentMonth) 
+                    ? DateOnly.FromDateTime(today) 
+                    : start.AddMonths(1).AddDays(-1);
+                
+                var workingDays = new List<DateOnly>();
+                for (var d = start; d <= end; d = d.AddDays(1)) 
+                { 
+                    if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday) workingDays.Add(d); 
+                }
+
+                var allEntriesCurrentMonth = await appDbContext.TimesheetEntries
+                    .AsNoTracking()
+                    .Where(e => internIdList.Contains(e.EmployeeId) && e.EntryDate >= start && e.EntryDate <= end && !e.IsDeleted)
+                    .Select(e => new { e.EmployeeId, e.EntryDate })
+                    .ToListAsync(cancellationToken);
+
+                var entryMap = allEntriesCurrentMonth
+                    .GroupBy(e => e.EmployeeId)
+                    .ToDictionary(g => g.Key, g => g.Select(x => x.EntryDate).Distinct().ToHashSet());
+
+                var missingSubmissions = new List<MissingSubmissionItemDto>();
+                foreach (var intern in interns.Where(i => !submittedEmployeeIdsCurrentMonth.Contains(i.Id)))
+                {
+                    var internDates = entryMap.ContainsKey(intern.Id) ? entryMap[intern.Id] : new HashSet<DateOnly>();
+                    var missingCount = workingDays.Count(wd => !internDates.Contains(wd));
+
+                    missingSubmissions.Add(new MissingSubmissionItemDto
+                    {
+                        EmployeeId = intern.Id,
+                        EmployeeName = intern.FullName,
+                        Year = currentYear,
+                        Month = currentMonth,
+                        OverdueDays = missingCount
+                    });
+                }
+
+                // 3. Approval History (status = 1 or 2)
+                var history = allSubmissions
+                    .Where(s => s.Status is 1 or 2)
+                    .Select(s => new ApprovalHistoryItemDto
+                    {
+                        SubmissionId = s.Id,
+                        EmployeeId = s.EmployeeId,
+                        EmployeeName = s.Employee?.FullName ?? string.Empty,
+                        Year = s.Year,
+                        Month = s.Month,
+                        SubmittedDate = s.SubmittedDate.ToString("yyyy-MM-dd HH:mm"),
+                        Status = s.Status == 1 ? "Approved" : "Need Revision",
+                        RevisionNote = s.RevisionNote,
+                        ReviewedDate = s.ReviewedDate?.ToString("yyyy-MM-dd HH:mm")
+                    }).ToList();
+
+                var result = new SupervisorApprovalReportDto
+                {
+                    PendingApprovals = pending,
+                    MissingSubmissions = missingSubmissions,
+                    ApprovalHistory = history
+                };
+
+                return ApiHelperResponse.Success("Approval report retrieved successfully.", result);
             }
-
-            // 3. Approval History (status = 1 or 2)
-            var history = allSubmissions
-                .Where(s => s.Status is 1 or 2)
-                .Select(s => new ApprovalHistoryItemDto
-                {
-                    SubmissionId = s.Id,
-                    EmployeeId = s.EmployeeId,
-                    EmployeeName = s.Employee?.FullName ?? string.Empty,
-                    Year = s.Year,
-                    Month = s.Month,
-                    SubmittedDate = s.SubmittedDate.ToString("yyyy-MM-dd HH:mm"),
-                    Status = s.Status == 1 ? "Approved" : "Need Revision",
-                    RevisionNote = s.RevisionNote,
-                    ReviewedDate = s.ReviewedDate?.ToString("yyyy-MM-dd HH:mm")
-                }).ToList();
-
-            var result = new SupervisorApprovalReportDto
+            catch (Exception ex)
             {
-                PendingApprovals = pending,
-                MissingSubmissions = missingSubmissions,
-                ApprovalHistory = history
-            };
-
-            return ApiHelperResponse.Success("Approval report retrieved successfully.", result);
+                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>($"Internal Error: {ex.Message}");
+            }
         }
+
     }
 }
 
 // ── Supervisor: Timesheet Review Page ────────────────────────────────────────
 
-/// <summary>
-/// Returns the full review page data for a specific submission.
-/// </summary>
-public class GetTimesheetReviewQuery(int submissionId)
-    : IRequest<ApiResponse<SupervisorReviewResponseDto>>
+public class GetTimesheetReviewQuery : IRequest<ApiResponse<SupervisorReviewResponseDto>>
 {
-    public int SubmissionId { get; } = submissionId;
+    public int SubmissionId { get; init; }
+    public int? EmployeeId { get; init; }
+    public int? Month { get; init; }
+    public int? Year { get; init; }
+
+    public GetTimesheetReviewQuery(int submissionId) { SubmissionId = submissionId; }
+    public GetTimesheetReviewQuery(int employeeId, int month, int year) 
+    { 
+        EmployeeId = employeeId; 
+        Month = month; 
+        Year = year; 
+    }
 
     public class Handler(
-        ITimesheetRepository timesheetRepository)
+        ITimesheetEntryRepository entryRepository,
+        ITimesheetSubmissionRepository submissionRepository,
+        IApplicationDbContext appDbContext)
         : IRequestHandler<GetTimesheetReviewQuery, ApiResponse<SupervisorReviewResponseDto>>
     {
         public async Task<ApiResponse<SupervisorReviewResponseDto>> Handle(
             GetTimesheetReviewQuery request,
             CancellationToken cancellationToken)
         {
-            var submission = await timesheetRepository.GetSubmissionByIdAsync(request.SubmissionId);
-            if (submission == null)
+            int submissionId = 0;
+            int employeeId = 0;
+            string employeeName = string.Empty;
+            int year = 0;
+            int month = 0;
+            int status = 0;
+            string? revisionNote = null;
+            DateTime? reviewedDate = null;
+
+            if (request.SubmissionId > 0)
             {
-                return ApiHelperResponse.Failed<SupervisorReviewResponseDto>("Submission not found.");
+                var s = await appDbContext.TimesheetSubmissions
+                    .Include(s => s.Employee)
+                    .FirstOrDefaultAsync(s => s.Id == request.SubmissionId && !s.IsDeleted, cancellationToken);
+                
+                if (s == null) return ApiHelperResponse.Failed<SupervisorReviewResponseDto>("Submission not found.");
+
+                submissionId = s.Id;
+                employeeId = s.EmployeeId;
+                employeeName = s.Employee?.FullName ?? string.Empty;
+                year = s.Year;
+                month = s.Month;
+                status = s.Status;
+                revisionNote = s.RevisionNote;
+                reviewedDate = s.ReviewedDate;
+            }
+            else if (request.EmployeeId.HasValue && request.Month.HasValue && request.Year.HasValue)
+            {
+                var s = await appDbContext.TimesheetSubmissions
+                    .Include(s => s.Employee)
+                    .FirstOrDefaultAsync(s => s.EmployeeId == request.EmployeeId.Value 
+                        && s.Month == request.Month.Value 
+                        && s.Year == request.Year.Value 
+                        && !s.IsDeleted, cancellationToken);
+                
+                if (s != null)
+                {
+                    submissionId = s.Id;
+                    employeeId = s.EmployeeId;
+                    employeeName = s.Employee?.FullName ?? string.Empty;
+                    year = s.Year;
+                    month = s.Month;
+                    status = s.Status;
+                    revisionNote = s.RevisionNote;
+                    reviewedDate = s.ReviewedDate;
+                }
+                else 
+                {
+                    var employee = await appDbContext.Employees.FindAsync(new object[] { request.EmployeeId.Value }, cancellationToken);
+                    if (employee == null) return ApiHelperResponse.Failed<SupervisorReviewResponseDto>("Employee not found.");
+
+                    submissionId = 0;
+                    employeeId = request.EmployeeId.Value;
+                    employeeName = employee.FullName;
+                    year = request.Year.Value;
+                    month = request.Month.Value;
+                    status = 0; // Needs Approval (Default for virtual)
+                }
             }
 
-            var entries = await timesheetRepository
-                .GetEntriesByMonthAsync(submission.EmployeeId, submission.Year, submission.Month);
+            if (employeeId == 0)
+            {
+                return ApiHelperResponse.Failed<SupervisorReviewResponseDto>("Review target not found.");
+            }
 
-            var comments = await timesheetRepository.GetCommentsBySubmissionAsync(submission.Id);
+            var entries = await entryRepository
+                .GetEntriesByMonthAsync(employeeId, year, month);
+
+            var comments = await submissionRepository.GetCommentsBySubmissionAsync(submissionId);
 
             // Build monthly day cells
             var days = entries
@@ -351,20 +498,20 @@ public class GetTimesheetReviewQuery(int submissionId)
 
             var result = new SupervisorReviewResponseDto
             {
-                SubmissionId = submission.Id,
-                EmployeeId = submission.EmployeeId,
-                EmployeeName = submission.Employee?.FullName ?? string.Empty,
-                Year = submission.Year,
-                Month = submission.Month,
-                Status = submission.Status switch
+                SubmissionId = submissionId,
+                EmployeeId = employeeId,
+                EmployeeName = employeeName,
+                Year = year,
+                Month = month,
+                Status = status switch
                 {
                     0 => "Waiting for Approval",
                     1 => "Approved",
                     2 => "Need Revision",
                     _ => "Unknown"
                 },
-                RevisionNote = submission.RevisionNote,
-                ReviewedDate = submission.ReviewedDate?.ToString("yyyy-MM-dd HH:mm"),
+                RevisionNote = revisionNote,
+                ReviewedDate = reviewedDate?.ToString("yyyy-MM-dd HH:mm"),
                 DayComments = dayCommentDtos,
                 Days = days
             };
@@ -381,19 +528,20 @@ public class GetTimesheetReviewQuery(int submissionId)
 /// </summary>
 public class GetProjectListQuery : IRequest<ApiResponse<List<ProjectDto>>>
 {
-    public class Handler(ITimesheetRepository timesheetRepository)
+    public class Handler(ITimesheetProjectRepository projectRepository)
         : IRequestHandler<GetProjectListQuery, ApiResponse<List<ProjectDto>>>
     {
         public async Task<ApiResponse<List<ProjectDto>>> Handle(
             GetProjectListQuery request,
             CancellationToken cancellationToken)
         {
-            var projects = await timesheetRepository.GetAllProjectsAsync();
+            var projects = await projectRepository.GetActiveListAsync();
             var result = projects.Select(p => new ProjectDto
             {
                 Id = p.Id,
                 Name = p.Name,
                 Description = p.Description,
+                ProjectLeader = p.ProjectLeader,
                 Status = p.Status == 0 ? "Running" : "Finished"
             }).ToList();
 

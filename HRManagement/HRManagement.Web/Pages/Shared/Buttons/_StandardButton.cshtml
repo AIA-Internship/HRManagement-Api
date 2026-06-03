@@ -6,12 +6,12 @@
      */
     var dict = new RouteValueDictionary(Model);
     
-    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : "primary");
-    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : "");
-    string icon = (dict.ContainsKey("Icon") ? dict["Icon"]?.ToString() : "");
-    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : "");
-    string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : "");
-    string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : "");
+    string type = dict.ContainsKey("Type") ? (dict["Type"]?.ToString() ?? "primary") : "primary";
+    string title = dict.ContainsKey("Title") ? (dict["Title"]?.ToString() ?? "") : "";
+    string icon = dict.ContainsKey("Icon") ? (dict["Icon"]?.ToString() ?? "") : "";
+    string id = dict.ContainsKey("Id") ? (dict["Id"]?.ToString() ?? "") : "";
+    string onClick = dict.ContainsKey("OnClick") ? (dict["OnClick"]?.ToString() ?? "") : "";
+    string extraClass = dict.ContainsKey("Class") ? (dict["Class"]?.ToString() ?? "") : "";
 
     // Filter out known keys to get extra attributes
     var knownKeys = new[] { "Type", "Title", "Icon", "Id", "OnClick", "Class" };

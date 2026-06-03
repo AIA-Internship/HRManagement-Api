@@ -1,0 +1,121 @@
+/* AIA CUSTOM DATEPICKER SYSTEM (SHARED) */
+:root {
+    --brand-red: #D31145;
+    --text-dark: #181C32;
+    --text-muted: #7E8299;
+}
+
+.datepicker-popover {
+    position: fixed;
+    z-index: 9500; /* High z-index to be above modals */
+    display: none;
+    background: #fff;
+    border-radius: 18px;
+    border: 0;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+    width: 290px;
+    font-family: 'Inter', sans-serif;
+}
+
+.datepicker-popover.active {
+    display: block !important;
+}
+
+#datepicker_focal_backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.02);
+    z-index: 9499;
+    display: none;
+}
+
+#datepicker_focal_backdrop.active {
+    display: block !important;
+}
+
+.datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 10px;
+    margin-bottom: 10px;
+}
+
+.datepicker-header-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.datepicker-grid-7 {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+.datepicker-day-head {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #A1A5B7;
+    padding: 5px 0;
+}
+
+.datepicker-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #3F4254;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.datepicker-day-cell:hover {
+    background: #F1F4F9;
+}
+
+.datepicker-day-cell.selected {
+    background: var(--brand-red) !important;
+    color: #fff !important;
+}
+
+.datepicker-day-cell.text-muted {
+    opacity: 0.25;
+}
+
+.datepicker-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+}
+
+.datepicker-month-cell {
+    padding: 12px 5px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #3F4254;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.datepicker-month-cell:hover {
+    background: #F4F7FB;
+    color: var(--brand-red);
+}
+
+.datepicker-month-cell.selected {
+    background: #FFF5F8;
+    color: var(--brand-red);
+    border: 2px solid var(--brand-red);
+}

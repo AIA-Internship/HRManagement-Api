@@ -1,5 +1,11 @@
 /* AIA GLOBAL LAYOUT COMPONENTS */
 
+/* ── Fix: Prevent Metronic from stretching #kt_app_main to full viewport height ── */
+/* flex-row-fluid sets flex: 1 auto which causes a large blank gap below footer.    */
+#kt_app_main {
+    flex: 0 0 auto !important;
+}
+
 .card-aia {
     border-radius: 14px !important;
     border: 0 !important;

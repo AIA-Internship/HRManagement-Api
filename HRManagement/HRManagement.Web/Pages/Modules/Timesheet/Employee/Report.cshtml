@@ -133,6 +133,44 @@
         .empty-state-icon  { font-size: 5rem !important; color: #E1E3EA; margin-bottom: 24px; }
         .empty-state-title { font-size: 1.25rem; font-weight: 850; color: #181C32; margin-bottom: 10px; }
         .empty-state-desc  { font-size: 1rem; color: #7E8299; font-weight: 600; max-width: 420px; line-height: 1.6; }
+
+        /* ── UNIFIED FILTER BAR ── */
+        .history-filter-toolbar {
+            background: #F9F9F9;
+            padding: 20px 24px;
+            border-bottom: 1px solid #ECEFF4;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-group { display: flex; align-items: center; gap: 12px; }
+        .filter-label {
+            font-size: 0.75rem; font-weight: 850; color: #7E8299;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .filter-input-wrapper { position: relative; width: 140px; }
+        .filter-input-wrapper input {
+            background: #fff !important;
+            border: 1px solid #E1E3EA !important;
+            border-radius: 8px !important;
+            font-size: 0.85rem !important;
+            height: 40px !important;
+            font-weight: 800 !important;
+        }
+        .filter-input-wrapper i { color: #A1A5B7; font-size: 0.9rem; margin-right: 12px; }
+        .btn-filter-search {
+            height: 40px; border-radius: 8px; font-weight: 850; font-size: 0.85rem;
+            background: var(--brand-red); color: #fff; border: none; padding: 0 20px;
+            transition: all 0.2s;
+        }
+        .btn-filter-search:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-filter-reset {
+            height: 40px; border-radius: 8px; font-weight: 800; font-size: 0.85rem;
+            background: #fff; color: #7E8299; border: 1px solid #E1E3EA; padding: 0 15px;
+        }
+        .divider-vertical { width: 1px; height: 24px; background: #E1E3EA; }
     </style>
 }
 
@@ -165,37 +203,38 @@
 
             <!-- ── HISTORY CARD (always visible) ── -->
             <div class="history-card shadow-sm">
-                <div class="history-header d-flex justify-content-between align-items-center mb-10 p-6">
-                    <div class="d-flex align-items-center gap-10">
-                        <!-- From Period (Branded) -->
-                        <div class="d-flex flex-column gap-2">
-                             <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">From Period</span>
-                             <div class="position-relative" style="width:160px;">
-                                 <input type="text" id="filter_from_label" class="form-control form-control-solid fw-boldest h-45px" value="---" style="border-radius:10px; cursor:pointer;" readonly onclick="openMonthPicker('from', event)" />
-                                 <input type="hidden" id="filter_from" />
-                                 <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-4 text-muted pointer-events-none"></i>
-                             </div>
-                        </div>
-
-                        <!-- To Period (Branded) -->
-                        <div class="d-flex flex-column gap-2">
-                             <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">To Period</span>
-                             <div class="position-relative" style="width:160px;">
-                                 <input type="text" id="filter_to_label" class="form-control form-control-solid fw-boldest h-45px" value="---" style="border-radius:10px; cursor:pointer;" readonly onclick="openMonthPicker('to', event)" />
-                                 <input type="hidden" id="filter_to" />
-                                 <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y me-4 text-muted pointer-events-none"></i>
-                             </div>
-                        </div>
-
-                        <div class="d-flex align-items-end gap-3 mt-6">
-                            <button class="btn btn-brand fw-boldest px-8 h-45px" onclick="applyPeriodFilter()" style="border-radius:10px">Search</button>
-                            <button class="btn btn-light fw-boldest px-8 h-45px" onclick="resetReportFilters()" style="border-radius:10px">Reset</button>
+                <div class="history-filter-toolbar">
+                    <!-- From Period -->
+                    <div class="filter-group">
+                        <span class="filter-label">From</span>
+                        <div class="filter-input-wrapper">
+                            <input type="text" id="filter_from_label" class="form-control" value="---" readonly onclick="openMonthPicker('from', event)" />
+                            <input type="hidden" id="filter_from" />
+                            <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y"></i>
                         </div>
                     </div>
-                    
-                    <div class="d-flex flex-column gap-2">
-                        <span class="fs-9 fw-boldest text-muted text-uppercase letter-spacing-1">Status Filter</span>
-                        <select class="form-select form-select-solid fw-boldest h-45px" style="width:200px; border-radius:10px" onchange="applyFilter(this.value)">
+
+                    <!-- To Period -->
+                    <div class="filter-group">
+                        <span class="filter-label">To</span>
+                        <div class="filter-input-wrapper">
+                            <input type="text" id="filter_to_label" class="form-control" value="---" readonly onclick="openMonthPicker('to', event)" />
+                            <input type="hidden" id="filter_to" />
+                            <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y"></i>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn-filter-search" onclick="applyPeriodFilter()">Search</button>
+                        <button class="btn-filter-reset" onclick="resetReportFilters()"><i class="bi bi-arrow-counterclockwise fs-6"></i></button>
+                    </div>
+
+                    <div class="divider-vertical mx-2"></div>
+
+                    <!-- Status Filter -->
+                    <div class="filter-group ms-auto">
+                        <span class="filter-label">Status</span>
+                        <select class="form-select form-select-solid fw-boldest" style="width:180px; height:40px; border-radius:8px; font-size:0.85rem;" onchange="applyFilter(this.value)">
                             <option value="All">All Status</option>
                             <option value="Approved">Approved</option>
                             <option value="Needs Approval">Needs Approval</option>

@@ -16,7 +16,7 @@ public class SaveDailyTimesheetCommand(SaveDailyTimesheetRequestDto requestDto)
     public SaveDailyTimesheetRequestDto RequestDto { get; } = requestDto;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITimesheetEntryRepository entryRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<SaveDailyTimesheetCommand, ApiResponse<string>>
     {
@@ -28,22 +28,47 @@ public class SaveDailyTimesheetCommand(SaveDailyTimesheetRequestDto requestDto)
             var actionerId = (long)employeeId;
             var dto = command.RequestDto;
             var entryDate = DateOnly.ParseExact(dto.Date, "yyyy-MM-dd");
-            
-            // Note: Structural validation (Format, Future Date, Requirements) is handled by SaveDailyTimesheetValidator
-            var entries = dto.Entries.Select(row => new TimesheetEntry(
-                employeeId: employeeId,
-                entryDate: entryDate,
-                durationMinutes: row.DurationMinutes,
-                projectId: row.ProjectId,
-                applicationUsed: row.ApplicationUsed,
-                taskDescription: row.TaskDescription,
-                projectLeadId: row.ProjectLeadId,
-                location: row.Location,
-                actionerId: actionerId
-            )).ToList();
+            var dayType = dto.DayType.ToLower();
 
-            await timesheetRepository.SaveDailyEntriesAsync(employeeId, entryDate, entries);
+            List<TimesheetEntry> entries;
 
+            if (dayType == "working")
+            {
+                entries = dto.Entries.Select(row => new TimesheetEntry(
+                    employeeId: employeeId,
+                    entryDate: entryDate,
+                    durationMinutes: row.DurationMinutes,
+                    projectId: row.ProjectId,
+                    applicationUsed: row.ApplicationUsed,
+                    taskDescription: row.TaskDescription,
+                    projectLeadId: row.ProjectLeadId,
+                    location: row.Location,
+                    actionerId: actionerId,
+                    dayType: "working"
+                )).ToList();
+            }
+            else
+            {
+                // Create a single placeholder entry for Holiday/Off to preserve the day status in DB
+                // Using ProjectId = 1 (Standard) as a placeholder if DayType != working
+                entries = new List<TimesheetEntry> { 
+                    new TimesheetEntry(
+                        employeeId: employeeId,
+                        entryDate: entryDate,
+                        durationMinutes: 0,
+                        projectId: 1, // Placeholder
+                        applicationUsed: "SYSTEM",
+                        taskDescription: dayType == "holiday" ? "Public Holiday" : "Day Off",
+                        projectLeadId: 1, // Placeholder
+                        location: 0,
+                        actionerId: actionerId,
+                        dayType: dayType
+                    )
+                };
+            }
+ 
+            await entryRepository.SaveDailyEntriesAsync(employeeId, entryDate, entries);
+ 
             return ApiHelperResponse.Success("Timesheet saved successfully.", "Success");
         }
     }

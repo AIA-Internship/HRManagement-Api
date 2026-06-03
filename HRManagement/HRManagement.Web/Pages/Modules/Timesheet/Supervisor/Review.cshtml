@@ -5,73 +5,245 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/modules/timesheet/css/management.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-review.css" asp-append-version="true" />
+    <style>
+        .review-page-container {
+            padding: 28px 32px;
+            background-color: #F4F6F9;
+            font-family: 'Inter', sans-serif;
+            min-height: calc(100vh - 130px);
+        }
+
+        /* ── Header ── */
+        .review-header {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px 32px;
+            border: 1px solid #EAECF0;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+        }
+
+        .intern-profile {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .avatar-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: var(--brand-red-light, #FFF5F8);
+            color: var(--brand-red, #D31145);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 900;
+            border: 1px solid rgba(211, 17, 69, 0.1);
+        }
+
+        .intern-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #181C32;
+            margin-bottom: 4px;
+        }
+
+        .period-pill {
+            background: #F4F6F9;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #7E8299;
+            text-transform: uppercase;
+        }
+
+        /* ── Table Container ── */
+        .log-table-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid #EAECF0;
+            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .log-table th {
+            padding: 16px 28px;
+            background: #F8FAFC;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #7E8299;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid #EAECF0;
+        }
+
+        .log-table td {
+            padding: 16px 28px;
+            font-size: 0.95rem;
+            color: #374151;
+            border-bottom: 1px solid #F4F6F9;
+            vertical-align: middle;
+        }
+
+        /* ── Feedback Section ── */
+        .feedback-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px;
+            border: 1px solid #EAECF0;
+            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+        }
+
+        .feedback-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #181C32;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-title i { color: var(--brand-red); }
+
+        .feedback-textarea {
+            border: 1px solid #E1E3EA;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3F4254;
+            background: #F9FAFB;
+            width: 100%;
+            min-height: 120px;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .feedback-textarea:focus {
+            background: #fff;
+            border-color: var(--brand-red);
+            box-shadow: 0 0 0 4px rgba(211, 17, 69, 0.05);
+            outline: none;
+        }
+
+        .action-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #F4F6F9;
+            padding-top: 24px;
+        }
+
+        .day-input {
+            border: 1px solid #EAECF0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            width: 100%;
+            background: #FBFBFB;
+        }
+
+        .day-input:focus {
+            background: #fff;
+            border-color: var(--brand-red);
+            outline: none;
+        }
+    </style>
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-8 app-container-full">
-    <div id="kt_app_content" class="app-content flex-column-fluid">
-        <div id="kt_app_content_container" class="app-container container-fluid">
-
-            <!-- BACK TO DASHBOARD -->
-            <a href="/Timesheet/Supervisor/Dashboard" class="btn btn-sm btn-light btn-active-light-primary fw-boldest mb-6"><i class="bi bi-arrow-left me-2"></i> Back to Dashboard</a>
-
-            <div class="review-header-card shadow-sm">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-6">
-                    <div class="intern-profile">
-                        <div class="avatar-circle" id="intern_avatar">I</div>
-                        <div>
-                            <div class="text-gray-400 fs-8 fw-boldest text-uppercase">Timesheet Review for</div>
-                            <h1 class="text-gray-900 fw-boldest fs-1 mb-1" id="intern_name">Loading...</h1>
-                            <span class="period-pill" id="review_period">---</span>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column align-items-end">
-                        <span class="badge badge-lg fw-boldest px-4 py-2" style="background: #FFF5F8; color: #D31145; border-radius: 8px; font-size: 0.75rem;" id="submission_status">WAITING APPROVAL</span>
-                        <small class="text-gray-400 fw-bold mt-2" id="submitted_at">Submitted --</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TIMESHEET GRID (AIA DRAFT STYLE) -->
-            <div class="card shadow-sm border-0 mb-8" style="border-radius: 20px; overflow: hidden;">
-                <div class="card-header pt-6 px-10 border-0">
-                    <h3 class="card-title fw-boldest fs-3 text-gray-800">Monthly Log Preview</h3>
-                    <div class="card-toolbar">
-                         <span class="badge fw-boldest text-gray-400 border border-gray-300 px-3 py-1 fs-9">AIA-TIMESHEET-V2</span>
-                    </div>
-                </div>
-                <div class="card-body px-0 pb-0">
-                    <div class="table-responsive">
-                        <table class="grid-table w-100">
-                            <thead>
-                                <tr>
-                                    <th style="width: 80px">DATE</th>
-                                    <th>PROJECT / ACTIVITIES</th>
-                                    <th style="width: 100px">TOTAL HOUR</th>
-                                    <th style="width: 250px">SUPERVISOR FEEDBACK</th>
-                                </tr>
-                            </thead>
-                            <tbody id="review_tbody">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- OVERALL REVISION NOTE -->
-            <div class="card shadow-sm border-0 p-10 mb-8" style="border-radius: 20px">
-                <h4 class="fw-boldest text-gray-800 mb-4">Overall Feedback</h4>
-                <textarea id="overall_revision_note" class="form-control form-control-solid border-0 fs-7 fw-bold p-6" rows="3" style="background: #F8F9FA; border-radius: 12px;" placeholder="Add general comments or revision reasons here..."></textarea>
-                
-                <div class="action-container">
-                    <button class="btn-approve" onclick="approveTimesheet()"><i class="bi bi-check-circle-fill me-2"></i> APPROVE TIMESHEET</button>
-                    <button class="btn-revision" onclick="giveRevision()"><i class="bi bi-chat-dots-fill me-2"></i> REQUEST REVISION</button>
-                </div>
-            </div>
-
+<div class="review-page-container">
+    <!-- Breadcrumb / Back -->
+    <div class="mb-6 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2 text-muted fs-8 fw-bold">
+            <span>Timesheet</span>
+            <i class="bi bi-chevron-right fs-9"></i>
+            <a href="/Timesheet/Supervisor/Report" class="text-muted text-hover-primary">Employee Approval Center</a>
+            <i class="bi bi-chevron-right fs-9"></i>
+            <span class="text-brand-red fw-boldest">Review Work Log</span>
         </div>
+
+        <a href="/Timesheet/Supervisor/Report" class="btn-standard-ghost btn-standard-sm">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <!-- HEADER INFO -->
+    <div class="review-header">
+        <div class="intern-profile">
+            <div class="avatar-box" id="employee_avatar">-</div>
+            <div>
+                <h1 class="intern-name" id="employee_name">Loading...</h1>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="period-pill" id="review_period_label">---</span>
+                    <span class="badge badge-light-warning fw-boldest px-3 py-1 fs-9" id="review_status_badge">NEEDS APPROVAL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <div class="text-muted fs-8 fw-bold mb-1">Submitted Date</div>
+            <div class="fw-boldest text-gray-800" id="submitted_at">--</div>
+        </div>
+    </div>
+
+    <!-- LOG TABLE -->
+    <div class="log-table-card">
+        <div class="p-6 border-bottom bg-light bg-opacity-10 d-flex justify-content-between align-items-center">
+            <h3 class="fs-6 fw-boldest text-gray-800 mb-0">Daily Log Preview</h3>
+            <span class="text-muted fs-9 fw-bold">AUDIT MODE</span>
+        </div>
+        <div class="table-responsive">
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px; text-align: center;">DAY</th>
+                        <th>PROJECT / ACTIVITIES</th>
+                        <th style="width: 120px; text-align: center;">DURATION</th>
+                        <th style="width: 350px;">DAY FEEDBACK (OPTIONAL)</th>
+                    </tr>
+                </thead>
+                <tbody id="review_tbody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FINAL FEEDBACK -->
+    <div class="feedback-card">
+        <h4 class="feedback-title">
+            <i class="bi bi-chat-left-text-fill"></i> Overall Review Feedback
+        </h4>
+        <p class="text-muted fs-8 fw-bold mb-4">Provide a general reason if you are requesting a revision, or leave a compliment for approval.</p>
+        
+        <textarea id="overall_revision_note" class="feedback-textarea" placeholder="Type your review note here..."></textarea>
+        
+        <div class="action-footer">
+            <button class="btn-standard-ghost" onclick="giveRevision()">
+                <i class="bi bi-arrow-repeat"></i> Request Revision
+            </button>
+            <button class="btn-standard-primary" onclick="approveTimesheet()">
+                <i class="bi bi-check-circle-fill"></i> Approve Timesheet
+            </button>
+        </div>
+
+
     </div>
 </div>
 

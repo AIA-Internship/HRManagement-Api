@@ -95,8 +95,9 @@ public class TimesheetSubmissionsController : ValidateController<TimesheetSubmis
 
     // Generates overview report for supervisors to see pending approvals
     [HttpGet("supervisor/report")]
-    [Authorize(Roles = "Supervisor")]
+    [Authorize]
     [ProducesResponseType(typeof(ApiResponse<SupervisorApprovalReportDto>), 200)]
+
     [ProducesResponseType(401)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<SupervisorApprovalReportDto>>> GetApprovalReport()
@@ -133,6 +134,28 @@ public class TimesheetSubmissionsController : ValidateController<TimesheetSubmis
             return Result.Success(result);
         });
     }
+
+    // Get employee submission data by ID/Month/Year (Allows review before official submission)
+    [HttpGet("supervisor/review/anytime")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(typeof(ApiResponse<SupervisorReviewResponseDto>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<SupervisorReviewResponseDto>>> GetTimesheetReviewAnytime(
+        [FromQuery] int employeeId, [FromQuery] int month, [FromQuery] int year)
+    {
+        var methodName = nameof(GetTimesheetReviewAnytime);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var query = new GetTimesheetReviewQuery(employeeId, month, year);
+        return await this.ValidateAndExecute<ApiResponse<SupervisorReviewResponseDto>>(query, async (q) =>
+        {
+            var result = await _mediator.Send((GetTimesheetReviewQuery)q);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
 
     // Set submission status to approved ( Supervisor only )
     [HttpPost("supervisor/approve")]

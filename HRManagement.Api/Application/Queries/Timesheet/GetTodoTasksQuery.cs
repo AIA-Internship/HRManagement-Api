@@ -11,7 +11,7 @@ namespace HRManagement.Api.Application.Queries.Timesheet;
 public class GetTodoTasksQuery : IRequest<ApiResponse<List<TodoTaskResponseDto>>>
 {
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITodoTaskRepository todoRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<GetTodoTasksQuery, ApiResponse<List<TodoTaskResponseDto>>>
     {
@@ -20,7 +20,7 @@ public class GetTodoTasksQuery : IRequest<ApiResponse<List<TodoTaskResponseDto>>
             CancellationToken cancellationToken)
         {
             var employeeId = currentUserService.UserId;
-            var tasks = await timesheetRepository.GetTodoTasksByEmployeeAsync(employeeId);
+            var tasks = await todoRepository.GetTodoTasksByEmployeeAsync(employeeId);
 
             var result = tasks.Select(t => new TodoTaskResponseDto
             {

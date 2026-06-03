@@ -12,6 +12,7 @@ using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Services;
 using HRManagement.Api.Application.Auth.Permissions;
 using Microsoft.AspNetCore.Authorization;
+using HRManagement.Api.Repositories.Timesheet;
 
 namespace HRManagement.Api.Extensions
 {
@@ -37,7 +38,13 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
-            services.AddScoped<ITimesheetRepository, TimesheetRepository>();
+            
+            // Timesheet Module (Modular Repositories)
+            services.AddScoped<ITimesheetProjectRepository, TimesheetProjectRepository>();
+            services.AddScoped<ITimesheetEntryRepository, TimesheetEntryRepository>();
+            services.AddScoped<ITimesheetSubmissionRepository, TimesheetSubmissionRepository>();
+            services.AddScoped<ITodoTaskRepository, TodoTaskRepository>();
+
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));

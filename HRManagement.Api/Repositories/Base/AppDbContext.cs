@@ -22,6 +22,7 @@ public class AppDbContext : DbContext, IApplicationDbContext
 
     // Timesheet Module (Sharding-ready/Decoupled)
     public DbSet<TimesheetProject> TimesheetProjects { get; set; }
+    public DbSet<TimesheetHoliday> TimesheetHolidays { get; set; }
     public DbSet<TimesheetEntry> TimesheetEntries { get; set; }
     public DbSet<TimesheetSubmission> TimesheetSubmissions { get; set; }
     public DbSet<TimesheetDayComment> TimesheetDayComments { get; set; }

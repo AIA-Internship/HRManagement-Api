@@ -1,7 +1,7 @@
 @page "/Timesheet/Employee/Management"
 @model HRManagement.Web.Pages.Modules.Timesheet.ManagementModel
 @{
-    ViewData["Title"] = "Timesheet Daily Log";
+    ViewData["Title"] = "Timesheet Logbook";
 }
 
 @section Styles {
@@ -20,6 +20,8 @@
                     new BreadcrumbItem { Title = "Daily Log" }
                 }
             })
+
+
             <!-- PERFECT BASELINE CONTAINER (v8.1) -->
             <div class="px-0 py-5">
                 
@@ -53,27 +55,10 @@
                     <div class="btn-group-actions d-flex align-items-center gap-3">
                         <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
                         <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;" onclick="showReviewModal()"><i class="bi bi-send-fill me-2"></i> Submit Approval</button>
+                        <button class="shadow-sm d-none" id="btn_edit_timesheet" style="border-radius: 8px; font-weight: 700; padding: 10px 16px; background: var(--brand-red); color: white; border: 1px solid var(--brand-red); transition: all 0.2s;" onclick="window.location.href='/Timesheet/Employee/Entry'"><i class="bi bi-pencil-square me-2 text-white"></i> Edit Timesheet</button>
                     </div>
                 </div>
 
-                <!-- INTERN/SUPERVISOR INFO BAR -->
-                <div class="intern-supervisor-card shadow-sm mt-8">
-                    <div class="info-section border-right">
-                        <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
-                        <div class="info-text-block">
-                            <span class="info-title-label">Intern Identity</span>
-                            <span class="info-person-name" id="intern_name_label">---</span>
-                        </div>
-                    </div>
-                    <div class="info-section ps-10">
-                        <div class="info-icon-circle"><i class="bi bi-person-hearts"></i></div>
-                        <div class="info-text-block">
-                            <span class="info-title-label">Assigned Supervisor</span>
-                            <span class="info-person-name" id="supervisor_name_label">---</span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- MAIN RESULTS PORT -->
                 <div class="mt-8 pb-10">
@@ -209,26 +194,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal_review_submit" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mw-500px">
-        <div class="modal-content modal-review-submit shadow-lg">
-            <h2 class="modal-title">Review & Submit</h2>
-            <p class="modal-desc">Please review your logs for <strong id="review_period_label">...</strong> before final submission to your supervisor. You can</p>
-            
-            <a href="#" class="btn-download-draft w-100 shadow-sm mb-8"><i class="bi bi-file-earmark-excel-fill fs-3"></i> Download Draft (.xlsx) <span>to double-check.</span></a>
-            
-            <div class="certify-check-box mb-10">
-                <input type="checkbox" id="certify_check">
-                <label for="certify_check" class="certify-comment">I hereby certify that the hours logged above are accurate and represent my actual work time for this month.</label>
-            </div>
 
-            <div class="row g-4">
-                <div class="col-6"><button class="btn btn-action-main btn-neutral-ghost w-100 fw-boldest" style="height:55px" data-bs-dismiss="modal">Back to Editing</button></div>
-                <div class="col-6"><button class="btn btn-brand w-100 fw-boldest" style="height:55px; border-radius:12px" onclick="submitTimesheetApproval()">Submit Now</button></div>
-            </div>
-        </div>
-    </div>
-</div>
 
 @section Scripts {
     <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>

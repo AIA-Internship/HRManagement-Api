@@ -15,7 +15,7 @@ public class CreateTodoTaskCommand(CreateTodoTaskRequestDto requestDto)
     public CreateTodoTaskRequestDto RequestDto { get; } = requestDto;
 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITodoTaskRepository todoRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<CreateTodoTaskCommand, ApiResponse<string>>
     {
@@ -26,24 +26,24 @@ public class CreateTodoTaskCommand(CreateTodoTaskRequestDto requestDto)
             var employeeId = currentUserService.UserId;
             var actionerId = (long)employeeId;
             var dto = command.RequestDto;
-
+ 
             DateOnly? dueDate = null;
             if (!string.IsNullOrWhiteSpace(dto.DueDate) &&
                 DateOnly.TryParseExact(dto.DueDate, "yyyy-MM-dd", out var parsed))
             {
                 dueDate = parsed;
             }
-
+ 
             var task = new TodoTask(employeeId, dto.TaskName, dueDate, dto.Priority, actionerId);
-            await timesheetRepository.AddTodoTaskAsync(task);
-
+            await todoRepository.AddAsync(task);
+ 
             return ApiHelperResponse.Success("To-do task created successfully.", "Success");
         }
     }
 }
-
+ 
 // ─────────────────────────────────────────────────────────────────────────────
-
+ 
 /// <summary>
 /// Updates a to-do task's details.
 /// </summary>
@@ -52,9 +52,9 @@ public class UpdateTodoTaskCommand(int taskId, UpdateTodoTaskRequestDto requestD
 {
     public int TaskId { get; } = taskId;
     public UpdateTodoTaskRequestDto RequestDto { get; } = requestDto;
-
+ 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITodoTaskRepository todoRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<UpdateTodoTaskCommand, ApiResponse<string>>
     {
@@ -64,44 +64,44 @@ public class UpdateTodoTaskCommand(int taskId, UpdateTodoTaskRequestDto requestD
         {
             var employeeId = currentUserService.UserId;
             var dto = command.RequestDto;
-
-            var task = await timesheetRepository.GetTodoTaskByIdAsync(command.TaskId);
+ 
+            var task = await todoRepository.GetByIdAsync(command.TaskId);
             if (task == null)
             {
                 return ApiHelperResponse.Failed<string>("Task not found.");
             }
-
+ 
             if (task.EmployeeId != employeeId)
             {
                 return ApiHelperResponse.Failed<string>("You are not authorized to update this task.");
             }
-
+ 
             DateOnly? dueDate = null;
             if (!string.IsNullOrWhiteSpace(dto.DueDate) &&
                 DateOnly.TryParseExact(dto.DueDate, "yyyy-MM-dd", out var parsed))
             {
                 dueDate = parsed;
             }
-
+ 
             task.UpdateDetails(dto.TaskName, dueDate, dto.Priority, (long)employeeId);
-            await timesheetRepository.UpdateTodoTaskAsync(task);
-
+            await todoRepository.UpdateAsync(task);
+ 
             return ApiHelperResponse.Success("Task updated successfully.", "Success");
         }
     }
 }
-
+ 
 // ─────────────────────────────────────────────────────────────────────────────
-
+ 
 /// <summary>
 /// Toggles the completed status of a to-do task.
 /// </summary>
 public class ToggleTodoTaskCommand(int taskId) : IRequest<ApiResponse<string>>
 {
     public int TaskId { get; } = taskId;
-
+ 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITodoTaskRepository todoRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<ToggleTodoTaskCommand, ApiResponse<string>>
     {
@@ -110,37 +110,37 @@ public class ToggleTodoTaskCommand(int taskId) : IRequest<ApiResponse<string>>
             CancellationToken cancellationToken)
         {
             var employeeId = currentUserService.UserId;
-
-            var task = await timesheetRepository.GetTodoTaskByIdAsync(command.TaskId);
+ 
+            var task = await todoRepository.GetByIdAsync(command.TaskId);
             if (task == null)
             {
                 return ApiHelperResponse.Failed<string>("Task not found.");
             }
-
+ 
             if (task.EmployeeId != employeeId)
             {
                 return ApiHelperResponse.Failed<string>("You are not authorized to update this task.");
             }
-
+ 
             task.ToggleCompleted((long)employeeId);
-            await timesheetRepository.UpdateTodoTaskAsync(task);
-
+            await todoRepository.UpdateAsync(task);
+ 
             return ApiHelperResponse.Success("Task status updated.", "Success");
         }
     }
 }
-
+ 
 // ─────────────────────────────────────────────────────────────────────────────
-
+ 
 /// <summary>
 /// Soft-deletes a to-do task.
 /// </summary>
 public class DeleteTodoTaskCommand(int taskId) : IRequest<ApiResponse<string>>
 {
     public int TaskId { get; } = taskId;
-
+ 
     public class Handler(
-        ITimesheetRepository timesheetRepository,
+        ITodoTaskRepository todoRepository,
         ICurrentUserService currentUserService)
         : IRequestHandler<DeleteTodoTaskCommand, ApiResponse<string>>
     {
@@ -149,20 +149,20 @@ public class DeleteTodoTaskCommand(int taskId) : IRequest<ApiResponse<string>>
             CancellationToken cancellationToken)
         {
             var employeeId = currentUserService.UserId;
-
-            var task = await timesheetRepository.GetTodoTaskByIdAsync(command.TaskId);
+ 
+            var task = await todoRepository.GetByIdAsync(command.TaskId);
             if (task == null)
             {
                 return ApiHelperResponse.Failed<string>("Task not found.");
             }
-
+ 
             if (task.EmployeeId != employeeId)
             {
                 return ApiHelperResponse.Failed<string>("You are not authorized to delete this task.");
             }
-
-            await timesheetRepository.DeleteTodoTaskAsync(task);
-
+ 
+            await todoRepository.DeleteAsync(task);
+ 
             return ApiHelperResponse.Success("Task deleted successfully.", "Success");
         }
     }

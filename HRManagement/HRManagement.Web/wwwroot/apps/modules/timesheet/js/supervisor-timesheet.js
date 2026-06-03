@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://127.0.0.1:7089/api';
+const API_BASE_URL = 'https://localhost:7089/api';
 const token = localStorage.getItem('aia_jwt_token');
 
 let currentDate = new Date();
@@ -188,12 +188,13 @@ async function renderMonthlyGrid() {
     for (let d = 1; d <= totalDays; d++) {
         const dObj = new Date(y, m, d);
         const isToday = (dObj.toDateString() === new Date().toDateString());
+        const isWeekend = (dObj.getDay() === 0 || dObj.getDay() === 6);
         const dayData = data?.days?.find(day => new Date(day.date).getDate() === d);
         const hasWork = dayData && dayData.totalMinutes > 0;
 
         container.innerHTML += `
             <div class="grid-cell ${isToday ? 'is-today' : ''} ${hasWork ? 'has-data' : ''}">
-                <span class="cell-date-num">${d}</span>
+                <span class="cell-date-num ${isWeekend ? 'text-danger' : ''}">${d}</span>
                 ${hasWork ? '<div class="data-indicator"></div>' : ''}
             </div>`;
     }

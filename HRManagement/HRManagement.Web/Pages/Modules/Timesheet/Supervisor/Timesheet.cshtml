@@ -27,8 +27,21 @@
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Supervisor/Dashboard" },
                     new BreadcrumbItem { Title = "Review" }
-                }
+                },
+                RenderActions = new Microsoft.AspNetCore.Html.HtmlString(
+                    "<div class='dropdown'>" +
+                    "<button class='intern-dropdown-btn dropdown-toggle' type='button' id='intern_dropdown_toggle' data-bs-toggle='dropdown' aria-expanded='false'>" +
+                    "<i class='bi bi-person-badge text-brand'></i> <span id='intern_name_label'>Select Intern</span>" +
+                    "</button>" +
+                    "<ul class='dropdown-menu' id='intern_list_dropdown' aria-labelledby='intern_dropdown_toggle'>" +
+                    "<li><span class='dropdown-item disabled'>Loading interns...</span></li>" +
+                    "</ul>" +
+                    "</div>"
+                )
             })
+
+
+
             <div class="px-4 py-5">
                 
                 <!-- UNIFIED TOOLBAR NAV (MIRRORING EMPLOYEE) -->
@@ -77,35 +90,11 @@
                     <div class="btn-group-actions d-flex align-items-center gap-3">
                         <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
                         <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <a href="/Timesheet/Supervisor/Review" id="main_action_btn" class="btn-submit-red shadow-sm fw-boldest px-6" style="border-radius: 8px; padding: 10px 16px;"><i class="bi bi-check-circle-fill me-2"></i> REVIEW SUBMISSION</a>
+                        <button id="main_action_btn" class="btn btn-brand d-none shadow-sm fw-boldest px-6 py-3" style="border-radius: 8px;"></button>
                     </div>
                 </div>
 
-                <!-- SUPERVISOR INFO BAR (WITH DROPDOWN) -->
-                <div class="intern-supervisor-card shadow-sm mt-8">
-                    <div class="info-section border-right">
-                        <div class="info-icon-circle"><i class="bi bi-person-fill"></i></div>
-                        <div class="info-text-block">
-                            <span class="info-title-label">Intern Access</span>
-                            <div class="dropdown">
-                                <button class="intern-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span id="intern_name_label">Select Intern</span>
-                                    <i class="bi bi-chevron-down fs-7 text-muted"></i>
-                                </button>
-                                <ul class="dropdown-menu mt-3 shadow-lg" id="intern_list_dropdown">
-                                    <li><div class="px-5 py-3 text-muted">Loading interns...</div></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-section ps-10">
-                        <div class="info-icon-circle"><i class="bi bi-person-hearts"></i></div>
-                        <div class="info-text-block">
-                            <span class="info-title-label">Supervisor</span>
-                            <span class="info-person-name" id="supervisor_name_label">---</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- MAIN WORKSPACE -->
                 <div class="mt-8 pb-10">
@@ -179,17 +168,27 @@
                 const json = await r.json();
                 if (json.data) {
                     const data = json.data;
-                    document.getElementById('supervisor_name_label').innerText = data.supervisorName;
+                    const supervisorLabel = document.getElementById('supervisor_name_label');
+                    if (supervisorLabel) supervisorLabel.innerText = data.supervisorName;
                     const list = document.getElementById('intern_list_dropdown');
                     if (data.internHoursBreakdown && data.internHoursBreakdown.length > 0) {
-                        list.innerHTML = data.internHoursBreakdown.map(i => `
-                            <li><a class="dropdown-item" onclick="selectIntern(${i.employeeId}, '${i.employeeName}')">${i.employeeName}</a></li>
-                        `).join('');
+                        if (list) {
+                            list.innerHTML = data.internHoursBreakdown.map(i => `
+                                <li><a class="dropdown-item" onclick="selectIntern(${i.employeeId}, '${i.employeeName}')">${i.employeeName}</a></li>
+                            `).join('');
+                        }
                         
-                        // Select first by default to trigger render
-                        selectIntern(data.internHoursBreakdown[0].employeeId, data.internHoursBreakdown[0].employeeName);
+                        // Select by URL param or first by default
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const targetId = urlParams.get('employeeId');
+                        const targetIntern = data.internHoursBreakdown.find(i => i.employeeId == targetId) || data.internHoursBreakdown[0];
+                        
+                        if (targetIntern) {
+                            selectIntern(targetIntern.employeeId, targetIntern.employeeName);
+                        }
+
                     } else {
-                        list.innerHTML = '<li><div class="px-5 py-3 text-muted">No interns assigned.</div></li>';
+                        if (list) list.innerHTML = '<li><div class="px-5 py-3 text-muted">No interns assigned.</div></li>';
                     }
                 }
             } catch (e) { console.error("Failed to load interns", e); }
@@ -197,7 +196,8 @@
 
         function selectIntern(id, name) {
             window.selectedInternId = id;
-            document.getElementById('intern_name_label').innerText = name;
+            const internLabel = document.getElementById('intern_name_label');
+            if (internLabel) internLabel.innerText = name;
             
             // Highlight active in dropdown
             document.querySelectorAll('#intern_list_dropdown .dropdown-item').forEach(el => {

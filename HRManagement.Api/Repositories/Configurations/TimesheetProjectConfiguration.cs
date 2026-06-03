@@ -21,6 +21,12 @@ public class TimesheetProjectConfiguration : IEntityTypeConfiguration<TimesheetP
             .HasColumnName("ts_project_description")
             .HasMaxLength(500);
 
+        builder.Property(p => p.ProjectLeader)
+            .HasColumnName("ts_project_leader")
+            .HasMaxLength(200)
+            .IsRequired()
+            .HasDefaultValue(string.Empty);
+
         builder.Property(p => p.Status)
             .HasColumnName("ts_project_status")
             .IsRequired();

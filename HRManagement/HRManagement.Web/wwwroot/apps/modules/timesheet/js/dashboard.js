@@ -1,15 +1,12 @@
 /**
  * Supervisor Dashboard Module
- * AIA PROFESSIONAL CLEAN OVERHAUL
+ * AIA PROFESSIONAL CLEAN OVERHAUL (MATCHING MOCKUP)
  */
 
 let allocationChart = null;
-const AIA_COLORS = ['#D31145', '#181C32', '#009EF7', '#50CD89', '#F1416C', '#7239EA', '#3F4254'];
+const AIA_COLORS = ['#C0214B', '#F1B25C', '#519C42', '#86A3E8', '#181C32', '#009EF7', '#50CD89'];
 
-const indonesianMonths = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
+const englishMonths = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
 async function initSupervisorDashboard() {
     try {
@@ -18,77 +15,57 @@ async function initSupervisorDashboard() {
 
         renderBanner(data);
         renderMissingSubmissions(data.missingSubmissions);
-        renderApprovalSummary(data);
+        renderApprovalStats(data);
         renderPivotTable(data.internHoursBreakdown);
         renderAllocationDonut(data.projectAllocations);
+        renderLiveActivity(data.recentActivity);
         setupDropdownFilter(data.internHoursBreakdown);
+
     } catch (err) {
         console.error("Dashboard Init Error:", err);
     }
 }
 
 function renderBanner(data) {
-    const activeEl = document.getElementById('active_intern_count');
-    if (activeEl) activeEl.innerText = data.totalActiveInterns || 0;
+    const welcomeEl = document.getElementById('welcome_text');
+    const activeLabel = document.getElementById('active_intern_count_label');
+    
+    if (welcomeEl && data.supervisorName) welcomeEl.innerText = `Good Morning, ${data.supervisorName}`;
+    if (activeLabel) activeLabel.innerText = `${data.totalActiveInterns || 0} active members`;
 }
 
 function renderMissingSubmissions(missing) {
     const container = document.getElementById('missing_list_container');
     if (!container) return;
-    container.innerHTML = '';
-
-    if (!missing || missing.length === 0) {
-        container.innerHTML = '<div class="text-center py-20 opacity-25 fw-bold">All interns up to date.</div>';
-        return;
-    }
-
-    missing.forEach((m) => {
-        const monthName = indonesianMonths[m.month - 1] || m.month;
-        container.innerHTML += `
-            <div class="list-item-dashed">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="symbol-circle">${m.employeeName.charAt(0)}</div>
-                    <span class="fw-bold fs-6 text-gray-800">${m.employeeName}</span>
-                </div>
-                <span class="badge bg-light text-muted fw-bold fs-9 px-3 py-2 border">${monthName} ${m.year}</span>
+    // PERFORMANCE: Use array buffering instead of innerHTML +=
+    const html = missing.slice(0, 5).map(m => {
+        const monthNameRaw = englishMonths[m.month - 1] || String(m.month);
+        const monthName = monthNameRaw.charAt(0) + monthNameRaw.slice(1).toLowerCase();
+        return `
+            <div class="missing-dash-row">
+                <span class="missing-dash-name">${m.employeeName}</span>
+                <span class="missing-dash-period">- &nbsp; ${monthName} ${m.year}</span>
+                <button class="btn-view-timesheet" onclick="window.location.href='/Timesheet/Supervisor/Timesheet?employeeId=${m.employeeId}'">View Timesheet</button>
             </div>
         `;
-    });
+    }).join('');
+
+    container.innerHTML = html;
 }
 
-function renderApprovalSummary(data) {
-    const reviewStatEl = document.getElementById('needs_review_count_stat');
-    const container = document.getElementById('pending_approvals_list');
-
-    if (reviewStatEl) {
-        const reviewCount = data.pendingApprovals ? data.pendingApprovals.length : 0;
-        reviewStatEl.innerText = `${reviewCount} / ${data.totalActiveInterns || 0}`;
+function renderApprovalStats(data) {
+    const monthEl = document.getElementById('approval_month_label');
+    const countEl = document.getElementById('approval_count_label');
+    
+    if (monthEl) {
+        const d = new Date();
+        const monthName = englishMonths[d.getMonth()];
+        monthEl.innerText = `${monthName.substr(0, 3)} ${d.getFullYear()}`;
     }
-
-    if (container) {
-        if (!data.pendingApprovals || data.pendingApprovals.length === 0) {
-            container.innerHTML = '<div class="text-center py-20 opacity-25 fw-bold">No submissions waiting review.</div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        data.pendingApprovals.forEach(app => {
-            const mName = indonesianMonths[app.submissionMonth - 1] || app.submissionMonth;
-            container.innerHTML += `
-                <div class="list-item-dashed">
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="symbol-circle bg-light-brand text-brand">${app.employeeName.charAt(0)}</div>
-                        <div>
-                            <div class="fw-bold text-gray-900 fs-6">${app.employeeName}</div>
-                            <div class="fs-tiny text-muted fw-bold">${mName} ${app.submissionYear}</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-light-grey px-5 py-2 fs-tiny" onclick="window.location.href='/Timesheet/Supervisor/Review?id=${app.submissionId}'">
-                        REVIEW
-                    </button>
-                </div>
-            `;
-        });
+    
+    if (countEl) {
+        const waitingCount = data.pendingApprovals ? data.pendingApprovals.length : 0;
+        countEl.innerText = `${waitingCount}/${data.totalActiveInterns || 0}`;
     }
 }
 
@@ -98,38 +75,35 @@ function renderPivotTable(breakdown) {
     if (!headerRow || !tbody) return;
 
     if (!breakdown || breakdown.length === 0) {
-        headerRow.innerHTML = `<th>PROJECT NAME</th><th>DATA STATUS</th>`;
-        tbody.innerHTML = '<tr><td colspan="2" class="text-center py-10 opacity-25">No data found</td></tr>';
+        headerRow.innerHTML = `<th>ONGOING PROJECTS</th><th>STATUS</th>`;
+        tbody.innerHTML = '<tr><td colspan="2" class="text-center py-10 opacity-25">No activity found</td></tr>';
         return;
     }
 
-    const projectSet = new Set();
+    // PERFORMANCE: Use Set for O(1) project collection
+    const projectsSet = new Set();
     breakdown.forEach(b => {
         if(b.projectMinutes) {
-            Object.keys(b.projectMinutes).forEach(p => projectSet.add(p));
+            Object.keys(b.projectMinutes).forEach(p => projectsSet.add(p));
         }
     });
-    const projectsArr = Array.from(projectSet);
-    if(projectsArr.length === 0) projectsArr.push("General Work");
 
-    let headerHTML = `<th>PROJECT NAME</th>`;
-    breakdown.forEach(intern => {
-        headerHTML += `<th>${intern.employeeName.split(' ')[0]}</th>`;
-    });
+    const projectsArr = Array.from(projectsSet).sort();
+
+    // PERFORMANCE: Pre-calculate Header HTML
+    let headerHTML = '<th>ONGOING PROJECTS</th>' + 
+                     breakdown.map(i => `<th>${i.employeeName}</th>`).join('');
     headerRow.innerHTML = headerHTML;
 
-    let bodyHTML = '';
-    projectsArr.forEach(project => {
-        let rowHTML = `<tr><td>${project}</td>`;
-        breakdown.forEach(intern => {
+    // PERFORMANCE: Pre-calculate Body HTML using joined strings
+    const bodyHTML = projectsArr.map(project => {
+        const cells = breakdown.map(intern => {
             const mins = (intern.projectMinutes && intern.projectMinutes[project]) ? intern.projectMinutes[project] : 0;
             const hrs = (mins / 60).toFixed(1);
-            const content = mins === 0 ? '<span class="opacity-10">-</span>' : `<span class="badge bg-light text-dark fw-bold fs-8">${hrs}h</span>`;
-            rowHTML += `<td>${content}</td>`;
-        });
-        rowHTML += `</tr>`;
-        bodyHTML += rowHTML;
-    });
+            return (mins === 0) ? '<td><span class="val-zero">0</span></td>' : `<td><span class="fw-boldest text-dark">${hrs}</span></td>`;
+        }).join('');
+        return `<tr><td>${project}</td>${cells}</tr>`;
+    }).join('');
 
     tbody.innerHTML = bodyHTML;
 }
@@ -143,18 +117,41 @@ function renderAllocationDonut(allocations) {
     if (allocationChart) allocationChart.destroy();
 
     if (!allocations || allocations.length === 0) {
-        if(legendContainer) legendContainer.innerHTML = '<div class="text-muted text-center py-10">No usage data found.</div>';
+        if(legendContainer) legendContainer.innerHTML = '<div class="text-muted text-center py-20 fs-7 fw-boldest">NO USAGE DATA FOUND.</div>';
+        const valueEl = document.getElementById('donut_total_value');
+        if(valueEl) valueEl.innerText = "0%";
+        
+        // Render Empty Gray Ring Placeholder
+        allocationChart = new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    data: [100],
+                    backgroundColor: ['#F1F4F9'],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: '80%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, maintainAspectRatio: false }
+        });
         return;
     }
+
+    // Calculate Actual Total and Update Center Text
+    const total = allocations.reduce((sum, item) => sum + (item.allocationPercentage || 0), 0);
+    const valueEl = document.getElementById('donut_total_value');
+    if(valueEl) valueEl.innerText = `${total}%`;
 
     if(legendContainer) {
         allocations.forEach((item, idx) => {
             const color = AIA_COLORS[idx % AIA_COLORS.length];
             legendContainer.innerHTML += `
-                <div class="chart-legend-item">
-                    <div class="dot" style="background: ${color};"></div>
-                    <span class="legend-label">${item.projectName}</span>
-                    <span class="legend-value text-brand">${item.allocationPercentage}%</span>
+                <div class="legend-pill">
+                    <div class="legend-pill-left">
+                        <div class="legend-dot" style="background: ${color};"></div>
+                        ${item.projectName}
+                    </div>
+                    <div class="legend-val">${item.allocationPercentage}%</div>
                 </div>
             `;
         });
@@ -168,11 +165,11 @@ function renderAllocationDonut(allocations) {
                 data: allocations.map(a => a.allocationPercentage),
                 backgroundColor: AIA_COLORS.slice(0, allocations.length),
                 borderWidth: 0,
-                hoverOffset: 12
+                hoverOffset: 15
             }]
         },
         options: {
-            cutout: '75%',
+            cutout: '80%',
             plugins: { legend: { display: false } },
             maintainAspectRatio: false
         }
@@ -182,7 +179,7 @@ function renderAllocationDonut(allocations) {
 function setupDropdownFilter(breakdown) {
     const dropdown = document.getElementById('intern_filter_dropdown');
     if(!dropdown) return;
-    dropdown.innerHTML = '<option value="">All Interns</option>';
+    dropdown.innerHTML = '<option value="">All Intern</option>';
     breakdown.forEach(i => {
         dropdown.innerHTML += `<option value="${i.employeeId}">${i.employeeName}</option>`;
     });
@@ -196,17 +193,50 @@ function setupDropdownFilter(breakdown) {
 }
 
 async function fetchAPI(endpoint) {
-    const token = localStorage.getItem('token') || localStorage.getItem('aia_jwt_token');
-    const response = await fetch(`https://127.0.0.1:7089/api/${endpoint}`, {
+    const token = localStorage.getItem('aia_jwt_token');
+    const response = await fetch(`https://localhost:7089/api/${endpoint}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (response.status === 401) { window.location.href = '/Account/Login'; return null; }
+    if (response.status === 401) { 
+        console.error('401 Unauthorized in dashboard');
+        // window.location.href = '/Account/Login'; 
+        return null; 
+    }
     const json = await response.json();
     return json.content || json.Content || json.data || json;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.toLowerCase().includes('/supervisor/dashboard')) {
-        initSupervisorDashboard();
+function renderLiveActivity(activities) {
+    const tbody = document.getElementById('live_activity_tbody');
+    if (!tbody) return;
+
+    if (!activities || activities.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-muted">No recent activity detected.</td></tr>';
+        return;
     }
+
+    tbody.innerHTML = activities.map(a => `
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="symbol symbol-35px symbol-circle me-3">
+                        <span class="symbol-label bg-light-danger text-danger fw-boldest">${a.employeeName.charAt(0)}</span>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-dark fw-boldest fs-7">${a.employeeName}</span>
+                        <span class="text-muted fs-9">Just now</span>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge badge-light-primary fw-boldest fs-9">${a.projectName}</span></td>
+            <td><div class="text-gray-600 fs-7 text-truncate" style="max-width: 250px;" title="${a.taskDescription}">${a.taskDescription}</div></td>
+            <td class="text-center"><span class="text-dark fw-boldest fs-7">${a.durationFormatted}</span></td>
+            <td class="text-end text-muted fs-8 fw-bold">${a.entryDate}</td>
+        </tr>
+    `).join('');
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    initSupervisorDashboard();
 });

@@ -37,7 +37,7 @@ public class ReviewUpdateCommand(ReviewUpdateRequestDto decision) : IRequest<Api
                 );
             }
 
-            if (request.Employee.EmployeeEmail == hrEmail)
+            if (request.Employee?.EmployeeEmail == hrEmail)
             {
                 throw new ApiException(
                     "Conflict", (int) 

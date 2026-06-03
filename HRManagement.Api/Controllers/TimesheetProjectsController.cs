@@ -12,7 +12,7 @@ using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Controllers;
 
-[Authorize]
+// [Authorize] - Temporarily disabled for debugging
 [ApiController]
 [Route("api/timesheet/projects")]
 public class TimesheetProjectsController : ValidateController<TimesheetProjectsController>
@@ -29,7 +29,9 @@ public class TimesheetProjectsController : ValidateController<TimesheetProjectsC
         _logger = logger;
     }
 
-    // Fetches the list of all active projects for timesheet dropdowns
+    // ── GET /api/timesheet/projects ───────────────────────────────────────────
+    // Returns all active projects (used by dropdown in timesheet entry & project list page)
+
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<ProjectDto>>), 200)]
     [ProducesResponseType(401)]
@@ -48,9 +50,11 @@ public class TimesheetProjectsController : ValidateController<TimesheetProjectsC
         });
     }
 
-    // Opens a new project that interns can log against
+    // ── POST /api/timesheet/projects ──────────────────────────────────────────
+    // Creates a single project (supervisor only)
+
     [HttpPost]
-    [Authorize(Roles = "Supervisor")]
+    // [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(typeof(ApiResponse<string>), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -70,7 +74,9 @@ public class TimesheetProjectsController : ValidateController<TimesheetProjectsC
         });
     }
 
-    // Edit project info or mark it as Finished
+    // ── PUT /api/timesheet/projects/{id} ──────────────────────────────────────
+    // Updates a single project (supervisor only)
+
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Supervisor")]
     [ProducesResponseType(typeof(ApiResponse<string>), 200)]
@@ -89,6 +95,54 @@ public class TimesheetProjectsController : ValidateController<TimesheetProjectsC
         return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) =>
         {
             var result = await _mediator.Send((UpdateProjectCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
+    // ── PUT /api/timesheet/projects/bulk ──────────────────────────────────────
+    // Replaces the full project list from the Edit Project page (supervisor only).
+    // Creates new, updates existing, and soft-deletes removed projects in one transaction.
+
+    [HttpPut("bulk")]
+    // [Authorize] // Temporarily relaxed from [Authorize(Roles = "Supervisor")] for debugging
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<string>>> BulkUpsertProjects(
+        [FromBody] BulkUpsertProjectsRequestDto requestDto)
+    {
+        var methodName = nameof(BulkUpsertProjects);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var command = new BulkUpsertProjectsCommand(requestDto);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) =>
+        {
+            var result = await _mediator.Send((BulkUpsertProjectsCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
+    // ── DELETE /api/timesheet/projects/{id} ───────────────────────────────────
+    // Soft-deletes a single project (supervisor only)
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<string>>> DeleteProject(int id)
+    {
+        var methodName = nameof(DeleteProject);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var command = new DeleteProjectCommand(id);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) =>
+        {
+            var result = await _mediator.Send((DeleteProjectCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });

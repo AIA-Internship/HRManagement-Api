@@ -7,6 +7,7 @@ public class ProjectDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public string ProjectLeader { get; set; } = string.Empty;
 
     /// <summary>"Running" or "Finished".</summary>
     public string Status { get; set; } = string.Empty;
@@ -81,8 +82,11 @@ public class MonthlyTimesheetResponseDto
     public int Year { get; set; }
     public int Month { get; set; }
 
+    public int? SubmissionId { get; set; }
+
     /// <summary>"Not Submitted", "Waiting for Approval", "Approved", "Need Revision".</summary>
     public string SubmissionStatus { get; set; } = "Not Submitted";
+
 
     public List<MonthlyDayCellDto> Days { get; set; } = new();
 }
@@ -228,7 +232,19 @@ public class SupervisorDashboardResponseDto
     public List<MissingSubmissionItemDto> MissingSubmissions { get; set; } = new();
     public List<InternHoursBreakdownDto> InternHoursBreakdown { get; set; } = new();
     public List<ProjectAllocationDto> ProjectAllocations { get; set; } = new();
+    public List<RecentActivityDto> RecentActivity { get; set; } = new();
 }
+
+public class RecentActivityDto
+{
+    public string EmployeeName { get; set; } = string.Empty;
+    public string ProjectName { get; set; } = string.Empty;
+    public string DurationFormatted { get; set; } = string.Empty;
+    public string TaskDescription { get; set; } = string.Empty;
+    public string EntryDate { get; set; } = string.Empty;
+    public string RelativeTime { get; set; } = string.Empty;
+}
+
 
 
 public class InternHoursBreakdownDto
