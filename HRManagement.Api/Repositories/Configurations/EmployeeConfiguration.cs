@@ -10,8 +10,13 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         builder.ToTable("Employees");
         
-        // Logical relationships: No physical DB Foreign Keys for enterprise modularity.
-        // Managed via IDs at the application level. (Removed HasOne/HasMany from master)
+        builder.HasOne(e => e.EmploymentInformation)
+            .WithOne(e => e.Employee)
+            .HasForeignKey<EmploymentInformation>(e => e.EmployeeId);
+        
+        builder.HasMany(e => e.EmergencyContacts)
+            .WithOne(ec => ec.Employee)
+            .HasForeignKey(ec => ec.EmployeeId);
         
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("emp_id");

@@ -50,9 +50,11 @@ public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentIn
         
         builder.HasIndex(e => e.EmployeeDisplayId)
             .IsUnique();
-        
-        // Logical relationship: No physical DB Foreign Key for high-scale enterprise decoupling.
-        // Relationship is managed at the application/logic level via emp_id.
         builder.HasIndex(e => e.EmployeeId);
+
+        builder.HasOne(e => e.Supervisor)
+            .WithMany()
+            .HasForeignKey(e => e.SupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
