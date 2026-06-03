@@ -76,7 +76,7 @@ public class CreateEmployeeCommand(CreateEmployeeRequestDto commandDto) : IReque
                 maritalStatus: dto.MaritalStatus,
                 currentAddress: new Address(dto.CurrentStreetAddress, dto.CurrentCity, dto.CurrentProvince, dto.CurrentPostalCode),
                 residentialAddress: new Address(dto.ResidentialStreetAddress, dto.ResidentialCity, dto.ResidentialProvince, dto.ResidentialPostalCode),
-                role: dto.Role,
+                roleId: dto.Role,
                 actionerId: actionerId);
             
             var hashedPassword = passwordHasher.Hash(dto.DefaultPassword);

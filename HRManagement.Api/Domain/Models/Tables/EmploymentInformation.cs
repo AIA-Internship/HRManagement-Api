@@ -7,9 +7,9 @@ public class EmploymentInformation : BaseTableModel
     public int Id { get; set; }
     public int EmployeeId { get; set; }
     
-    // Relationship status: Logic-only. No navigation property to support Enterprise-scale decoupling.
-    [NotMapped]
-    public Employee? Employee { get; set; }
+    public Employee Employee { get; set; } = null!;
+    public int? SupervisorId { get; set; }
+    public Employee? Supervisor { get; set; }
     
     public int EmploymentStatus { get; set; }
     public DateTime StartDate { get; set; }

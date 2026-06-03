@@ -3,6 +3,7 @@ using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using HRManagement.Api.Domain.Models.Tables.MasterRole;
 
 namespace HRManagement.Api.Application.Queries.Timesheet;
 
@@ -33,13 +34,22 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
                 return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Sesi Anda telah kedaluwarsa atau tidak valid. Silakan login kembali.");
             }
 
+            var roles = await appDbContext.Roles.AsNoTracking().ToListAsync(cancellationToken);
+            var supervisorRole = roles.FirstOrDefault(r => r.Name == "Supervisor");
+            var employeeRole = roles.FirstOrDefault(r => r.Name == "Employee");
+            
+            if (supervisorRole == null || employeeRole == null)
+            {
+                return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Role configuration tidak valid. Harap hubungi administrator.");
+            }
+
             var supervisor = await appDbContext.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == supervisorEmail, cancellationToken);
             if (supervisor == null)
             {
                 return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Akun Supervisor Anda tidak ditemukan di database. Harap hubungi administrator.");
             }
 
-            if (supervisor.Role != 0)
+            if (supervisor.RoleId != supervisorRole.Id)
             {
                 return ApiHelperResponse.Failed<SupervisorDashboardResponseDto>("Akses Ditolak. Halaman ini membutuhkan hak akses level Supervisor.");
             }
@@ -49,7 +59,7 @@ public class GetSupervisorDashboardQuery : IRequest<ApiResponse<SupervisorDashbo
             // Filter interns (Relaxed to show all active interns for data visibility)
             var activeInterns = await appDbContext.Employees
                 .AsNoTracking()
-                .Where(e => e.Role == 1 && e.IsActive)
+                .Where(e => e.RoleId == employeeRole.Id && e.IsActive)
                 .ToListAsync(cancellationToken);
             
             var internIds = activeInterns.Select(i => i.Id).ToList();
@@ -192,13 +202,22 @@ public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalRep
                 return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Sesi Anda telah kedaluwarsa atau tidak valid. Silakan login kembali.");
             }
 
+            var roles = await appDbContext.Roles.AsNoTracking().ToListAsync(cancellationToken);
+            var supervisorRole = roles.FirstOrDefault(r => r.Name == "Supervisor");
+            var employeeRole = roles.FirstOrDefault(r => r.Name == "Employee");
+            
+            if (supervisorRole == null || employeeRole == null)
+            {
+                return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Role configuration tidak valid. Harap hubungi administrator.");
+            }
+
             var supervisor = await appDbContext.Employees.FirstOrDefaultAsync(e => e.EmployeeEmail == supervisorEmail, cancellationToken);
             if (supervisor == null)
             {
                 return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akun Supervisor Anda tidak ditemukan di database. Harap hubungi administrator.");
             }
 
-            if (supervisor.Role != 0)
+            if (supervisor.RoleId != supervisorRole.Id)
             {
                 return ApiHelperResponse.Failed<SupervisorApprovalReportDto>("Akses Ditolak. Anda tidak memiliki wewenang untuk melihat laporan izin ini.");
             }
@@ -208,7 +227,7 @@ public class GetApprovalReportQuery : IRequest<ApiResponse<SupervisorApprovalRep
             // All active interns
             var interns = await appDbContext.Employees
                 .AsNoTracking()
-                .Where(e => e.Role == 1 && e.IsActive)
+                .Where(e => e.RoleId == employeeRole.Id && e.IsActive)
                 .ToListAsync(cancellationToken);
             
             var internIds = interns.Select(i => i.Id).ToHashSet();

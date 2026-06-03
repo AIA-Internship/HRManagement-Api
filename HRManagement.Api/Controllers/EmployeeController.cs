@@ -1,3 +1,4 @@
+using HRManagement.Api.Domain.Models.Constants;
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Api.Application.Auth.Permissions;
 
 namespace HRManagement.Api.Controllers;
 
@@ -31,7 +33,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPut("employment-info/{displayId}")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission("ManageEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -73,7 +75,7 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
     
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission("ViewEmployees")]
     [HttpGet("list")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -117,7 +119,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
 
     [HttpGet("requests")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission("ManageEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -139,7 +141,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
 
     [HttpGet("{displayId}")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission(Permissions.Employees.View)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -161,7 +163,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpGet("supervisors-lookup")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission(Permissions.Employees.View)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -181,7 +183,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPost("review-update")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission(Permissions.Employees.Edit)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -203,7 +205,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPost("create")]
-    [Authorize(Roles = "Supervisor")]
+    [HasPermission(Permissions.Employees.Create)]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]

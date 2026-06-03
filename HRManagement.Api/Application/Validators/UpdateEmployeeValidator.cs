@@ -13,7 +13,7 @@ public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
             .MustAsync(async (command, name, _) => 
             {
                 var employee = await employeeRepository.GetByEmailAsync(currentUserService.Email!);
-                return await employeeRepository.IsFullNameUniqueAsync(name, employee?.Id);
+                return await employeeRepository.IsUniqueAsync(e => e.FullName, name, employee?.Id);
             })
             .WithMessage(x => $"The full name '{x.RequestDto.FullName}' is already in use.")
             .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.FullName));
@@ -28,7 +28,7 @@ public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
             .MustAsync(async (command, email, _) => 
             {
                 var employee = await employeeRepository.GetByEmailAsync(currentUserService.Email!);
-                return await employeeRepository.IsPersonalEmailUniqueAsync(email, employee?.Id);
+                return await employeeRepository.IsUniqueAsync(e => e.PersonalEmail, email, employee?.Id);
             })
             .WithMessage(x => $"The personal email '{x.RequestDto.PersonalEmail}' is already in use.")
             .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.PersonalEmail));
@@ -85,7 +85,7 @@ public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
             .MustAsync(async (command, phone, _) => 
             {
                 var employee = await employeeRepository.GetByEmailAsync(currentUserService.Email!);
-                return await employeeRepository.IsPhoneNumberUniqueAsync(phone, employee?.Id);
+                return await employeeRepository.IsUniqueAsync(e => e.PhoneNumber, phone, employee?.Id);
             })
             .WithMessage(x => $"The phone number '{x.RequestDto.PhoneNumber}' is already in use.")
             .When(x => !string.IsNullOrWhiteSpace(x.RequestDto.PhoneNumber)); 
