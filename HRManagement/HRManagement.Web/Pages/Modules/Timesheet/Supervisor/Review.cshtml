@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-review.css" asp-append-version="true" />
     <style>
+        :root { --brand-red: #D31145; }
         .review-page-container {
             padding: 28px 32px;
             background-color: #F4F6F9;
@@ -27,142 +28,102 @@
             justify-content: space-between;
             box-shadow: 0 1px 4px rgba(16,24,40,0.04);
         }
-
-        .intern-profile {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
+        .intern-profile { display: flex; align-items: center; gap: 18px; }
         .avatar-box {
-            width: 54px;
-            height: 54px;
-            border-radius: 12px;
-            background: var(--brand-red-light, #FFF5F8);
-            color: var(--brand-red, #D31145);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            font-weight: 900;
-            border: 1px solid rgba(211, 17, 69, 0.1);
+            width: 54px; height: 54px; border-radius: 12px;
+            background: #FFF5F8; color: var(--brand-red);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 900; border: 1px solid rgba(211,17,69,0.1);
         }
-
-        .intern-name {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: #181C32;
-            margin-bottom: 4px;
-        }
-
+        .intern-name { font-size: 1.25rem; font-weight: 800; color: #181C32; margin-bottom: 4px; }
         .period-pill {
-            background: #F4F6F9;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #7E8299;
-            text-transform: uppercase;
+            background: #F4F6F9; padding: 4px 12px; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 700; color: #7E8299; text-transform: uppercase;
         }
 
-        /* ── Table Container ── */
-        .log-table-card {
+        /* ── Select-All Toolbar ── */
+        .select-all-toolbar {
             background: #fff;
-            border-radius: 14px;
+            border-radius: 12px;
+            padding: 14px 24px;
             border: 1px solid #EAECF0;
-            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-
-        .log-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .log-table th {
-            padding: 16px 28px;
-            background: #F8FAFC;
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: #7E8299;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            border-bottom: 1px solid #EAECF0;
-        }
-
-        .log-table td {
-            padding: 16px 28px;
-            font-size: 0.95rem;
-            color: #374151;
-            border-bottom: 1px solid #F4F6F9;
-            vertical-align: middle;
-        }
-
-        /* ── Feedback Section ── */
-        .feedback-card {
-            background: #fff;
-            border-radius: 14px;
-            padding: 28px;
-            border: 1px solid #EAECF0;
-            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
-        }
-
-        .feedback-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #181C32;
             margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 16px;
+            flex-wrap: wrap;
         }
+        .select-all-toolbar label { font-weight: 700; color: #374151; font-size: 0.9rem; cursor: pointer; margin: 0; }
 
+        /* ── Table Container ── */
+        .log-table-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid #EAECF0; margin-bottom: 24px; overflow: hidden;
+            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+        }
+        .log-table { width: 100%; border-collapse: collapse; }
+        .log-table th {
+            padding: 14px 20px; background: #F8FAFC;
+            font-size: 0.75rem; font-weight: 800; color: #7E8299;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            border-bottom: 1px solid #EAECF0; text-align: left;
+        }
+        .log-table td {
+            padding: 14px 20px; font-size: 0.9rem;
+            color: #374151; border-bottom: 1px solid #F4F6F9;
+            vertical-align: middle;
+        }
+        .log-table tbody tr:last-child td { border-bottom: none; }
+        .log-table tbody tr { transition: background 0.12s; }
+        .log-table tbody tr:hover { background: #FAFAFA; }
+
+        /* ── Checkbox Column ── */
+        .col-check { width: 48px; text-align: center !important; }
+        .col-day   { width: 60px; text-align: center !important; }
+        .col-dur   { width: 90px; text-align: center !important; }
+        .col-remark { width: 280px; }
+
+        .day-check {
+            width: 18px; height: 18px; border-radius: 4px;
+            accent-color: var(--brand-red); cursor: pointer;
+        }
+        .day-check:disabled { cursor: not-allowed; opacity: 0.6; }
+
+        .remark-input {
+            border: 1px solid #EAECF0; border-radius: 6px;
+            padding: 7px 10px; font-size: 0.83rem; font-weight: 600;
+            width: 100%; background: #FAFBFC; color: #3F4254;
+            transition: border-color 0.15s;
+        }
+        .remark-input:focus { background: #fff; border-color: var(--brand-red); outline: none; }
+        .remark-input:disabled { background: #F4F6F9; color: #B0B5C9; cursor: not-allowed; }
+
+        /* Status tags inside row */
+        .row-approved  td { background: #F0FDF4 !important; }
+        .row-revision  td { background: #FFF7F0 !important; }
+        .row-weekend   td { background: #FAFBFC !important; color: #B0B5C9; }
+
+        /* ── Feedback Section ── */
+        .feedback-card {
+            background: #fff; border-radius: 14px;
+            padding: 28px; border: 1px solid #EAECF0;
+            box-shadow: 0 1px 4px rgba(16,24,40,0.04);
+        }
+        .feedback-title {
+            font-size: 1.05rem; font-weight: 800; color: #181C32;
+            margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+        }
         .feedback-title i { color: var(--brand-red); }
-
         .feedback-textarea {
-            border: 1px solid #E1E3EA;
-            border-radius: 8px;
-            padding: 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #3F4254;
-            background: #F9FAFB;
-            width: 100%;
-            min-height: 120px;
-            transition: all 0.2s;
-            margin-bottom: 24px;
+            border: 1px solid #E1E3EA; border-radius: 8px; padding: 16px;
+            font-size: 0.9rem; font-weight: 600; color: #3F4254;
+            background: #F9FAFB; width: 100%; min-height: 110px;
+            transition: all 0.2s; margin-bottom: 20px;
         }
-
-        .feedback-textarea:focus {
-            background: #fff;
-            border-color: var(--brand-red);
-            box-shadow: 0 0 0 4px rgba(211, 17, 69, 0.05);
-            outline: none;
-        }
-
+        .feedback-textarea:focus { background:#fff; border-color:var(--brand-red); outline:none; box-shadow:0 0 0 4px rgba(211,17,69,0.05); }
         .action-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #F4F6F9;
-            padding-top: 24px;
-        }
-
-        .day-input {
-            border: 1px solid #EAECF0;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            width: 100%;
-            background: #FBFBFB;
-        }
-
-        .day-input:focus {
-            background: #fff;
-            border-color: var(--brand-red);
-            outline: none;
+            display: flex; justify-content: flex-end; gap: 12px;
+            border-top: 1px solid #F4F6F9; padding-top: 20px;
         }
     </style>
 }
@@ -175,9 +136,8 @@
             <i class="bi bi-chevron-right fs-9"></i>
             <a href="/Timesheet/Supervisor/Report" class="text-muted text-hover-primary">Employee Approval Center</a>
             <i class="bi bi-chevron-right fs-9"></i>
-            <span class="text-brand-red fw-boldest">Review Work Log</span>
+            <span class="fw-boldest" style="color:var(--brand-red);">Review Work Log</span>
         </div>
-
         <a href="/Timesheet/Supervisor/Report" class="btn-standard-ghost btn-standard-sm">
             <i class="bi bi-arrow-left"></i> Back to List
         </a>
@@ -195,27 +155,44 @@
                 </div>
             </div>
         </div>
-
         <div class="text-end">
             <div class="text-muted fs-8 fw-bold mb-1">Submitted Date</div>
             <div class="fw-boldest text-gray-800" id="submitted_at">--</div>
         </div>
     </div>
 
+    <!-- SELECT ALL TOOLBAR -->
+    <div class="select-all-toolbar">
+        <div class="d-flex align-items-center gap-3">
+            <input type="checkbox" id="select_all_cb" class="day-check" onchange="toggleSelectAll(this)">
+            <label for="select_all_cb">Select All Workdays</label>
+        </div>
+        <div class="ms-auto d-flex gap-3 align-items-center">
+            <span class="text-muted fs-8 fw-bold" id="selected_count_label">0 selected</span>
+            <button class="btn btn-sm btn-light-success fw-boldest px-5" style="border-radius:8px;" onclick="bulkApproveSelected()">
+                <i class="bi bi-check-all me-1"></i> Approve Selected
+            </button>
+            <button class="btn btn-sm btn-light-danger fw-boldest px-5" style="border-radius:8px;" onclick="bulkRevisionSelected()">
+                <i class="bi bi-arrow-repeat me-1"></i> Revision Selected
+            </button>
+        </div>
+    </div>
+
     <!-- LOG TABLE -->
     <div class="log-table-card">
-        <div class="p-6 border-bottom bg-light bg-opacity-10 d-flex justify-content-between align-items-center">
-            <h3 class="fs-6 fw-boldest text-gray-800 mb-0">Daily Log Preview</h3>
-            <span class="text-muted fs-9 fw-bold">AUDIT MODE</span>
+        <div class="p-5 border-bottom bg-light bg-opacity-10 d-flex justify-content-between align-items-center">
+            <h3 class="fs-6 fw-boldest text-gray-800 mb-0">Daily Work Log</h3>
+            <span class="text-muted fs-9 fw-bold">AUDIT MODE — Checkbox = Approve Day</span>
         </div>
         <div class="table-responsive">
             <table class="log-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px; text-align: center;">DAY</th>
-                        <th>PROJECT / ACTIVITIES</th>
-                        <th style="width: 120px; text-align: center;">DURATION</th>
-                        <th style="width: 350px;">DAY FEEDBACK (OPTIONAL)</th>
+                        <th class="col-check">✓</th>
+                        <th class="col-day">Day</th>
+                        <th>Project / Activities</th>
+                        <th class="col-dur">Duration</th>
+                        <th class="col-remark">Remark (per day)</th>
                     </tr>
                 </thead>
                 <tbody id="review_tbody">
@@ -225,15 +202,16 @@
         </div>
     </div>
 
-    <!-- FINAL FEEDBACK -->
+    <!-- OVERALL FEEDBACK -->
     <div class="feedback-card">
         <h4 class="feedback-title">
-            <i class="bi bi-chat-left-text-fill"></i> Overall Review Feedback
+            <i class="bi bi-chat-left-text-fill"></i> Overall Review Note
         </h4>
-        <p class="text-muted fs-8 fw-bold mb-4">Provide a general reason if you are requesting a revision, or leave a compliment for approval.</p>
-        
-        <textarea id="overall_revision_note" class="feedback-textarea" placeholder="Type your review note here..."></textarea>
-        
+        <p class="text-muted fs-8 fw-bold mb-4">
+            Provide an overall revision note, or approve the entire timesheet below.
+        </p>
+        <textarea id="overall_revision_note" class="feedback-textarea" placeholder="Type your overall note here..."></textarea>
+
         <div class="action-footer">
             <button class="btn-standard-ghost" onclick="giveRevision()">
                 <i class="bi bi-arrow-repeat"></i> Request Revision
@@ -242,8 +220,6 @@
                 <i class="bi bi-check-circle-fill"></i> Approve Timesheet
             </button>
         </div>
-
-
     </div>
 </div>
 

@@ -14,8 +14,7 @@ async function initSupervisorDashboard() {
         if (!data) return;
 
         renderBanner(data);
-        renderMissingSubmissions(data.missingSubmissions);
-        renderApprovalStats(data);
+        renderTopPendingApprovals(data.pendingApprovals);
         renderPivotTable(data.internHoursBreakdown);
         renderAllocationDonut(data.projectAllocations);
         renderLiveActivity(data.recentActivity);
@@ -34,40 +33,53 @@ function renderBanner(data) {
     if (activeLabel) activeLabel.innerText = `${data.totalActiveInterns || 0} active members`;
 }
 
-function renderMissingSubmissions(missing) {
-    const container = document.getElementById('missing_list_container');
+
+function renderTopPendingApprovals(pendingApprovals) {
+    const container = document.getElementById('top_pending_container');
+    const badge = document.getElementById('pending_count_badge');
     if (!container) return;
-    // PERFORMANCE: Use array buffering instead of innerHTML +=
-    const html = missing.slice(0, 5).map(m => {
-        const monthNameRaw = englishMonths[m.month - 1] || String(m.month);
-        const monthName = monthNameRaw.charAt(0) + monthNameRaw.slice(1).toLowerCase();
+
+    const total = pendingApprovals ? pendingApprovals.length : 0;
+    if (badge) badge.textContent = total;
+
+    if (!pendingApprovals || pendingApprovals.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">
+                <i class="bi bi-check-circle-fill text-success fs-2 mb-3 d-block"></i>
+                All caught up! No pending approvals.
+            </div>`;
+        return;
+    }
+
+    const top3 = pendingApprovals.slice(0, 3);
+    const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    const html = top3.map(item => {
+        const initials = (item.employeeName || '?').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const period = `${MONTHS[(item.month || 1) - 1]} ${item.year}`;
+        const reviewUrl = item.submissionId > 0
+            ? `/Timesheet/Supervisor/Review?id=${item.submissionId}`
+            : `/Timesheet/Supervisor/Review?employeeId=${item.employeeId}&month=${item.month}&year=${item.year}`;
         return `
-            <div class="missing-dash-row">
-                <span class="missing-dash-name">${m.employeeName}</span>
-                <span class="missing-dash-period">- &nbsp; ${monthName} ${m.year}</span>
-                <button class="btn-view-timesheet" onclick="window.location.href='/Timesheet/Supervisor/Timesheet?employeeId=${m.employeeId}'">View Timesheet</button>
+            <div class="missing-dash-row" style="display:flex; align-items:center; gap:14px; padding: 14px 0; border-bottom: 1px solid #F4F6FA;">
+                <div style="width:40px; height:40px; border-radius:10px; background:#FFF5F8; color:#D31145; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.9rem; flex-shrink:0; border:1px solid #FFD6E3;">
+                    ${initials}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; color:#181C32; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.employeeName}</div>
+                    <div style="font-size:0.78rem; color:#9EA5B2; font-weight:600; margin-top:2px;">${period}</div>
+                </div>
+                <a href="${reviewUrl}" class="btn btn-sm btn-light-danger fw-boldest" style="border-radius:8px; white-space:nowrap; font-size:0.8rem;">
+                    Review <i class="bi bi-arrow-right ms-1"></i>
+                </a>
             </div>
         `;
     }).join('');
 
-    container.innerHTML = html;
+    container.innerHTML = `<div style="padding: 0 4px;">${html}</div>`;
 }
 
-function renderApprovalStats(data) {
-    const monthEl = document.getElementById('approval_month_label');
-    const countEl = document.getElementById('approval_count_label');
-    
-    if (monthEl) {
-        const d = new Date();
-        const monthName = englishMonths[d.getMonth()];
-        monthEl.innerText = `${monthName.substr(0, 3)} ${d.getFullYear()}`;
-    }
-    
-    if (countEl) {
-        const waitingCount = data.pendingApprovals ? data.pendingApprovals.length : 0;
-        countEl.innerText = `${waitingCount}/${data.totalActiveInterns || 0}`;
-    }
-}
+
 
 function renderPivotTable(breakdown) {
     const headerRow = document.getElementById('breakdown_header_row');

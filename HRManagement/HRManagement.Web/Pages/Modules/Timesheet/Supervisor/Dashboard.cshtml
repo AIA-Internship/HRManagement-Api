@@ -27,48 +27,22 @@
         <p id="active_intern_count_label">0 active members</p>
     </div>
 
-    <!-- 2. TWO CARDS ROW -->
-    <div class="row g-5 equal-height-row mb-0">
-
-        <!-- Missing Timesheets -->
-        <div class="col-lg-6 equal-height-col">
-            <div class="dashboard-card" style="margin-bottom: 24px; flex: 1;">
-                <div class="card-header-clean">
-                    <div class="card-title-clean">
-                        <i class="bi bi-exclamation-circle"></i> Missing Timesheets
-                    </div>
-                </div>
-                <div class="card-body-clean" id="missing_list_container">
-                    <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">Loading...</div>
-                </div>
+    <!-- 2. TOP 3 NEEDS APPROVAL -->
+    <div class="dashboard-card mb-5" style="margin-bottom: 24px;">
+        <div class="card-header-clean d-flex justify-content-between align-items-center">
+            <div class="card-title-clean">
+                <i class="bi bi-clock-history text-warning"></i> Needs Approval
+                <span id="pending_count_badge" class="badge badge-light-warning fw-boldest ms-2 px-3 py-1 fs-9">0</span>
             </div>
+            <a href="/Timesheet/Supervisor/Report" class="btn btn-sm btn-light fw-boldest" style="border-radius:8px; font-size:0.8rem;">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
         </div>
-
-        <!-- Approval Hub -->
-        <div class="col-lg-6 equal-height-col">
-            <div class="dashboard-card" style="margin-bottom: 24px; flex: 1;">
-                <div class="card-header-clean">
-                    <div class="card-title-clean">
-                        <i class="bi bi-send"></i> Intern's Timesheet Approval
-                    </div>
-                </div>
-                <div class="card-body-clean" style="padding-top: 8px;">
-                    <div class="approval-metric-row">
-                        <span class="approval-metric-label">Months</span>
-                        <span class="approval-metric-value" id="approval_month_label">— —</span>
-                    </div>
-                    <div class="approval-metric-row">
-                        <span class="approval-metric-label">Waiting for Approval</span>
-                        <span class="approval-metric-value" id="approval_count_label">0/0</span>
-                    </div>
-                    <button class="btn-update-approval" onclick="window.location.href='/Timesheet/Supervisor/Report'">
-                        Update Approval
-                    </button>
-                </div>
-            </div>
+        <div class="card-body-clean" id="top_pending_container">
+            <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">Loading...</div>
         </div>
-
     </div>
+
 
     <!-- 3. HOURS BREAKDOWN TABLE -->
     <div class="breakdown-card">

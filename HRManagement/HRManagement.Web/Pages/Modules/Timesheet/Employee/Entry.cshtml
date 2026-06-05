@@ -20,24 +20,15 @@
                     new BreadcrumbItem { Title = "Daily Log" }
                 },
                 RenderActions = Html.Raw(@"
-                    <div class='day-type-group header-integrated shadow-sm'>
-                        <input type='radio' name='day_type' id='day_working' value='working' checked onchange='toggleDayType(this)'>
-                        <label for='day_working' class='day-type-btn'>
-                            <i class='bi bi-briefcase-fill'></i>
-                            <span>Working</span>
-                        </label>
-
-                        <input type='radio' name='day_type' id='day_holiday' value='holiday' onchange='toggleDayType(this)'>
-                        <label for='day_holiday' class='day-type-btn holiday'>
-                            <i class='bi bi-balloon-heart-fill'></i>
-                            <span>Holiday</span>
-                        </label>
-
-                        <input type='radio' name='day_type' id='day_off' value='off' onchange='toggleDayType(this)'>
-                        <label for='day_off' class='day-type-btn off'>
-                            <i class='bi bi-slash-circle-fill'></i>
-                            <span>Off</span>
-                        </label>
+                    <div class='d-flex align-items-center gap-3'>
+                        <span class='text-muted fw-bold fs-8 text-uppercase' style='letter-spacing:0.5px;'>Day Type</span>
+                        <select id='day_type_select' class='form-select fw-boldest shadow-sm'
+                                style='width:160px; border-radius:10px; border:1.5px solid #E1E3EA; height:42px; font-size:0.9rem; color:#181C32; cursor:pointer;'
+                                onchange='toggleDayTypeDropdown(this)'>
+                            <option value='working' selected>🗂️ Working</option>
+                            <option value='half_day'>🌓 Half Day</option>
+                            <option value='off'>🔴 Off</option>
+                        </select>
                     </div>
                 ")
             })
@@ -168,4 +159,28 @@
 
 @section Scripts {
     <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script>
+        // Bridge: dropdown → shared toggleDayType logic
+        function toggleDayTypeDropdown(sel) {
+            const value = sel.value;
+            // Show/hide entry table based on selection
+            const entryWrap = document.querySelector('.entry-table-wrap');
+            const addRowBtn = document.querySelector('.btn-add-row');
+            
+            if (value === 'working') {
+                if (entryWrap) entryWrap.style.display = '';
+                if (addRowBtn) addRowBtn.style.display = '';
+            } else {
+                // Half Day or Off – hide entry rows, show notice
+                if (entryWrap) entryWrap.style.display = 'none';
+                if (addRowBtn) addRowBtn.style.display = 'none';
+            }
+
+            // Also call the shared function if it exists
+            if (typeof toggleDayType === 'function') {
+                toggleDayType({ value: value });
+            }
+        }
+    </script>
 }
+
