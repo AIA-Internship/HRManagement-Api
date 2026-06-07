@@ -79,7 +79,7 @@ namespace HRManagement.Web.Pages.Leave
                 new CalendarEvent
                 {
                     id = "1",
-                    title = "Sick Leave",
+                    title = "Paid Leave",
                     start = new DateTime(2026, 3, 18),
                     allDay = true
                 }
@@ -87,7 +87,7 @@ namespace HRManagement.Web.Pages.Leave
             calendarEvents.Add(new CalendarEvent
             {
                 id = "2",
-                title = "Annual Leave",
+                title = "Unpaid Leave",
                 start = new DateTime(2026, 3, 20),
                 end = new DateTime(2026, 3, 22),
                 allDay = true
@@ -102,7 +102,7 @@ namespace HRManagement.Web.Pages.Leave
                 leaveStatus = "Approved",
                 leaveStartDate = new DateTime(2026, 3, 20),
                 dayAmount = 3,
-                leaveType = "Annual Leave",
+                leaveType = "Unpaid Leave",
                 isCompleted = false,
                 isEdit = false,
                 initialRequestId = null,

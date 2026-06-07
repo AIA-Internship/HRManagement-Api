@@ -5,5 +5,161 @@
 }
 
 @section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <link rel="stylesheet" href="~/apps/modules/leave/css/NewRequest.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.css" />
+}
+
+<div class="mx-11">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
+    {
+        Title = "New Leave Request",
+        Subtitle = "Please fill out the details below to submit your application for approval.",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Leave", Url = "/Leave/Employee/Dashboard" },
+            new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Employee/Dashboard" },
+            new BreadcrumbItem { Title = "NewRequest", Url = "/Leave/Employee/NewRequest" },
+        },
+    })
+</div>
+
+
+<div class="mb-4 mx-10">
+    <form method="post" enctype="multipart/form-data" class="leave-form">
+        <div class="row">
+            <div class="col-left">
+
+                @*Leave Type*@
+                <div class="form-row mb-6">
+                    <label class="field-label">
+                        Leave Type<span class="required"></span>
+                    </label>
+
+                    <div class="custom-select-wrapper" id="leaveWrapper">
+
+                        <select id="leaveType" name="LeaveType">
+                            <option>Paid Leave</option>
+                            <option>UnPaid Leave</option>
+                        </select>
+
+                        <span class="custom-arrow">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
+
+                    </div>
+
+                </div>
+
+                @*Start Date*@
+                <div class="form-row grid-3">
+                    <div>
+                        <label class="field-label">Start Date<span class="required"></span></label>
+
+                        <div class="input-with-icon">
+                            <input type="date"
+                                   id="startDate"
+                                   name="StartDate"
+                                   class="input-date" />
+                        <span class="icon">
+                            <i class="bi bi-calendar-fill"></i>
+                        </span>
+                        </div>
+                    </div>
+                
+                @*End Date*@
+                    <div>
+                        <label class="field-label">End Date</label>
+                        <div class="input-with-icon">
+                            <input type="date"
+                                   id="endDate"
+                                   name="EndDate"
+                                   class="input-date"
+                                   readonly />
+                            <span class="icon">
+                                <i class="bi bi-calendar-fill"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                @*Days*@
+                    <div>
+                        <label class="field-label">Day(s)<span class="required"></span></label>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn" data-action="decrement">−</button>
+                            <input type="text"
+                                   id="daysInput"
+                                   name="Days"
+                                   value="0.5"
+                                   class="stepper-input" />
+                            <button type="button" class="stepper-btn" data-action="increment">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row mb-6">
+                    <label class="field-label">Description<span class="required"></span></label>
+                    <textarea name="Description" class="textarea" placeholder="Enter your reason for Leaving..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <label class="field-label">Attachment (Optional)</label>
+                    <div id="dropzone" class="dropzone">
+                        <div class="dropzone-content">
+                            <div class="drop-icon">
+                                <i class="bi bi-file-earmark-arrow-up-fill" id="file_icon"></i>
+                            </div>
+                            <div class="drop-title">Click or drag file to upload</div>
+                            <div class="drop-sub">Medical certificate, travel docs, etc. (PDF, JPG, max 5MB)</div>
+                        </div>
+                        <input type="file"
+                               id="attachmentInput"
+                               name="Attachment"
+                               class="drop-input"
+                               multiple />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline">✕ Cancel</button>
+                    <button type="submit" class="btn btn-primary">✔ Submit</button>
+                </div>
+            </div>
+
+            <div class="col-right">
+                <div class="card card-calendar">
+
+                    <div id="leaveCalendar"></div>
+
+                    <div class="calendar-divider"></div>
+
+                    <div class="calendar-footer">
+                        <span>Total Request:</span>
+                        <span id="businessDaysText">0 Business Days</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <div class="note-icon">ℹ️</div>
+            <div class="note-text">Note: Personal leave should ideally be requested at least 11 days in advance. It is recommended to provide supporting evidence as an attachment.</div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script src="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js"></script>
+
+    <script src="~/apps/modules/leave/js/NewRequest.js"
+            asp-append-version="true"></script>
+
 }

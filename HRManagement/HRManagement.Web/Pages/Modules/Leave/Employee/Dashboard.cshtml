@@ -49,7 +49,7 @@
     </div>
 
     <div class="d-flex flex-wrap align-items-stretch mb-2">
-        <div class="flex-fill mx-5 mb-5" style="max-width:30rem; min-width:30rem;">
+        <div class="flex-fill mx-5 mb-5" style="max-width:30rem; min-width:0;">
             <div class="card text-white bg-danger h-70" style="min-width:0;">
                 <div class="card-body d-flex align-items-center">
                     <div>
@@ -79,7 +79,7 @@
                 </div>
             </div>
 
-        <div class="flex-fill mx-5 mb-4" style="max-width:30rem; min-width:30rem;">
+        <div class="flex-fill mx-5 mb-4" style="max-width:30rem; min-width:0;">
             <div class="card h-70" style="min-width:0;">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
@@ -129,7 +129,8 @@
 
 <div class="card mx-10 mb-15">
     <div class="card-body ps-0 pe-0">
-        <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-4"
+             style="overflow-x:auto; gap:1rem;">
             <div>
                 <div class="btn-group ms-7" role="group" aria-label="filters">
                     <button class="btn btn-outline-secondary active">Needs Approval</button>
@@ -137,16 +138,26 @@
                     <button class="btn btn-outline-secondary">Rejected</button>
                 </div>
             </div>
-            <div class="d-flex align-items-center me-7">
+
+            <div class="d-flex align-items-center flex-shrink-0"
+                 style="gap:1rem;">
                 <label class="me-2">Sort By:</label>
                 <select id="sortSelect" class="form-select form-select-sm me-3" style="width:160px;">
                     <option selected>newest</option>
                     <option>oldest</option>
                 </select>
-                <a href="/Leave/Employee/NewRequest" class="btn btn-danger">
+                <a href="/Leave/Employee/NewRequest"
+                       class="btn btn-danger d-flex align-items-center justify-content-center"
+                       style="
+                    height:2.7rem;
+                    min-width:11rem;
+                    white-space:nowrap;
+                    text-align:center;
+                    ">
                     + New request
                 </a>
             </div>
+
         </div>
 
         <div class="table-responsive">
