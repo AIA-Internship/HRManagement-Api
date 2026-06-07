@@ -233,9 +233,8 @@ namespace HRManagement.Api.Repositories
                 .GroupBy(x => 1)
                 .Select(g => new LeaveTypeCountDto
                 {
-                    AnnualLeave = g.Count(x => x.LeaveType == 1),
-                    SickLeave = g.Count(x => x.LeaveType == 2),
-                    EmergencyLeave = g.Count(x => x.LeaveType == 3)
+                    PaidLeave = g.Count(x => x.LeaveType == 1),
+                    UnpaidLeave = g.Count(x => x.LeaveType == 2)
                 })
                 .FirstOrDefaultAsync();
 

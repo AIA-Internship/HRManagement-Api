@@ -82,6 +82,9 @@
 
             input.value = val;
 
+            document.getElementById('businessDaysText').textContent =
+                `${daysInput.value} Business Days`;
+
         });
 
     });
@@ -146,6 +149,7 @@
     // =========================
     var calendar = flatpickr("#leaveCalendar", {
         inline: true,
+        mode: "range",
         monthSelectorType: "static",
         defaultDate: new Date(),
         clickOpens: false,
@@ -169,7 +173,36 @@
         refreshCalendarRange();
     });
 
-    daysInput.addEventListener("change", refreshCalendarRange);
+    function normalizeDaysInput() {
+
+        let val = parseFloat(daysInput.value);
+
+        if (isNaN(val) || val < 0.5) {
+            val = 0.5;
+        }
+
+        if (!Number.isInteger(val) && val !== 0.5) {
+            val = 0.5;
+        }
+
+        daysInput.value = val;
+
+        updateEndDate();
+        refreshCalendarRange();
+        document.getElementById('businessDaysText').textContent =
+            `${daysInput.value} Business Days`;
+    }
+
+    daysInput.addEventListener('blur', normalizeDaysInput);
+
+    daysInput.addEventListener('keydown', function (e) {
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            normalizeDaysInput();
+        }
+
+    });
 
     // =========================
     // DROPZONE
@@ -217,14 +250,45 @@
     fileInput.addEventListener('change', function () {
 
         addFiles(fileInput.files);
+        fileInput.value = '';
 
     });
+
+    var attachmentError = document.getElementById('attachmentError');
+
+    function showAttachmentError(message) {
+        attachmentError.textContent = message;
+        attachmentError.style.display = 'block';
+    }
+
+    function clearAttachmentError() {
+        attachmentError.textContent = '';
+        attachmentError.style.display = 'none';
+    }
 
     function addFiles(files) {
 
         if (!files || files.length === 0) return;
 
         var newFiles = Array.from(files);
+
+        var allowedExtensions = ['zip', 'pdf', 'jpg', 'jpeg', 'png'];
+
+        var invalidFile = newFiles.find(function (file) {
+
+            var ext = file.name.split('.').pop().toLowerCase();
+
+            return !allowedExtensions.includes(ext);
+        });
+
+        if (invalidFile) {
+
+            showAttachmentError(
+                "Only ZIP, PDF, JPG, JPEG, and PNG files are allowed."
+            );
+
+            return;
+        }
 
         var totalSize = selectedFiles.reduce(function (sum, file) {
             return sum + file.size;
@@ -236,10 +300,14 @@
 
         if (totalSize > 5 * 1024 * 1024) {
 
-            alert("Total attachment cannot exceed 5 MB");
+            showAttachmentError(
+                "Could not upload file. Total attachment size cannot exceed 5 MB."
+            );
 
             return;
         }
+
+        clearAttachmentError();
 
         newFiles.forEach(function (file) {
             selectedFiles.push(file);
@@ -247,6 +315,7 @@
 
         renderFiles();
     }
+
 
     function renderFiles() {
 
@@ -373,31 +442,74 @@
     // =========================
     var form = document.querySelector('.leave-form');
 
+    startDateInput.addEventListener('change', function () {
+        document.getElementById('startDateError').style.display = 'none';
+    });
+
+    document.getElementById('description').addEventListener('input', function () {
+            document.getElementById('descriptionError').style.display = 'none';
+    });
+
     form.addEventListener('submit', function (e) {
 
         e.preventDefault();
+
+        var isValid = true;
+
+        var startDate = document.getElementById('startDate');
+        var description = document.getElementById('description');
+
+        var startDateError = document.getElementById('startDateError');
+        var descriptionError = document.getElementById('descriptionError');
+
+        startDateError.style.display = 'none';
+        descriptionError.style.display = 'none';
+
+        // Start Date validation
+        if (!startDate.value.trim()) {
+
+            startDateError.textContent =
+                'Start Date is required.';
+
+            startDateError.style.display = 'block';
+
+            isValid = false;
+        }
+
+        // Description validation
+        if (!description.value.trim()) {
+
+            descriptionError.textContent =
+                'Description is required.';
+
+            descriptionError.style.display = 'block';
+
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return;
+        }
 
         var formData = new FormData(form);
 
         formData.delete("Attachment");
 
         selectedFiles.forEach(function (file) {
-
             formData.append("Attachment", file);
-
         });
 
         fetch(form.action || window.location.href, {
             method: "POST",
             body: formData
         })
-        .then(function (res) {
+            .then(function (res) {
 
-            if (res.ok) {
-                window.location.reload();
-            }
+                if (res.ok) {
+                    window.location.reload();
+                }
 
-        });
+            });
 
     });
 
