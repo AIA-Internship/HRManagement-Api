@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Modules\Leave\Supervisor\" />
+    <_ContentIncludedByDefault Remove="Pages\Leave\Index.cshtml" />
   </ItemGroup>
 
 </Project>
