@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CSharpFunctionalExtensions;
 using FluentValidation;
-
-using HRManagement.Api.Application.Commands;
-using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Application.Auth.Permissions;
+using HRManagement.Application.Commands;
+using HRManagement.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Application.Queries;
+using HRManagement.Application.EmployeeDtos.Commands.Dto;
 
 namespace HRManagement.Api.Controllers;
 

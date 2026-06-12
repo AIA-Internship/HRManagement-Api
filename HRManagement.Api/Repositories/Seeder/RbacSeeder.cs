@@ -1,6 +1,7 @@
 using HRManagement.Api.Domain.Models.Constants;
-using HRManagement.Api.Domain.Models.Tables.MasterRole;
+using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Api.Repositories.Base;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Seeder;
@@ -27,8 +28,8 @@ public static class RbacSeeder
         }
 
         // 2. Check Roles (They should be seeded by migration, but we ensure they exist)
-        var supervisorRole = await context.Set<Role>().FirstOrDefaultAsync(r => r.Name == "Supervisor");
-        var employeeRole = await context.Set<Role>().FirstOrDefaultAsync(r => r.Name == "Employee");
+        var supervisorRole = await context.Set<Roles>().FirstOrDefaultAsync(r => r.Name == "Supervisor");
+        var employeeRole = await context.Set<Roles>().FirstOrDefaultAsync(r => r.Name == "Employee");
 
         if (supervisorRole == null || employeeRole == null)
         {
@@ -36,13 +37,13 @@ public static class RbacSeeder
             // but kept for robustness.
             if (supervisorRole == null)
             {
-                supervisorRole = new Role { Name = "Supervisor", Description = "Full access" };
-                context.Set<Role>().Add(supervisorRole);
+                supervisorRole = new Roles { Name = "Supervisor", Description = "Full access" };
+                context.Set<Roles>().Add(supervisorRole);
             }
             if (employeeRole == null)
             {
-                employeeRole = new Role { Name = "Employee", Description = "Standard access" };
-                context.Set<Role>().Add(employeeRole);
+                employeeRole = new Roles { Name = "Employee", Description = "Standard access" };
+                context.Set<Roles>().Add(employeeRole);
             }
             await context.SaveChangesAsync();
         }

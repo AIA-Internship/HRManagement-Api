@@ -1,5 +1,6 @@
 using System.Security.Claims;
-using HRManagement.Api.Application.Interfaces;
+
+using HRManagement.Application.Interfaces;
 
 namespace HRManagement.Api.Repositories.Services;
 

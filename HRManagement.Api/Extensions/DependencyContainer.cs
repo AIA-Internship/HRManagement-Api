@@ -1,16 +1,15 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-
-using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Queries;
 using HRManagement.Api.Domain.SeedWork;
 using HRManagement.Api.Repositories;
 using HRManagement.Api.Repositories.Authentications;
 using HRManagement.Api.Repositories.Base;
 using HRManagement.Api.Repositories.Services;
-using HRManagement.Api.Application.Auth.Permissions;
 using Microsoft.AspNetCore.Authorization;
+using HRManagement.Application.Auth.Permissions;
+using HRManagement.Application.Interfaces;
+using HRManagement.Application.Features.Identity.Commands;
 
 namespace HRManagement.Api.Extensions
 {
@@ -40,7 +39,7 @@ namespace HRManagement.Api.Extensions
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 
             // 4. MediatR & FluentValidation
-            var applicationAssembly = typeof(LoginQuery).Assembly; 
+            var applicationAssembly = typeof(LoginCommand).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             
             services.AddMediatR(cfg =>

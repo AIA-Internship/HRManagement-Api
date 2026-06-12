@@ -1,0 +1,40 @@
+namespace HRManagement.Domain.Models.Tables;
+
+public class EmploymentInformation : BaseTable
+{
+    public int Id { get; set; }
+    public int EmployeeId { get; set; }
+    public Employee Employee { get; set; } = null!;
+    public int EmploymentStatus { get; set; }
+    public DateTime StartDate { get; set; }
+    public int EmploymentType { get; set; }
+    public string Department { get; set; } = string.Empty;
+    public string Position { get; set; } = string.Empty;
+    public int? SupervisorId { get; set; }
+    public Employee? Supervisor { get; set; }
+    public string EmployeeDisplayId { get; set; } = string.Empty;
+    
+    protected EmploymentInformation() { }
+    
+    public EmploymentInformation(long actionerId)
+    {
+        MarkAsCreated(actionerId);
+        MarkAsModified(actionerId);
+    }
+
+    public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
+    {
+        EmploymentStatus = status ?? EmploymentStatus;
+        StartDate = startDate ?? StartDate;
+        EmploymentType = type ?? EmploymentType;
+        Department = UseIfProvided(department, Department);
+        Position = UseIfProvided(position, Position);
+        SupervisorId = supervisorId ?? SupervisorId;
+        EmployeeDisplayId = UseIfProvided(employeeDisplayId, EmployeeDisplayId);
+
+        MarkAsModified(actionerId); 
+    }
+    
+    private static string UseIfProvided(string? newValue, string currentValue) =>
+        string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
+}

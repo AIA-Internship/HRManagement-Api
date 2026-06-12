@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="HRManagement.Api/HRManagement.Api.csproj" />
+  <Project Path="HRManagement.Application/HRManagement.Application.csproj" Id="010268d1-3444-4230-9aac-2a178e1e4bfd" />
+  <Project Path="HRManagement.Domain/HRManagement.Domain.csproj" Id="697b2d1f-7c06-4681-acca-f52e592469fd" />
+  <Project Path="HRManagement.MsSQL/HRManagement.MsSQL.csproj" Id="8eb22e30-9e05-47ba-b28d-ca4feb21f46f" />
 </Solution>

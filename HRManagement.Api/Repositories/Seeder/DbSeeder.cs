@@ -1,8 +1,8 @@
-using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Api.Application.Interfaces;
 using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Api.Domain.Models.Tables.MasterRole;
 using HRManagement.Api.Repositories.Base;
+using HRManagement.Application.EmployeeDtos.Commands.Dto;
+using HRManagement.Application.Interfaces;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.Api.Repositories.Seeder;
@@ -51,7 +51,7 @@ public static class DbSeeder
             await context.SaveChangesAsync();
         }
 
-        var roles = await context.Set<Role>().ToListAsync();
+        var roles = await context.Set<Roles>().ToListAsync();
         var supervisorRoleId = roles.FirstOrDefault(r => r.Name == "Supervisor")?.Id ?? 0;
         var employeeRoleId = roles.FirstOrDefault(r => r.Name == "Employee")?.Id ?? 1;
 
@@ -182,13 +182,13 @@ public static class DbSeeder
         // ==========================================
         // 4. SEED USERS (If missing)
         // ==========================================
-        var adminUser = new User(
+        var adminUser = new Users(
             email: adminDto.EmployeeEmail, 
             passwordHash: passwordHasher.Hash(adminDto.DefaultPassword), 
             roleId: adminDto.Role, 
             actionerId: 1);
             
-        var internUser = new User(
+        var internUser = new Users(
             email: internDto.EmployeeEmail, 
             passwordHash: passwordHasher.Hash(internDto.DefaultPassword), 
             roleId: internDto.Role, 
