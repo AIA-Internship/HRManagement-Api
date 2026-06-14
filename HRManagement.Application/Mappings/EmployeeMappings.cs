@@ -1,6 +1,7 @@
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Domain.Models.Response;
 
 namespace HRManagement.Application.Mappings;
 
@@ -52,11 +53,11 @@ public static class EmployeeMappings
         };
     }
 
-    public static EmployeeListItemDto ToEmployeeListResponse(this Employee employee, IReadOnlyCollection<SystemLookup> lookups)
+    public static EmployeeListResponseDto ToEmployeeListResponse(this Employee employee, IReadOnlyCollection<SystemLookup> lookups)
     {
         var employment = employee.EmploymentInformation;
         
-        return new EmployeeListItemDto
+        return new EmployeeListResponseDto
         {
             EmployeeDisplayId = employment?.EmployeeDisplayId ?? string.Empty,
             FullName = employee.FullName, 

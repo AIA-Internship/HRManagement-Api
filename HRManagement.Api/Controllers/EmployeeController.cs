@@ -1,44 +1,44 @@
-using HRManagement.Api.Domain.Models.Constants;
-using System.Security.Claims;
+using CSharpFunctionalExtensions;
+
+using FluentValidation;
+
+using HRManagement.Application.Commands;
+using HRManagement.Application.EmployeeDtos.Commands.Dto;
+using HRManagement.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Application.Features.ESS.Employee.Queries;
+using HRManagement.Application.Queries;
+using HRManagement.Domain.Models.Response;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CSharpFunctionalExtensions;
-using FluentValidation;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Application.Auth.Permissions;
-using HRManagement.Application.Commands;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Application.Queries;
-using HRManagement.Application.EmployeeDtos.Commands.Dto;
 
 namespace HRManagement.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
-public class EmployeeController : ValidateController<EmployeeController>
+[Route("api/employee")]
+public class EmployeeController(ISender sender) : BaseApiController(sender)
 {
-    private readonly ILogger<EmployeeController> _logger;
-    private readonly IMediator _mediator;
-    
-    public EmployeeController(
-        IMediator mediator, 
-        ILogger<EmployeeController> logger, 
-        IEnumerable<IValidator> validators) : base(validators, logger)
+    [HttpGet("list")]
+    [HasPermission(Permissions.Users.View)]
+    public async Task<ActionResult<ApiResponse<List<EmployeeListResponseDto>>>> GetAllEmployees()
     {
-        _mediator = mediator;
-        _logger = logger;
+        string methodName = nameof(GetAllEmployees);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var query = new GetEmployeeListQuery();
+        return await this.ValidateAndExecute<ApiResponse<List<EmployeeListResponseDto>>>(query, async (q) =>
+        {
+            var result = await _mediator.Send((GetEmployeeListQuery)q);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
     }
-    
+
     [HttpPut("employment-info/{displayId}")]
     [HasPermission(Permissions.Users.Edit)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(string displayId, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
     {
         string methodName = nameof(UpdateEmploymentInformation);
@@ -54,12 +54,6 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPut("me")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
     {
         string methodName = nameof(UpdateEmployee);
@@ -74,35 +68,9 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
     
-    [HttpGet("list")]
-    [HasPermission(Permissions.Users.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeListItemDto>>>> GetAllEmployees()
-    {
-        string methodName = nameof(GetAllEmployees);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetEmployeeListQuery();
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeListItemDto>>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetEmployeeListQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
+    
     
     [HttpGet("me")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
     {
         string methodName = nameof(GetMyProfile);
@@ -119,12 +87,6 @@ public class EmployeeController : ValidateController<EmployeeController>
 
     [HttpGet("my-requests")]
     [HasPermission(Permissions.Employees.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetMyRequests([FromQuery] int? status)
     {
         string methodName = nameof(GetMyRequests);
@@ -141,12 +103,6 @@ public class EmployeeController : ValidateController<EmployeeController>
 
     [HttpGet("requests")]
     [HasPermission(Permissions.Users.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
     {
         string methodName = nameof(GetEmployeeRequests);
@@ -163,12 +119,6 @@ public class EmployeeController : ValidateController<EmployeeController>
 
     [HttpGet("{displayId}")]
     [HasPermission(Permissions.Employees.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
     {
         string methodName = nameof(GetEmployeeProfileByDisplayId);
@@ -185,13 +135,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     
     [HttpGet("supervisors-lookup")]
     [HasPermission(Permissions.Employees.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
+    public async Task<ActionResult<ApiResponse<List<SupervisorLookupResponseDto>>>> GetSupervisorLookup()
     {
         string methodName = nameof(GetSupervisorLookup);
         _logger.LogInformation("Start {Service}.", methodName);
@@ -205,12 +149,6 @@ public class EmployeeController : ValidateController<EmployeeController>
     
     [HttpPost("review-update")]
     [HasPermission(Permissions.Employees.Edit)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> ReviewUpdate([FromBody] ReviewUpdateRequestDto decision)
     {
         string methodName = nameof(ReviewUpdate);
@@ -227,12 +165,6 @@ public class EmployeeController : ValidateController<EmployeeController>
     
     [HttpPost("create")]
     [HasPermission(Permissions.Employees.Create)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse<string>>> CreateEmployee([FromBody] CreateEmployeeRequestDto requestDto)
     {
         string methodName = nameof(CreateEmployee);
@@ -250,12 +182,6 @@ public class EmployeeController : ValidateController<EmployeeController>
     [HttpPost("{id}/attachments")]
     [Authorize]
     [Consumes( "multipart/form-data")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
     public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
     {
         string methodName = nameof(UploadAttachments);

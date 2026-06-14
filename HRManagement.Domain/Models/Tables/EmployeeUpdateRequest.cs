@@ -46,7 +46,7 @@ public class EmployeeUpdateRequest : BaseTable
         NewGender = IsChanged(dto.Gender, employee.Gender) ? dto.Gender : null;
         NewPersonalEmail = IsChanged(dto.PersonalEmail, employee.PersonalEmail) ? dto.PersonalEmail : null;
         NewPlaceOfBirth = IsChanged(dto.PlaceOfBirth, employee.PlaceOfBirth) ? dto.PlaceOfBirth : null;
-        NewNik = IsChanged(dto.Nik, employee.Nik) ? dto.Nik : null;
+        NewNik = IsChanged(dto.Nik, employee.NIK) ? dto.Nik : null;
         NewDateOfBirth = IsChanged(dto.DateOfBirth, employee.DateOfBirth) ? dto.DateOfBirth : null;
         NewMaritalStatus = IsChanged(dto.MaritalStatus, employee.MaritalStatus) ? dto.MaritalStatus : null;
         

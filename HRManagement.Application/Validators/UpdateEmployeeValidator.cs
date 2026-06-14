@@ -2,6 +2,7 @@ using FluentValidation;
 
 using HRManagement.Application.Commands;
 using HRManagement.Application.Interfaces;
+using HRManagement.Domain.Interfaces;
 
 namespace HRManagement.Application.Validators;
 

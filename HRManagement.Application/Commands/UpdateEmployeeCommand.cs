@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Application.Interfaces;
+using HRManagement.Domain.Interfaces;
 
 namespace HRManagement.Application.Commands;
 

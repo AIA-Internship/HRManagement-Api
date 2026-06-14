@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Interfaces;
 using HRManagement.Application.Features.Identity.Commands;
+using HRManagement.Domain.Interfaces;
 
 namespace HRManagement.Api.Extensions
 {

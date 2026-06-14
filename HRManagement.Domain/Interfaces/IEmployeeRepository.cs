@@ -1,11 +1,10 @@
+using HRManagement.Domain.Models.Tables;
+
 using System.Linq.Expressions;
 
-using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
+namespace HRManagement.Domain.Interfaces;
 
-namespace HRManagement.Application.Interfaces;
-
-public interface IEmployeeRepository
+public interface IEmployeeRepository : IBaseRepository<Employee>
 {
     Task<bool> IsUniqueAsync<TProperty>(Expression<Func<Employee, TProperty>> propertySelector, TProperty value, int? excludeId = null);
     Task AddEmployeeAsync(Users user, Employee employee);

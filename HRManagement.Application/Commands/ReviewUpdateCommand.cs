@@ -2,6 +2,7 @@ using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
 using HRManagement.Application.Interfaces;
+using HRManagement.Domain.Interfaces;
 
 using MediatR;
 

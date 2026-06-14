@@ -1,4 +1,5 @@
-﻿using HRManagement.Api.Domain.SeedWork;
+﻿using HRManagement.Domain.SeedWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.MsSQL.Base;
 

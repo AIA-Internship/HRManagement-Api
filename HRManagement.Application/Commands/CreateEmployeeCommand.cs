@@ -5,6 +5,7 @@ using MediatR;
 using HRManagement.Application.Mappings;
 using HRManagement.Application.Interfaces;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
+using HRManagement.Domain.Interfaces;
 
 namespace HRManagement.Application.Commands;
 

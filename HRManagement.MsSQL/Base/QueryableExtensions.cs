@@ -1,4 +1,4 @@
-﻿using HRManagement.Api.Domain.Models.Response.Shared;
+﻿using HRManagement.Domain.Models.Response.Shared;
 
 using Microsoft.EntityFrameworkCore;
 

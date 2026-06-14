@@ -2,18 +2,20 @@ namespace HRManagement.Domain.Models.Tables;
 
 public class EmploymentInformation : BaseTable
 {
-    public int Id { get; set; }
-    public int EmployeeId { get; set; }
-    public Employee Employee { get; set; } = null!;
-    public int EmploymentStatus { get; set; }
-    public DateTime StartDate { get; set; }
-    public int EmploymentType { get; set; }
-    public string Department { get; set; } = string.Empty;
-    public string Position { get; set; } = string.Empty;
-    public int? SupervisorId { get; set; }
-    public Employee? Supervisor { get; set; }
-    public string EmployeeDisplayId { get; set; } = string.Empty;
-    
+    public int Id { get; private set; }
+    public int EmployeeId { get; private set; }
+    public int StatusCode { get; private set; }
+    public DateTime StartDate { get; private set; }
+    public int TypeCode { get; private set; }
+    public string? DepartmentName { get; private set; }
+    public string? PositionName { get; private set; }
+    public string? DisplayId { get; private set; }
+    public int? SupervisorId { get; private set; }
+    public string? SupervisorName { get; private set; }
+
+    public Employee Employee { get; private set; } = null!;
+    public Employee? Supervisor { get; private set; }
+
     protected EmploymentInformation() { }
     
     public EmploymentInformation(long actionerId)
@@ -22,19 +24,19 @@ public class EmploymentInformation : BaseTable
         MarkAsModified(actionerId);
     }
 
-    public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
+    public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, 
+        int? supervisorId, string? employeeDisplayId, long actionerId)
     {
-        EmploymentStatus = status ?? EmploymentStatus;
+        StatusCode = status ?? StatusCode;
         StartDate = startDate ?? StartDate;
-        EmploymentType = type ?? EmploymentType;
-        Department = UseIfProvided(department, Department);
-        Position = UseIfProvided(position, Position);
+        TypeCode = type ?? TypeCode;
+        DepartmentName = UseIfProvided(department, DepartmentName ?? string.Empty);
+        PositionName = UseIfProvided(position, PositionName ?? string.Empty);
         SupervisorId = supervisorId ?? SupervisorId;
-        EmployeeDisplayId = UseIfProvided(employeeDisplayId, EmployeeDisplayId);
+        DisplayId = UseIfProvided(employeeDisplayId, DisplayId ?? string.Empty);
 
         MarkAsModified(actionerId); 
     }
     
-    private static string UseIfProvided(string? newValue, string currentValue) =>
-        string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
+    private static string UseIfProvided(string? newValue, string currentValue) => string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
 }

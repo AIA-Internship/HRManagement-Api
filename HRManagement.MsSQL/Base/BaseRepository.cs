@@ -1,4 +1,4 @@
-﻿using HRManagement.Api.Domain.Interfaces;
+﻿using HRManagement.Domain.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 

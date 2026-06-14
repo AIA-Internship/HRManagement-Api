@@ -1,6 +1,6 @@
-namespace HRManagement.Application.EmployeeDtos.Queries.Dto;
+namespace HRManagement.Domain.Models.Response;
 
-public class EmployeeListItemDto
+public class EmployeeListResponseDto
 {
     public string EmployeeDisplayId { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;

@@ -1,23 +1,24 @@
-using System.Linq.Expressions;
-
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 
 using Microsoft.EntityFrameworkCore;
 
+using System.Linq.Expressions;
+
 namespace HRManagement.MsSQL.Repositories;
 
-public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
+public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
 {
+    public EmployeeRepository(AppDbContext dbContext) : base(dbContext) { }
 
     public async Task<bool> IsUniqueAsync<TProperty>(
         Expression<Func<Employee, TProperty>> propertySelector, 
         TProperty value, 
         int? excludeId = null)
     {
-        var query = dbContext.Employees.AsQueryable();
+        var query = _dbContext.AsQueryable();
         
         if (excludeId.HasValue) 
             query = query.Where(e => e.Id != excludeId.Value);
@@ -45,7 +46,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
     
     public async Task<List<EmployeeUpdateRequest>> GetPendingUpdateRequestsAsync()
     {
-        return await dbContext.EmployeeUpdateRequests
+        return await _sqldbContext.Set<EmployeeUpdateRequest>()
             .Include(r => r.Employee)
             .Where(r => r.Status == 0)
             .ToListAsync();
@@ -53,7 +54,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<List<Employee>> GetAllEmployeesAsync()
     {
-        return await dbContext.Employees
+        return await _dbContext
             .AsNoTracking()
             .Include(e => e.EmploymentInformation)
             .Where(e => e.IsActive == true)
@@ -62,7 +63,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<Employee?> GetByEmailAsync(string email)
     {
-        return await dbContext.Employees
+        return await _dbContext
             .Include(e => e.EmploymentInformation)
                 .ThenInclude(ei => ei!.Supervisor)
             .Include(e => e.EmergencyContacts)
@@ -71,7 +72,7 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<Employee?> GetByIdAsync(int id)
     {
-        return await dbContext.Employees
+        return await _dbContext
             .Include(e => e.EmploymentInformation)
                 .ThenInclude(ei => ei!.Supervisor)
             .Include(e => e.EmergencyContacts)
@@ -80,39 +81,39 @@ public class EmployeeRepository(AppDbContext dbContext) : IEmployeeRepository
 
     public async Task<Employee?> GetByDisplayIdAsync(string displayId)
     {
-        return await dbContext.Employees
+        return await _dbContext
             .Include(e => e.EmploymentInformation)
                 .ThenInclude(ei => ei!.Supervisor)
             .Include(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(e => e.EmploymentInformation!.EmployeeDisplayId == displayId);
+            .FirstOrDefaultAsync(e => e.EmploymentInformation!.DisplayId == displayId);
     }
 
     public async Task<string?> GetLastEmployeeDisplayIdAsync()
     {
-        return await dbContext.EmploymentInformations
-            .Where(e => e.EmployeeDisplayId != null && e.EmployeeDisplayId.StartsWith("E"))
+        return await _sqldbContext.Set<EmploymentInformation>()
+            .Where(e => e.DisplayId != null && e.DisplayId.StartsWith("E"))
             .OrderByDescending(e => e.Id)
-            .Select(e => e.EmployeeDisplayId)
+            .Select(e => e.DisplayId)
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<SupervisorLookupDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
+    public async Task<List<SupervisorLookupResponseDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
     {
-        var supervisorRole = await dbContext.Roles
+        var supervisorRole = await _sqldbContext.Set<Roles>()
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.Name == "Supervisor", cancellationToken);
 
         if (supervisorRole == null)
         {
-            return new List<SupervisorLookupDto>();
+            return new List<SupervisorLookupResponseDto>();
         }
 
-        return await dbContext.Employees
+        return await _dbContext
             .Include(e => e.EmploymentInformation)
             .AsNoTracking()
             .Where(e => e.RoleId == supervisorRole.Id && e.IsActive)
-            .Select(e => new SupervisorLookupDto(
-                e.EmploymentInformation!.EmployeeDisplayId,
+            .Select(e => new SupervisorLookupResponseDto(
+                e.EmploymentInformation!.DisplayId,
                 e.FullName))
             .ToListAsync(cancellationToken);
     }

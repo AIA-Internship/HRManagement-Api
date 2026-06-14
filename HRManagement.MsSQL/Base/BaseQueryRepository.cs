@@ -1,9 +1,10 @@
-﻿using System.Data;
-
-using HRManagement.Api.Domain.Models.Config;
+﻿using HRManagement.Domain.Models.Config;
 
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+
+using System.Data;
 
 namespace HRManagement.MsSQL.Base
 {

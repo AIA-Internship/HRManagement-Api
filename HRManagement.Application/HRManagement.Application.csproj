@@ -22,4 +22,9 @@
     <ProjectReference Include="..\HRManagement.MsSQL\HRManagement.MsSQL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\ESS\Employee\Commands\" />
+    <Folder Include="Features\Master\References\Commands\" />
+  </ItemGroup>
+
 </Project>
