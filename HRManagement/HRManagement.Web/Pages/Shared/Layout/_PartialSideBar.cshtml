@@ -149,16 +149,63 @@
                         </div>
                     </div>
 
-                    <!-- Leave Management - Single Menu Item -->
-                    <div class="menu-item">
-                        <a class="menu-link @(currentPath.Contains("/Leave") ? "active" : "")" href="/Leave/Employee/Dashboard">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-address-book fs-2">
-                                    <span class="path1"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Leave Management</span>
-                        </a>
+
+
+                            <span class="menu-arrow"></span>
+                        </span>
+                        
+                        <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/Timesheet") ? "show" : "")">
+                            <div class="menu-item">
+                                <a class="menu-link @(currentPath == "/Leave/Employee/Dashboard" ? "active" : "")" href="/Leave/Employee/Dashboard">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                            <span class="menu-arrow"></span>
+                        </span>
+                        
+                        <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/Timesheet") ? "show" : "")">
+                            <div class="menu-item">
+                                <a class="menu-link @(currentPath == "/Leave/Employee/Dashboard" ? "active" : "")" href="/Leave/Employee/Dashboard">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                            <span class="menu-arrow"></span>
+                        </span>
+                        
+                        <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/Timesheet") ? "show" : "")">
+                            <div class="menu-item">
+                                <a class="menu-link @(currentPath == "/Leave/Employee/Dashboard" ? "active" : "")" href="/Leave/Employee/Dashboard">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                            <span class="menu-arrow"></span>
+                        </span>
+                        
+                        <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/Timesheet") ? "show" : "")">
+                            <div class="menu-item">
+                                <a class="menu-link @(currentPath == "/Leave/Employee/Dashboard" ? "active" : "")" href="/Leave/Employee/Dashboard">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="supervisor_section" style="display: none;">
@@ -171,6 +218,21 @@
                                     <i class="bi bi-grid fs-3"></i>
                                 </span>
                                 <span class="menu-title" style="font-size: 1.1rem; font-weight: 600;">Dashboard</span>
+                            </a>
+                        </div>
+
+                        <!-- Leave Managmnet -->
+                        <div class="menu-item">
+                            <a class="menu-link @(currentPath.Contains("/Leave") ? "active" : "")"
+                               href="/Leave/Employee/Dashboard">
+
+                                <span class="menu-icon">
+                                    <i class="ki-duotone ki-address-book fs-2">
+                                        <span class="path1"></span>
+                                    </i>
+                                </span>
+
+                                <span class="menu-title">Leave Management</span>
                             </a>
                         </div>
 

@@ -2,9 +2,8 @@
 {
     public enum LeaveType
     {
-        AnnualLeave = 1,
-        SickLeave = 2,
-        EmergencyLeave = 3
+        PaidLeave = 1,
+        UnpaidLeave = 2
 
     }
 

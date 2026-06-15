@@ -299,9 +299,8 @@ namespace HRManagement.Web.Pages.Modules.Leave.Employee
 
     public class LeaveTypeCountDto
     {
-        public int annualLeave { get; set; }
-        public int sickLeave { get; set; }
-        public int emergencyLeave { get; set; }
+        public int PaidLeave { get; set; }
+        public int UnpaidLeave { get; set; }
     }
 
     public class LeaveRequestDto

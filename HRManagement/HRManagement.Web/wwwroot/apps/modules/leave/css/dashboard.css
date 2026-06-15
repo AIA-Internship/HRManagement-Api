@@ -31,6 +31,9 @@
 .leave-distribution-card h6 {
     font-weight: 600;
 }
+.progress {
+    background-color: #FFE4E6 !important;
+}
 .dist-progress .progress-bar {
     border-radius: 6px;
 }
@@ -38,6 +41,11 @@
     background: rgba(231,58,74,0.08);
     border-radius: 6px;
 }
+
+
+
+
+
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
