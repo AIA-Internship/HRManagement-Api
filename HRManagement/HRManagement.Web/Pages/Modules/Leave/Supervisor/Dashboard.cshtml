@@ -1,82 +1,113 @@
 @page
+@model HRManagement.Web.Pages.Modules.Leave.Supervisor.DashboardModel
 @{
-    Layout = null;
+    ViewData["Title"] = "Leave Supervisor Dashboard";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leave Request List</title>
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/leave/css/SupervisorDashboard.css" asp-append-version="true" />
+    <style>
+        #requestTableBody tr:hover {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+        }
+        #requestTableBody tr:hover td {
+            color: #fff !important;
+        }
+        #requestTableBody tr:hover .badge {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+        #requestTableBody td {
+            padding: 1.1rem 2rem;
+            vertical-align: middle;
+        }
+        #requestTableBody tr {
+            box-sizing: border-box;
+        }
+    </style>
+}
 
-    <style src="~/apps/modules/leave/css/SupervisorDashboard.css"></style>
-       
-</head>
-<body>
+<div class="mx-11">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
+    {
+        Title = "Leave",
+        Subtitle = "Overview of pending leave requests from your team",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
+            new BreadcrumbItem { Title = "Supervisor Dashboard" }
+        },
+    })
+</div>
 
-<div class="page-container">
-    <div class="breadcrumb">
-        Leave > <span>Request List</span>
+<div class="container-fluid px-5">
+    <div class="row mb-4 mx-3">
+        <div class="col">
+            <h2 class="fw-bold">Hello, <span id="userName">Supervisor</span></h2>
+            <p class="text-muted">Here is an overview of your leave status and activity</p>
+        </div>
     </div>
+</div>
 
-    <div class="header">
-        <h1>Hello, <span id="userName">Supervisor</span></h1>
-        <p>Here is an overview of your leave status and activity.</p>
-    </div>
-
-    <div class="tabs">
-        <div class="tab active">Request List</div>
-        <div class="tab" onclick="window.location.href='/Leave/Supervisor/Calendar'">Calendar</div>
-    </div>
-
-    <div class="card">
-
-        <div class="toolbar">
-            <div class="status-filters">
-                <button class="status-btn active" onclick="filterStatus('pending')">Needs Approval</button>
-                <button class="status-btn" onclick="filterStatus('approved')">Approved</button>
-                <button class="status-btn" onclick="filterStatus('rejected')">Rejected</button>
+<div class="card mx-10 mb-15">
+    <div class="card-body ps-0 pe-0">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-4"
+             style="overflow-x:auto; gap:1rem;">
+            <div>
+                <div class="btn-group ms-7" role="group" aria-label="filters">
+                    <button class="btn btn-outline-secondary active" onclick="filterStatus('1')">Needs Approval</button>
+                    <button class="btn btn-outline-secondary" onclick="filterStatus('2')">Approved</button>
+                    <button class="btn btn-outline-secondary" onclick="filterStatus('3')">Rejected</button>
+                </div>
             </div>
 
-            <div class="search-sort">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search Leave..." />
-                </div>
-
-                <select class="sort-select" id="sortSelect">
-                    <option value="newest">Newest</option>
+            <div class="d-flex align-items-center flex-shrink-0"
+                 style="gap:1rem;">
+                <label class="me-2">Sort By:</label>
+                <select id="sortSelect" class="form-select form-select-sm me-3" style="width:160px;">
+                    <option value="newest" selected>Newest</option>
                     <option value="oldest">Oldest</option>
                 </select>
+                <a href="/Leave/Supervisor/Calendar"
+                   class="btn btn-danger d-flex align-items-center justify-content-center"
+                   style="
+                    height:2.7rem;
+                    min-width:7rem;
+                    white-space:nowrap;
+                    text-align:center;
+                    ">
+                    Calendar
+                </a>
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <table>
+        <div class="table-responsive">
+            <table class="table align-middle">
                 <thead>
-                <tr>
-                    <th>Employee Name</th>
-                    <th>Leave Type</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Day(s)</th>
-                    <th>Status</th>
-                </tr>
+                    <tr>
+                        <th class="px-7"><strong>Employee Name</strong></th>
+                        <th class="px-7"><strong>Leave Type</strong></th>
+                        <th class="px-7"><strong>Start Date</strong></th>
+                        <th class="px-7"><strong>End Date</strong></th>
+                        <th class="px-7"><strong>Duration</strong></th>
+                        <th class="px-7 text-center"><strong>Status</strong></th>
+                    </tr>
                 </thead>
                 <tbody id="requestTableBody">
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination">
-            <span id="paginationText"></span>
-            <div class="page-buttons" id="paginationButtons"></div>
+        <div class="d-flex align-items-center justify-content-between mt-3 ms-7 me-7">
+            <div class="text-muted" id="showingText">Showing 0-0 of 0 requests</div>
+            <nav aria-label="pagination">
+                <ul class="pagination mb-0" id="paginationList">
+                </ul>
+            </nav>
         </div>
-
     </div>
 </div>
 
-<script src="~/apps/modules/leave/js/SupervisorDashboard.js"></script>
-
-</body>
-</html>
+@section Scripts {
+    <script src="~/apps/modules/leave/js/SupervisorDashboard.js" asp-append-version="true"></script>
+}
