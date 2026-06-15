@@ -14,7 +14,6 @@ public class EmploymentInformation : BaseTable
     public string? SupervisorName { get; private set; }
 
     public Employee Employee { get; private set; } = null!;
-    public Employee? Supervisor { get; private set; }
 
     protected EmploymentInformation() { }
     

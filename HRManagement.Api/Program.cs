@@ -1,20 +1,18 @@
+using HRManagement.Api.Extensions;
+using HRManagement.Api.Repositories.Seeder;
+using HRManagement.Application.Interfaces;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+
+using Scalar.AspNetCore;
+
 using System.Net;
 using System.Text;
 using System.Text.Json;
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using HRManagement.Api.Domain.Models.Config;
-using HRManagement.Api.Domain.Models.Constants;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Extensions;
-using HRManagement.Api.Repositories.Base;
-using HRManagement.Api.Repositories.Seeder;
-using Microsoft.OpenApi;
-using Scalar.AspNetCore;
-using HRManagement.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var apiName = "Mini Project HR Management API";

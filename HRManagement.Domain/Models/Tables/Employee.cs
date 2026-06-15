@@ -5,31 +5,42 @@ public class Employee : BaseTable
     public int Id { get; private set; }
     public string NIK { get; private set; }
     public string FullName { get; private set; }
-    public int Gender { get; private set; }
+    public string Gender { get; private set; }
     public string PersonalEmail { get; private set; }
     public string EmployeeEmail { get; private set; }
     
-    public string PlaceOfBirth { get; private set; }
-    public DateTime DateOfBirth { get; private set; }
+    public string BirthPlace { get; private set; }
+    public DateTime BirthDate { get; private set; }
     public int MaritalStatus { get; private set; }
-    public Address CurrentAddress { get; private set; } = new Address();
-    public Address ResidentialAddress { get; private set; } = new Address();
-    public string PhoneNumber { get; private set; }
+
+    public string CurrentAddress { get; private set; }
+    public string CurrentCity { get; private set; }
+    public string CurrentProvince { get; private set; }
+    public string CurrentPostalCode { get; private set; }
+
+    public string ResidentialAddress { get; private set; }
+    public string ResidentialCity { get; private set; }
+    public string ResidentialProvince { get; private set; }
+    public string ResidentialPostalCode { get; private set; }
+
+    public string MobilePhone { get; private set; }
+    public int RoleId { get; private set; }
+
     public bool IsActive { get; private set; }
-    public int RoleId { get;  private set; }
-    public Roles SystemRole { get;  private set; }
-    // public int Role { get; private set; }
-    public EmploymentInformation? EmploymentInformation { get; private set; }
-    public ICollection<EmergencyContact> EmergencyContacts { get; private set; } = new List<EmergencyContact>();
+
+    public Roles Role { get;  private set; }
+
+    public ICollection<EmploymentInformation> EmploymentInformations { get; set; } = new List<EmploymentInformation>();
+    public ICollection<EmergencyContact?> EmergencyContacts { get; private set; } = new List<EmergencyContact?>();
     
     protected Employee() { }
     
     public Employee(
         string fullName,
-        int gender,
+        string gender,
         string personalEmail,
         string employeeEmail,
-        string phoneNumber,
+        string mobilePhone,
         string nik,
         string placeOfBirth,
         DateTime dateOfBirth,
@@ -45,13 +56,21 @@ public class Employee : BaseTable
         Gender = gender;
         PersonalEmail = personalEmail;
         EmployeeEmail = employeeEmail;
-        PhoneNumber = phoneNumber;
-        Nik = nik;
-        PlaceOfBirth = placeOfBirth;
-        DateOfBirth = dateOfBirth;
+        MobilePhone = mobilePhone;
+        NIK = nik;
+        BirthPlace = placeOfBirth;
+        BirthDate = dateOfBirth;
         MaritalStatus = maritalStatus;
-        CurrentAddress = currentAddress;
-        ResidentialAddress = residentialAddress;
+        CurrentAddress = currentAddress.Street;
+        CurrentCity = currentAddress.City;
+        CurrentProvince = currentAddress.Province;
+        CurrentPostalCode = currentAddress.ZipCode;
+
+        ResidentialAddress = residentialAddress.Street;
+        ResidentialCity = residentialAddress.City;
+        ResidentialProvince = residentialAddress.Province;
+        ResidentialPostalCode = residentialAddress.ZipCode;
+
         RoleId = roleId;
         IsActive = true;
 
@@ -83,21 +102,21 @@ public class Employee : BaseTable
     {
         FullName = UseIfProvided(request.NewFullName, FullName);
         Gender = request.NewGender ?? Gender;
-        
-        CurrentAddress.Street = UseIfProvided(request.NewCurrentStreetAddress, CurrentAddress.Street);
-        CurrentAddress.City = UseIfProvided(request.NewCurrentCity, CurrentAddress.City);
-        CurrentAddress.Province = UseIfProvided(request.NewCurrentProvince, CurrentAddress.Province);
-        CurrentAddress.ZipCode = UseIfProvided(request.NewCurrentZipCode, CurrentAddress.ZipCode);
 
-        ResidentialAddress.Street = UseIfProvided(request.NewResidentialStreetAddress, ResidentialAddress.Street);
-        ResidentialAddress.City = UseIfProvided(request.NewResidentialCity, ResidentialAddress.City);
-        ResidentialAddress.Province = UseIfProvided(request.NewResidentialProvince, ResidentialAddress.Province);
-        ResidentialAddress.ZipCode = UseIfProvided(request.NewResidentialZipCode, ResidentialAddress.ZipCode);
+        CurrentAddress = UseIfProvided(request.NewCurrentStreetAddress, CurrentAddress);
+        CurrentCity = UseIfProvided(request.NewCurrentCity, CurrentCity);
+        CurrentProvince = UseIfProvided(request.NewCurrentProvince, CurrentProvince);
+        CurrentPostalCode = UseIfProvided(request.NewCurrentZipCode, CurrentPostalCode);
 
-        PhoneNumber = UseIfProvided(request.NewPhoneNumber, PhoneNumber);
+        ResidentialAddress = UseIfProvided(request.NewResidentialStreetAddress, ResidentialAddress);
+        ResidentialCity = UseIfProvided(request.NewResidentialCity, ResidentialCity);
+        ResidentialProvince = UseIfProvided(request.NewResidentialProvince, ResidentialProvince);
+        ResidentialPostalCode = UseIfProvided(request.NewResidentialZipCode, ResidentialPostalCode);
+
+        MobilePhone = UseIfProvided(request.NewPhoneNumber, MobilePhone);
         PersonalEmail = UseIfProvided(request.NewPersonalEmail, PersonalEmail);
-        PlaceOfBirth = UseIfProvided(request.NewPlaceOfBirth, PlaceOfBirth);
-        DateOfBirth = request.NewDateOfBirth ?? DateOfBirth;
+        BirthPlace = UseIfProvided(request.NewPlaceOfBirth, BirthPlace);
+        BirthDate = request.NewDateOfBirth ?? BirthDate;
         MaritalStatus = request.NewMaritalStatus ?? MaritalStatus;
         
         if (!string.IsNullOrWhiteSpace(request.NewEmergencyContactName))
@@ -117,8 +136,7 @@ public class Employee : BaseTable
         MarkAsModified(actionerId);
     }
 
-    private static string UseIfProvided(string? newValue, string currentValue) =>
-        string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
+    private static string UseIfProvided(string? newValue, string currentValue) => string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
 
     public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
     {

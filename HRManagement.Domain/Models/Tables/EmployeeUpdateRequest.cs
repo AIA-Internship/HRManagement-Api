@@ -7,7 +7,7 @@ public class EmployeeUpdateRequest : BaseTable
     public Employee Employee { get; private set; }
     
     public string? NewFullName { get; private set; }
-    public int? NewGender { get; private set; }
+    public string? NewGender { get; private set; }
     public string? NewPersonalEmail { get; private set; }
     public string? NewPlaceOfBirth { get; private set; }
     public string? NewNik { get; private set; }

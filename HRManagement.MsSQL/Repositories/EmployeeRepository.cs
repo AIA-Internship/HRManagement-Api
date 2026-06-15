@@ -1,5 +1,5 @@
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 
@@ -52,31 +52,88 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
             .ToListAsync();
     }
 
-    public async Task<List<Employee>> GetAllEmployeesAsync()
+    public async Task<List<EmployeeListResponseDto>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext
-            .AsNoTracking()
-            .Include(e => e.EmploymentInformation)
-            .Where(e => e.IsActive == true)
-            .ToListAsync();
+        var query = from e in _dbContext.AsNoTracking()
+                    where e.IsActive
+
+                    // Mengambil employment yang aktif HANYA SEKALI
+                    let activeEmployment = e.EmploymentInformations.FirstOrDefault(ei => ei.StatusCode == 1)
+
+                    // Melakukan lookup employment type (asumsi berada di DbContext yang sama)
+                    let employmentType = _sqldbContext.Set<Lookup>()
+                        .Where(l => l.Category == "EMPLOYMENT_TYPE" &&
+                                    l.Value == activeEmployment.TypeCode &&
+                                    l.IsActive)
+                        .Select(l => l.DisplayName)
+                        .FirstOrDefault()
+
+                    // Mapping ke DTO
+                    select new EmployeeListResponseDto(
+                        e.FullName,
+                        activeEmployment != null ? activeEmployment.DisplayId : "",
+                        employmentType ?? "",
+                        activeEmployment != null ? activeEmployment.DepartmentName : "",
+                        activeEmployment != null ? activeEmployment.PositionName : ""
+                    );
+
+        var finalQuery = await query.ToListAsync(cancellationToken);
+
+        return finalQuery;
     }
 
-    public async Task<Employee?> GetByEmailAsync(string email)
+    public async Task<EmployeeProfileResponseDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext
-            .Include(e => e.EmploymentInformation)
-                .ThenInclude(ei => ei!.Supervisor)
-            .Include(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(u => u.EmployeeEmail == email);
-    }
+        var query = _dbContext
+           .AsNoTracking()
+           .Where(e => e.IsActive && e.EmployeeEmail == email);
 
-    public async Task<Employee?> GetByIdAsync(int id)
-    {
-        return await _dbContext
-            .Include(e => e.EmploymentInformation)
-                .ThenInclude(ei => ei!.Supervisor)
-            .Include(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(e => e.Id == id);
+        var finalQuery = query
+            .Select(e => new EmployeeProfileResponseDto(
+                e.FullName,
+                e.Gender,
+                e.PersonalEmail,
+                e.EmployeeEmail,
+                e.CurrentAddress,
+                e.CurrentCity,
+                e.CurrentProvince,
+                e.CurrentPostalCode,
+                e.ResidentialAddress,
+                e.ResidentialCity,
+                e.ResidentialProvince,
+                e.ResidentialPostalCode,
+                e.MobilePhone,
+                e.NIK,
+                e.BirthPlace,
+                e.BirthDate,
+                _sqldbContext.Set<Lookup>()
+                    .Where(l => l.Category == "MARITAL_STATUS" && l.Value == e.MaritalStatus && l.IsActive)
+                    .Select(l => l.DisplayName)
+                    .FirstOrDefault() ?? "",
+                e.IsActive,
+                e.EmploymentInformations
+                    .Where(ei => ei.StatusCode == 1)
+                    .Select(ei => new EmploymentInformationDto(
+                        ei.StartDate,
+                        ei.DisplayId,
+                        _sqldbContext.Set<Lookup>()
+                            .Where(l => l.Category == "EMPLOYMENT_TYPE" && l.Value == ei.TypeCode && l.IsActive)
+                            .Select(l => l.DisplayName)
+                            .FirstOrDefault() ?? "",
+                        ei.DepartmentName,
+                        ei.PositionName,
+                        ei.SupervisorId,
+                        ei.SupervisorName
+                    ))
+                    .FirstOrDefault(),
+                e.EmergencyContacts.Select(ec => new EmergencyContactDto(
+                    ec.ContactName,
+                    ec.ContactRelationship,
+                    ec.ContactPhone
+                )).ToList()
+            ));
+
+        return await finalQuery.FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<Employee?> GetByDisplayIdAsync(string displayId)

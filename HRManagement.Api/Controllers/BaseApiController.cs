@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Response.Shared;
 
 using MediatR;
 
@@ -33,25 +33,48 @@ public abstract class BaseApiController(ISender sender) : ControllerBase
 
     }
 
-    protected int CurrentBranchId
+    protected int CurrentEmployeeId
     {
         get
         {
-            // Mencari custom claim dengan nama "BranchId"
-            var branchIdString = User.FindFirstValue("BranchId");
+            var result = User.FindFirstValue("EmployeeId");
 
-            if (string.IsNullOrEmpty(branchIdString) || !int.TryParse(branchIdString, out int branchId))
-            {
-                throw new UnauthorizedAccessException("Branch ID tidak valid atau tidak ditemukan di dalam Token pengguna.");
-            }
+            if (string.IsNullOrEmpty(result) || !int.TryParse(result, out int employeeId))
+                throw new UnauthorizedAccessException("Session tidak valid atau Attribute tidak ditemukan di dalam Token.");
 
-            return branchId;
+            return employeeId;
         }
+
     }
 
-    /// <summary>
-    /// Method sakti untuk menerjemahkan Result<T> menjadi ApiResponse yang standar
-    /// </summary>
+    protected string CurrentUserEmail
+    {
+        get
+        {
+            var result = User.FindFirstValue(ClaimTypes.Email);
+
+            if (string.IsNullOrEmpty(result))
+                throw new UnauthorizedAccessException("Session tidak valid atau Attribute tidak ditemukan di dalam Token.");
+
+            return result;
+        }
+
+    }
+
+    protected string CurrentUserRole
+    {
+        get
+        {
+            var result = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrEmpty(result))
+                throw new UnauthorizedAccessException("Session tidak valid atau Attribute tidak ditemukan di dalam Token.");
+
+            return result;
+        }
+
+    }
+
     protected IActionResult HandleResult<T>(Result<T> result)
     {
         if (result.IsSuccess)

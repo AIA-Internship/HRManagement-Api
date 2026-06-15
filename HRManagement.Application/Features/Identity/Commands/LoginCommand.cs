@@ -77,6 +77,7 @@ internal sealed class LoginQueryHandler(
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.EmployeeEmail),
                 new Claim(ClaimTypes.Role, user.Role.Name),
+                new Claim("EmployeeId", user.EmployeeId.ToString()),
                 new Claim("RoleId", user.RoleId.ToString())
             };
 

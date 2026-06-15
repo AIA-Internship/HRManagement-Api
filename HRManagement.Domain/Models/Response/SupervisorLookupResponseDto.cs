@@ -1,3 +1,3 @@
-namespace HRManagement.Application.EmployeeDtos.Queries.Dto;
+namespace HRManagement.Domain.Models.Response;
 
 public record SupervisorLookupResponseDto(string DisplayId, string FullName);

@@ -4,9 +4,9 @@ using HRManagement.Api.Domain.Models.Constants;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Application.Interfaces;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
 
 namespace HRManagement.Application.Queries;
 

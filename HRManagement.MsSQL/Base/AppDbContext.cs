@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<Lookup> Lookup { get; set; }
 
     public virtual DbSet<Employee> Employee { get; set; }
+    public virtual DbSet<EmergencyContact> EmergencyContact { get; set; }
     public virtual DbSet<EmployeeUpdateRequest> EmployeeUpdateRequest { get; set; }
     public virtual DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public virtual DbSet<EmployeeAttachment> EmployeeAttachment { get; set; }

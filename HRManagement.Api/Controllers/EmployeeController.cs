@@ -1,12 +1,11 @@
 using CSharpFunctionalExtensions;
 
-using FluentValidation;
-
+using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Commands;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Application.Features.ESS.Employee.Queries;
 using HRManagement.Application.Queries;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Response;
 
 using MediatR;
@@ -23,19 +22,76 @@ public class EmployeeController(ISender sender) : BaseApiController(sender)
 {
     [HttpGet("list")]
     [HasPermission(Permissions.Users.View)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeListResponseDto>>>> GetAllEmployees()
+    public async Task<IActionResult> GetAllEmployees(CancellationToken ct)
     {
-        string methodName = nameof(GetAllEmployees);
+        var query = new GetEmployeeListQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyProfile(CancellationToken ct)
+    {
+        var query = new GetMyProfileQuery(CurrentUserEmail);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("my-requests")]
+    [HasPermission(Permissions.Employees.View)]
+    public async Task<IActionResult> GetMyRequests([FromQuery] int? status)
+    {
+        var query = new GetMyUpdateRequestQuery(CurrentEmployeeId, status);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("requests")]
+    [HasPermission(Permissions.Users.View)]
+    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
+    {
+        string methodName = nameof(GetEmployeeRequests);
         _logger.LogInformation("Start {Service}.", methodName);
 
-        var query = new GetEmployeeListQuery();
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeListResponseDto>>>(query, async (q) =>
+        var query = new GetUpdateRequestQuery(status);
+        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) =>
         {
-            var result = await _mediator.Send((GetEmployeeListQuery)q);
+            var result = await _mediator.Send((GetUpdateRequestQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
     }
+
+    [HttpGet("{displayId}")]
+    [HasPermission(Permissions.Employees.View)]
+    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
+    {
+        string methodName = nameof(GetEmployeeProfileByDisplayId);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
+        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) =>
+        {
+            var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
+    [HttpGet("supervisors-lookup")]
+    [HasPermission(Permissions.Employees.View)]
+    public async Task<ActionResult<ApiResponse<List<SupervisorLookupResponseDto>>>> GetSupervisorLookup()
+    {
+        string methodName = nameof(GetSupervisorLookup);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var query = new GetSupervisorLookupQuery();
+        var result = await _mediator.Send(query);
+
+        _logger.LogInformation("End {Service}.", methodName);
+        return Ok(result);
+    }
+
 
     [HttpPut("employment-info/{displayId}")]
     [HasPermission(Permissions.Users.Edit)]
@@ -66,85 +122,6 @@ public class EmployeeController(ISender sender) : BaseApiController(sender)
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
-    }
-    
-    
-    
-    [HttpGet("me")]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
-    {
-        string methodName = nameof(GetMyProfile);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetMyProfileQuery();
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetMyProfileQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-
-    [HttpGet("my-requests")]
-    [HasPermission(Permissions.Employees.View)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetMyRequests([FromQuery] int? status)
-    {
-        string methodName = nameof(GetMyRequests);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetMyUpdateRequestQuery(status);
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetMyUpdateRequestQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-
-    [HttpGet("requests")]
-    [HasPermission(Permissions.Users.View)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
-    {
-        string methodName = nameof(GetEmployeeRequests);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetUpdateRequestQuery(status);
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetUpdateRequestQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-
-    [HttpGet("{displayId}")]
-    [HasPermission(Permissions.Employees.View)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
-    {
-        string methodName = nameof(GetEmployeeProfileByDisplayId);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
-    [HttpGet("supervisors-lookup")]
-    [HasPermission(Permissions.Employees.View)]
-    public async Task<ActionResult<ApiResponse<List<SupervisorLookupResponseDto>>>> GetSupervisorLookup()
-    {
-        string methodName = nameof(GetSupervisorLookup);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetSupervisorLookupQuery();
-        var result = await _mediator.Send(query);
-        
-        _logger.LogInformation("End {Service}.", methodName);
-        return Ok(result);
     }
     
     [HttpPost("review-update")]

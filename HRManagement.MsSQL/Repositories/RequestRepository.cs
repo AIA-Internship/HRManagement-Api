@@ -1,12 +1,13 @@
-using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Tables;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.MsSQL.Repositories;
 
-public class RequestRepository(AppDbContext dbContext) : IRequestRepository
+public class RequestRepository : BaseRepository<EmployeeUpdateRequest>, IRequestRepository
 {
     public async Task UpdateRequestStatusAsync(EmployeeUpdateRequest request)
     {
@@ -14,17 +15,45 @@ public class RequestRepository(AppDbContext dbContext) : IRequestRepository
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<EmployeeUpdateRequest>> GetEmployeeUpdateRequestAsync(int? status, int? employeeId = null)
+    public async Task<List<EmployeeRequestResponseDto>> GetMyEmployeeUpdateRequestAsync(int? status, int employeeId, CancellationToken cancellationToken = default)
     {
-        var query = dbContext.EmployeeUpdateRequests
-            .Include(r => r.Employee)
-            .ThenInclude(e => e.EmploymentInformation)
-            .AsQueryable();
+        var query = _dbContext
+           .AsNoTracking()
+           .Where(e => !e.IsDeleted && e.Id == employeeId);
 
-        if (status.HasValue) query = query.Where(r => r.Status == status.Value);
-        if (employeeId.HasValue) query = query.Where(r => r.EmployeeId == employeeId.Value);
+        var finalQuery = await query
+            .OrderByDescending(r => r.CreatedUtcDate)
+            .Select(e => new EmployeeRequestResponseDto(
+                e.Id,
+                e.Employee.EmploymentInformations.Select(d => d.DisplayId).FirstOrDefault() ?? "",
+                e.Employee.FullName,
+                e.NewNik,
+                e.NewFullName,
+                e.NewGender,
+                e.NewPersonalEmail,
+                e.NewPlaceOfBirth,
+                e.NewDateOfBirth,
+                e.NewMaritalStatus,
+                e.NewCurrentStreetAddress,
+                e.NewCurrentCity,
+                e.NewCurrentProvince,
+                e.NewCurrentZipCode,
+                e.NewResidentialStreetAddress,
+                e.NewResidentialCity,
+                e.NewResidentialProvince,
+                e.NewResidentialZipCode,
+                e.NewPhoneNumber,
+                e.NewEmergencyContactName,
+                e.NewEmergencyContactPhone,
+                e.NewEmergencyContactRelationship,
+                e.Status,
+                e.HrReason,
+                e.CreatedAt
+                ))
+            .ToListAsync(cancellationToken);
 
-        return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
+
+        return finalQuery;
     }
 
     public async Task<EmployeeUpdateRequest?> GetEmployeeUpdateRequestByIdAsync(int id)

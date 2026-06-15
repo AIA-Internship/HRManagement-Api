@@ -1,6 +1,6 @@
 using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
 
 using MediatR;
 

@@ -3,6 +3,7 @@
 public class Users
 {
     public int Id { get; private set; }
+    public int EmployeeId { get; private set; }
     public string EmployeeEmail { get; private set; }
     public string PasswordHash { get; private set; }
     public int RoleId { get; private set; }

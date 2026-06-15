@@ -5,17 +5,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace HRManagement.MsSQL.Configurations;
 
-public class EmploymentInfoConfiguration : IEntityTypeConfiguration<EmploymentInformation>
+public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<EmployeeUpdateRequest>
 {
-    public void Configure(EntityTypeBuilder<EmploymentInformation> builder)
+    public void Configure(EntityTypeBuilder<EmployeeUpdateRequest> builder)
     {
-        builder.ToTable("EmploymentInformation");
+        builder.ToTable("EmployeeUpdateRequest");
         builder.HasKey(e => e.Id);
+        
+        builder.HasOne(e => e.Employee)
+            .WithMany() 
+            .HasForeignKey(e => e.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(c => c.User)
                 .WithMany()
                 .HasForeignKey(c => c.ModifiedBy)
                 .OnDelete(DeleteBehavior.Restrict);
     }
-    
 }

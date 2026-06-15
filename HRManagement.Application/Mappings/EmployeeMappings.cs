@@ -1,6 +1,5 @@
 using HRManagement.Api.Domain.Models.Tables;
 using HRManagement.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Domain.Models.Response;
 
 namespace HRManagement.Application.Mappings;
