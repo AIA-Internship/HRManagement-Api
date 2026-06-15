@@ -36,5 +36,19 @@ namespace HRManagement.Domain.Models.Tables
             this.CreatedBy = actionerId;
             this.CreatedUtcDate = DateTime.UtcNow.AddHours(7);
         }
+
+        public static bool IsChanged(string? newValue, string? currentValue)
+        {
+            if (string.IsNullOrWhiteSpace(newValue)) return false;
+            return !string.Equals(newValue.Trim(), currentValue?.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsChanged<T>(T? newValue, T currentValue) where T : struct
+        {
+            if (!newValue.HasValue) return false;
+            return !newValue.Value.Equals(currentValue);
+        }
+
+        public static string UseIfProvided(string? newValue, string currentValue) => string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
     }
 }

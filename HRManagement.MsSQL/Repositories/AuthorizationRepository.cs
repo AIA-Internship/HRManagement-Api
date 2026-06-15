@@ -1,8 +1,6 @@
-﻿using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Tables;
+﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace HRManagement.MsSQL.Repositories;
 

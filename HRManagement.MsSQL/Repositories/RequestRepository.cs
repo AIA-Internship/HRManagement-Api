@@ -9,23 +9,19 @@ namespace HRManagement.MsSQL.Repositories;
 
 public class RequestRepository : BaseRepository<EmployeeUpdateRequest>, IRequestRepository
 {
-    public async Task UpdateRequestStatusAsync(EmployeeUpdateRequest request)
-    {
-        dbContext.EmployeeUpdateRequests.Update(request);
-        await dbContext.SaveChangesAsync();
-    }
+    public RequestRepository(AppDbContext dbContext) : base(dbContext) { }
 
-    public async Task<List<EmployeeRequestResponseDto>> GetMyEmployeeUpdateRequestAsync(int? status, int employeeId, CancellationToken cancellationToken = default)
+    public async Task<List<EmployeeRequestResponseDto>> GetMyEmployeeUpdateRequestAsync(int? status, int? employeeId, CancellationToken cancellationToken = default)
     {
         var query = _dbContext
            .AsNoTracking()
-           .Where(e => !e.IsDeleted && e.Id == employeeId);
+           .Where(e => !e.IsDeleted && (employeeId == null || e.Id == employeeId));
 
         var finalQuery = await query
             .OrderByDescending(r => r.CreatedUtcDate)
             .Select(e => new EmployeeRequestResponseDto(
                 e.Id,
-                e.Employee.EmploymentInformations.Select(d => d.DisplayId).FirstOrDefault() ?? "",
+                e.Employee.EmploymentInformation.DisplayId,
                 e.Employee.FullName,
                 e.NewNik,
                 e.NewFullName,
@@ -56,19 +52,4 @@ public class RequestRepository : BaseRepository<EmployeeUpdateRequest>, IRequest
         return finalQuery;
     }
 
-    public async Task<EmployeeUpdateRequest?> GetEmployeeUpdateRequestByIdAsync(int id)
-    {
-        return await dbContext.EmployeeUpdateRequests
-            .Include(r => r.Employee)
-            .ThenInclude(e => e.EmploymentInformation) 
-            .Include(r => r.Employee)
-            .ThenInclude(e => e.EmergencyContacts)
-            .FirstOrDefaultAsync(r => r.Id == id);;
-    }
-
-    public async Task SubmitUpdateRequestAsync(EmployeeUpdateRequest request)
-    {
-        await dbContext.EmployeeUpdateRequests.AddAsync(request);
-        await dbContext.SaveChangesAsync();
-    }
 }

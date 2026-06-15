@@ -19,7 +19,7 @@ internal sealed class GetMyProfileQueryHandler(
     {
         logger.LogInformation("Executing handler : {HandlerName}", nameof(GetMyProfileQueryHandler));
 
-        var data = await employeeRepository.GetByEmailAsync(request.CurrentUserEmail, cancellationToken);
+        var data = await employeeRepository.GetProfileByEmailAsync(request.CurrentUserEmail, cancellationToken);
 
         return Result.Success(data);
     }

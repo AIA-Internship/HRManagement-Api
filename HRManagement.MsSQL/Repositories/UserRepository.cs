@@ -31,6 +31,6 @@ public class UserRepository : BaseRepository<Users>, IUserRepository
             .Where(u => u.EmployeeEmail.ToLower() == email.ToLower() && !u.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
-        return result;
+        return result != null ? true : false;
     }
 }

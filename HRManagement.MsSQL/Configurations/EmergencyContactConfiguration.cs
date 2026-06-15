@@ -12,11 +12,6 @@ public class EmergencyContactConfiguration : IEntityTypeConfiguration<EmergencyC
         builder.ToTable("EmergencyContact");
         builder.HasKey(e => e.Id);
         
-        builder.HasOne(e => e.Employee)
-            .WithMany(emp => emp.EmergencyContacts)
-            .HasForeignKey(e => e.EmployeeId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne(c => c.User)
             .WithMany()
             .HasForeignKey(c => c.ModifiedBy)

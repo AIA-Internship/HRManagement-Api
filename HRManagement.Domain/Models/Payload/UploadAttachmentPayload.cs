@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Http;
+
 using System.ComponentModel.DataAnnotations;
 
-namespace HRManagement.Application.EmployeeDtos.Commands.Dto;
+namespace HRManagement.Domain.Models.Payload;
 
-public class UploadAttachmentDto
+public class UploadAttachmentPayload
 {
     [Required]
     public string DocumentType { get; set; } = string.Empty;

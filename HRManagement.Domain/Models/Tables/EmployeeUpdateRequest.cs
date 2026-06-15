@@ -1,3 +1,6 @@
+using HRManagement.Domain.Models.Payload;
+using HRManagement.Domain.Models.Response;
+
 namespace HRManagement.Domain.Models.Tables;
 
 public class EmployeeUpdateRequest : BaseTable
@@ -39,30 +42,30 @@ public class EmployeeUpdateRequest : BaseTable
     
     protected EmployeeUpdateRequest() { }
     
-    public EmployeeUpdateRequest(Employee employee, UpdateEmployeeRequestDto dto, long actionerId)
+    public EmployeeUpdateRequest(EmployeeProfileResponseDto employee, UpdateEmployeePayload dto, long actionerId)
     {
         EmployeeId = employee.Id;
         NewFullName = IsChanged(dto.FullName, employee.FullName) ? dto.FullName : null;
         NewGender = IsChanged(dto.Gender, employee.Gender) ? dto.Gender : null;
         NewPersonalEmail = IsChanged(dto.PersonalEmail, employee.PersonalEmail) ? dto.PersonalEmail : null;
         NewPlaceOfBirth = IsChanged(dto.PlaceOfBirth, employee.PlaceOfBirth) ? dto.PlaceOfBirth : null;
-        NewNik = IsChanged(dto.Nik, employee.NIK) ? dto.Nik : null;
+        NewNik = IsChanged(dto.Nik, employee.Nik) ? dto.Nik : null;
         NewDateOfBirth = IsChanged(dto.DateOfBirth, employee.DateOfBirth) ? dto.DateOfBirth : null;
         NewMaritalStatus = IsChanged(dto.MaritalStatus, employee.MaritalStatus) ? dto.MaritalStatus : null;
         
-        NewCurrentStreetAddress = IsChanged(dto.CurrentStreetAddress, employee.CurrentAddress.Street) ? dto.CurrentStreetAddress : null;
-        NewCurrentCity = IsChanged(dto.CurrentCity, employee.CurrentAddress.City) ? dto.CurrentCity : null;
-        NewCurrentProvince = IsChanged(dto.CurrentProvince, employee.CurrentAddress.Province) ? dto.CurrentProvince : null;
-        NewCurrentZipCode = IsChanged(dto.CurrentPostalCode, employee.CurrentAddress.ZipCode) ? dto.CurrentPostalCode : null;
+        NewCurrentStreetAddress = IsChanged(dto.CurrentStreetAddress, employee.CurrentStreetAddress) ? dto.CurrentStreetAddress : null;
+        NewCurrentCity = IsChanged(dto.CurrentCity, employee.CurrentCity) ? dto.CurrentCity : null;
+        NewCurrentProvince = IsChanged(dto.CurrentProvince, employee.CurrentProvince) ? dto.CurrentProvince : null;
+        NewCurrentZipCode = IsChanged(dto.CurrentPostalCode, employee.CurrentPostalCode) ? dto.CurrentPostalCode : null;
 
-        NewResidentialStreetAddress = IsChanged(dto.ResidentialStreetAddress, employee.ResidentialAddress.Street) ? dto.ResidentialStreetAddress : null;
-        NewResidentialCity = IsChanged(dto.ResidentialCity, employee.ResidentialAddress.City) ? dto.ResidentialCity : null;
-        NewResidentialProvince = IsChanged(dto.ResidentialProvince, employee.ResidentialAddress.Province) ? dto.ResidentialProvince : null;
-        NewResidentialZipCode = IsChanged(dto.ResidentialPostalCode, employee.ResidentialAddress.ZipCode) ? dto.ResidentialPostalCode : null;
+        NewResidentialStreetAddress = IsChanged(dto.ResidentialStreetAddress, employee.ResidentialStreetAddress) ? dto.ResidentialStreetAddress : null;
+        NewResidentialCity = IsChanged(dto.ResidentialCity, employee.ResidentialCity) ? dto.ResidentialCity : null;
+        NewResidentialProvince = IsChanged(dto.ResidentialProvince, employee.ResidentialProvince) ? dto.ResidentialProvince : null;
+        NewResidentialZipCode = IsChanged(dto.ResidentialPostalCode, employee.ResidentialPostalCode) ? dto.ResidentialPostalCode : null;
 
         NewPhoneNumber = IsChanged(dto.PhoneNumber, employee.PhoneNumber) ? dto.PhoneNumber : null;
 
-        var currentContact = employee.EmergencyContacts.FirstOrDefault();
+        var currentContact = employee.EmergencyContact;
         NewEmergencyContactName = IsChanged(dto.EmergencyContactName, currentContact?.Name) ? dto.EmergencyContactName : null;
         NewEmergencyContactPhone = IsChanged(dto.EmergencyContactPhone, currentContact?.PhoneNumber) ? dto.EmergencyContactPhone : null;
         NewEmergencyContactRelationship = IsChanged(dto.EmergencyContactRelationship, currentContact?.Relationship) ? dto.EmergencyContactRelationship : null;
@@ -72,25 +75,13 @@ public class EmployeeUpdateRequest : BaseTable
         ModifiedBy = actionerId;
     }
 
-    private static bool IsChanged(string? newValue, string? currentValue)
-    {
-        if (string.IsNullOrWhiteSpace(newValue)) return false;
-        return !string.Equals(newValue.Trim(), currentValue?.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsChanged<T>(T? newValue, T currentValue) where T : struct
-    {
-        if (!newValue.HasValue) return false;
-        return !newValue.Value.Equals(currentValue);
-    }
-
     public void Reject(string reason, long hrActionerId)
     {
         Status = 2; // Rejected
         HrReason = reason ?? "Rejected by Supervisor";
         ModifiedBy = hrActionerId;
-        ModifiedUtcDate = DateTime.UtcNow.AddHours(7);
-        CreatedAt = DateTime.UtcNow.AddHours(7);
+        ModifiedUtcDate = DateTime.UtcNow;
+        CreatedAt = DateTime.UtcNow;
     }
 
     public void Approve(string reason, long hrActionerId)
@@ -98,6 +89,6 @@ public class EmployeeUpdateRequest : BaseTable
         Status = 1; // Approved
         HrReason = reason ?? "Approved by Supervisor";
         ModifiedBy = hrActionerId;
-        ModifiedUtcDate = DateTime.UtcNow.AddHours(7);
+        ModifiedUtcDate = DateTime.UtcNow;
     }
 }

@@ -11,13 +11,5 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         builder.ToTable("Employee");
         builder.HasKey(e => e.Id);
-
-        builder.HasOne(e => e.EmploymentInformation)
-            .WithOne(e => e.Employee)
-            .HasForeignKey<EmploymentInformation>(e => e.EmployeeId);
-        
-        builder.HasMany(e => e.EmergencyContacts)
-            .WithOne(ec => ec.Employee)
-            .HasForeignKey(ec => ec.EmployeeId);
     }
 }

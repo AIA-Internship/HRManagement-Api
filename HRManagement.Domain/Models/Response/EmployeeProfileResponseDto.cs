@@ -19,6 +19,7 @@ public record EmploymentInformationDto(
 public record EmployeeProfileResponseDto
 (
     //Personal Information & Address
+    int Id,
     string FullName,
     string Gender,
     string PersonalEmail,
@@ -40,9 +41,10 @@ public record EmployeeProfileResponseDto
     string Nik,
     string PlaceOfBirth,
     DateTime DateOfBirth,
-    string MaritalStatus,
+    int MaritalStatus,
+    string MaritalStatusName,
     bool IsActive,
 
     EmploymentInformationDto? EmploymentInformation,
-    List<EmergencyContactDto> EmergencyContacts
+    EmergencyContactDto? EmergencyContact
 );

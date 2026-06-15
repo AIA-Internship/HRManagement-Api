@@ -10,7 +10,6 @@
         public string? FileStoragePath { get; set; }
         public string? AuthenticationCookiePath { get; set; }
         public int AuthenticationCookieExpireTimeSpan { get; set; }
-        public bool IsDeployedOnAnz { get; set; }
         public AppSettingNotification Notification { get; set; } = new();
         public AppSettingJwt Jwt { get; set; } = new();
         public BaseUrl BaseUrl { get; set; } = new();

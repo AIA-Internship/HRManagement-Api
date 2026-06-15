@@ -30,9 +30,9 @@ public class Employee : BaseTable
 
     public Roles Role { get;  private set; }
 
-    public ICollection<EmploymentInformation> EmploymentInformations { get; set; } = new List<EmploymentInformation>();
-    public ICollection<EmergencyContact?> EmergencyContacts { get; private set; } = new List<EmergencyContact?>();
-    
+    public EmploymentInformation? EmploymentInformation { get; private set; } = null!;
+    public EmergencyContact? EmergencyContact { get; private set; } = null!;
+
     protected Employee() { }
     
     public Employee(
@@ -49,8 +49,8 @@ public class Employee : BaseTable
         Address residentialAddress,
         int roleId,
         long actionerId,
-        EmploymentInformation? employmentInformation = null,
-        IEnumerable<EmergencyContact>? emergencyContacts = null)
+        EmploymentInformation? employmentInformation,
+        EmergencyContact? emergencyContact)
     {
         FullName = fullName;
         Gender = gender;
@@ -75,30 +75,16 @@ public class Employee : BaseTable
         IsActive = true;
 
         if (employmentInformation != null)
-        {
             EmploymentInformation = employmentInformation;
-        }
 
-        if (emergencyContacts != null)
-        {
-            foreach (var contact in emergencyContacts)
-            {
-                EmergencyContacts.Add(new EmergencyContact
-                {
-                    Name = contact.Name,
-                    Relationship = contact.Relationship,
-                    PhoneNumber = contact.PhoneNumber,
-                    CreatedBy = actionerId,
-                    ModifiedBy = actionerId
-                });
-            }
-        }
+        if (emergencyContact != null)
+            EmergencyContact = emergencyContact;
 
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);
     }
 
-    public void ApplyUpdate(EmployeeUpdateRequest request, long actionerId)
+    public void ApplyUpdate(EmployeeUpdateRequest request, int actionerId)
     {
         FullName = UseIfProvided(request.NewFullName, FullName);
         Gender = request.NewGender ?? Gender;
@@ -121,32 +107,29 @@ public class Employee : BaseTable
         
         if (!string.IsNullOrWhiteSpace(request.NewEmergencyContactName))
         {
-            var contact = EmergencyContacts.FirstOrDefault();
-            if (contact == null)
+            if (EmergencyContact != null)
             {
-                contact = new EmergencyContact { EmployeeId = Id };
-                EmergencyContacts.Add(contact);
+                EmergencyContact.ApplyUpdate(
+                    request.NewEmergencyContactName,
+                    request.NewEmergencyContactPhone ?? string.Empty,
+                    request.NewEmergencyContactRelationship ?? string.Empty,
+                    actionerId
+                );
             }
-
-            contact.Name = request.NewEmergencyContactName;
-            contact.PhoneNumber = UseIfProvided(request.NewEmergencyContactPhone, contact.PhoneNumber);
-            contact.Relationship = UseIfProvided(request.NewEmergencyContactRelationship, contact.Relationship);
+            else
+            {
+                this.EmergencyContact = new EmergencyContact(
+                    employeeId: this.Id,
+                    request.NewEmergencyContactName,
+                    request.NewEmergencyContactPhone ?? string.Empty,
+                    request.NewEmergencyContactRelationship ?? string.Empty,
+                    actionerId
+                );
+            }
         }
 
-        MarkAsModified(actionerId);
-    }
+        /* EMPLOYMENT INFORMATION tidak sekalian di update ?? */
 
-    private static string UseIfProvided(string? newValue, string currentValue) => string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
-
-    public void UpdateEmploymentInfo(int? status, DateTime? startDate, int? type, string? department, string? position, int? supervisorId, string? employeeDisplayId, long actionerId)
-    {
-        if (EmploymentInformation == null)
-        {
-            EmploymentInformation = new EmploymentInformation(actionerId);
-        }
-        
-        EmploymentInformation.UpdateDetails(status, startDate, type, department, position, supervisorId, employeeDisplayId, actionerId);
-    
         MarkAsModified(actionerId);
     }
 }

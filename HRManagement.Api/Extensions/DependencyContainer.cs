@@ -1,8 +1,6 @@
-﻿using HRManagement.Api.Repositories.Authentications;
-using HRManagement.Api.Repositories.Services;
-using HRManagement.Application.Auth.Permissions;
+﻿using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Behaviors;
-using HRManagement.Application.Interfaces;
+using HRManagement.Application.Services;
 using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.SeedWork;
 using HRManagement.MsSQL.Base;
@@ -11,6 +9,7 @@ using HRManagement.MsSQL.Repositories;
 using MediatR;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Azure;
 
 using System.Diagnostics.Contracts;
 
@@ -31,11 +30,22 @@ namespace HRManagement.Api.Extensions
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
+
+            services.AddAzureClients(clientBuilder =>
+            {
+                var connectionString = configuration.GetValue<string>("AppSetting:AzureStorage:ConnectionString");
+                clientBuilder.AddBlobServiceClient(connectionString);
+            });
+
+            // 3. Daftarkan FileStorageService milikmu
+            services.AddScoped<IFileStorageService, FileStorageService>();
+
+            services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<ILookupRepository, LookupRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
-            
-            services.AddHttpContextAccessor();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             // 3. Authorization
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

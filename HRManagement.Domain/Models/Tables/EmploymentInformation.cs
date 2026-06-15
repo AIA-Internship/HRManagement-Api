@@ -17,8 +17,28 @@ public class EmploymentInformation : BaseTable
 
     protected EmploymentInformation() { }
     
-    public EmploymentInformation(long actionerId)
+    public EmploymentInformation(
+        int employeeId,
+        int statusCode, 
+        DateTime startDate, 
+        int type, 
+        string? department, 
+        string? position,
+        string? displayId,
+        int? supervisorId,
+        string? supervisorName,
+        long actionerId)
     {
+        EmployeeId = employeeId;
+        StatusCode = statusCode;
+        StartDate = startDate;
+        TypeCode = type;
+        DepartmentName = department;
+        PositionName = position;
+        DisplayId = displayId;
+        SupervisorId = supervisorId;
+        SupervisorName = supervisorName;
+
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);
     }
@@ -36,6 +56,4 @@ public class EmploymentInformation : BaseTable
 
         MarkAsModified(actionerId); 
     }
-    
-    private static string UseIfProvided(string? newValue, string currentValue) => string.IsNullOrWhiteSpace(newValue) ? currentValue : newValue;
 }
