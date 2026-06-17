@@ -27,7 +27,7 @@ public class EmploymentInformation : BaseTable
         string? displayId,
         int? supervisorId,
         string? supervisorName,
-        long actionerId)
+        int actionerId)
     {
         EmployeeId = employeeId;
         StatusCode = statusCode;
@@ -44,7 +44,7 @@ public class EmploymentInformation : BaseTable
     }
 
     public void UpdateDetails(int? status, DateTime? startDate, int? type, string? department, string? position, 
-        int? supervisorId, string? employeeDisplayId, long actionerId)
+        int? supervisorId, string? employeeDisplayId, int actionerId)
     {
         StatusCode = status ?? StatusCode;
         StartDate = startDate ?? StartDate;

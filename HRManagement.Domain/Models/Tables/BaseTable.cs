@@ -4,9 +4,9 @@ namespace HRManagement.Domain.Models.Tables
     {
         public virtual Users? User { get; set; }
         public bool IsDeleted { get; set; }
-        public long CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public DateTime CreatedUtcDate { get; set; }
-        public long ModifiedBy { get; set; }
+        public int ModifiedBy { get; set; }
         public DateTime ModifiedUtcDate { get; set; }
 
         public BaseTable()
@@ -25,13 +25,13 @@ namespace HRManagement.Domain.Models.Tables
             ModifiedUtcDate = DateTime.UtcNow;
         }
 
-        public void MarkAsModified(long actionerId)
+        public void MarkAsModified(int actionerId)
         {
             this.ModifiedBy = actionerId;
             this.ModifiedUtcDate = DateTime.UtcNow.AddHours(7);
         }
 
-        public void MarkAsCreated(long actionerId)
+        public void MarkAsCreated(int actionerId)
         {
             this.CreatedBy = actionerId;
             this.CreatedUtcDate = DateTime.UtcNow.AddHours(7);

@@ -20,7 +20,7 @@ public class EmployeeAttachment : BaseTable
         string filePath,
         string contentType,
         long fileSize,
-        long actionerId
+        int actionerId
     )
     {
         EmployeeId = employeeId;

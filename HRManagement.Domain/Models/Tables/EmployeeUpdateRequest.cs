@@ -42,7 +42,7 @@ public class EmployeeUpdateRequest : BaseTable
     
     protected EmployeeUpdateRequest() { }
     
-    public EmployeeUpdateRequest(EmployeeProfileResponseDto employee, UpdateEmployeePayload dto, long actionerId)
+    public EmployeeUpdateRequest(EmployeeProfileResponseDto employee, UpdateEmployeePayload dto, int actionerId)
     {
         EmployeeId = employee.Id;
         NewFullName = IsChanged(dto.FullName, employee.FullName) ? dto.FullName : null;
@@ -75,7 +75,7 @@ public class EmployeeUpdateRequest : BaseTable
         ModifiedBy = actionerId;
     }
 
-    public void Reject(string reason, long hrActionerId)
+    public void Reject(string reason, int hrActionerId)
     {
         Status = 2; // Rejected
         HrReason = reason ?? "Rejected by Supervisor";
@@ -84,7 +84,7 @@ public class EmployeeUpdateRequest : BaseTable
         CreatedAt = DateTime.UtcNow;
     }
 
-    public void Approve(string reason, long hrActionerId)
+    public void Approve(string reason, int hrActionerId)
     {
         Status = 1; // Approved
         HrReason = reason ?? "Approved by Supervisor";

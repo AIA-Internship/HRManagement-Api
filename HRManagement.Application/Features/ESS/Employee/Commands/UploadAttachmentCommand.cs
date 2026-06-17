@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HRManagement.Application.Features.ESS.Employee.Commands;
 
-public record UploadAttachmentCommand(int Id, string DocumentType, List<UploadFileResponseDto> Files, long CurrentUserId) : IRequest<Result>;
+public record UploadAttachmentCommand(int Id, string DocumentType, List<UploadFileResponseDto> Files, int CurrentUserId) : IRequest<Result>;
 
 internal sealed class UploadAttachmentCommandHandler(
     IEmployeeRepository employeeRepository,

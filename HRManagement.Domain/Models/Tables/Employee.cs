@@ -48,7 +48,7 @@ public class Employee : BaseTable
         Address currentAddress,
         Address residentialAddress,
         int roleId,
-        long actionerId,
+        int actionerId,
         EmploymentInformation? employmentInformation,
         EmergencyContact? emergencyContact)
     {
