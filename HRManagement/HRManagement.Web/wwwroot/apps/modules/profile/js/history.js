@@ -1,141 +1,212 @@
-document.addEventListener("DOMContentLoaded", () => {
+// FR-0003 Request History — wired to /api/employee/me/requests
 
+const API_BASE = "https://localhost:7089";
+
+const state = {
+    raw: [],
+    sortKey: "createdAt",
+    sortDir: "desc",
+    statusFilter: "all"
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
     const tableBody = document.getElementById("requestTableBody");
     const banner = document.getElementById("pendingBanner");
-
     if (!tableBody) return;
 
-    initializeDummyData();
-    const requests = getRequests();
-    renderTable(requests);
+    state.raw = await fetchMyRequests();
 
-    // INITIALIZE DUMMY DATA (ONLY ONCE)
-    function initializeDummyData() {
-        const existing = localStorage.getItem("requests");
-
-        if (!existing) {
-            const dummy = [
-                {
-                    id: "REQ001",
-                    status: "Pending",
-                    submittedAt: "2026-02-20T10:30:00",
-                    fieldsChanged: [
-                        { field: "Phone Number", old: "+62 812-3456-7890", new: "+62-811-2092-1234" },
-                        { field: "Marital Status", old: "Single", new: "Married" }
-                    ]
-                },
-                {
-                    id: "REQ002",
-                    status: "Approved",
-                    submittedAt: "2026-02-10T10:30:00",
-                    fieldsChanged: [
-                        { field: "Current Address", old: "Jl. Sudirman No 1", new: "Jl. Gatot Subroto No. 42" }
-                    ]
-                },
-                {
-                    id: "REQ003",
-                    status: "Rejected",
-                    submittedAt: "2026-01-10T09:30:00",
-                    fieldsChanged: [
-                        { field: "Personal Email", old: "old@email.com", new: "new@email.com" },
-                        { field: "Emergency Name", old: "John Doe", new: "Johnathan" },
-                        { field: "Emergency Relationship", old: "Father", new: "Uncle" }
-                    ]
-                }
-            ];
-
-            localStorage.setItem("requests", JSON.stringify(dummy));
-        }
-    }
-
-    // GET DATA FROM LOCALSTORAGE
-    function getRequests() {
-        return JSON.parse(localStorage.getItem("requests")) || [];
-    }
-
-    // RENDER TABLE
-    function renderTable(data) {
-
-        tableBody.innerHTML = "";
-
-        if (!data.length) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-10 text-muted fs-6">
-                        No request history found
-                    </td>
-                </tr>
-            `;
-            banner.classList.add("d-none");
-            return;
-        }
-
-        // Show banner ONLY if pending exists
-        const hasPending = data.some(r => r.status === "Pending");
-        banner.classList.toggle("d-none", !hasPending);
-        if (hasPending) {
-             banner.classList.remove("d-none");
-             banner.classList.add("d-flex");
-        }
-
-        data.forEach(req => {
-
-            const row = document.createElement("tr");
-            row.className = "row-hover";
-
-            row.innerHTML = `
-                <td class="ps-4">
-                    <span class="text-gray-800 fw-bold fs-6">#${req.id}</span>
-                </td>
-                <td class="text-center">
-                    ${renderStatus(req.status)}
-                </td>
-                <td class="text-center">
-                    <span class="text-gray-700 fw-semibold">${formatDate(req.submittedAt)}</span>
-                </td>
-                <td class="text-center">
-                    <span class="badge badge-light-primary fw-bold px-4 py-3">${req.fieldsChanged.length} Field(s)</span>
-                </td>
-                <td class="text-end pe-4">
-                    <a href="/Profile/RequestDetails?id=${req.id}" 
-                       class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                        <i class="ki-duotone ki-arrow-right fs-2">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                        </i>
-                    </a>
-                </td>
-            `;
-
-            tableBody.appendChild(row);
-        });
-    }
-
-    // STATUS PILL RENDER
-    function renderStatus(status) {
-
-        const map = {
-            Pending: "badge badge-light-pending px-4 py-3",
-            Approved: "badge badge-light-approved px-4 py-3",
-            Rejected: "badge badge-light-rejected px-4 py-3"
-        };
-
-        return `<span class="${map[status]} fs-7 fw-bold">${status}</span>`;
-    }
-
-    // DATE FORMAT
-    function formatDate(dateStr) {
-
-        const date = new Date(dateStr);
-
-        return date.toLocaleString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-        });
-    }
-
+    bindSortHandlers();
+    bindFilterHandlers();
+    applySortIndicator();
+    render();
+    updateBanner(banner);
 });
+
+async function fetchMyRequests() {
+    const token = window.aiaAuth && window.aiaAuth.getToken();
+    if (!token) { window.aiaAuth && window.aiaAuth.signOut(); return []; }
+    try {
+        const res = await fetch(`${API_BASE}/api/employee/my-requests`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401) { window.aiaAuth.signOut(); return []; }
+        if (res.status === 404) return [];
+        const json = await res.json();
+        if (json.isError) return [];
+        return json.content || json.data || [];
+    } catch (err) {
+        console.error("Failed to fetch requests:", err);
+        return [];
+    }
+}
+
+function render() {
+    const tableBody = document.getElementById("requestTableBody");
+    tableBody.innerHTML = "";
+
+    const rows = state.raw.map(r => ({
+        ...r,
+        _status: normalizeStatus(r.requestStatus),
+        _fieldsCount: countFields(r)
+    }));
+
+    const filtered = state.statusFilter === "all"
+        ? rows
+        : rows.filter(r => r._status === state.statusFilter);
+
+    filtered.sort(compareRows);
+
+    if (!filtered.length) {
+        tableBody.innerHTML = `
+            <tr><td colspan="4" class="text-center py-10 text-muted fs-6">No request history found</td></tr>
+        `;
+        return;
+    }
+
+    filtered.forEach(req => {
+        const tr = document.createElement("tr");
+        tr.className = "row-clickable";
+        tr.addEventListener("click", () => {
+            window.location.href = `/Profile/RequestDetails?id=${req.requestId}`;
+        });
+        tr.innerHTML = `
+            <td class="ps-4"><span class="text-gray-900 fw-bold fs-6">#REQ${String(req.requestId).padStart(3, "0")}</span></td>
+            <td><span class="text-gray-700 fw-semibold">${formatDate(req.createdAt)}</span></td>
+            <td><span class="text-gray-700 fw-semibold">${req._fieldsCount} Field${req._fieldsCount === 1 ? "" : "s"} Changed</span></td>
+            <td class="pe-4">${renderStatus(req._status)}</td>
+        `;
+        tableBody.appendChild(tr);
+    });
+}
+
+function compareRows(a, b) {
+    const dir = state.sortDir === "asc" ? 1 : -1;
+    let va, vb;
+    switch (state.sortKey) {
+        case "requestId":
+            va = Number(a.requestId) || 0;
+            vb = Number(b.requestId) || 0;
+            break;
+        case "createdAt":
+            va = new Date(a.createdAt).getTime() || 0;
+            vb = new Date(b.createdAt).getTime() || 0;
+            break;
+        case "fieldsCount":
+            va = a._fieldsCount;
+            vb = b._fieldsCount;
+            break;
+        default:
+            va = vb = 0;
+    }
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+}
+
+function bindSortHandlers() {
+    document.querySelectorAll(".th-sortable").forEach(th => {
+        th.addEventListener("click", () => {
+            const key = th.dataset.sort;
+            if (state.sortKey === key) {
+                state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+            } else {
+                state.sortKey = key;
+                state.sortDir = "asc";
+            }
+            applySortIndicator();
+            render();
+        });
+    });
+}
+
+function applySortIndicator() {
+    document.querySelectorAll(".th-sortable").forEach(th => {
+        th.classList.remove("asc", "desc");
+        const icon = th.querySelector(".sort-ic i");
+        if (th.dataset.sort === state.sortKey) {
+            th.classList.add(state.sortDir);
+            icon.className = state.sortDir === "asc" ? "bi bi-arrow-up" : "bi bi-arrow-down";
+            icon.style.color = "#181C32";
+        } else {
+            icon.className = "bi bi-arrow-down-up";
+            icon.style.color = "";
+        }
+    });
+}
+
+function bindFilterHandlers() {
+    const btn = document.getElementById("statusFilterBtn");
+    const popup = document.getElementById("statusFilterPopup");
+    if (!btn || !popup) return;
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        popup.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!popup.contains(e.target) && e.target !== btn) {
+            popup.classList.remove("open");
+        }
+    });
+
+    popup.querySelectorAll(".filter-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+            popup.querySelectorAll(".filter-option").forEach(o => o.classList.remove("selected"));
+            opt.classList.add("selected");
+            state.statusFilter = opt.dataset.value;
+            btn.classList.toggle("active", state.statusFilter !== "all");
+            popup.classList.remove("open");
+            render();
+        });
+    });
+}
+
+function updateBanner(banner) {
+    if (!banner) return;
+    const hasPending = state.raw.some(r => normalizeStatus(r.requestStatus) === "Pending");
+    banner.classList.toggle("d-none", !hasPending);
+}
+
+function normalizeStatus(s) {
+    if (s === null || s === undefined || s === "") return "Unknown";
+    const v = String(s).toLowerCase();
+    if (v === "pending" || v === "0" || v === "needs approval") return "Pending";
+    if (v === "approved" || v === "1") return "Approved";
+    if (v === "rejected" || v === "2") return "Rejected";
+    return String(s);
+}
+
+function countFields(req) {
+    const fields = [
+        "newFullName", "newGender", "newPersonalEmail", "newBirthPlace", "newNIK", "newBirthDate", "newMaritalStatus",
+        "newCurrentAddress", "newCurrentCity", "newCurrentProvince", "newCurrentPostalCode",
+        "newResidentialAddress", "newResidentialCity", "newResidentialProvince", "newResidentialPostalCode",
+        "newMobilePhone", "newEmergencyContactName", "newEmergencyContactPhone", "newEmergencyContactRelationship",
+    ];
+    return fields.filter(f => req[f] !== undefined && req[f] !== null && req[f] !== "" && req[f] !== "Unknown").length;
+}
+
+function renderStatus(status) {
+    if (status === "Pending") {
+        return `<span class="badge-status badge-pending"><i class="bi bi-clock"></i>Needs Approval</span>`;
+    }
+    if (status === "Approved") {
+        return `<span class="badge-status badge-approved"><i class="bi bi-check-circle"></i>Approved</span>`;
+    }
+    if (status === "Rejected") {
+        return `<span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i>Rejected</span>`;
+    }
+    return `<span class="badge-status">${status}</span>`;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return "-";
+    return date.toLocaleString("en-GB", {
+        day: "2-digit", month: "long", year: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: false
+    });
+}

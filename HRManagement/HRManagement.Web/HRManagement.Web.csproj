@@ -8,18 +8,19 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.5" />
-    <!-- <Compile Remove="Pages\LeaveManagement\**" />
-    <Compile Remove="Pages\NewFolder\**" />
-    <Content Remove="Pages\LeaveManagement\**" />
-    <Content Remove="Pages\NewFolder\**" />
-    <EmbeddedResource Remove="Pages\LeaveManagement\**" />
-    <EmbeddedResource Remove="Pages\NewFolder\**" />
-    <None Remove="Pages\LeaveManagement\**" />
-    <None Remove="Pages\NewFolder\**" /> -->
   </ItemGroup>
 
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\Leave\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\Dashboard.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\Entry.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\Management.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\Report.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\Review.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Employee\_ModalNewTask.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Supervisor\Dashboard.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Supervisor\Report.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Supervisor\Review.cshtml" />
+    <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Supervisor\Timesheet.cshtml" />
   </ItemGroup>
 
 </Project>

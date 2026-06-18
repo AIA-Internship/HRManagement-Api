@@ -36,6 +36,9 @@ Website: http://www.keenthemes.com
 	<link href="/apps/shared/footers/standard-corporate-footers.css" rel="stylesheet" type="text/css" asp-append-version="true" />
 
 	@await RenderSectionAsync("Styles", required: false)
+
+	<!-- Auth helper (early so partials can use window.aiaAuth) -->
+	<script src="/apps/shared/core/auth.js" asp-append-version="true"></script>
 </head>
 <!--end::Head-->
 <!--begin::Body-->

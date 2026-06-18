@@ -53,9 +53,20 @@ body.login-page {
 
 .form-control:focus {
     background-color: #F5F7FA;
-    border: 1px solid #D31145;
-    box-shadow: 0 4px 8px rgba(211, 17, 69, 0.15);
+    border: 1px solid #9CA3AF;
+    box-shadow: 0 0 0 0.15rem rgba(156, 163, 175, 0.25);
     outline: none;
+}
+
+.form-control.is-invalid,
+.was-validated .form-control:invalid {
+    border-color: #D31145;
+}
+
+.form-control.is-invalid:focus,
+.was-validated .form-control:invalid:focus {
+    border-color: #D31145;
+    box-shadow: 0 0 0 0.15rem rgba(211, 17, 69, 0.25);
 }
 
 .btn-login {

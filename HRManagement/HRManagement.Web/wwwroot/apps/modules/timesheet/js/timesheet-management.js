@@ -678,7 +678,6 @@ async function fetchAPI(endpoint, options = {}) {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30s timeout
 
     try {
-        const token = localStorage.getItem('aia_jwt_token');
         const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
             ...options,
             signal: controller.signal,
@@ -692,8 +691,6 @@ async function fetchAPI(endpoint, options = {}) {
         clearTimeout(timeoutId);
 
         if (response.status === 401) {
-            localStorage.removeItem('aia_jwt_token');
-            window.location.href = '/Account/Login';
             return null;
         }
 

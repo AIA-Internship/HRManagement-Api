@@ -78,6 +78,7 @@
     </div>
 </div>
 
+<script src="~/apps/shared/core/auth.js" asp-append-version="true"></script>
 <script>
     function togglePasswordVisibility() {
         const passwordField = document.getElementById("loginPassword");
@@ -111,21 +112,16 @@
 
     async function handleMockLogin(e) {
         e.preventDefault();
-        let email = document.getElementById("loginEmail").value.trim();
-        let password = document.getElementById("loginPassword").value.trim();
-        const rememberMe = document.getElementById("remember") ? document.getElementById("remember").checked : true;
+        const emailEl = document.getElementById("loginEmail");
+        const passEl = document.getElementById("loginPassword");
+        const email = emailEl.value.trim();
+        const password = passEl.value.trim();
+        const rememberMe = document.getElementById("remember").checked;
 
-        // Auto-fill correct passwords for demo accounts if user entered wrong ones
-        if (email.toLowerCase() === "brandon@aia.com" && password !== "AdminPass123!") {
-            password = "AdminPass123!";
-        } else if (email.toLowerCase() === "owen@aia.com" && password !== "WorkerPass123!") {
-            password = "WorkerPass123!";
-        }
+        emailEl.classList.remove("is-invalid");
+        passEl.classList.remove("is-invalid");
 
-        // REAL API CONNECTION (CONNECT TO BACKEND DATABASE)
         try {
-            console.log("Attempting API login for: " + email);
-            
             const response = await fetch('https://localhost:7089/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -133,50 +129,33 @@
             });
 
             const result = await response.json();
-
-            // Support both camelCase and PascalCase serialization
             const resContent = result?.content || result?.Content || result?.data || result?.Data;
             const token = resContent ? (resContent.token || resContent.Token) : null;
 
             if (response.ok && token) {
                 const payload = parseJwt(token);
-                
-                // Success: Store the JWT for subsequent API authorized calls
-                localStorage.setItem('aia_jwt_token', token);
-                localStorage.setItem('aia_user_info', JSON.stringify(payload));
-                
-                document.cookie = `access_token=${token}; path=/; max-age=3600`;
-
-                console.log("API Login Success!", payload);
-                
-                // Force perfect routing for these specific test cases
-                let isSupervisor = false;
-                const lowerEmail = email.toLowerCase();
-                
-                if (lowerEmail === "brandon@aia.com") {
-                    isSupervisor = true;
-                } else if (lowerEmail === "owen@aia.com") {
-                    isSupervisor = false;
-                } else {
-                    const role = payload ? (payload.role || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : "";
-                    const roleId = payload ? payload.role_id : "";
-                    isSupervisor = (String(role).toLowerCase() === "supervisor" || String(role) === "0" || String(roleId) === "0");
-                }
-                
-                window.location.href = isSupervisor ? "/Timesheet/Supervisor/Dashboard" : "/Timesheet/Employee/Dashboard";
+                window.aiaAuth.set(token, payload, rememberMe);
+                window.location.href = "/Profile";
             } else {
-                // Fail: Backend returned error (e.g. 401/404)
-                console.error("API Login Failed:", result?.statusMessage || result?.StatusMessage || "Unknown error");
+                emailEl.classList.add("is-invalid");
+                passEl.classList.add("is-invalid");
                 document.getElementById("errorModal").style.display = "flex";
             }
         } catch (err) {
-            // Error: Network issue or API is down
             console.error("Critical API Error:", err);
-            alert("Failed to connect to the Backend API (Port 7089). Please ensure your API project is running in Visual Studio.");
+            alert("Failed to connect to the Backend API (Port 7089). Please ensure your API project is running.");
         }
 
         return false;
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        ["loginEmail", "loginPassword"].forEach(id => {
+            document.getElementById(id).addEventListener("input", (e) => {
+                e.target.classList.remove("is-invalid");
+            });
+        });
+    });
 
     function closeModal() {
         document.getElementById("errorModal").style.display = "none";
