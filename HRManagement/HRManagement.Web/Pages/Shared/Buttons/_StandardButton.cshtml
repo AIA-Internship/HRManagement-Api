@@ -1,5 +1,3 @@
-@using Microsoft.AspNetCore.Routing
-@model dynamic
 @{
     /*
      * DYNAMIC STANDARD BUTTON COMPONENT (V1.4 - Specialized Edition)
@@ -13,9 +11,12 @@
     string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : "");
     string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : "");
 
-    // Filter out known keys to get extra attributes
+    // 1. Get the extra attributes
     var knownKeys = new[] { "Type", "Title", "Icon", "Id", "OnClick", "Class" };
     var extraAttrs = dict.Where(kv => !knownKeys.Contains(kv.Key));
+
+    // 2. Build the exact HTML string here in C# land
+    var extraAttrString = string.Join(" ", extraAttrs.Select(attr => $"{attr.Key.Replace("_", "-")}=\"{attr.Value}\""));
 
     string cssClass = type switch {
         "primary" => "btn-standard-primary",
@@ -26,10 +27,7 @@
     } + " " + extraClass;
 }
 
-<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title"
-    @foreach(var attr in extraAttrs) {
-        @:@attr.Key.Replace("_", "-")="@attr.Value"
-    }>
+<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title" @Html.Raw(extraAttrString)>
     @if (!string.IsNullOrEmpty(icon)) {
         var iconClass = icon.StartsWith("bi-") ? icon : "bi-" + icon;
         <i class="bi @iconClass @(string.IsNullOrEmpty(title) ? "" : "me-2")"></i>

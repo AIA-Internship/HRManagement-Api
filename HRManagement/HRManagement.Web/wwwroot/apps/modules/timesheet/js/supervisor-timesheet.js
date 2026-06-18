@@ -1,5 +1,5 @@
 const API_BASE_URL = 'https://127.0.0.1:7089/api';
-const token = localStorage.getItem('aia_jwt_token');
+const token = window.aiaAuth ? window.aiaAuth.getToken() : null;
 
 let currentDate = new Date();
 let pickerDate = new Date();

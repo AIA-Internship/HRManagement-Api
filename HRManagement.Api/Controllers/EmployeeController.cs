@@ -1,251 +1,139 @@
-using HRManagement.Api.Domain.Models.Constants;
-using System.Security.Claims;
+using CSharpFunctionalExtensions;
+
+using HRManagement.Application.Auth.Permissions;
+using HRManagement.Application.Features.ESS.Employee.Commands;
+using HRManagement.Application.Features.ESS.Employee.Queries;
+using HRManagement.Application.Features.System.Commands;
+using HRManagement.Domain.Models.Constants;
+using HRManagement.Domain.Models.Payload;
+using HRManagement.Domain.Models.Response.Shared;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CSharpFunctionalExtensions;
-using FluentValidation;
-
-using HRManagement.Api.Application.Commands;
-using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Application.Auth.Permissions;
 
 namespace HRManagement.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
-public class EmployeeController : ValidateController<EmployeeController>
+[Route("api/employee")]
+public class EmployeeController(ISender sender) : BaseApiController(sender)
 {
-    private readonly ILogger<EmployeeController> _logger;
-    private readonly IMediator _mediator;
-    
-    public EmployeeController(
-        IMediator mediator, 
-        ILogger<EmployeeController> logger, 
-        IEnumerable<IValidator> validators) : base(validators, logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-    
-    [HttpPut("employment-info/{displayId}")]
-    [HasPermission("ManageEmployees")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<string>>> UpdateEmploymentInformation(string displayId, [FromBody] UpdateEmploymentInfoRequestDto commandDto)
-    {
-        string methodName = nameof(UpdateEmploymentInformation);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new UpdateEmployeeInfoCommand(displayId, commandDto);
-        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((UpdateEmployeeInfoCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
-    [HttpPut("me")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
-    {
-        string methodName = nameof(UpdateEmployee);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new UpdateEmployeeCommand(commandDto);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((UpdateEmployeeCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
-    }
-    
-    [HasPermission("ViewEmployees")]
     [HttpGet("list")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeListItemDto>>>> GetAllEmployees()
+    [HasPermission(Permissions.Users.View)]
+    public async Task<IActionResult> GetAllEmployeesAsync(CancellationToken ct)
     {
-        string methodName = nameof(GetAllEmployees);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
         var query = new GetEmployeeListQuery();
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeListItemDto>>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetEmployeeListQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
     }
-    
+
     [HttpGet("me")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
+    public async Task<IActionResult> GetMyProfileAsync(CancellationToken ct)
     {
-        string methodName = nameof(GetMyProfile);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetMyProfileQuery();
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetMyProfileQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var query = new GetMyProfileQuery(CurrentUserEmail);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("my-requests")]
+    [HasPermission(Permissions.Employees.View)]
+    public async Task<IActionResult> GetMyRequestsAsync([FromQuery] int? status, CancellationToken ct)
+    {
+        var query = new GetMyUpdateRequestQuery(CurrentEmployeeId, status);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
     }
 
     [HttpGet("requests")]
-    [HasPermission("ManageEmployees")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
+    [HasPermission(Permissions.Users.View)]
+    public async Task<IActionResult> GetEmployeeRequestsAsync([FromQuery] int? status, CancellationToken ct)
     {
-        string methodName = nameof(GetEmployeeRequests);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetUpdateRequestQuery(status);
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetUpdateRequestQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var query = new GetListUpdateRequestQuery(status);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
     }
 
     [HttpGet("{displayId}")]
     [HasPermission(Permissions.Employees.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
+    public async Task<IActionResult> GetProfileByDisplayIdAsync(string displayId, CancellationToken ct)
     {
-        string methodName = nameof(GetEmployeeProfileByDisplayId);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
-        {
-            var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var query = new GetProfileByDisplayIdQuery(displayId);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
     }
-    
+
     [HttpGet("supervisors-lookup")]
     [HasPermission(Permissions.Employees.View)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<SupervisorLookupDto>>>> GetSupervisorLookup()
+    public async Task<IActionResult> GetSupervisorLookupAsync(CancellationToken ct)
     {
-        string methodName = nameof(GetSupervisorLookup);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
         var query = new GetSupervisorLookupQuery();
-        var result = await _mediator.Send(query);
-        
-        _logger.LogInformation("End {Service}.", methodName);
-        return Ok(result);
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+
+    [HttpPut("employment-info/{displayId}")]
+    [HasPermission(Permissions.Users.Edit)]
+    public async Task<IActionResult> UpdateEmploymentInformationAsync(string displayId, [FromBody] UpdateEmploymentInfoPayload payload, CancellationToken ct)
+    {
+        var command = new UpdateEmployeeInfoCommand(displayId, payload, CurrentUserId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
+    }
+    
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateEmployeeAsync([FromBody] UpdateEmployeePayload payload, CancellationToken ct)
+    {
+        var command = new UpdateEmployeeRequestCommand(payload, CurrentUserEmail, CurrentUserId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
     
     [HttpPost("review-update")]
     [HasPermission(Permissions.Employees.Edit)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<string>>> ReviewUpdate([FromBody] ReviewUpdateRequestDto decision)
+    public async Task<IActionResult> ReviewUpdateAsync([FromBody] ReviewUpdatePayload payload, CancellationToken ct)
     {
-        string methodName = nameof(ReviewUpdate);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new ReviewUpdateCommand(decision);
-        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((ReviewUpdateCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var command = new ReviewUpdateEmployeeRequestCommand(payload, CurrentUserId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
     
     [HttpPost("create")]
     [HasPermission(Permissions.Employees.Create)]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<string>>> CreateEmployee([FromBody] CreateEmployeeRequestDto requestDto)
+    public async Task<IActionResult> CreateEmployeeAsync([FromBody] AddEmployeePayload payload, CancellationToken ct)
     {
-        string methodName = nameof(CreateEmployee);
-        _logger.LogInformation("Start {Service}.", methodName);
-        
-        var command = new CreateEmployeeCommand(requestDto);
-        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
-        {
-            var result = await _mediator.Send((CreateEmployeeCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result);
-        });
+        var command = new CreateEmployeeCommand(payload, CurrentUserId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
 
     [HttpPost("{id}/attachments")]
-    [Authorize]
     [Consumes( "multipart/form-data")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
+    public async Task<IActionResult> UploadAttachmentsAsync(int id, [FromForm] UploadAttachmentPayload payload, CancellationToken ct)
     {
-        string methodName = nameof(UploadAttachments);
-        _logger.LogInformation("Start {Service}.", methodName);
-    
-        var command = new UploadAttachmentCommand(id, request.DocumentType, request.Files);
-        return await this.ValidateAndExecute<ApiResponse>(command, async (c) =>
-        {
-            var result = await _mediator.Send((UploadAttachmentCommand)c);
-            _logger.LogInformation("End {Service}.", methodName);
-            return Result.Success(result); 
-        });
+        if (payload.Files.Count <= 0)
+            return BadRequest(ApiResponse<object>.Fail("File tidak ditemukan."));
+
+        var files = payload.Files;
+        var fileDtos = files.Select(f => new FileItemDto(
+            f.OpenReadStream(),
+            f.FileName,
+            f.ContentType,
+            f.Length
+        )).ToList();
+
+        var uploadCommand = new FileUploadCommand(fileDtos);
+        var uploadResult = await Sender.Send(uploadCommand, ct);
+
+        if (uploadResult.IsFailure)
+            return BadRequest(uploadResult.Error);
+
+        var uploadTasks = uploadResult.Value;
+
+        var command = new UploadAttachmentCommand(id, payload.DocumentType, uploadTasks, CurrentUserId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
 }

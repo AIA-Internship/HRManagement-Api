@@ -1,0 +1,205 @@
+@page "/EmployeeManagement/ManageRequestList"
+@model HRManagement.Web.Pages.Modules.EmployeeManagement.ManageRequestList
+
+@{
+    ViewData["Title"] = "Request History";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+    <style>
+        .text-brand { color: #D31145 !important; }
+        .bg-aia { background-color: #D31145 !important; }
+
+        /* Status badges */
+        .badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+        .badge-status i { font-size: 14px; }
+        .badge-pending { background-color: #FEF3C7; color: #92400E; }
+        .badge-approved { background-color: #D1FAE5; color: #2B8B15; }
+        .badge-rejected { background-color: #FFE4E6; color: #D31145; }
+
+        /* Needs approval banner (pink soft) */
+        .needs-approval-banner {
+            background-color: #FFF5F8;
+            border: 1px solid #F9D7E1;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .needs-approval-banner .banner-icon {
+            background-color: #FCE4EC;
+            color: #D31145;
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .needs-approval-banner .banner-title { color: #D31145; font-weight: 700; font-size: 14px; }
+        .needs-approval-banner .banner-sub { color: #5e6278; font-size: 13px; }
+
+        /* Table */
+        .table thead th {
+            background-color: #F9FAFB;
+            border-bottom: 0;
+            font-size: 12px;
+            letter-spacing: 0.4px;
+            font-weight: 700;
+            color: #7E8299;
+            padding: 14px 12px;
+            white-space: nowrap;
+        }
+        .table tbody td { vertical-align: middle; padding: 16px 12px; border-bottom: 1px solid #EFF2F5; }
+        .table tbody tr:last-child td { border-bottom: 0; }
+        .row-clickable { cursor: pointer; transition: background-color 0.15s; }
+        .row-clickable:hover { background-color: #fafbfc; }
+
+        /* Sort header */
+        .th-sortable { cursor: pointer; user-select: none; }
+        .th-sortable .sort-ic { margin-left: 4px; font-size: 11px; color: #B5B5C3; }
+        .th-sortable.asc .sort-ic.asc,
+        .th-sortable.desc .sort-ic.desc { color: #181C32; }
+
+        /* Filter dropdown */
+        .filter-wrap { position: relative; display: inline-block; }
+        .filter-btn {
+            background: transparent;
+            border: 0;
+            color: #7E8299;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .filter-btn .filter-ic { font-size: 12px; }
+        .filter-btn.active { color: #D31145; }
+        .filter-popup {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 6px;
+            background: #fff;
+            border: 1px solid #EFF2F5;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 6px;
+            min-width: 160px;
+            z-index: 50;
+            display: none;
+        }
+        .filter-popup.open { display: block; }
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #3F4254;
+        }
+        .filter-option:hover { background-color: #F9FAFB; }
+        .filter-option.selected { background-color: #FFF5F8; color: #D31145; font-weight: 600; }
+        .filter-option i { font-size: 12px; opacity: 0; }
+        .filter-option.selected i { opacity: 1; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <a href="javascript:aiaGoBack()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</a>
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><a href="/Profile" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Manage Requests</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Manage Request
+                    <span class="text-muted fs-7 fw-normal mt-1">View and manage employee change data requests</span>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+            <!-- Table Card -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle fs-6 gy-3 mb-0" id="requestTable">
+                            <thead>
+                            <tr>
+                                <th class="th-sortable ps-4" data-sort="requestId">
+                                    Request ID
+                                    <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                </th>
+                                <th class="th-sortable" data-sort="createdAt">
+                                    Submitted By
+                                    <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                </th>
+                                <th class="th-sortable" data-sort="createdAt">
+                                    Submitted Date
+                                    <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                </th>
+                                <th class="th-sortable" data-sort="fieldsCount">
+                                    Fields Changed
+                                    <span class="sort-ic"><i class="bi bi-arrow-down-up"></i></span>
+                                </th>
+                                <th class="pe-4" style="text-align:left;">
+                                    <div class="filter-wrap">
+                                        <button type="button" class="filter-btn" id="statusFilterBtn">
+                                            STATUS
+                                            <span class="filter-ic"><i class="bi bi-funnel"></i></span>
+                                        </button>
+                                        <div class="filter-popup" id="statusFilterPopup">
+                                            <div class="filter-option selected" data-value="all">
+                                                <i class="bi bi-check2"></i>All
+                                            </div>
+                                            <div class="filter-option" data-value="Pending">
+                                                <i class="bi bi-check2"></i>Needs Approval
+                                            </div>
+                                            <div class="filter-option" data-value="Approved">
+                                                <i class="bi bi-check2"></i>Approved
+                                            </div>
+                                            <div class="filter-option" data-value="Rejected">
+                                                <i class="bi bi-check2"></i>Rejected
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody id="requestTableBody" class="fw-semibold text-gray-700">
+                            <!-- Injected from JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-5" id="paginationWrapper">
+                        <div class="fs-6 fw-semibold text-gray-700" id="paginationInfo">
+                            Showing 0 to 0 of 0 entries
+                        </div>
+                        <ul class="pagination mb-0" id="paginationControls">
+                            <!-- Buttons injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/employee/js/managerequest.js" asp-append-version="true"></script>
+}

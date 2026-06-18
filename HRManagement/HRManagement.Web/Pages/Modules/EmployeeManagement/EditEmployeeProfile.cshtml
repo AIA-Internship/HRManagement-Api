@@ -1,0 +1,293 @@
+@page "/EmployeeManagement/EditProfile"
+@model HRManagement.Web.Pages.Modules.EmployeeManagement.EditProfileModel
+@{
+    ViewData["Title"] = "Manage Employee";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+    <style>
+        /* Profile Pic Styles */
+        .profile-pic-wrapper { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: #f5f7fa; display: flex; align-items: center; justify-content: center; border: 2px dashed #d9d9d9; }
+        .profile-pic-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Autocomplete Dropdown Styles */
+        .autocomplete-wrapper { position: relative; }
+        .autocomplete-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: #fff;
+            border: 1px solid #EFF2F5; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 4px; display: none;
+        }
+        .autocomplete-dropdown.open { display: block; }
+        .autocomplete-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #F9FAFB; font-size: 13px; }
+        .autocomplete-item:hover { background-color: #FFF5F8; color: #D31145; font-weight: 600; }
+        
+        /* Typography & Layout matches */
+        .field-label { font-size: 0.75rem !important; font-weight: 600; color: #A1A5B7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+        .field-value-text { font-size: 1rem; font-weight: 700; color: #181C32; }
+        .section-title { font-weight: 700; font-size: 1.05rem; color: #3F4254; margin-bottom: 1.5rem; }
+        .dashed-divider { border-top: 1px dashed #E4E6EF; margin: 2rem 0; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <a href="javascript:aiaGoBack()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</a>
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><span class="text-muted">Employee Management</span></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Manage Employee</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Manage Employee</h1>
+            </div>
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <a href="/EmployeeList" class="btn btn-sm btn-light fw-bold">Cancel</a>
+                <button type="button" onclick="updateEmploymentDetails()" class="btn btn-sm btn-brand fw-bold" id="btnSaveChanges">
+                    <i class="bi bi-check2-circle text-white fs-4 me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <div class="card shadow-sm mb-6">
+                <div class="card-body p-0">
+                    <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold ms-5" id="profileEditTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_personal" role="tab">Personal Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5 active" data-bs-toggle="tab" href="#kt_tab_employment" role="tab">Employment Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_emergency" role="tab">Emergency Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_attachment" role="tab">Attachments</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-10 tab-content" id="profileEditTabsContent">
+                    <input type="hidden" id="hiddenDisplayId" />
+
+                    <div class="tab-pane fade show active" id="kt_tab_employment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-8">
+                            <i class="ki-duotone ki-briefcase fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Employment Details</h3>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="field-label">Employee ID</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="editEmployeeId" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label d-block">Employee Status</label>
+                                <div class="nav-group nav-group-outline d-inline-flex mt-1">
+                                    <input class="btn-check" type="radio" name="employeeStatus" id="statusActive" value="Active">
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-2 me-3" for="statusActive">
+                                        <span class="fw-bold fs-6">Active</span>
+                                    </label>
+
+                                    <input class="btn-check" type="radio" name="employeeStatus" id="statusInactive" value="Inactive">
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-2" for="statusInactive">
+                                        <span class="fw-bold fs-6">Inactive</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="field-label">Start Date</label>
+                                <input type="date" class="form-control form-control-solid fw-semibold" id="editStartDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Employment Type</label>
+                                <select class="form-select form-select-solid fw-semibold" id="editEmploymentType">
+                                    <option value="1">Outsource</option>
+                                    <option value="3">Internship</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="field-label">Department</label>
+                                <input type="text" class="form-control form-control-solid fw-semibold" id="editDepartment">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Position</label>
+                                <input type="text" class="form-control form-control-solid fw-semibold" id="editPosition">
+                            </div>
+                        </div>
+
+                        <div class="row g-9">
+                            <div class="col-md-6 autocomplete-wrapper">
+                                <label class="field-label">Supervisor Name</label>
+                                <input type="hidden" id="editSupervisorId">
+                                <input type="text" class="form-control form-control-solid fw-semibold" id="editSupervisorName" placeholder="Type to search..." autocomplete="off">
+                                <div id="supervisorDropdown" class="autocomplete-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="kt_tab_personal" role="tabpanel">
+                        
+                        <h4 class="section-title">Identity & Contact</h4>
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Full Name</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewFullName" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Gender</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewGender" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Personal Email</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewEmail" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Company Email</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewCompanyEmail" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Phone Number</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewPhone" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">National ID (NIK)</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewNik" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Tax ID (NPWP)</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewNpwp" value="-" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Place of Birth</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewBirthPlace" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Date of Birth</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewDateOfBirth" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Marital Status</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewMarital" readonly>
+                            </div>
+                        </div>
+
+                        <div class="dashed-divider"></div>
+
+                        <h4 class="section-title">Current Address</h4>
+                        <div class="row mb-7">
+                            <div class="col-12">
+                                <label class="field-label">Street Address</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewCurrentStreet" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-7">
+                            <div class="col-md-4">
+                                <label class="field-label">City</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewCurrentCity" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Province</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewCurrentProvince" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Postal Code</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewCurrentPostalCode" readonly>
+                            </div>
+                        </div>
+
+                        <div class="dashed-divider"></div>
+
+                        <h4 class="section-title">Residential Address</h4>
+                        <div class="row mb-7">
+                            <div class="col-12">
+                                <label class="field-label">Street Address</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewResidentialStreet" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-7">
+                            <div class="col-md-4">
+                                <label class="field-label">City</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewResidentialCity" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Province</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewResidentialProvince" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Postal Code</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewResidentialPostalCode" readonly>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="kt_tab_emergency" role="tabpanel">
+                        <div class="d-flex align-items-center mb-8">
+                            <i class="ki-duotone ki-phone fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Emergency Contact</h3>
+                        </div>
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Contact Name</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewEmergencyName" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="field-label">Relationship</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewEmergencyRel" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-7">
+                            <div class="col-md-6">
+                                <label class="field-label">Phone Number</label>
+                                <input type="text" class="form-control-plaintext field-value-text p-0" id="viewEmergencyPhone" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="kt_tab_attachment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-8">
+                            <i class="ki-duotone ki-paper-clip fs-1 text-brand me-3"></i>
+                            <h3 class="fw-bold mb-0">Attachments</h3>
+                        </div>
+                        <div id="attachmentList" class="mt-5">
+                            <span class="text-muted italic">No attachments found.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/employee/js/editprofile.js" asp-append-version="true"></script>
+}

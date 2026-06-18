@@ -196,7 +196,7 @@ function setupDropdownFilter(breakdown) {
 }
 
 async function fetchAPI(endpoint) {
-    const token = localStorage.getItem('token') || localStorage.getItem('aia_jwt_token');
+    const token = window.aiaAuth ? window.aiaAuth.getToken() : null;
     const response = await fetch(`https://127.0.0.1:7089/api/${endpoint}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
