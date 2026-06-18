@@ -15,17 +15,19 @@ public class RequestRepository : BaseRepository<EmployeeUpdateRequest>, IRequest
     {
         var query = _dbContext
            .AsNoTracking()
-           .Where(e => !e.IsDeleted && (employeeId == null || e.Id == employeeId));
+           .Where(e => !e.IsDeleted
+                       && (employeeId == null || e.EmployeeId == employeeId)
+                       && (status == null || e.Status == status));
 
         var finalQuery = await query
             .OrderByDescending(r => r.CreatedUtcDate)
             .Select(e => new EmployeeRequestResponseDto(
                 e.Id,
-                e.Employee.EmploymentInformation.DisplayId,
+                (e.Employee.EmploymentInformation != null ? e.Employee.EmploymentInformation.DisplayId : null) ?? string.Empty,
                 e.Employee.FullName,
                 e.NewNik,
                 e.NewFullName,
-                e.NewGender,
+                e.NewGender == null ? null : (e.NewGender == 1 ? "Female" : "Male"),
                 e.NewPersonalEmail,
                 e.NewPlaceOfBirth,
                 e.NewDateOfBirth,
@@ -44,12 +46,27 @@ public class RequestRepository : BaseRepository<EmployeeUpdateRequest>, IRequest
                 e.NewEmergencyContactRelationship,
                 e.Status,
                 e.HrReason,
-                e.CreatedAt
+                e.CreatedAt,
+                // Reviewer name resolved from ModifiedBy (Users.Id) -> Employee.FullName. Only meaningful once reviewed.
+                e.Status == 0 ? null : _sqldbContext.Users
+                    .Where(u => u.Id == e.ModifiedBy)
+                    .Join(_sqldbContext.Employee, u => u.EmployeeId, emp => emp.Id, (u, emp) => emp.FullName)
+                    .FirstOrDefault(),
+                e.Status == 0 ? (DateTime?)null : e.ModifiedUtcDate,
+                e.ChangesJson
                 ))
             .ToListAsync(cancellationToken);
 
 
         return finalQuery;
+    }
+
+    public async Task<EmployeeUpdateRequest?> GetByIdWithEmployeeAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext
+            .Include(e => e.Employee)
+                .ThenInclude(emp => emp.EmergencyContact)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, cancellationToken);
     }
 
 }

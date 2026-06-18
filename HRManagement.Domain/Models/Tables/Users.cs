@@ -4,8 +4,8 @@ public class Users
 {
     public int Id { get; private set; }
     public int EmployeeId { get; private set; }
-    public string EmployeeEmail { get; private set; }
-    public string PasswordHash { get; private set; }
+    public string EmployeeEmail { get; private set; } = string.Empty;
+    public string PasswordHash { get; private set; } = string.Empty;
     public int RoleId { get; private set; }
     public DateTime LastLoginTime { get; private set; }
 

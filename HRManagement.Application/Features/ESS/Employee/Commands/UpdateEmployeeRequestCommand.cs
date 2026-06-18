@@ -27,7 +27,12 @@ internal sealed class UpdateEmployeeRequestCommandHandler(
         var employee = await employeeRepository.GetProfileByEmailAsync(request.CurrentUserEmail);
         if (employee is null) return Result.Failure("Data tidak ditemukan.");
 
-        var obj = new EmployeeUpdateRequest(employee!, payload, request.CurrentUserId);
+        // Resolve the new marital-status display name so the change snapshot reads "Single -> Married", not "1".
+        string? newMaritalStatusName = payload.MaritalStatus.HasValue
+            ? await employeeRepository.GetLookupNameAsync("MARITAL_STATUS", payload.MaritalStatus.Value, cancellationToken)
+            : null;
+
+        var obj = new EmployeeUpdateRequest(employee!, payload, request.CurrentUserId, newMaritalStatusName);
         await employeeRepository.AddEmployeeUpdateRequestAsync(obj, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);

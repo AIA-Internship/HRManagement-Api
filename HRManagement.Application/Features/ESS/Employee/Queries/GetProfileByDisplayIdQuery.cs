@@ -20,6 +20,7 @@ internal sealed class GetProfileByDisplayIdQueryHandler(
         logger.LogInformation("Executing handler : {HandlerName}", nameof(GetProfileByDisplayIdQueryHandler));
 
         var data = await employeeRepository.GetProfileByDisplayIdAsync(request.DisplayId, cancellationToken);
+        if (data is null) return Result.Failure<EmployeeProfileResponseDto>("Data tidak ditemukan.");
 
         return Result.Success(data);
     }

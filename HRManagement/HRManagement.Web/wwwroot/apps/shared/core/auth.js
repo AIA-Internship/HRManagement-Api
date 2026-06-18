@@ -59,3 +59,22 @@
 
     window.aiaAuth = { getToken, getUserInfo, set, clear, signOut, isExpired };
 })();
+
+// Smart back: go to previous in-app page, but never land on the login page.
+window.aiaGoBack = function (fallback) {
+    fallback = fallback || '/Profile';
+    let sameOriginInApp = false;
+    try {
+        const ref = document.referrer;
+        if (ref) {
+            const u = new URL(ref);
+            sameOriginInApp = (u.origin === window.location.origin) && !/\/Account\/Login/i.test(u.pathname);
+        }
+    } catch (e) { /* ignore */ }
+
+    if (sameOriginInApp && window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = fallback;
+    }
+};

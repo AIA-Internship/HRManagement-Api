@@ -23,7 +23,7 @@ internal sealed class ReviewUpdateEmployeeRequestCommandHandler(
 
         var payload = request.Payload;
 
-        var dataRequest = await requestRepository.GetByIdAsync(payload.RequestId);
+        var dataRequest = await requestRepository.GetByIdWithEmployeeAsync(payload.RequestId, cancellationToken);
         if (dataRequest is null) return Result.Failure("Data tidak ditemukan.");
         if (dataRequest.Status != 0) return Result.Failure("Data tidak ditemukan.");
 

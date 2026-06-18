@@ -3,32 +3,32 @@ namespace HRManagement.Domain.Models.Tables;
 public class Employee : BaseTable
 {
     public int Id { get; private set; }
-    public string NIK { get; private set; }
-    public string FullName { get; private set; }
-    public string Gender { get; private set; }
-    public string PersonalEmail { get; private set; }
-    public string EmployeeEmail { get; private set; }
-    
-    public string BirthPlace { get; private set; }
+    public string NIK { get; private set; } = string.Empty;
+    public string FullName { get; private set; } = string.Empty;
+    public string Gender { get; private set; } = string.Empty;
+    public string PersonalEmail { get; private set; } = string.Empty;
+    public string EmployeeEmail { get; private set; } = string.Empty;
+
+    public string BirthPlace { get; private set; } = string.Empty;
     public DateTime BirthDate { get; private set; }
     public int MaritalStatus { get; private set; }
 
-    public string CurrentAddress { get; private set; }
-    public string CurrentCity { get; private set; }
-    public string CurrentProvince { get; private set; }
-    public string CurrentPostalCode { get; private set; }
+    public string CurrentAddress { get; private set; } = string.Empty;
+    public string CurrentCity { get; private set; } = string.Empty;
+    public string CurrentProvince { get; private set; } = string.Empty;
+    public string CurrentPostalCode { get; private set; } = string.Empty;
 
-    public string ResidentialAddress { get; private set; }
-    public string ResidentialCity { get; private set; }
-    public string ResidentialProvince { get; private set; }
-    public string ResidentialPostalCode { get; private set; }
+    public string ResidentialAddress { get; private set; } = string.Empty;
+    public string ResidentialCity { get; private set; } = string.Empty;
+    public string ResidentialProvince { get; private set; } = string.Empty;
+    public string ResidentialPostalCode { get; private set; } = string.Empty;
 
-    public string MobilePhone { get; private set; }
+    public string MobilePhone { get; private set; } = string.Empty;
     public int RoleId { get; private set; }
 
     public bool IsActive { get; private set; }
 
-    public Roles Role { get;  private set; }
+    public Roles Role { get;  private set; } = null!;
 
     public EmploymentInformation? EmploymentInformation { get; private set; } = null!;
     public EmergencyContact? EmergencyContact { get; private set; } = null!;
@@ -87,7 +87,7 @@ public class Employee : BaseTable
     public void ApplyUpdate(EmployeeUpdateRequest request, int actionerId)
     {
         FullName = UseIfProvided(request.NewFullName, FullName);
-        Gender = request.NewGender ?? Gender;
+        Gender = request.NewGender.HasValue ? (request.NewGender.Value == 1 ? "F" : "M") : Gender;
 
         CurrentAddress = UseIfProvided(request.NewCurrentStreetAddress, CurrentAddress);
         CurrentCity = UseIfProvided(request.NewCurrentCity, CurrentCity);

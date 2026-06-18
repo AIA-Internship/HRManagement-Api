@@ -68,10 +68,10 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
                     // Mapping ke DTO
                     select new EmployeeListResponseDto(
                         e.FullName,
-                        activeEmployment != null ? activeEmployment.DisplayId : "",
+                        (activeEmployment != null ? activeEmployment.DisplayId : "") ?? "",
                         employmentType ?? "",
-                        activeEmployment != null ? activeEmployment.DepartmentName : "",
-                        activeEmployment != null ? activeEmployment.PositionName : ""
+                        (activeEmployment != null ? activeEmployment.DepartmentName : "") ?? "",
+                        (activeEmployment != null ? activeEmployment.PositionName : "") ?? ""
                     );
 
         var finalQuery = await query.ToListAsync(cancellationToken);
@@ -100,7 +100,8 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
                     select new EmployeeProfileResponseDto(
                         e.Id,
                         e.FullName,
-                        e.Gender,
+                        // DB stores 'F'/'M'; expose full words for display, edit form, and change detection.
+                        e.Gender == "F" ? "Female" : (e.Gender == "M" ? "Male" : e.Gender),
                         e.PersonalEmail,
                         e.EmployeeEmail,
                         e.CurrentAddress,
@@ -122,7 +123,7 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
                         // Mapping 1:1 Employment Information
                         e.EmploymentInformation != null ? new EmploymentInformationDto(
                             e.EmploymentInformation.StartDate,
-                            e.EmploymentInformation.DisplayId,
+                            e.EmploymentInformation.DisplayId ?? "",
                             employmentTypeName ?? "",
                             e.EmploymentInformation.DepartmentName,
                             e.EmploymentInformation.PositionName,
@@ -160,7 +161,8 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
                     select new EmployeeProfileResponseDto(
                         e.Employee.Id,
                         e.Employee.FullName,
-                        e.Employee.Gender,
+                        // DB stores 'F'/'M'; expose full words for display, edit form, and change detection.
+                        e.Employee.Gender == "F" ? "Female" : (e.Employee.Gender == "M" ? "Male" : e.Employee.Gender),
                         e.Employee.PersonalEmail,
                         e.Employee.EmployeeEmail,
                         e.Employee.CurrentAddress,
@@ -180,7 +182,7 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
                         e.Employee.IsActive,
                         new EmploymentInformationDto(
                             e.StartDate,
-                            e.DisplayId,
+                            e.DisplayId ?? "",
                             employmentTypeName ?? "",
                             e.DepartmentName,
                             e.PositionName,
@@ -206,6 +208,15 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<string?> GetLookupNameAsync(string category, int value, CancellationToken cancellationToken = default)
+    {
+        return await _sqldbContext.Set<Lookup>()
+            .AsNoTracking()
+            .Where(l => l.Category == category && l.Value == value && l.IsActive)
+            .Select(l => l.DisplayName)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<List<SupervisorLookupResponseDto>> GetSupervisorLookupAsync(CancellationToken cancellationToken = default)
     {
         var supervisorRole = await _sqldbContext.Set<Roles>()
@@ -219,7 +230,7 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
             .AsNoTracking()
             .Where(e => e.RoleId == supervisorRole.Id && e.IsActive)
             .Select(e => new SupervisorLookupResponseDto(
-                e.EmploymentInformation.DisplayId,
+                e.EmploymentInformation != null ? (e.EmploymentInformation.DisplayId ?? "") : "",
                 e.FullName))
             .ToListAsync(cancellationToken);
     }

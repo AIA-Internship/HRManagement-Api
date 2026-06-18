@@ -32,6 +32,8 @@ internal sealed class UpdateEmployeeInfoCommandHandler(
         }
 
         var empInfo = await employeeRepository.GetEmploymentInformationByDisplayIdAsync(request.EmployeeDisplayId);
+        if (empInfo is null) return Result.Failure("Data tidak ditemukan.");
+
         empInfo.UpdateDetails(
             payload.EmploymentStatus,
             payload.StartDate,

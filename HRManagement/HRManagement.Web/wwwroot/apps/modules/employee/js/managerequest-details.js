@@ -56,6 +56,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderDetails(request, profile);
 });
 
+// Prefer the stored snapshot (survives approval); fall back to deriving from the live profile.
+function getChanges(req, profile, status) {
+    if (req.changesJson) {
+        try {
+            const snap = JSON.parse(req.changesJson);
+            if (Array.isArray(snap) && snap.length) {
+                return snap.map(c => {
+                    const field = c.field ?? c.Field;
+                    const previous = c.previous ?? c.Previous;
+                    const updated = c.updated ?? c.Updated;
+                    return {
+                        label: FIELD_LABELS[field] || field,
+                        previous: (previous === null || previous === undefined || previous === "") ? "—" : previous,
+                        updated: updated
+                    };
+                });
+            }
+        } catch (e) {
+            console.warn("Bad changesJson, falling back:", e);
+        }
+    }
+    return collectChanges(req, profile, status);
+}
+
 function collectChanges(req, profile, status) {
     const fmtDate = v => {
         if (!v) return "";
@@ -73,7 +97,7 @@ function collectChanges(req, profile, status) {
         newPlaceOfBirth: profile.placeOfBirth,
         newNik: profile.nik,
         newDateOfBirth: fmtDate(profile.dateOfBirth),
-        newMaritalStatus: profile.maritalStatus,
+        newMaritalStatus: profile.maritalStatusName,
         newCurrentStreetAddress: profile.currentStreetAddress,
         newCurrentCity: profile.currentCity,
         newCurrentProvince: profile.currentProvince,
@@ -83,9 +107,9 @@ function collectChanges(req, profile, status) {
         newResidentialProvince: profile.residentialProvince,
         newResidentialPostalCode: profile.residentialPostalCode,
         newPhoneNumber: profile.phoneNumber,
-        newEmergencyContactName: profile.emergencyContactName,
-        newEmergencyContactPhone: profile.emergencyContactPhone,
-        newEmergencyContactRelationship: profile.relationship
+        newEmergencyContactName: profile.emergencyContact ? profile.emergencyContact.name : "",
+        newEmergencyContactPhone: profile.emergencyContact ? profile.emergencyContact.phoneNumber : "",
+        newEmergencyContactRelationship: profile.emergencyContact ? profile.emergencyContact.relationship : ""
     } : {};
 
     const changes = [];
@@ -131,18 +155,69 @@ async function fetchEmployeeProfile(employeeId) {
 }
 
 function renderDetails(req, profile) {
-    const status = normalizeStatus(req.status);
+    const status = normalizeStatus(req.requestStatus);
     document.getElementById("metaId").textContent = "#REQ" + String(req.requestId).padStart(3, "0");
     document.getElementById("metaSubmittedBy").textContent = req.requesterName || "Unknown Employee";
     document.getElementById("metaSubmittedDate").textContent = formatDate(req.createdAt);
-    
-    const changes = collectChanges(req, profile, status);
+
+    const statusEl = document.getElementById("metaStatus");
+    if (statusEl) statusEl.innerHTML = renderStatusBadge(status);
+
+    const changes = getChanges(req, profile, status);
     document.getElementById("metaCount").textContent = `${changes.length} Fields`;
     renderChanges(changes);
-    
-    if (status === "Pending") {
+
+    // Approve/Reject only for pending requests AND supervisor/admin role.
+    if (status === "Pending" && isReviewer()) {
         document.getElementById("actionButtonsContainer").style.setProperty("display", "flex", "important");
     }
+
+    // Reviewer info + comment for reviewed (approved/rejected) requests.
+    if (status === "Approved" || status === "Rejected") {
+        const byLabel = status === "Rejected" ? "Rejected By" : "Approved By";
+        const dateLabel = status === "Rejected" ? "Rejected Date" : "Approved Date";
+
+        document.getElementById("reviewByLabel").textContent = byLabel;
+        document.getElementById("metaReviewBy").textContent = req.reviewedBy || "-";
+        document.getElementById("reviewByCol").style.display = "block";
+
+        document.getElementById("reviewDateLabel").textContent = dateLabel;
+        document.getElementById("metaReviewDate").textContent = req.reviewedAt ? formatDate(req.reviewedAt) : "-";
+        document.getElementById("reviewDateCol").style.display = "block";
+    }
+
+    // Show supervisor comment on rejected requests.
+    if (status === "Rejected" && req.hrReason) {
+        const card = document.getElementById("supervisorCommentsCard");
+        document.getElementById("supervisorCommentText").textContent = req.hrReason;
+        if (card) card.style.display = "flex";
+    }
+}
+
+// True only for supervisor/admin roles (employee/intern cannot review).
+function isReviewer() {
+    try {
+        const u = window.aiaAuth && window.aiaAuth.getUserInfo();
+        if (!u) return false;
+        const role = String(u.role
+            || u["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+            || "").toLowerCase();
+        const roleId = String(u.role_id || "");
+        return role === "supervisor" || role === "admin" || roleId === "0";
+    } catch (e) {
+        return false;
+    }
+}
+
+function renderStatusBadge(status) {
+    const map = {
+        Pending: { cls: "badge-light-pending", icon: "bi-clock", label: "Needs Approval" },
+        Approved: { cls: "badge-light-approved", icon: "bi-check-circle", label: "Approved" },
+        Rejected: { cls: "badge-light-rejected", icon: "bi-x-circle", label: "Rejected" }
+    };
+    const m = map[status];
+    if (!m) return `<span class="badge badge-light-primary px-4 py-2 fs-7 fw-bold">${status}</span>`;
+    return `<span class="badge ${m.cls} px-4 py-2 fs-7 fw-bold"><i class="bi ${m.icon} me-1"></i>${m.label}</span>`;
 }
 
 function renderChanges(changes) {
@@ -171,29 +246,40 @@ function bindActionButtons() {
     const btnReject = document.getElementById("btnReject");
     const btnConfirmReject = document.getElementById("btnConfirmReject");
 
+    const btnConfirmApprove = document.getElementById("btnConfirmApprove");
+
     if (btnApprove) {
         btnApprove.addEventListener("click", () => {
-            if(confirm("Are you sure you want to approve this request?")) {
-                submitReview(true, null);
-            }
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("approveModal"));
+            modal.show();
+        });
+    }
+
+    if (btnConfirmApprove) {
+        btnConfirmApprove.addEventListener("click", () => {
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("approveModal")).hide();
+            submitReview(true, null);
         });
     }
 
     if (btnReject) {
         btnReject.addEventListener("click", () => {
-            const modalEl = document.getElementById("rejectModal");
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+            const err = document.getElementById("rejectReasonError");
+            if (err) err.style.display = "none";
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("rejectModal")).show();
         });
     }
 
     if (btnConfirmReject) {
         btnConfirmReject.addEventListener("click", () => {
             const reason = document.getElementById("rejectReasonInput").value.trim();
+            const err = document.getElementById("rejectReasonError");
             if (!reason) {
-                alert("Please provide a reason for rejection.");
+                // Comment mandatory before rejecting.
+                if (err) err.style.display = "block";
                 return;
             }
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("rejectModal")).hide();
             submitReview(false, reason);
         });
     }
@@ -221,7 +307,9 @@ async function submitReview(isApproved, reason) {
             alert(`Request successfully ${isApproved ? 'approved' : 'rejected'}.`);
             window.location.href = "/EmployeeManagement/ManageRequestList";
         } else {
-            alert("Failed to submit review. Please try again.");
+            const bodyText = await response.text();
+            console.error(`review-update failed: ${response.status}`, bodyText);
+            alert(`Failed to submit review (HTTP ${response.status}).\n${bodyText || ""}`);
         }
     } catch (error) {
         console.error("API Error during submission:", error);
@@ -236,11 +324,12 @@ function showError(msg) {
 }
 
 function normalizeStatus(s) {
-    const v = String(s || "").toLowerCase();
+    if (s === null || s === undefined || s === "") return "Unknown";
+    const v = String(s).toLowerCase();
     if (v === "pending" || v === "0" || v === "needs approval") return "Pending";
     if (v === "approved" || v === "1") return "Approved";
     if (v === "rejected" || v === "2") return "Rejected";
-    return s || "Unknown";
+    return String(s);
 }
 
 function formatDate(dateStr) {

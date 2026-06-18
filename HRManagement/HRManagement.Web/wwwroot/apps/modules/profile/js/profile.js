@@ -115,7 +115,7 @@ async function renderProfileView() {
     setText("npwp", localOverrides.npwp || "-");
     setText("placeOfBirth", dto.placeOfBirth);
     setText("dateOfBirth", formatDate(dto.dateOfBirth));
-    setText("maritalStatus", dto.maritalStatus);
+    setText("maritalStatus", dto.maritalStatusName || dto.maritalStatus);
 
     setText("currentStreet", dto.currentStreetAddress);
     setText("currentCity", dto.currentCity);
@@ -127,23 +127,26 @@ async function renderProfileView() {
     setText("residentialProvince", dto.residentialProvince);
     setText("residentialPostal", dto.residentialPostalCode);
 
-    setText("employeeId", dto.employeeDisplayId);
-    setText("employeeStatus", dto.employeeStatus);
-    setText("startDate", formatDate(dto.startDate));
-    setText("employmentType", dto.employmentType);
-    setText("department", dto.department);
-    setText("position", dto.position);
+    const emp = dto.employmentInformation || {};
+    const ec = dto.emergencyContact || {};
+
+    setText("employeeId", emp.displayId);
+    setText("employeeStatus", dto.isActive ? "Active" : "Inactive");
+    setText("startDate", formatDate(emp.startDate));
+    setText("employmentType", emp.typeName);
+    setText("department", emp.departmentName);
+    setText("position", emp.positionName);
 
     const role = getRoleFromJwt();
     setText("employeeRole", role);
-    setText("supervisorName", dto.supervisorName);
+    setText("supervisorName", emp.supervisorName);
 
     const supWrap = document.getElementById("supervisorNameWrapperView");
     if (supWrap && role === "Supervisor") supWrap.style.display = "none";
 
-    setText("emergencyName", dto.emergencyContactName);
-    setText("emergencyRelationship", dto.relationship);
-    setText("emergencyPhone", dto.emergencyContactPhone);
+    setText("emergencyName", ec.name);
+    setText("emergencyRelationship", ec.relationship);
+    setText("emergencyPhone", ec.phoneNumber);
 
     renderAttachmentsView();
 }
@@ -186,7 +189,7 @@ async function loadEditForm() {
     setVal("editNpwp", localOverrides.npwp || "");
     setVal("editPlaceOfBirth", dto.placeOfBirth);
     setVal("editDateOfBirth", formatDate(dto.dateOfBirth));
-    setVal("editMaritalStatus", dto.maritalStatus);
+    setVal("editMaritalStatus", MARITAL_MAP[dto.maritalStatus] ?? "");
 
     document.querySelectorAll('input[name="gender"]').forEach(r => r.checked = (r.value === dto.gender));
 
@@ -200,14 +203,18 @@ async function loadEditForm() {
     setVal("editCurrentProvince", dto.currentProvince);
     setVal("editCurrentPostal", dto.currentPostalCode);
 
-    setVal("editEmployeeId", dto.employeeDisplayId);
-    setVal("editStartDate", formatDate(dto.startDate));
-    setVal("editEmploymentType", dto.employmentType);
-    setVal("editDepartment", dto.department);
-    setVal("editPosition", dto.position);
-    setVal("editSupervisorName", dto.supervisorName);
+    const emp = dto.employmentInformation || {};
+    const ec = dto.emergencyContact || {};
 
-    document.querySelectorAll('input[name="employeeStatus"]').forEach(r => r.checked = (r.value === dto.employeeStatus));
+    setVal("editEmployeeId", emp.displayId);
+    setVal("editStartDate", formatDate(emp.startDate));
+    setVal("editEmploymentType", emp.typeName);
+    setVal("editDepartment", emp.departmentName);
+    setVal("editPosition", emp.positionName);
+    setVal("editSupervisorName", emp.supervisorName);
+
+    const empStatus = dto.isActive ? "Active" : "Inactive";
+    document.querySelectorAll('input[name="employeeStatus"]').forEach(r => r.checked = (r.value === empStatus));
     const role = getRoleFromJwt();
     document.querySelectorAll('input[name="employeeRole"]').forEach(r => r.checked = (r.value === role));
 
@@ -216,9 +223,9 @@ async function loadEditForm() {
         if (wrap) wrap.style.display = "none";
     }
 
-    setVal("editEmergencyName", dto.emergencyContactName);
-    setVal("editEmergencyRelationship", dto.relationship);
-    setVal("editEmergencyPhone", dto.emergencyContactPhone);
+    setVal("editEmergencyName", ec.name);
+    setVal("editEmergencyRelationship", ec.relationship);
+    setVal("editEmergencyPhone", ec.phoneNumber);
 
     if (localOverrides.profilePicture) {
         const wrap = document.getElementById("profilePicPreview");
@@ -359,7 +366,7 @@ function buildUpdateDto() {
 
     return {
         fullName: document.getElementById("editFullName").value,
-        gender: GENDER_MAP[genderStr],
+        gender: genderStr,
         personalEmail: document.getElementById("editPersonalEmail").value,
         placeOfBirth: document.getElementById("editPlaceOfBirth").value,
         nik: document.getElementById("editNik").value,

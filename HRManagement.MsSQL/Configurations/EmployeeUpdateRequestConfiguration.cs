@@ -11,7 +11,17 @@ public class EmployeeUpdateRequestConfiguration : IEntityTypeConfiguration<Emplo
     {
         builder.ToTable("EmployeeUpdateRequest");
         builder.HasKey(e => e.Id);
-        
+
+        // Property names differ from physical DB columns — map explicitly
+        builder.Property(e => e.NewPlaceOfBirth).HasColumnName("NewBirthPlace");
+        builder.Property(e => e.NewDateOfBirth).HasColumnName("NewBirthDate");
+        builder.Property(e => e.NewPhoneNumber).HasColumnName("NewMobilePhone");
+        builder.Property(e => e.NewCurrentStreetAddress).HasColumnName("NewCurrentAddress");
+        builder.Property(e => e.NewCurrentZipCode).HasColumnName("NewCurrentPostalCode");
+        builder.Property(e => e.NewResidentialStreetAddress).HasColumnName("NewResidentialAddress");
+        builder.Property(e => e.NewResidentialZipCode).HasColumnName("NewResidentialPostalCode");
+        builder.Property(e => e.Status).HasColumnName("RequestStatus");
+
         builder.HasOne(e => e.Employee)
             .WithMany() 
             .HasForeignKey(e => e.EmployeeId)

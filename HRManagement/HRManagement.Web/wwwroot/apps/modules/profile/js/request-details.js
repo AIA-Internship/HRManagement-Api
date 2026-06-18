@@ -80,13 +80,13 @@ async function apiGet(endpoint) {
 }
 
 function renderDetails(req, profile) {
-    const status = normalizeStatus(req.status);
+    const status = normalizeStatus(req.requestStatus);
 
     document.getElementById("metaId").textContent = "REQ" + String(req.requestId).padStart(3, "0");
     document.getElementById("metaStatus").innerHTML = renderStatusBadge(status);
     document.getElementById("metaSubmitted").textContent = formatDate(req.createdAt);
 
-    const changes = collectChanges(req, profile, status);
+    const changes = getChanges(req, profile, status);
     document.getElementById("metaCount").textContent = changes.length;
 
     if (status === "Approved" || status === "Rejected") {
@@ -108,6 +108,30 @@ function renderDetails(req, profile) {
     renderChanges(changes);
 }
 
+// Prefer the stored snapshot (survives approval); fall back to deriving from the live profile.
+function getChanges(req, profile, status) {
+    if (req.changesJson) {
+        try {
+            const snap = JSON.parse(req.changesJson);
+            if (Array.isArray(snap) && snap.length) {
+                return snap.map(c => {
+                    const field = c.field ?? c.Field;
+                    const previous = c.previous ?? c.Previous;
+                    const updated = c.updated ?? c.Updated;
+                    return {
+                        label: FIELD_LABELS[field] || field,
+                        previous: (previous === null || previous === undefined || previous === "") ? "—" : previous,
+                        updated: updated
+                    };
+                });
+            }
+        } catch (e) {
+            console.warn("Bad changesJson, falling back:", e);
+        }
+    }
+    return collectChanges(req, profile, status);
+}
+
 function collectChanges(req, profile, status) {
     const fmtDate = v => {
         if (!v) return "";
@@ -123,9 +147,9 @@ function collectChanges(req, profile, status) {
         newGender: profile.gender,
         newPersonalEmail: profile.personalEmail,
         newPlaceOfBirth: profile.placeOfBirth,
-        newNik: profile.Nik,
+        newNik: profile.nik,
         newDateOfBirth: fmtDate(profile.dateOfBirth),
-        newMaritalStatus: profile.maritalStatus,
+        newMaritalStatus: profile.maritalStatusName,
         newCurrentStreetAddress: profile.currentStreetAddress,
         newCurrentCity: profile.currentCity,
         newCurrentProvince: profile.currentProvince,
@@ -135,9 +159,9 @@ function collectChanges(req, profile, status) {
         newResidentialProvince: profile.residentialProvince,
         newResidentialPostalCode: profile.residentialPostalCode,
         newPhoneNumber: profile.phoneNumber,
-        newEmergencyContactName: profile.emergencyContactName,
-        newEmergencyContactPhone: profile.emergencyContactPhone,
-        newEmergencyContactRelationship: profile.relationship
+        newEmergencyContactName: profile.emergencyContact ? profile.emergencyContact.name : "",
+        newEmergencyContactPhone: profile.emergencyContact ? profile.emergencyContact.phoneNumber : "",
+        newEmergencyContactRelationship: profile.emergencyContact ? profile.emergencyContact.relationship : ""
     } : {};
 
     const changes = [];
@@ -174,20 +198,23 @@ function showError(msg) {
 }
 
 function normalizeStatus(s) {
-    const v = String(s || "").toLowerCase();
+    if (s === null || s === undefined || s === "") return "Unknown";
+    const v = String(s).toLowerCase();
     if (v === "pending" || v === "0" || v === "needs approval") return "Pending";
     if (v === "approved" || v === "1") return "Approved";
     if (v === "rejected" || v === "2") return "Rejected";
-    return s || "Unknown";
+    return String(s);
 }
 
 function renderStatusBadge(status) {
     const map = {
-        Pending: "badge-light-pending",
-        Approved: "badge-light-approved",
-        Rejected: "badge-light-rejected"
+        Pending: { cls: "badge-light-pending", icon: "bi-clock", label: "Needs Approval" },
+        Approved: { cls: "badge-light-approved", icon: "bi-check-circle", label: "Approved" },
+        Rejected: { cls: "badge-light-rejected", icon: "bi-x-circle", label: "Rejected" }
     };
-    return `<span class="badge ${map[status] || "badge-light-primary"} px-4 py-2 fs-7 fw-bold">${status}</span>`;
+    const m = map[status];
+    if (!m) return `<span class="badge badge-light-primary px-4 py-2 fs-7 fw-bold">${status}</span>`;
+    return `<span class="badge ${m.cls} px-4 py-2 fs-7 fw-bold"><i class="bi ${m.icon} me-1"></i>${m.label}</span>`;
 }
 
 function formatDate(dateStr) {

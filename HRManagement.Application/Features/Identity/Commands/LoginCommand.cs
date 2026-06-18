@@ -21,6 +21,7 @@ public record LoginCommand(string Email, string Password, bool RememberMe) : IRe
 
 internal sealed class LoginQueryHandler(
     IUserRepository userRepository,
+    IEmployeeRepository employeeRepository,
     IConfiguration configuration,
     IUnitOfWork unitOfWork,
     ILogger<LoginQueryHandler> logger) : IRequestHandler<LoginCommand, Result<TokenResponseDto>>
@@ -52,12 +53,15 @@ internal sealed class LoginQueryHandler(
         user.SetLastLogin();
         await unitOfWork.CommitAsync(cancellationToken); // Passing cancellation token
 
-        string token = GenerateToken(user, request.RememberMe);
+        var profile = await employeeRepository.GetProfileByEmailAsync(request.Email, cancellationToken);
+        string fullName = profile?.FullName ?? user.EmployeeEmail;
+
+        string token = GenerateToken(user, fullName, request.RememberMe);
 
         return Result.Success(new TokenResponseDto(token));
     }
 
-    private string GenerateToken(Users user, bool rememberMe)
+    private string GenerateToken(Users user, string fullName, bool rememberMe)
     {
         var jwtSettings = configuration.GetSection("AppSetting:Jwt");
         var keyString = jwtSettings["Key"];
@@ -75,6 +79,7 @@ internal sealed class LoginQueryHandler(
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim("fullName", fullName),
                 new Claim(ClaimTypes.Email, user.EmployeeEmail),
                 new Claim(ClaimTypes.Role, user.Role.Name),
                 new Claim("EmployeeId", user.EmployeeId.ToString()),

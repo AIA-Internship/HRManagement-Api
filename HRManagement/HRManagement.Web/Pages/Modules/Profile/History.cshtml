@@ -13,9 +13,9 @@
         /* Status badges */
         .badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 12px; }
         .badge-status i { font-size: 14px; }
-        .badge-pending { background-color: #FFF4DE; color: #FFA800; }
-        .badge-approved { background-color: #E8FFF3; color: #1BC5BD; }
-        .badge-rejected { background-color: #FFF5F8; color: #F1416C; }
+        .badge-pending { background-color: #FEF3C7; color: #92400E; }
+        .badge-approved { background-color: #D1FAE5; color: #2B8B15; }
+        .badge-rejected { background-color: #FFE4E6; color: #D31145; }
 
         /* Needs approval banner (pink soft) */
         .needs-approval-banner {
@@ -114,6 +114,7 @@
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <a href="javascript:aiaGoBack()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</a>
                 <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
                     <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
                         <li class="breadcrumb-item"><a href="/Profile" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>

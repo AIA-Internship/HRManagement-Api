@@ -15,7 +15,6 @@ public record VerifyForgotQuery(VerifyForgotPayload Payload) : IRequest<Result>;
 
 internal sealed class VerifyForgotQueryHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork,
     ILogger<VerifyForgotQueryHandler> logger) : IRequestHandler<VerifyForgotQuery, Result>
 {
     public async Task<Result> Handle(VerifyForgotQuery request, CancellationToken cancellationToken)

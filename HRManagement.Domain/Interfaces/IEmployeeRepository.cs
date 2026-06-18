@@ -18,6 +18,8 @@ public interface IEmployeeRepository : IBaseRepository<Employee>
 
     Task<string?> GetLastEmployeeDisplayIdAsync(CancellationToken cancellationToken = default);
 
+    Task<string?> GetLookupNameAsync(string category, int value, CancellationToken cancellationToken = default);
+
     Task AddEmployeeUpdateRequestAsync(EmployeeUpdateRequest entity, CancellationToken ct);
     Task AddEmployeeAttachmentsAsync(List<EmployeeAttachment> entities, CancellationToken ct);
 }

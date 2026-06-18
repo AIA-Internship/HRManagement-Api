@@ -49,7 +49,7 @@ function render() {
 
     const rows = state.raw.map(r => ({
         ...r,
-        _status: normalizeStatus(r.status),
+        _status: normalizeStatus(r.requestStatus),
         _fieldsCount: countFields(r)
     }));
 
@@ -223,16 +223,17 @@ function bindFilterHandlers() {
 
 function updateBanner(banner) {
     if (!banner) return;
-    const hasPending = state.raw.some(r => normalizeStatus(r.status) === "Pending");
+    const hasPending = state.raw.some(r => normalizeStatus(r.requestStatus) === "Pending");
     banner.classList.toggle("d-none", !hasPending);
 }
 
 function normalizeStatus(s) {
-    const v = String(s || "").toLowerCase();
+    if (s === null || s === undefined || s === "") return "Unknown";
+    const v = String(s).toLowerCase();
     if (v === "pending" || v === "0" || v === "needs approval") return "Pending";
     if (v === "approved" || v === "1") return "Approved";
     if (v === "rejected" || v === "2") return "Rejected";
-    return s || "Unknown";
+    return String(s);
 }
 
 function countFields(req) {

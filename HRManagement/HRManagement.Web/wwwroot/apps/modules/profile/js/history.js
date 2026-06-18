@@ -47,7 +47,7 @@ function render() {
 
     const rows = state.raw.map(r => ({
         ...r,
-        _status: normalizeStatus(r.status),
+        _status: normalizeStatus(r.requestStatus),
         _fieldsCount: countFields(r)
     }));
 
@@ -165,24 +165,25 @@ function bindFilterHandlers() {
 
 function updateBanner(banner) {
     if (!banner) return;
-    const hasPending = state.raw.some(r => normalizeStatus(r.status) === "Pending");
+    const hasPending = state.raw.some(r => normalizeStatus(r.requestStatus) === "Pending");
     banner.classList.toggle("d-none", !hasPending);
 }
 
 function normalizeStatus(s) {
-    const v = String(s || "").toLowerCase();
+    if (s === null || s === undefined || s === "") return "Unknown";
+    const v = String(s).toLowerCase();
     if (v === "pending" || v === "0" || v === "needs approval") return "Pending";
     if (v === "approved" || v === "1") return "Approved";
     if (v === "rejected" || v === "2") return "Rejected";
-    return s || "Unknown";
+    return String(s);
 }
 
 function countFields(req) {
     const fields = [
-        "newFullName", "newGender", "newPersonalEmail", "newPlaceOfBirth","newNik", "newDateOfBirth", "newMaritalStatus",
-        "newCurrentStreetAddress", "newCurrentCity", "newCurrentProvince", "newCurrentPostalCode",
-        "newResidentialStreetAddress", "newResidentialCity", "newResidentialProvince", "newResidentialPostalCode",
-        "newPhoneNumber", "newEmergencyContactName", "newEmergencyContactPhone", "newEmergencyContactRelationship",
+        "newFullName", "newGender", "newPersonalEmail", "newBirthPlace", "newNIK", "newBirthDate", "newMaritalStatus",
+        "newCurrentAddress", "newCurrentCity", "newCurrentProvince", "newCurrentPostalCode",
+        "newResidentialAddress", "newResidentialCity", "newResidentialProvince", "newResidentialPostalCode",
+        "newMobilePhone", "newEmergencyContactName", "newEmergencyContactPhone", "newEmergencyContactRelationship",
     ];
     return fields.filter(f => req[f] !== undefined && req[f] !== null && req[f] !== "" && req[f] !== "Unknown").length;
 }

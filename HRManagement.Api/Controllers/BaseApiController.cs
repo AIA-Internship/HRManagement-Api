@@ -102,7 +102,7 @@ public abstract class BaseApiController(ISender sender) : ControllerBase
         if (result.IsSuccess)
         {
             // Karena tidak ada kembalian data, kita isi Content dengan null
-            var response = ApiResponse<object>.Success(null, "Berhasil diproses", StatusCodes.Status200OK);
+            var response = ApiResponse<object>.Success(null!, "Berhasil diproses", StatusCodes.Status200OK);
             return Ok(response);
         }
 

@@ -32,5 +32,8 @@ public record EmployeeRequestResponseDto
 
     int RequestStatus,
     string? HRReason,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    string? ReviewedBy,
+    DateTime? ReviewedAt,
+    string? ChangesJson
 );

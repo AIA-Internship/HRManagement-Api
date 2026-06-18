@@ -20,6 +20,7 @@ internal sealed class GetMyProfileQueryHandler(
         logger.LogInformation("Executing handler : {HandlerName}", nameof(GetMyProfileQueryHandler));
 
         var data = await employeeRepository.GetProfileByEmailAsync(request.CurrentUserEmail, cancellationToken);
+        if (data is null) return Result.Failure<EmployeeProfileResponseDto>("Data tidak ditemukan.");
 
         return Result.Success(data);
     }

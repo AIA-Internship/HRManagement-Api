@@ -6,9 +6,23 @@
     /* Prevent Sidebar UI Flashing */
     html[data-user-role="supervisor"] #intern_section { display: none !important; }
     html[data-user-role="supervisor"] #supervisor_section { display: block !important; }
-    
+
     html[data-user-role="intern"] #supervisor_section { display: none !important; }
     html[data-user-role="intern"] #intern_section { display: block !important; }
+
+    /* Footer user block collapses with the sidebar */
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar_footer { padding-left: 0 !important; padding-right: 0 !important; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar_footer .footer-user-trigger { justify-content: center; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar_footer .footer-user-avatar { margin-right: 0 !important; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar_footer .footer-user-info,
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar_footer .footer-user-chevron { display: none !important; }
+
+    /* On hover-expand, restore the full footer user block */
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar:hover #kt_app_sidebar_footer { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar:hover #kt_app_sidebar_footer .footer-user-trigger { justify-content: flex-start; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar:hover #kt_app_sidebar_footer .footer-user-avatar { margin-right: 0.75rem !important; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar:hover #kt_app_sidebar_footer .footer-user-info { display: flex !important; }
+    [data-kt-app-sidebar-minimize="on"] #kt_app_sidebar:hover #kt_app_sidebar_footer .footer-user-chevron { display: block !important; }
 </style>
 
 <script>
@@ -35,9 +49,9 @@
 <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
     <!--begin::Logo-->
     <div class="app-sidebar-logo px-9" id="kt_app_sidebar_logo">
-        <a href="/">
+        <a href="/Profile">
             <img alt="Logo" src="/assets/media/logos/logo.png" class="h-50px app-sidebar-logo-default" />
-            <img alt="Logo" src="/assets/media/logos/logo.png" class="h-25px app-sidebar-logo-minimize" />
+            <img alt="Logo" src="/assets/media/logos/favicon.ico" class="h-30px app-sidebar-logo-minimize" />
         </a>
         <!--end::Logo image-->
         
@@ -272,26 +286,44 @@
             <!--end::Scroll wrapper-->
         </div>
         <!--end::Menu wrapper-->
-    </div>
-    <!--end::sidebar menu-->
-
     <!--begin::Footer-->
     <div class="app-sidebar-footer flex-column-auto pt-4 pb-6 px-6" id="kt_app_sidebar_footer" style="border-top: 1px solid #efefef;">
-        <div class="d-flex align-items-center">
+        <!--begin::User menu trigger-->
+        <div class="footer-user-trigger d-flex align-items-center cursor-pointer" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start">
             <!--begin::Avatar-->
-            <div class="symbol symbol-circle symbol-40px me-3">
-                <div class="symbol-label fs-3 bg-light-danger text-danger fw-bold">P</div>
+            <div class="footer-user-avatar symbol symbol-circle symbol-40px me-3">
+                <div class="symbol-label fs-3 bg-light-danger text-danger fw-bold" id="sidebarUserAvatar">P</div>
             </div>
             <!--end::Avatar-->
             <!--begin::Info-->
-            <div class="d-flex flex-column">
+            <div class="footer-user-info d-flex flex-column flex-grow-1">
                 <span class="text-gray-800 fw-bold fs-7" id="sidebarUserName">Pulkeria Mayriel R.</span>
                 <span class="text-muted fw-semibold fs-8" id="sidebarUserId">E123456</span>
             </div>
             <!--end::Info-->
+            <i class="footer-user-chevron bi bi-chevron-up fs-5 text-muted ms-2"></i>
         </div>
+        <!--end::User menu trigger-->
+
+        <!--begin::User menu-->
+        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg menu-state-color fw-semibold py-3 fs-6 w-200px" data-kt-menu="true">
+            <div class="menu-item px-3">
+                <a href="/Profile" class="menu-link px-5">
+                    <i class="bi bi-person fs-5 me-2"></i> My Profile
+                </a>
+            </div>
+            <div class="separator my-2"></div>
+            <div class="menu-item px-3">
+                <a href="#" onclick="event.preventDefault(); window.aiaAuth && window.aiaAuth.signOut();" class="menu-link px-5 text-hover-danger">
+                    <i class="bi bi-box-arrow-right fs-5 me-2"></i> Sign Out
+                </a>
+            </div>
+        </div>
+        <!--end::User menu-->
     </div>
     <!--end::Footer-->
+    </div>
+    <!--end::sidebar menu-->
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -305,8 +337,10 @@
                 || "";
             const nameEl = document.getElementById('sidebarUserName');
             const idEl = document.getElementById('sidebarUserId');
+            const avatarEl = document.getElementById('sidebarUserAvatar');
             if (nameEl) nameEl.textContent = fullName;
             if (idEl) idEl.textContent = email;
+            if (avatarEl && fullName) avatarEl.textContent = fullName.trim().charAt(0).toUpperCase();
         }
     });
 </script>

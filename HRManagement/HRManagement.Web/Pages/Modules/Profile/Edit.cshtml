@@ -25,6 +25,7 @@
             new BreadcrumbItem { Title = "Edit Profile" }
         },
         RenderActions = Html.Raw(@"
+            <a href='javascript:aiaGoBack()' class='btn btn-sm btn-light fw-bold d-inline-flex align-items-center'><i class='bi bi-arrow-left fs-5 me-1'></i>Back</a>
             <a href='/Profile' class='btn btn-sm btn-light fw-bold'>Cancel</a>
             <button type='button' onclick='submitForApproval()' class='btn btn-sm btn-brand fw-bold'>
                 <i class='bi bi-check2-circle text-white fs-4 me-1'></i> Submit for Approval
