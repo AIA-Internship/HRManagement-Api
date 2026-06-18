@@ -1,5 +1,45 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
 
+    const form = document.querySelector('.leave-form');
+    const submitBtn = document.getElementById('submitBtn');
+
+    submitBtn.addEventListener('click', function (e) {
+
+        e.preventDefault();
+
+        const startDate = document.getElementById('startDate').value;
+        const description = document.getElementById('description').value.trim();
+
+        let isValid = true;
+
+        if (!startDate) {
+            document.getElementById('startDateError').textContent =
+                'Start date is required';
+            isValid = false;
+        }
+
+        if (!description) {
+            document.getElementById('descriptionError').textContent =
+                'Description is required';
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        const modal = new bootstrap.Modal(
+            document.getElementById('submitModal')
+        );
+
+        modal.show();
+    });
+
+    document
+        .getElementById('confirmSubmitBtn')
+        .addEventListener('click', function () {
+
+            form.submit();
+        });
+
     // =========================
     // TOM SELECT
     // =========================
