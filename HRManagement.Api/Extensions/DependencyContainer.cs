@@ -1,4 +1,4 @@
-﻿using HRManagement.Application.Auth.Permissions;
+using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Behaviors;
 using HRManagement.Application.Services;
 using HRManagement.Domain.Interfaces;
