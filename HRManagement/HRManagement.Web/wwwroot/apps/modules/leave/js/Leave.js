@@ -1,5 +1,3 @@
-
-
 function redirectToDashboard(roleId) {
     if (roleId === "1") {
         window.location.href = "/Timesheet/Supervisor/Dashboard";
@@ -9,13 +7,27 @@ function redirectToDashboard(roleId) {
 }
 
 function onLoad(){
-    const user = JSON.parse(localStorage.getItem("aia_user_info"));
-    if (user && user.role_id) {
-        redirectToDashboard(user.role_id);
+    const userInfoRaw = localStorage.getItem("aia_user_info");
+    if (userInfoRaw) {
+        try {
+            const user = JSON.parse(userInfoRaw);
+            if (user && user.role_id) {
+                redirectToDashboard(user.role_id);
+            } else if (user && user.role) {
+                // Fallback to role if role_id is not available
+                const roleId = user.role === "supervisor" ? "1" : "0";
+                redirectToDashboard(roleId);
+            }
+        } catch (e) {
+            console.error("Error parsing user info:", e);
+        }
     }
 }
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    onLoad()
-})
+// Try to redirect immediately
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", onLoad);
+} else {
+    // DOM is already loaded
+    onLoad();
+}
