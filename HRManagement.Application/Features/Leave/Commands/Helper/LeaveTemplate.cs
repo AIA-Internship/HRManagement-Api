@@ -1,7 +1,6 @@
-﻿using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+﻿using HRManagement.Domain.Models.Tables;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands.Helper
+namespace HRManagement.Application.Features.Leave.Commands.Helper
 {
     public static class LeaveTemplate
     {

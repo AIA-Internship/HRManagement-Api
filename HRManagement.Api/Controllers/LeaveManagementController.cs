@@ -1,10 +1,8 @@
-﻿using CSharpFunctionalExtensions;
-using FluentValidation;
-using HRManagement.Api.Application.Commands.LeaveManagementCommands;
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Application.Queries.LeaveManagementQueries;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+﻿using FluentValidation;
+using HRManagement.Application.Features.Leave.Commands;
+using HRManagement.Application.Features.Leave.Queries;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,14 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
-using HRManagement.Api.Domain.SeedWork;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
+using HRManagement.Domain.SeedWork;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
+namespace HRManagement.Application.Features.Leave.Queries
 {
     public class GetLeaveRequestByRequesterQuery(int requsterId, int max): IRequest<Result<ApiResponse>>
     {

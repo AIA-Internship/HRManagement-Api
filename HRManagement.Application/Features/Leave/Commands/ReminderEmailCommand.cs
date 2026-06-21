@@ -1,16 +1,16 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.Commands.LeaveManagementCommands.Helper;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Application.Features.Leave.Commands.Helper;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MediatR;
 using MimeKit;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+namespace HRManagement.Application.Features.Leave.Commands
 {
     public class ReminderEmailCommand : IRequest<Result<ApiResponse>>
     {
@@ -22,7 +22,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
         internal class ReminderEmailCommandHandler : IRequestHandler<ReminderEmailCommand, Result<ApiResponse>>
         {
-            private readonly ILogger<DeleteLeaveRequestCommandHandler> _logger;
+            private readonly ILogger<ReminderEmailCommandHandler> _logger;
             private readonly ILeaveRepository _repo;
             private readonly IEmployeeRepository _employeeRepo;
             public ReminderEmailCommandHandler(
@@ -54,7 +54,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
                         await semaphore.WaitAsync();
                         try
                         {
-                            sendEmail(item);
+                            //sendEmail(item);
                         }
                         finally
                         {
@@ -76,7 +76,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
 
 
 
-            public async void sendEmail(LeaveRequestModel request)
+            public async Task sendEmail(LeaveRequestModel request)
             {
                 LeaveTableConfig config = await _repo.getLeaveTableConfig();
                 Employee? supervisor = await _employeeRepo.GetByIdAsync(request.SupervisorId);

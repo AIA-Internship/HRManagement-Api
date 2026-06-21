@@ -19,7 +19,11 @@ public class AppDbContext : DbContext
     public virtual DbSet<EmployeeUpdateRequest> EmployeeUpdateRequest { get; set; }
     public virtual DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public virtual DbSet<EmployeeAttachment> EmployeeAttachment { get; set; }
-    
+
+    public virtual DbSet<LeaveRequestModel> LeaveRequest { get; set; }
+    public virtual DbSet<LeaveRequestHistory> LeaveRequestHistory { get; set; }
+    public virtual DbSet<LeaveBalanceModel> LeaveBalanceModel { get; set; }
+    public virtual DbSet<LeaveTableConfig> LeaveTableConfig { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

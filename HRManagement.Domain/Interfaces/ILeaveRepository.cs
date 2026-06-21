@@ -1,8 +1,6 @@
 ﻿using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Tables;
 
 namespace HRManagement.Api.Application.Interfaces
 {

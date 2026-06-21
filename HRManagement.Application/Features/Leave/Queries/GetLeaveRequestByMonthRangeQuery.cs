@@ -1,10 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 
-namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
+namespace HRManagement.Application.Features.Leave.Queries
 {
     public class GetLeaveRequestByMonthRangeQuery : IRequest<Result<ApiResponse>>
     {

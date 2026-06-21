@@ -1,16 +1,17 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
+using HRManagement.Domain.Models.Tables;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MediatR;
 using MimeKit;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+namespace HRManagement.Application.Features.Leave.Commands
 {
     public class RejectedLeaveRequestCommand : IRequest<Result<ApiResponse>>
     {

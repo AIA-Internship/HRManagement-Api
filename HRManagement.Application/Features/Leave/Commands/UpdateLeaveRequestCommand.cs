@@ -1,11 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveResponse;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
 using MediatR;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+namespace HRManagement.Application.Features.Leave.Commands
 {
     public class UpdateLeaveRequestCommand : IRequest<Result<ApiResponse>>
     {

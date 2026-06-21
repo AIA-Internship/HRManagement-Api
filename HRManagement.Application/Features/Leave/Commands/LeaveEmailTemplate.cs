@@ -1,9 +1,7 @@
-﻿
-
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+﻿using HRManagement.Domain.Models.Tables;
 using MimeKit;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+namespace HRManagement.Application.Features.Leave.Commands
 {
     public class LeaveEmailTemplate
     {

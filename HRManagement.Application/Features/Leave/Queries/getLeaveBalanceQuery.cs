@@ -1,10 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
 using MediatR;
 
-namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
+namespace HRManagement.Application.Features.Leave.Queries
 {
     public class getLeaveBalanceQuery: IRequest<Result<ApiResponse>>
     {

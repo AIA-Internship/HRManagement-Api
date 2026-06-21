@@ -1,17 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
-using HRManagement.Api.Domain.SeedWork;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MediatR;
 using MimeKit;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
-namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
+namespace HRManagement.Application.Features.Leave.Commands
 {
     public class CreateLeaveRequestCommand : IRequest<Result<ApiResponse>>
     {
@@ -76,7 +74,7 @@ namespace HRManagement.Api.Application.Commands.LeaveManagementCommands
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return null;
+                return ApiHelperResponse.Failed("Failed to create leave request");
             }
         }
 

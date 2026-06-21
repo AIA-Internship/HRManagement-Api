@@ -1,13 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveBalance;
-using HRManagement.Api.Domain.Models.Tables.LeaveManagementModel.LeaveRequest;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 
-namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
+namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class getEmployeeTypeAmountQuery : IRequest<Result<ApiResponse>>
+    public class getEmployeeTypeAmountQuery : IRequest<ApiResponse>
     {
         public int RequesterId { get; set; }
 
@@ -17,7 +16,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
         }
     }
 
-    internal class getEmployeeTypeAmountQueryHandler : IRequestHandler<getEmployeeTypeAmountQuery, Result<ApiResponse>>
+    internal class getEmployeeTypeAmountQueryHandler : IRequestHandler<getEmployeeTypeAmountQuery, ApiResponse>
     {
         private readonly ILogger<getEmployeeTypeAmountQueryHandler> _logger;
         private readonly ILeaveRepository _repo;
@@ -30,7 +29,7 @@ namespace HRManagement.Api.Application.Queries.LeaveManagementQueries
             _repo = repo;
             _logger = logger;
         }
-        public async Task<Result<ApiResponse>> Handle(getEmployeeTypeAmountQuery request, CancellationToken cancellationToken)
+        public async Task<ApiResponse> Handle(getEmployeeTypeAmountQuery request, CancellationToken cancellationToken)
         {
             try
             {
