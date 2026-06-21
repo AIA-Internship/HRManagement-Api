@@ -19,7 +19,17 @@ public class AppDbContext : DbContext
     public virtual DbSet<EmployeeUpdateRequest> EmployeeUpdateRequest { get; set; }
     public virtual DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public virtual DbSet<EmployeeAttachment> EmployeeAttachment { get; set; }
-    
+    public virtual DbSet<Employee> Employees { get; set; }
+    public virtual DbSet<PerformanceReviewPlan> PerformanceReviewPlans { get; set; }
+    public virtual DbSet<PlanScoreWeight> PlanScoreWeights { get; set; }
+    public virtual DbSet<Assessment> Assessments { get; set; }
+    public virtual DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
+    public virtual DbSet<AssessmentGroup> AssessmentGroups { get; set; }
+    public virtual DbSet<AssessmentGroupMember> AssessmentGroupMembers { get; set; }
+    public virtual DbSet<FillAssignment> FillAssignments { get; set; }
+    public virtual DbSet<ReviewAssignment> ReviewAssignments { get; set; }
+    public virtual DbSet<AssessmentAnswer> AssessmentAnswers { get; set; }
+    public virtual DbSet<AssessmentAnswerScore> AssessmentAnswerScores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
