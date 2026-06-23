@@ -27,7 +27,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             private readonly IEmployeeRepository _employeeRepo;
             public ReminderEmailCommandHandler(
                 ILeaveRepository repo
-                , ILogger<DeleteLeaveRequestCommandHandler> logger
+                , ILogger<ReminderEmailCommandHandler> logger
                 , IEmployeeRepository employeeRepo
             )
             {
@@ -63,7 +63,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                     });
 
 
-                    return ApiHelperResponse.Success("Leave request deleted successfully");
+                    return ApiHelperResponse.Success();
                 }
                 catch (Exception ex)
                 {

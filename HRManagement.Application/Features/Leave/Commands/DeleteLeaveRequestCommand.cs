@@ -42,7 +42,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                 var result = await _repo.softDelete(existing.LeaveId);
                 if (!result) return ApiHelperResponse.Failed("failed to delete leave request");
 
-                return ApiHelperResponse.Success("Leave request deleted successfully");
+                return ApiHelperResponse.Success();
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);

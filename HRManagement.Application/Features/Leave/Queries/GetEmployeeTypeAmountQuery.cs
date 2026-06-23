@@ -1,12 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class getEmployeeTypeAmountQuery : IRequest<ApiResponse>
+    public class getEmployeeTypeAmountQuery : IRequest<Result<ApiResponse<LeaveTypeCountDto>>>
     {
         public int RequesterId { get; set; }
 
@@ -16,7 +17,7 @@ namespace HRManagement.Application.Features.Leave.Queries
         }
     }
 
-    internal class getEmployeeTypeAmountQueryHandler : IRequestHandler<getEmployeeTypeAmountQuery, ApiResponse>
+    internal class getEmployeeTypeAmountQueryHandler : IRequestHandler<getEmployeeTypeAmountQuery, Result<ApiResponse<LeaveTypeCountDto>>>
     {
         private readonly ILogger<getEmployeeTypeAmountQueryHandler> _logger;
         private readonly ILeaveRepository _repo;
@@ -29,7 +30,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             _repo = repo;
             _logger = logger;
         }
-        public async Task<ApiResponse> Handle(getEmployeeTypeAmountQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ApiResponse<LeaveTypeCountDto>>> Handle(getEmployeeTypeAmountQuery request, CancellationToken cancellationToken)
         {
             try
             {
@@ -43,7 +44,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return ApiHelperResponse.Failed("Failed to read leave type amount");
+                return ApiHelperResponse.Failed("Failed to read leave type amount", LeaveTypeCountDto.empty());
             }
         }
     }

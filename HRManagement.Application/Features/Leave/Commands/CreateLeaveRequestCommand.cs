@@ -51,7 +51,11 @@ namespace HRManagement.Application.Features.Leave.Commands
             {
                 bool created = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
 
-                if(!created) return ApiHelperResponse.Failed("Failed to create leave request");
+                if(!created)
+                {
+                    var failureResponse = ApiHelperResponse.Failed("Failed to create leave request");
+                    return Result.Failure<ApiResponse>(failureResponse.StatusMessage);
+                }
 
                 else
                 {
@@ -68,13 +72,13 @@ namespace HRManagement.Application.Features.Leave.Commands
                     await smtpClient.SendAsync(message);
                 }
 
-
-                return ApiHelperResponse.Success("Leave request created successfully");
+                return ApiHelperResponse.Success();
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return ApiHelperResponse.Failed("Failed to create leave request");
+                return Result.Failure<ApiResponse>("Failed to create leave request");
             }
         }
 

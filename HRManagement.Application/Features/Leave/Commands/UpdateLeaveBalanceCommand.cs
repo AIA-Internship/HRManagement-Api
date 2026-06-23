@@ -33,7 +33,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                     var updated = await _repo.incrementAllEmployeeLeaveRequest();
                     if (updated == false) return ApiHelperResponse.Failed("update balance failed");
 
-                    return ApiHelperResponse.Success("success updated balance");
+                    return ApiHelperResponse.Success();
                 }
                 catch (Exception ex)
                 {

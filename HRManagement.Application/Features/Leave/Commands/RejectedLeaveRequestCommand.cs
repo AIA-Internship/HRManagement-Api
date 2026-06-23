@@ -70,7 +70,7 @@ namespace HRManagement.Application.Features.Leave.Commands
 
                 // update status to rejected
 
-                return ApiHelperResponse.Success("yes");
+                return ApiHelperResponse.Success();
             }
             catch (Exception ex){
                 Console.WriteLine(ex.Message);

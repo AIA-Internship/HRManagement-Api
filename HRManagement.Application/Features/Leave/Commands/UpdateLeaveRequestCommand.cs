@@ -43,7 +43,7 @@ namespace HRManagement.Application.Features.Leave.Commands
 
                 var updateResult = await _repo.updateLeaveRequest(mapFromUpdateDto(request.LeaveRequestDto, readResult));
 
-                return ApiHelperResponse.Success("success created update");
+                return ApiHelperResponse.Success();
                
             }
             catch(Exception ex)
