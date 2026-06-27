@@ -11,7 +11,7 @@ using MimeKit;
 
 namespace HRManagement.Application.Features.Leave.Commands
 {
-    public class ApprovedLeaveRequestCommand : IRequest<Result>
+    public class ApprovedLeaveRequestCommand : IRequest<Result<ApiResponse>>
     {
         public int LeaveId { get; set; }
 
@@ -23,7 +23,7 @@ namespace HRManagement.Application.Features.Leave.Commands
 
 
     internal class ApprovedLeaveRequestCommandHandler
-    : IRequestHandler<ApprovedLeaveRequestCommand, Result>
+    : IRequestHandler<ApprovedLeaveRequestCommand, Result<ApiResponse>>
     {
         private readonly ILogger<ApprovedLeaveRequestCommandHandler> _logger;
         private readonly ILeaveRepository _repo;
@@ -43,7 +43,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             _employeeRepository = employeeRepository;
         }
 
-        public async Task<Result> Handle(
+        public async Task<Result<ApiResponse>> Handle(
             ApprovedLeaveRequestCommand request,
             CancellationToken cancellationToken)
         {
@@ -59,7 +59,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                 var res = await _leaveBalanceRepository.getLeaveBalanceById(requester.Id);
                 _logger.LogInformation("EmployeeId: {id}", res?.EmployeeId);
                 if (res == null)
-                    return Result.Failure("Leave balance not found");
+                    return ApiHelperResponse.Failed("Leave balance not found");
 
                 res.LeaveBalance -= leaveRequest.DayAmount;
                 await _leaveBalanceRepository.updateLeaveBalance(res);
@@ -82,12 +82,12 @@ namespace HRManagement.Application.Features.Leave.Commands
                 await smtpClient.AuthenticateAsync(config.email, config.password);
                 await smtpClient.SendAsync(message);
 
-                return Result.Success();
+                return ApiHelperResponse.Success();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result.Failure(ex.Message);
+                return ApiHelperResponse.Failed(ex.Message);
             }
         }
     }

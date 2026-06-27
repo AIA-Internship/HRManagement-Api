@@ -53,8 +53,7 @@ namespace HRManagement.Application.Features.Leave.Commands
 
                 if(!created)
                 {
-                    var failureResponse = ApiHelperResponse.Failed("Failed to create leave request");
-                    return Result.Failure<ApiResponse>(failureResponse.StatusMessage);
+                    return ApiHelperResponse.Failed("Failed to create leave request");
                 }
 
                 else

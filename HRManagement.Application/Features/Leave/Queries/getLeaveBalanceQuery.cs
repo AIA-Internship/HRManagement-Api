@@ -8,7 +8,7 @@ using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class getLeaveBalanceQuery: IRequest<Result<ApiResponse>>
+    public class getLeaveBalanceQuery: IRequest<Result<ApiResponse<ReadLeaveBalanceDto>>>
     {
         public int RequesterId { get; set; }
 
@@ -19,7 +19,7 @@ namespace HRManagement.Application.Features.Leave.Queries
 
     }
 
-    internal class getLeaveBalanceQueryHandler : IRequestHandler<getLeaveBalanceQuery, Result<ApiResponse>>
+    internal class getLeaveBalanceQueryHandler : IRequestHandler<getLeaveBalanceQuery, Result<ApiResponse<ReadLeaveBalanceDto>>>
     {
         private readonly ILogger<getLeaveBalanceQueryHandler> _logger;
         private readonly ILeaveRepository _repo;
@@ -32,7 +32,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             _repo = repo;
             _logger = logger;
         }
-        public async Task<Result<ApiResponse>> Handle(getLeaveBalanceQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ApiResponse<ReadLeaveBalanceDto>>> Handle(getLeaveBalanceQuery request, CancellationToken cancellationToken)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(getLeaveBalanceQueryHandler));
 
@@ -40,14 +40,14 @@ namespace HRManagement.Application.Features.Leave.Queries
             {
                 var res = await _repo.getLeaveBalanceById(request.RequesterId);
 
-                if (res == null) return ApiHelperResponse.Failed("data not found in system");
+                if (res == null) return ApiHelperResponse.Failed<ReadLeaveBalanceDto>("data not found in system");
 
                 return ApiHelperResponse.Success("data retrieved successfully", mapToReadDto(res));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return ApiHelperResponse.Failed("Failed to read leave balance");
+                return ApiHelperResponse.Failed<ReadLeaveBalanceDto>("Failed to read leave balance");
             }
         }
 

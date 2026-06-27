@@ -1,34 +1,37 @@
 using System.Net;
+using CSharpFunctionalExtensions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HRManagement.Domain.Models.Response.Shared
 {
     public class ApiHelperResponse
     {
-        public static ApiResponse Success()
+        public static Result<ApiResponse> Success()
         {
-            return new ApiResponse()
+            var resp = new ApiResponse()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
                 IsError = false
             };
+            return Result.Success(resp);
         }
 
-        public static ApiResponse<T> Success<T>(T data)
+        public static Result<ApiResponse<T>> Success<T>(T data)
         {
-            return new ApiResponse<T>()
+            var resp = new ApiResponse<T>()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
                 IsError = false,
                 Content = data
             };
+            return Result.Success(resp);
         }
 
-        public static ApiResponse<T> Success<T>(string message, T data)
+        public static Result<ApiResponse<T>> Success<T>(string message, T data)
         {
-            return new ApiResponse<T>()
+            var resp = new ApiResponse<T>()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
@@ -36,46 +39,67 @@ namespace HRManagement.Domain.Models.Response.Shared
                 Content = data,
                 StatusMessage = message
             };
+            return Result.Success(resp);
         }
 
-        public static ApiResponse SuccessWithError(string message)
+        public static Result<ApiResponse> SuccessWithError(string message)
         {
-            return new ApiResponse()
+            var resp = new ApiResponse()
             {
                 Title = "Success",
                 StatusCode = (int)HttpStatusCode.OK,
                 IsError = true,
                 StatusMessage = message
             };
+            return Result.Success(resp);
         }
 
-        public static ApiResponse Failed(string errorMessage)
+        public static Result<ApiResponse> Failed(string errorMessage)
         {
-            return new ApiResponse()
+            var resp = new ApiResponse()
             {
                 Title = "Error",
                 StatusCode = (int)HttpStatusCode.InternalServerError,
                 StatusMessage = errorMessage,
                 IsError = true
             };
+            return Result.Failure<ApiResponse>(errorMessage);
         }
 
         /// <summary>
         /// Generic overload — use when the method return type is <see cref="ApiResponse{T}"/>.
         /// </summary>
-        public static ApiResponse<T> Failed<T>(string errorMessage)
+        public static Result<ApiResponse<T>> Failed<T>(string errorMessage)
         {
-            return new ApiResponse<T>()
+            var resp = new ApiResponse<T>()
             {
                 Title = "Error",
                 StatusCode = (int)HttpStatusCode.InternalServerError,
                 StatusMessage = errorMessage,
                 IsError = true
             };
+            return Result.Failure<ApiResponse<T>>(errorMessage);
         }
-        public static ApiResponse Failed(string errorMessage, dynamic dataerror)
+
+        /// <summary>
+        /// Generic overload that includes data payload when returning a failed result.
+        /// </summary>
+        public static Result<ApiResponse<T>> Failed<T>(string errorMessage, T data)
         {
-            return new ApiResponse()
+            var resp = new ApiResponse<T>()
+            {
+                Title = "Error",
+                StatusCode = (int)HttpStatusCode.InternalServerError,
+                StatusMessage = errorMessage,
+                IsError = true,
+                Content = data
+            };
+            return Result.Failure<ApiResponse<T>>(errorMessage);
+        }
+
+        public static Result<ApiResponse> Failed(string errorMessage, dynamic dataerror)
+        {
+            var resp = new ApiResponse()
             {
                 Title = "Error",
                 StatusCode = (int)HttpStatusCode.InternalServerError,
@@ -83,11 +107,12 @@ namespace HRManagement.Domain.Models.Response.Shared
                 IsError = true,
                 Content = dataerror
             };
+            return Result.Failure<ApiResponse>(errorMessage);
         }
 
-        public static ApiResponse Failed(string errorMessage, List<string> listErrors)
+        public static Result<ApiResponse> Failed(string errorMessage, List<string> listErrors)
         {
-            return new ApiResponse()
+            var resp = new ApiResponse()
             {
                 Title = "Error",
                 StatusCode = (int)HttpStatusCode.InternalServerError,
@@ -95,17 +120,19 @@ namespace HRManagement.Domain.Models.Response.Shared
                 IsError = true,
                 Content = listErrors
             };
+            return Result.Failure<ApiResponse>(errorMessage);
         }
 
-        public static ApiResponse NotFound(string errorMessage)
+        public static Result<ApiResponse> NotFound(string errorMessage)
         {
-            return new ApiResponse()
+            var resp = new ApiResponse()
             {
                 Title = "Error",
                 StatusCode = (int)HttpStatusCode.NotFound,
                 StatusMessage = errorMessage,
                 IsError = true,
             };
+            return Result.Failure<ApiResponse>(errorMessage);
         }
     }
 }

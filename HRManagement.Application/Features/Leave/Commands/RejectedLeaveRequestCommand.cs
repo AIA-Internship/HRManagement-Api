@@ -74,7 +74,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             }
             catch (Exception ex){
                 Console.WriteLine(ex.Message);
-                return Result.Failure<ApiResponse>(ex.Message); ;
+                return ApiHelperResponse.Failed(ex.Message);
             }
         }
     }

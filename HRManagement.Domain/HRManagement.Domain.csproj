@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.11" />
+    <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
   </ItemGroup>
 
 </Project>

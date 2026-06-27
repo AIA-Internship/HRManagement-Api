@@ -21,7 +21,7 @@ namespace HRManagement.Api.Controllers
         public LeaveManagementController(
             ILogger<LeaveManagementController> logger,
             IMediator mediator,
-            IEnumerable<IValidator> validators) : base(validators, logger)
+            IEnumerable<IValidator> validators) : base(mediator, logger, validators)
 
         {
             _logger = logger;
@@ -249,26 +249,38 @@ namespace HRManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<ApiResponse>> getLeaveBalance()
         {
-            string objectName = nameof(getLeaveBalance).ToString();
+            string objectName = nameof(getLeaveBalance);
 
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
+                Console.WriteLine("===== CLAIMS =====");
+
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"{claim.Type} = {claim.Value}");
+                }
+
+                Console.WriteLine("==================");
+
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                Console.WriteLine("NameIdentifier = " + (userIdClaim ?? "NULL"));
 
                 if (userIdClaim == null)
                     return Unauthorized("UserId not found in token");
-
-                Console.WriteLine(userIdClaim);
 
                 int userId = int.Parse(userIdClaim);
 
                 var command = new getLeaveBalanceQuery(userId);
 
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
+
                 return response;
             }
             catch (Exception ex)

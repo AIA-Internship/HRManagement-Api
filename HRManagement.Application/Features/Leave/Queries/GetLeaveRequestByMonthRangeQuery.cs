@@ -1,11 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Api.Application.Interfaces;
 using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Response;
 using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class GetLeaveRequestByMonthRangeQuery : IRequest<Result<ApiResponse>>
+    public class GetLeaveRequestByMonthRangeQuery : IRequest<Result<ApiResponse<List<GetLeaveRequestByMonthRangeDto>>>>
     {
         public int month;
         public int year;
@@ -16,7 +17,7 @@ namespace HRManagement.Application.Features.Leave.Queries
 
         }
 
-        public class Handler : IRequestHandler<GetLeaveRequestByMonthRangeQuery, Result<ApiResponse>>
+        public class Handler : IRequestHandler<GetLeaveRequestByMonthRangeQuery, Result<ApiResponse<List<GetLeaveRequestByMonthRangeDto>>>>
         {
 
             private readonly ILogger<GetLeaveRequestByMonthRangeQuery> _logger;
@@ -29,7 +30,7 @@ namespace HRManagement.Application.Features.Leave.Queries
                 _repo = repo;
                 _logger = logger;
             }
-            public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByMonthRangeQuery request, CancellationToken cancellationToken)
+            public async Task<Result<ApiResponse<List<GetLeaveRequestByMonthRangeDto>>>> Handle(GetLeaveRequestByMonthRangeQuery request, CancellationToken cancellationToken)
             {
                 _logger.LogTrace("Handling GetLeaveRequestByMonthRangeQuery for Year: {Year} and Month: {Month}", request.year, request.month);
 
@@ -40,7 +41,7 @@ namespace HRManagement.Application.Features.Leave.Queries
                     if(response == null || response.Count == 0)
                     {
                         _logger.LogInformation("No leave requests found for Year: {Year} and Month: {Month}", request.year, request.month);
-                        return ApiHelperResponse.Failed("No leave requests found for the specified month and year");
+                        return ApiHelperResponse.Failed<List<GetLeaveRequestByMonthRangeDto>>("No leave requests found for the specified month and year");
                     }
 
                     return ApiHelperResponse.Success("success getting data", response);
@@ -48,7 +49,7 @@ namespace HRManagement.Application.Features.Leave.Queries
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred while handling GetLeaveRequestByMonthRangeQuery for Year: {Year} and Month: {Month}", request.month, request.month);
-                    return ApiHelperResponse.Failed("Failed to delete leave request");
+                    return ApiHelperResponse.Failed<List<GetLeaveRequestByMonthRangeDto>>("Failed to delete leave request");
                 }
 
             }

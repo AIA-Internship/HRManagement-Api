@@ -1,3 +1,5 @@
+using HRManagement.Api.Application.Interfaces;
+using HRManagement.Application;
 using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Behaviors;
 using HRManagement.Application.Services;
@@ -5,12 +7,9 @@ using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.SeedWork;
 using HRManagement.MsSQL.Base;
 using HRManagement.MsSQL.Repositories;
-
 using MediatR;
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Azure;
-
 using System.Diagnostics.Contracts;
 
 namespace HRManagement.Api.Extensions
@@ -21,7 +20,7 @@ namespace HRManagement.Api.Extensions
         {
             Contract.Assert(configuration != null);
 
-            var applicationAssembly = typeof(Application.AssemblyReference).Assembly;
+            var applicationAssembly = typeof(AssemblyReference).Assembly;
 
             services.AddMediatR(cfg =>
             {
@@ -46,6 +45,7 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<ILookupRepository, LookupRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILeaveRepository, LeaveRepository>();
 
             // 3. Authorization
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

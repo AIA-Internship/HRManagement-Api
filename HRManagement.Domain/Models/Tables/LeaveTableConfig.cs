@@ -5,6 +5,8 @@ namespace HRManagement.Domain.Models.Tables
 {
     public partial class LeaveTableConfig
     {
+        [Key]
+
         [Column("email")]
         public string email { get; set; }
 

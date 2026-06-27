@@ -8,7 +8,7 @@ using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class GetLeaveRequestByIdQuery : IRequest<Result<ApiResponse>>
+    public class GetLeaveRequestByIdQuery : IRequest<Result<ApiResponse<ReadLeaveRequestDto>>>
      {
         public int RequestId { get; set; }
         public GetLeaveRequestByIdQuery(int requestId)
@@ -16,7 +16,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             RequestId = requestId;
         }
     }
-    internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse>>
+    internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse<ReadLeaveRequestDto>>>
     {
         private readonly ILogger<GetLeaveRequestByIdQuery> _logger;
         private readonly ILeaveRepository _repo;
@@ -28,12 +28,12 @@ namespace HRManagement.Application.Features.Leave.Queries
             _repo = repo;
             _logger = logger;
         }
-        public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ApiResponse<ReadLeaveRequestDto>>> Handle(GetLeaveRequestByIdQuery request, CancellationToken cancellationToken)
         {
             try
             {
                 var result = await _repo.getLeaveRequestById(request.RequestId);
-                if(result == null) return ApiHelperResponse.NotFound("Leave request not found");
+                if(result == null) return ApiHelperResponse.Failed<ReadLeaveRequestDto>("Leave request not found");
 
 
                 return ApiHelperResponse.Success("read leave request successfully", mapToReadDto(result));
@@ -41,7 +41,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return ApiHelperResponse.Failed("Failed to get leave request");
+                return ApiHelperResponse.Failed<ReadLeaveRequestDto>("Failed to get leave request");
             }
         }
 

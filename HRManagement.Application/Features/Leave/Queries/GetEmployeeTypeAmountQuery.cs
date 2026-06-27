@@ -37,14 +37,14 @@ namespace HRManagement.Application.Features.Leave.Queries
                 var res = await _repo.GetLeaveTypeCounts(request.RequesterId);
 
                 if (res == null)
-                    return ApiHelperResponse.Failed("data not found in system");
+                    return ApiHelperResponse.Failed<LeaveTypeCountDto>("data not found in system");
 
                 return ApiHelperResponse.Success("data retrieved successfully", res);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return ApiHelperResponse.Failed("Failed to read leave type amount", LeaveTypeCountDto.empty());
+                return ApiHelperResponse.Failed<LeaveTypeCountDto>("Failed to read leave type amount", LeaveTypeCountDto.empty());
             }
         }
     }

@@ -8,14 +8,14 @@ using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class GetLeaveRequestByRequesterQuery(int requsterId, int max): IRequest<Result<ApiResponse>>
+    public class GetLeaveRequestByRequesterQuery(int requsterId, int max): IRequest<Result<ApiResponse<List<ReadLeaveRequestDto>>>>
     {
         public int RequesterId { get; set; } = requsterId;
         public int Max { get; set; } = max;
 
 
     }
-    internal class GetLeaveRequestByRequesterQueryHandler: IRequestHandler<GetLeaveRequestByRequesterQuery, Result<ApiResponse>>
+    internal class GetLeaveRequestByRequesterQueryHandler: IRequestHandler<GetLeaveRequestByRequesterQuery, Result<ApiResponse<List<ReadLeaveRequestDto>>>>
     {
         private readonly ILogger<GetLeaveRequestByRequesterQueryHandler> _logger;
         private readonly ILeaveRepository _repo;
@@ -28,7 +28,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             _repo = repo;
             _logger = logger;
         }
-        public async Task<Result<ApiResponse>> Handle(GetLeaveRequestByRequesterQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ApiResponse<List<ReadLeaveRequestDto>>>> Handle(GetLeaveRequestByRequesterQuery request, CancellationToken cancellationToken)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetLeaveRequestByRequesterQueryHandler));
 
@@ -36,7 +36,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             {
                 var entity = await _repo.getLeaveRequestsByRequesterId(request.RequesterId, request.Max);
 
-                if (entity == null) return ApiHelperResponse.Failed("data not found in system");
+                if (entity == null) return ApiHelperResponse.Failed<List<ReadLeaveRequestDto>>("data not found in system");
 
 
                 List<ReadLeaveRequestDto> data = new List<ReadLeaveRequestDto>();
@@ -52,7 +52,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return ApiHelperResponse.Failed("Failed to read leave request");
+                return ApiHelperResponse.Failed<List<ReadLeaveRequestDto>>("Failed to read leave request");
             }
         }
 
