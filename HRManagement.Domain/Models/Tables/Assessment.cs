@@ -11,6 +11,16 @@ public class Assessment : BaseTable
     public int? SubjectRoleId { get; private set; }
     public string? SubjectJobTitle { get; private set; }
 
+    public string? RatingDescription { get; private set; }
+
+    public PerformanceReviewPlan Plan { get; private set; } = null!;
+
+    public ICollection<AssessmentQuestion> Questions { get; private set; }
+    = new List<AssessmentQuestion>();
+
+    public ICollection<AssessmentGroup> Groups { get; private set; }
+    = new List<AssessmentGroup>();
+
     protected Assessment() { }
 
     public Assessment(
@@ -21,7 +31,8 @@ public class Assessment : BaseTable
         string? fillerJobTitle,
         int? subjectRoleId,
         string? subjectJobTitle,
-        int actionerId)
+        int actionerId,
+        string? ratingDescription)
     {
         PlanId = planId;
         AnswerType = answerType;
@@ -32,6 +43,7 @@ public class Assessment : BaseTable
         SubjectJobTitle = subjectJobTitle;
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);
+        RatingDescription = ratingDescription;
     }
 
     public void ApplyUpdate(
@@ -41,7 +53,8 @@ public class Assessment : BaseTable
         string? fillerJobTitle,
         int? subjectRoleId,
         string? subjectJobTitle,
-        int actionerId)
+        int actionerId,
+        string? ratingDescription)
     {
         AnswerType = UseIfProvided(answerType, AnswerType);
         AssessmentType = UseIfProvided(assessmentType, AssessmentType);
@@ -49,6 +62,7 @@ public class Assessment : BaseTable
         FillerJobTitle = UseIfProvided(fillerJobTitle, FillerJobTitle ?? "");
         SubjectRoleId = subjectRoleId ?? SubjectRoleId;
         SubjectJobTitle = UseIfProvided(subjectJobTitle, SubjectJobTitle ?? "");
+        RatingDescription = UseIfProvided(ratingDescription, RatingDescription ?? "");
         MarkAsModified(actionerId);
     }
 }

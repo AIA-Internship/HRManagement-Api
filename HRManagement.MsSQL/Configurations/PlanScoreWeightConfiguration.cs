@@ -23,11 +23,17 @@ public class PlanScoreWeightConfiguration : IEntityTypeConfiguration<PlanScoreWe
         builder.Property(x => x.Weights)
             .HasPrecision(5, 2);
 
-        builder.HasOne<PerformanceReviewPlan>()
-            .WithMany()
+        builder.HasOne(x => x.Plan)
+            .WithMany(x => x.PlanScoreWeights)
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

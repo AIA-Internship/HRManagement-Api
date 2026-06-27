@@ -13,16 +13,23 @@ public class AssessmentGroupMemberConfiguration : IEntityTypeConfiguration<Asses
 
         builder.HasKey(x => x.Id);
 
-        builder.HasOne<AssessmentGroup>()
-            .WithMany()
+        builder.HasOne(x => x.Group)
+            .WithMany(x => x.Members)
             .HasForeignKey(x => x.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Employee>()
+        builder.HasOne(x => x.Employee)
+           .WithOne(x => x.AssessmentGroupMember)
+           .HasForeignKey<AssessmentGroupMember>(x => x.EmployeeId)
+           .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.User)
             .WithMany()
-            .HasForeignKey(x => x.EmployeeId)
+            .HasForeignKey(x => x.ModifiedBy)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+
     }
 }

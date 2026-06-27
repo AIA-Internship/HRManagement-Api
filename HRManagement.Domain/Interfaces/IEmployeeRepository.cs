@@ -22,4 +22,10 @@ public interface IEmployeeRepository : IBaseRepository<Employee>
 
     Task AddEmployeeUpdateRequestAsync(EmployeeUpdateRequest entity, CancellationToken ct);
     Task AddEmployeeAttachmentsAsync(List<EmployeeAttachment> entities, CancellationToken ct);
+
+    Task<List<string>> GetAllPositionNamesAsync(CancellationToken cancellationToken = default);
+
+    Task<List<EmployeeListResponseDto>> GetEmployeesByPositionAsync(string positionName,CancellationToken cancellationToken);
+
+
 }

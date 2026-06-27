@@ -9,6 +9,7 @@ public class PlanScoreWeight : BaseTable
     public string ScoreType { get; private set; } = string.Empty;
     public decimal Weights { get; private set; }
 
+    public PerformanceReviewPlan Plan { get; private set; } = null!;
     protected PlanScoreWeight() { }
 
     public PlanScoreWeight(

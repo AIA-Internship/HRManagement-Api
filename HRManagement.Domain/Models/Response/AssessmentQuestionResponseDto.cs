@@ -1,9 +1,15 @@
-﻿namespace HRManagement.Domain.Models.Response;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public record AssessmentQuestionResponseDto
-(
-    int Id,
-    int AssessmentId,
-    string QuestionText,
-    int QuestionOrder
-);
+namespace HRManagement.Domain.Models.Response
+{
+    public record AssessmentQuestionResponseDto
+    (
+        int Id,
+        int AssessmentId,
+        string QuestionText,
+        int QuestionOrder,
+        string QuestionType
+    );
+}

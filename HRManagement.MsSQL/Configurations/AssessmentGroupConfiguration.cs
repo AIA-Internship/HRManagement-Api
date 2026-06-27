@@ -13,14 +13,17 @@ public class AssessmentGroupConfiguration : IEntityTypeConfiguration<AssessmentG
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Name)
-            .HasMaxLength(255)
-            .IsRequired();
+        builder.Property(x => x.Name);
 
-        builder.HasOne<Assessment>()
-            .WithMany()
+        builder.HasOne(x => x.Assessment)
+            .WithMany(x => x.Groups)
             .HasForeignKey(x => x.AssessmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
     }

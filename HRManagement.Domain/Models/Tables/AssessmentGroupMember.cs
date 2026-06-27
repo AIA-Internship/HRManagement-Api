@@ -6,6 +6,10 @@ public class AssessmentGroupMember : BaseTable
     public int GroupId { get; private set; }
     public int EmployeeId { get; private set; }
 
+    public AssessmentGroup Group { get; private set; } = null!;
+
+    public Employee Employee { get; private set; } = null!;
+
     protected AssessmentGroupMember() { }
 
     public AssessmentGroupMember(

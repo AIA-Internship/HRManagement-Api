@@ -2,5 +2,5 @@
 
 public record PerformanceReviewPlanListResponseDto
 (
-    List<PerformanceReviewPlanResponseDto> Items
+    List<PerformanceReviewPlanDetailResponseDto> Items
 );

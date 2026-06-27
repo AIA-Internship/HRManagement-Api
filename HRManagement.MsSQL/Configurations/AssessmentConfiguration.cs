@@ -27,11 +27,17 @@ public class AssessmentConfiguration : IEntityTypeConfiguration<Assessment>
         builder.Property(x => x.SubjectJobTitle)
             .HasMaxLength(255);
 
-        builder.HasOne<PerformanceReviewPlan>()
-            .WithMany()
+        builder.HasOne(x => x.Plan)
+            .WithMany(x => x.Assessments)
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

@@ -31,5 +31,10 @@ public class PerformanceReviewPlanConfiguration : IEntityTypeConfiguration<Perfo
             .HasColumnType("date");
 
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

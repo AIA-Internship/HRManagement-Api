@@ -7,6 +7,11 @@ public class AssessmentGroup : BaseTable
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
 
+    public ICollection<AssessmentGroupMember> Members { get; private set; }
+    = new List<AssessmentGroupMember>();
+
+    public Assessment Assessment { get; private set; } = null!;
+
     protected AssessmentGroup() { }
 
     public AssessmentGroup(

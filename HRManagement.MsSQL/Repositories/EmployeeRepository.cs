@@ -241,4 +241,36 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
              .Where(e => e.DisplayId == displayId && e.StatusCode == 1 && !e.IsDeleted)
              .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<List<string>> GetAllPositionNamesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _sqldbContext.Set<EmploymentInformation>()
+            .Where(x =>
+                !x.IsDeleted &&
+                !string.IsNullOrWhiteSpace(x.PositionName))
+            .Select(x => x.PositionName!)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<EmployeeListResponseDto>>GetEmployeesByPositionAsync(string positionName,CancellationToken cancellationToken)
+    {
+        return await _sqldbContext.Set<EmploymentInformation>()
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.StatusCode == 1 &&
+                x.PositionName == positionName)
+            .Select(x => new EmployeeListResponseDto(
+                x.Employee.FullName,
+                x.DisplayId ?? "",
+                "",
+                x.DepartmentName ?? "",
+                x.PositionName ?? ""
+            ))
+            .ToListAsync(cancellationToken);
+    }
+
+
 }

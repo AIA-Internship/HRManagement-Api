@@ -10,7 +10,9 @@ public class PerformanceReviewPlan : BaseTable
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
     public string Status { get; private set; } = string.Empty;
+    public ICollection<PlanScoreWeight> PlanScoreWeights { get; private set; } = new List<PlanScoreWeight>();
 
+    public ICollection<Assessment> Assessments { get; private set; } = new List<Assessment>();
     protected PerformanceReviewPlan() { }
 
     public PerformanceReviewPlan(

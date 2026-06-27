@@ -33,6 +33,8 @@ public class Employee : BaseTable
     public EmploymentInformation? EmploymentInformation { get; private set; } = null!;
     public EmergencyContact? EmergencyContact { get; private set; } = null!;
 
+    public AssessmentGroupMember AssessmentGroupMember { get; private set; } = null!;
+
     protected Employee() { }
     
     public Employee(

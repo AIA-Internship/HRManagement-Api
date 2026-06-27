@@ -16,11 +16,17 @@ public class AssessmentQuestionConfiguration : IEntityTypeConfiguration<Assessme
         builder.Property(x => x.QuestionText)
             .IsRequired();
 
-        builder.HasOne<Assessment>()
-            .WithMany()
+        builder.HasOne(x => x.Assessment)
+            .WithMany(x => x.Questions)
             .HasForeignKey(x => x.AssessmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasQueryFilter(x => !x.IsDeleted);
+
     }
 }
