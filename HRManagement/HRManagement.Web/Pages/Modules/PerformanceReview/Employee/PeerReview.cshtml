@@ -1,0 +1,33 @@
+﻿@page "/PerformanceReview/Assignments/PeerReview/{planId}/{intervalNumber}"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.PeerReviewModel
+
+@{
+    ViewData["Title"] = "Peer Review";
+}
+
+<div class="card p-6 m-10 bg-white shadow-sm">
+    <h2 class="fw-bold text-gray-800 mb-4">Peer Review Processing</h2>
+    <div class="d-flex flex-column gap-3 p-4 bg-light rounded text-gray-700 font-monospace">
+        <div>Captured Plan ID: <span id="displayPlanId" class="fw-bold text-success">...</span></div>
+        <div>Captured Interval Number: <span id="displayIntervalNumber" class="fw-bold text-info">...</span></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Split the pathname path segments into an array array elements
+        const pathSegments = window.location.pathname.split('/');
+        
+        // Count backward from the trailing edge arrays
+        const intervalNumber = pathSegments[pathSegments.length - 1];
+        const planId = pathSegments[pathSegments.length - 2];
+
+        // Print to Console
+        console.log("Captured Plan ID:", planId);
+        console.log("Captured Interval Number:", intervalNumber);
+
+        // Print to Screen UI
+        document.getElementById("displayPlanId").innerText = planId;
+        document.getElementById("displayIntervalNumber").innerText = intervalNumber;
+    });
+</script>

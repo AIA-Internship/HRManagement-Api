@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HRManagement.Api.Controllers;
 
-//[Authorize]
+[Authorize]
 [ApiController]
 [Route("api/plan")]
 public class PerformanceReviewPlanController(ISender sender) : BaseApiController(sender)
@@ -28,6 +28,15 @@ public class PerformanceReviewPlanController(ISender sender) : BaseApiController
     public async Task<IActionResult> GetAllPlansAsync(CancellationToken ct)
     {
         var query = new GetPerformanceReviewPlansQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("ongoing")]
+    public async Task<IActionResult> GetEmployeeOngoingPerformanceReviewPlanAsync(
+    CancellationToken ct)
+    {
+        var query = new GetEmployeeOngoingPerformanceReviewPlanQuery(CurrentEmployeeId);
         var result = await Sender.Send(query, ct);
         return HandleResult(result);
     }

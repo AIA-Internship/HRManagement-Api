@@ -10,6 +10,7 @@ namespace HRManagement.Domain.Models.Response
         int AssessmentId,
         string QuestionText,
         int QuestionOrder,
-        string QuestionType
+        string QuestionType,
+        AssessmentAnswerResponseDto? Answer = null
     );
 }

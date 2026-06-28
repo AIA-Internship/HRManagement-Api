@@ -8,7 +8,8 @@ public class AssessmentAnswer : BaseTable
     public string? TextValue { get; private set; }
     public int? RatingValue { get; private set; }
 
-    public AssessmentQuestion AssessmentQuestion { get; private set; }
+    public AssessmentQuestion AssessmentQuestion { get; private set; } = null!;
+    public FillAssignment Assignment { get; private set; } = null!;
 
     protected AssessmentAnswer() { }
 

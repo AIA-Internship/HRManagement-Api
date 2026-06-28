@@ -8,6 +8,8 @@ public class ReviewAssignment : BaseTable
     public int ReviewerId { get; private set; }
     public string Status { get; private set; } = string.Empty;
 
+    public FillAssignment Assignment { get; private set; } = null!;
+
     protected ReviewAssignment() { }
 
     public ReviewAssignment(

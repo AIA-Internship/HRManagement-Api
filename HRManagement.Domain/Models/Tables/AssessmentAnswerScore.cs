@@ -6,6 +6,7 @@ public class AssessmentAnswerScore : BaseTable
     public int AssessmentAnswerId { get; private set; }
     public decimal Score { get; private set; }
     public int ReviewerId { get; private set; }
+    public AssessmentAnswer AssessmentAnswer { get; private set; } = null!;
 
     protected AssessmentAnswerScore() { }
 

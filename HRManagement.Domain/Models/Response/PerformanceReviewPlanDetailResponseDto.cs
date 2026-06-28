@@ -17,5 +17,5 @@ public record PerformanceReviewPlanDetailResponseDto
 
     List<SupervisorAssessmentDto> SupervisorAssessments,
 
-    List<PlanScoreWeightResponseDto> ScoreWeightConfigurations
+    List<PerformanceReviewPlanScoreWeightResponseDto> ScoreWeightConfigurations
 );

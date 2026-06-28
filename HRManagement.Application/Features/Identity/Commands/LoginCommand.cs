@@ -43,7 +43,7 @@ internal sealed class LoginQueryHandler(
 
         //string pass = user.MobilePhone + request.Password;
 
-        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        if (BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             logger.LogWarning("Sign-in gagal: Password salah ({obj})", request.Email);
             return Result.Failure<TokenResponseDto>("User ID dan/atau password salah.");

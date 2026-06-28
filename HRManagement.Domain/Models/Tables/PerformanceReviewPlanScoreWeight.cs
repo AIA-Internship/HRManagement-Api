@@ -1,6 +1,6 @@
 ﻿namespace HRManagement.Domain.Models.Tables;
 
-public class PlanScoreWeight : BaseTable
+public class PerformanceReviewPlanScoreWeight : BaseTable
 {
     public int Id { get; private set; }
     public int PlanId { get; private set; }
@@ -10,9 +10,9 @@ public class PlanScoreWeight : BaseTable
     public decimal Weights { get; private set; }
 
     public PerformanceReviewPlan Plan { get; private set; } = null!;
-    protected PlanScoreWeight() { }
+    protected PerformanceReviewPlanScoreWeight() { }
 
-    public PlanScoreWeight(
+    public PerformanceReviewPlanScoreWeight(
         int planId,
         int? subjectRoleId,
         string? subjectJobTitle,

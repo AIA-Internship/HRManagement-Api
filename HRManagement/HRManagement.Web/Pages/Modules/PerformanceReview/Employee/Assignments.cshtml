@@ -1,0 +1,312 @@
+﻿@page "/PerformanceReview/Assignments"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.AssignmentsModel
+
+@{
+    ViewData["Title"] = "Assignments";
+}
+
+<style>
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .bg-locked-row {
+        background-color: #f9f9f9 !important;
+    }
+</style>
+
+<div class="px-10">
+    <div class="mb-6">
+        <h1 class="fw-bold text-gray-900 mb-2" id="pageTitle"><span id="planTypeHeader">...</span> Assignments</h1>
+        <p class="text-muted fs-6" id="pageSubtitle">View and manage your <span id="planTypeSub">...</span> performance review assignments</p>
+    </div>
+
+    <div id="assignmentsContainer" class="d-flex flex-column gap-4">
+        <div class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="skeleton-placeholder h-24px w-150px rounded-1"></div>
+                            <div class="skeleton-placeholder h-24px w-80px rounded-1"></div>
+                        </div>
+                        <div class="skeleton-placeholder h-15px w-250px"></div>
+                    </div>
+                    <div class="skeleton-placeholder h-30px w-30px"></div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="skeleton-placeholder h-24px w-150px rounded-1"></div>
+                            <div class="skeleton-placeholder h-24px w-80px rounded-1"></div>
+                        </div>
+                        <div class="skeleton-placeholder h-15px w-250px"></div>
+                    </div>
+                    <div class="skeleton-placeholder h-30px w-30px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/performance-review/js/assignments.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            initializeAssignmentsPage();
+        });
+
+        async function getOngoingPlanData() {
+            const API_BASE = "https://localhost:7089";
+            const token = window.aiaAuth && window.aiaAuth.getToken();
+            if (!token) { 
+                window.aiaAuth && window.aiaAuth.signOut(); 
+                return null; 
+            }
+
+            const response = await fetch(`${API_BASE}/api/plan/ongoing`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) { window.aiaAuth.signOut(); return null; }
+            if (response.status === 404) return null;
+            if (!response.ok) throw new Error("Failed to fetch ongoing plan");
+
+            return await response.json();
+        }
+
+        async function initializeAssignmentsPage() {
+            try {
+                const apiResult = await getOngoingPlanData();
+
+                if (!apiResult || apiResult.isError || !apiResult.content) {
+                    renderEmptyState("No active performance review plans found for this period.");
+                    return;
+                }
+
+                const plan = apiResult.content;
+
+                document.getElementById("planTypeHeader").innerText = plan.periodType;
+                document.getElementById("planTypeSub").innerText = plan.periodType.toLowerCase();
+
+                // Group assignments by their nested interval definitions dynamically
+                const intervalsMap = new Map();
+
+                (plan.assignments || []).forEach(assignment => {
+                    const intNumber = assignment.intervalId;
+
+                    if (!intervalsMap.has(intNumber)) {
+                        let friendlyLabel = `Interval ${intNumber}`;
+
+                        if (assignment.interval) {
+                            const sDate = new Date(assignment.interval.startDate);
+                            friendlyLabel = plan.periodType.toLowerCase() === 'monthly'
+                                ? sDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+                                : `Quarter ${Math.floor(sDate.getMonth() / 3) + 1} ${sDate.getFullYear()}`;
+                        }
+
+                        intervalsMap.set(intNumber, {
+                            intervalNumber: intNumber,
+                            period: friendlyLabel,
+                            planId: plan.planId,
+                            rawInterval: assignment.interval,
+                            assignments: []
+                        });
+                    }
+                    intervalsMap.get(intNumber).assignments.push(assignment);
+                });
+
+                const now = new Date();
+
+                // Map out configurations sorted sequentially by interval sequence ID
+                const mappedIntervals = Array.from(intervalsMap.values())
+                    .sort((a, b) => a.intervalNumber - b.intervalNumber)
+                    .map(group => {
+                        let isLocked = false;
+
+                        if (group.rawInterval) {
+                            const startDate = new Date(group.rawInterval.startDate);
+                            if (now < startDate || group.rawInterval.status.toLowerCase() === 'locked') {
+                                isLocked = true;
+                            }
+                        }
+
+                        let overallStatus = isLocked ? 'locked' : 'not-started';
+
+                        if (!isLocked && group.assignments.length > 0) {
+                            const statuses = group.assignments.map(a => a.status.toLowerCase());
+                            if (statuses.every(s => s === 'done' || s === 'completed')) {
+                                overallStatus = 'done';
+                            } else if (statuses.some(s => s === 'ongoing' || s === 'in-progress' || s === 'on-review')) {
+                                overallStatus = 'on-review';
+                            }
+                        }
+
+                        return {
+                            period: group.period,
+                            intervalNumber: group.intervalNumber,
+                            planId: group.planId,
+                            status: overallStatus,
+                            locked: isLocked,
+                            assignments: group.assignments
+                        };
+                    });
+
+                if (mappedIntervals.length === 0) {
+                    renderEmptyState("No evaluation intervals assigned for this timeframe.");
+                    return;
+                }
+
+                renderAssignmentSection(mappedIntervals);
+
+            } catch (error) {
+                renderEmptyState("An error occurred while tracking assignment metrics.");
+            }
+        }
+
+        function renderAssignmentSection(intervals) {
+            const container = document.getElementById("assignmentsContainer");
+
+            const itemsHtml = intervals.map((item) => {
+                const badgeStyles = {
+                    'done': 'badge-light-success text-success',
+                    'on-review': 'badge-light-warning text-warning',
+                    'not-started': 'badge-light-danger text-danger',
+                    'locked': 'text-muted'
+                };
+
+                const badgeLabels = {
+                    'done': 'Done',
+                    'on-review': 'On Review',
+                    'not-started': 'Not Started',
+                    'locked': 'LOCKED'
+                };
+
+                const badgeClass = badgeStyles[item.status] || 'badge-light-secondary';
+                const labelText = badgeLabels[item.status] || 'Not Started';
+                const rowBackgroundClass = item.locked ? 'bg-locked-row' : 'bg-white';
+
+                const selfAsst = item.assignments.find(a => a.assessment && a.assessment.assessmentType === 'self-assessment');
+                const selfAsstId = selfAsst ? selfAsst.assignmentId : 0;
+
+                const selfAssessmentUrl = `/PerformanceReview/Assignments/SelfAssessment/${selfAsstId}`;
+                const peerReviewUrl = `/PerformanceReview/Assignments/PeerReview/${item.planId}/${item.intervalNumber}`;
+
+                return `
+                    <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100 ${rowBackgroundClass}">
+                        <div class="d-flex align-items-center gap-4 flex-grow-1">
+                            <div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <h3 class="fs-6 fw-bold text-gray-900 m-0">${escapeHtml(item.period)}</h3>
+                                    ${!item.locked ? `
+                                    <span class="badge ${badgeClass} fw-bold px-3 py-2 rounded-1 fs-7" style="letter-spacing: 0.2px;">
+                                        ${escapeHtml(labelText)}
+                                    </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-4">
+                            ${item.locked ? `
+                            <div class="d-flex align-items-center gap-2 text-gray-400 fw-bold fs-7" style="letter-spacing: 0.5px;">
+                                <i class="bi bi-lock-fill fs-6 text-gray-400"></i>
+                                <span>LOCKED</span>
+                            </div>
+                            ` : `
+                            <div>
+                                <button class="btn btn-icon btn-sm btn-active-light-primary rounded-md transition-300"
+                                        data-kt-menu-trigger="click"
+                                        data-kt-menu-placement="bottom-end">
+                                    <i class="bi bi-three-dots-vertical fs-4 text-gray-600"></i>
+                                </button>
+
+                                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-3" data-kt-menu="true">
+                                    <div class="menu-item px-3">
+                                        <a href="${selfAssessmentUrl}" class="menu-link px-3">
+                                            Self-Assessment
+                                        </a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="${peerReviewUrl}" class="menu-link px-3">
+                                            Peer-Review
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="card card-flush bg-white rounded-lg mb-8 shadow-sm overflow-hidden">
+                    <div class="d-flex flex-column">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+
+            if (typeof KTMenu !== 'undefined' && KTMenu.createInstances) {
+                KTMenu.createInstances();
+            }
+        }
+
+        function renderEmptyState(message) {
+            document.getElementById("assignmentsContainer").innerHTML = `
+                <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light-neutral">
+                    <i class="bi bi-journal-x fs-3x text-muted mb-3"></i>
+                    <div class="text-gray-700 fw-bold fs-5 mb-1">No Operational Sessions Active</div>
+                    <p class="text-muted m-0">${escapeHtml(message)}</p>
+                </div>
+            `;
+            document.getElementById("planTypeHeader").innerText = "Review";
+            document.getElementById("planTypeSub").innerText = "review";
+        }
+
+        function renderEmptyState(message) {
+            const skeleton = document.getElementById("skeletonContainer");
+            if (skeleton) skeleton.remove();
+
+            document.getElementById("assessmentTitle").innerText = "Review Assignment";
+            document.getElementById("assessmentMeta").innerText = "Terjadi kendala data penilaian";
+
+            document.getElementById("questionsWrapper").innerHTML = `
+                <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light rounded-3 shadow-sm">
+                    <div class="mb-3">
+                        <i class="ki-duotone ki-information-2 text-muted fs-3x" style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="text-gray-800 fw-bold fs-5 mb-1">Tidak Dapat Memuat Penilaian</div>
+                    <p class="text-muted m-0">${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+}

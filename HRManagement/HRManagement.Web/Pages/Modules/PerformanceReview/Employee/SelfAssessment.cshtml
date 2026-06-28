@@ -1,0 +1,410 @@
+﻿@page "/PerformanceReview/Assignments/SelfAssessment/{assignmentId}"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.SelfAssessmentModel
+@{
+    ViewData["Title"] = "Self Assessment Detail";
+}
+
+<style>
+    :root {
+        --background: #f9fafb;
+        --card: #ffffff;
+        --border: #e5e7eb;
+        --foreground: #111827;
+        --muted-foreground: #4b5563;
+        --destructive: #dc2626;
+    }
+
+    .btn-rating-active {
+        background-color: var(--destructive) !important;
+        color: white !important;
+        border-color: var(--destructive) !important;
+    }
+
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Breadcrumb Utilities */
+    .breadcrumb-link {
+        text-decoration: none;
+        color: var(--muted-foreground);
+        transition: color 0.15s ease;
+    }
+
+        .breadcrumb-link:hover {
+            color: var(--foreground);
+        }
+</style>
+
+<div class="px-10">
+    <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            <i class="ki-duotone ki-left fs-7"></i> Performance Review
+        </a>
+        <span class="text-gray-300">/</span>
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link">Assignments</a>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-900 fw-semibold">Self Assessment</span>
+    </nav>
+
+    <div class="mb-6">
+        <h1 class="fw-bold text-gray-900 mb-2" id="assessmentTitle">Self Assessment Processing</h1>
+        <p class="text-muted fs-6" id="assessmentMeta">Memuat detail data penugasan penilaian...</p>
+    </div>
+
+    <div id="questionsWrapper" class="d-flex flex-column gap-4">
+
+        <div id="skeletonContainer" class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="skeleton-placeholder h-25px w-75 rounded-1"></div>
+                        <div class="skeleton-placeholder h-15px w-50 rounded-1"></div>
+                    </div>
+                    <div class="d-flex gap-2 ms-4">
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="skeleton-placeholder h-25px w-60 rounded-1"></div>
+                        <div class="skeleton-placeholder h-15px w-40 rounded-1"></div>
+                    </div>
+                    <div class="d-flex gap-2 ms-4">
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="actionButtonsContainer" class="d-none justify-content-end gap-3 mt-6 mb-10">
+        <button type="button" class="btn btn-light fw-bold" onclick="handleCancel()">Kembali</button>
+        <button type="button" id="btnSave" class="btn btn-light-primary fw-bold" onclick="handleSaveChanges()">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn btn-primary fw-bold" onclick="handleSubmitAssignment()">Kirim Penilaian</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "https://localhost:7089";
+    let currentAssignmentId = null;
+    let currentAssignmentData = null; // Stores runtime response data modification state
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        const pathSegments = window.location.pathname.split('/');
+        currentAssignmentId = pathSegments[pathSegments.length - 1];
+
+        if (!currentAssignmentId) {
+            renderEmptyState("ID Penugasan tidak valid atau tidak ditemukan pada URL.");
+            return;
+        }
+
+        try {
+            const res = await getAssignmentData(currentAssignmentId);
+
+            if (res && res.content) {
+                currentAssignmentData = res.content;
+                renderAssessmentData(res.content);
+            } else {
+                renderEmptyState("Data penugasan kosong atau tidak ditemukan di server.");
+            }
+        } catch (err) {
+            console.error("Initialization error:", err);
+            renderEmptyState("Gagal memuat detail data penilaian akibat masalah jaringan atau sistem.");
+        }
+    });
+
+    async function getAssignmentData(assignmentId) {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) {
+            window.aiaAuth && window.aiaAuth.signOut();
+            return null;
+        }
+
+        const response = await fetch(`${API_BASE}/api/assignment/${assignmentId}`, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            window.aiaAuth && window.aiaAuth.signOut();
+            return null;
+        }
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error("Failed to fetch assignment detail");
+
+        return await response.json();
+    }
+
+    function renderAssessmentData(content) {
+        const assessment = content.assessment;
+        if (!assessment || !assessment.questions) {
+            renderEmptyState("Format template evaluasi tidak lengkap atau tidak valid.");
+            return;
+        }
+
+        const typeLabel = assessment.assessmentType.replace('-', ' ').toUpperCase();
+        const statusLabel = content.status.toLowerCase();
+
+        document.getElementById("assessmentTitle").innerText = typeLabel;
+        document.getElementById("assessmentMeta").innerText = `Status: ${statusLabel.toUpperCase()} • ASSIGNMENT ID: ${content.assignmentId} • PLAN ID: ${content.planId}`;
+
+        const wrapper = document.getElementById("questionsWrapper");
+        const skeleton = document.getElementById("skeletonContainer");
+        if (skeleton) skeleton.remove();
+
+        if (assessment.answerType !== "rating" && assessment.answerType !== "text") {
+            renderEmptyState(`Tipe jawaban '${assessment.answerType}' tidak valid atau belum didukung oleh sistem.`);
+            return;
+        }
+
+        const isEditable = (statusLabel === "not started" || statusLabel === "drafted");
+
+        wrapper.innerHTML = `
+            <div id="activeCardContainer" class="card card-flush bg-white rounded-lg shadow-sm d-flex flex-column gap-2 px-6"></div>
+        `;
+        const cardContainer = document.getElementById("activeCardContainer");
+
+        if (assessment.answerType === "rating") {
+            renderRatingLayout(assessment.questions, cardContainer, isEditable);
+        } else if (assessment.answerType === "text") {
+            renderTextLayout(assessment.questions, cardContainer, isEditable);
+        }
+
+        // Display and manage action buttons container layout base properties
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        actionContainer.classList.replace("d-none", "d-flex");
+
+        if (!isEditable) {
+            document.getElementById("btnSave").remove();
+            document.getElementById("btnSubmit").remove();
+        }
+    }
+
+    function renderRatingLayout(questions, container, isEditable) {
+        let htmlContent = "";
+
+        questions.forEach(item => {
+            const currentRating = item.answer ? item.answer.ratingValue : 0;
+            const indexStr = String(item.questionOrder).padStart(2, '0');
+            const escapedQuestion = escapeHtml(item.questionText);
+
+            const buttonsHtml = [1, 2, 3, 4, 5].map(num => {
+                const isActive = currentRating === num;
+                const disabledAttr = isEditable ? "" : "disabled";
+
+                return `
+                    <button type="button"
+                            class="btn border fw-bold d-flex align-items-center justify-content-center rounded-3 btn-rating-node-${item.id} ${isActive ? 'btn-rating-active' : 'bg-white'}"
+                            style="width: 40px; height: 40px;"
+                            data-value="${num}"
+                            ${disabledAttr}
+                            onclick="handleRatingSelection(this, ${item.id}, ${num})">
+                        ${num}
+                    </button>
+                `;
+            }).join('');
+
+            htmlContent += `
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-gray-100 last-border-0">
+                    <div class="flex-grow-1 pe-md-4 mb-3 mb-md-0">
+                        <p class="m-0 fw-semibold text-gray-900">
+                            <span class="text-danger">${indexStr}.</span> ${escapedQuestion}
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 align-self-start align-self-md-center">
+                        ${buttonsHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = htmlContent;
+    }
+
+    function renderTextLayout(questions, container, isEditable) {
+        let htmlContent = "";
+
+        questions.forEach(item => {
+            const indexStr = String(item.questionOrder).padStart(2, '0');
+            const escapedQuestion = escapeHtml(item.questionText);
+            const rawTextValue = item.answer && item.answer.textValue ? item.answer.textValue : "";
+
+            let inputElementHtml = "";
+
+            if (isEditable) {
+                inputElementHtml = `
+                    <textarea class="form-control bg-light text-gray-800 border rounded-3 p-4"
+                              rows="3"
+                              placeholder="Tuliskan tanggapan evaluasi di sini..."
+                              style="resize: vertical; min-height: 100px; line-height: 1.6;"
+                              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; handleTextUpdate(${item.id}, this.value);">${escapeHtml(rawTextValue)}</textarea>
+                `;
+            } else {
+                const fallbackDisplay = rawTextValue ? escapeHtml(rawTextValue) : `<em class="text-muted">Belum ada jawaban teks...</em>`;
+                inputElementHtml = `
+                    <div class="rounded-3 p-4 bg-light border text-gray-700" style="line-height: 1.6; word-break: break-word;">
+                        <p class="m-0">${fallbackDisplay}</p>
+                    </div>
+                `;
+            }
+
+            htmlContent += `
+                <div class="row align-items-start py-4 border-bottom border-gray-100">
+                    <div class="col-12 col-md-4 mb-2 mb-md-0">
+                        <p class="fw-bold text-gray-900 m-0">
+                            <span class="text-danger">${indexStr}.</span> ${escapedQuestion}
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-8 m-0">
+                        ${inputElementHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = htmlContent;
+    }
+
+    /* Input Synchronization Handlers */
+    function handleRatingSelection(element, questionId, numValue) {
+        const structuralNodes = document.querySelectorAll(`.btn-rating-node-${questionId}`);
+        structuralNodes.forEach(btn => btn.classList.remove('btn-rating-active'));
+        element.classList.add('btn-rating-active');
+
+        if (currentAssignmentData && currentAssignmentData.assessment.questions) {
+            const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+            if (targetQuestion) {
+                if (!targetQuestion.answer) targetQuestion.answer = { id: 0, textValue: null };
+                targetQuestion.answer.ratingValue = numValue;
+            }
+        }
+    }
+
+    function handleTextUpdate(questionId, textValue) {
+        if (currentAssignmentData && currentAssignmentData.assessment.questions) {
+            const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+            if (targetQuestion) {
+                if (!targetQuestion.answer) targetQuestion.answer = { id: 0, ratingValue: null };
+                targetQuestion.answer.textValue = textValue;
+            }
+        }
+    }
+
+    /* Action Handlers */
+    function handleCancel() {
+        window.location.href = "/PerformanceReview/Assignments";
+    }
+
+    async function handleSaveChanges() {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) return;
+
+        // Visual State Optimization Mock
+        const btnSave = document.getElementById("btnSave");
+        const originalText = btnSave.innerText;
+        btnSave.innerText = "Menyimpan...";
+        btnSave.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/assignment/${currentAssignmentId}/save`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(currentAssignmentData)
+            });
+
+            if (!response.ok) throw new Error("Failed to save evaluation changes");
+
+            alert("Draft berhasil disimpan!");
+        } catch (err) {
+            console.error("Save Error:", err);
+            alert("Terjadi kegagalan sistem saat menyimpan data.");
+        } finally {
+            btnSave.innerText = originalText;
+            btnSave.disabled = false;
+        }
+    }
+
+    async function handleSubmitAssignment() {
+        if (!confirm("Apakah Anda yakin ingin mengirimkan penilaian ini? Data yang terkirim tidak dapat diubah kembali.")) {
+            return;
+        }
+
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) return;
+
+        const btnSubmit = document.getElementById("btnSubmit");
+        btnSubmit.innerText = "Mengirim...";
+        btnSubmit.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/assignment/${currentAssignmentId}/submit`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(currentAssignmentData)
+            });
+
+            if (!response.ok) throw new Error("Failed to finalize assignment workflow submission");
+
+            alert("Penilaian berhasil dikirim!");
+            window.location.href = "/PerformanceReview/Assignments";
+        } catch (err) {
+            console.error("Submission Error:", err);
+            alert("Terjadi kesalahan sistem saat memproses pengiriman data.");
+            btnSubmit.innerText = "Kirim Penilaian";
+            btnSubmit.disabled = false;
+        }
+    }
+
+    function renderEmptyState(message) {
+        const skeleton = document.getElementById("skeletonContainer");
+        if (skeleton) skeleton.remove();
+
+        document.getElementById("assessmentTitle").innerText = "Review Assignment";
+        document.getElementById("assessmentMeta").innerText = "Terjadi kendala data penilaian";
+        document.getElementById("questionsWrapper").innerHTML = `
+            <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light rounded-3 shadow-sm">
+                <i class="ki-duotone ki-information-2 text-muted fs-3x mb-3" style="font-size: 3rem;"></i>
+                <div class="text-gray-800 fw-bold fs-5 mb-1">Tidak Dapat Memuat Penilaian</div>
+                <p class="text-muted m-0">${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>

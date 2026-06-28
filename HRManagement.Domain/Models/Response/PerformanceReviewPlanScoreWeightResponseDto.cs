@@ -1,6 +1,6 @@
 ﻿namespace HRManagement.Domain.Models.Response;
 
-public record PlanScoreWeightResponseDto
+public record PerformanceReviewPlanScoreWeightResponseDto
 (
     string JobTitle,
     List<ScoreWeightItemDto> Scores

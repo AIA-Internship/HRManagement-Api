@@ -3,6 +3,8 @@ using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using System.Net.NetworkInformation;
 using System.Numerics;
 
 namespace HRManagement.MsSQL.Repositories;
@@ -22,7 +24,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                     .ThenInclude(x => x.Members)
                         .ThenInclude(x => x.Employee)
                             .ThenInclude(x => x.EmploymentInformation)
-            .Include(x => x.PlanScoreWeights)
+            .Include(x => x.PerformanceReviewPlanScoreWeights)
             .FirstOrDefaultAsync(
                 x => x.Id == planId && !x.IsDeleted,
                 cancellationToken);
@@ -142,10 +144,10 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             ))
             .ToList();
 
-        var scoreWeights = plan.PlanScoreWeights
+        var scoreWeights = plan.PerformanceReviewPlanScoreWeights
             .Where(x => !x.IsDeleted)
             .GroupBy(x => x.SubjectJobTitle)
-            .Select(g => new PlanScoreWeightResponseDto(
+            .Select(g => new PerformanceReviewPlanScoreWeightResponseDto(
                 g.Key ?? "",
                 g.Select(x => new ScoreWeightItemDto(
                     x.ScoreType,
@@ -189,50 +191,91 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .ToListAsync(cancellationToken);
     }
 
-
-
-    public async Task<List<PlanScoreWeightResponseDto>> GetByPlanIdAndJobTitleAsync(
-    int planId,
-    string? jobTitle,
-    CancellationToken cancellationToken)
-    {
-        return await _sqldbContext.PlanScoreWeights
-            .Where(x =>
-                x.PlanId == planId &&
-                !x.IsDeleted &&
-                (string.IsNullOrWhiteSpace(jobTitle) || x.SubjectJobTitle == jobTitle)
-            )
-            .GroupBy(x => x.SubjectJobTitle)
-            .Select(g => new PlanScoreWeightResponseDto(
-                g.Key!,
-                g.Select(x => new ScoreWeightItemDto(
-                    x.ScoreType,
-                    x.Weights
-                )).ToList()
-            ))
-            .ToListAsync(cancellationToken);
-    }
-
-
-    public async Task<List<PlanScoreWeightResponseDto>> GetScoreWeightConfigurationsAsync(
+    public async Task<List<PerformanceReviewPlanScoreWeightResponseDto>> GetScoreWeightConfigurationsAsync(
         int planId,
         CancellationToken cancellationToken)
     {
-        return await _sqldbContext.PlanScoreWeights
+        return await _sqldbContext.PerformanceReviewPlanScoreWeights
             .AsNoTracking()
             .Where(x =>
                 x.PlanId == planId &&
                 !x.IsDeleted)
             .GroupBy(x => x.SubjectJobTitle)
-            .Select(g => new PlanScoreWeightResponseDto(
+            .Select(g => new PerformanceReviewPlanScoreWeightResponseDto(
                 g.Key ?? "",
                 g.Select(x => new ScoreWeightItemDto(
                     x.ScoreType,
                     x.Weights
-                ))
-                .ToList()
+                )).ToList()
             ))
             .OrderBy(x => x.JobTitle)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<EmployeeOngoingPerformanceReviewPlanResponseDto?> GetEmployeeOngoingPerformanceReviewPlanAsync(int fillerId, CancellationToken cancellationToken)
+    {
+        var currentDate = DateTime.UtcNow.Date;
+
+        var planDetail = await _sqldbContext.PerformanceReviewPlans
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted
+                     && p.Status == "ongoing"
+                     && currentDate >= p.StartDate
+                     && currentDate <= p.EndDate)
+            .Select(p => new EmployeeOngoingPerformanceReviewPlanResponseDto
+            {
+                PlanId = p.Id,
+                Name = p.Name,
+                Status = p.Status,
+                PeriodType = p.PeriodType,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+
+                Assignments = _sqldbContext.FillAssignments
+                    .Where(fa => !fa.IsDeleted
+                              && fa.PlanId == p.Id
+                              && fa.FillerId == fillerId)
+                    .Select(fa => new FillAssignmentResponseDto
+                    {
+                        AssignmentId = fa.Id,
+                        IntervalId = fa.IntervalId,
+                        SubjectId = fa.SubjectId,
+                        AssessmentId = fa.AssessmentId,
+                        Status = fa.Status,
+
+                        // NESTED INTERVAL INFORMATION
+                        // Correlates the assignment's IntervalId back to the Plan's concrete Interval details
+                        Interval = p.Intervals
+                            .Where(i => !i.IsDeleted && i.Id == fa.IntervalId)
+                            .Select(i => new PerformanceReviewPlanIntervalResponseDto(
+                                i.Id,
+                                i.PlanId,
+                                i.IntervalNumber,
+                                i.StartDate,
+                                i.DueDate,
+                                i.EndDate,
+                                i.Status
+                            ))
+                            .FirstOrDefault(),
+
+                        Assessment = _sqldbContext.Assessments
+                            .Where(a => !a.IsDeleted && a.Id == fa.AssessmentId)
+                            .Select(a => new AssessmentBriefResponseDto
+                            {
+                                Id = a.Id,
+                                AnswerType = a.AnswerType,
+                                AssessmentType = a.AssessmentType,
+                                FillerRoleId = a.FillerRoleId,
+                                FillerJobTitle = a.FillerJobTitle,
+                                SubjectRoleId = a.SubjectRoleId,
+                                SubjectJobTitle = a.SubjectJobTitle
+                            })
+                            .FirstOrDefault()
+                    })
+                    .ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return planDetail;
     }
 }

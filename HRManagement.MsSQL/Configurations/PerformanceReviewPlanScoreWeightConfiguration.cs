@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace HRManagement.MsSQL.Configurations;
 
-public class PlanScoreWeightConfiguration : IEntityTypeConfiguration<PlanScoreWeight>
+public class PerformanceReviewPlanScoreWeightConfiguration : IEntityTypeConfiguration<PerformanceReviewPlanScoreWeight>
 {
-    public void Configure(EntityTypeBuilder<PlanScoreWeight> builder)
+    public void Configure(EntityTypeBuilder<PerformanceReviewPlanScoreWeight> builder)
     {
-        builder.ToTable("PlanScoreWeights");
+        builder.ToTable("PerformanceReviewPlanScoreWeights");
 
         builder.HasKey(x => x.Id);
 
@@ -24,7 +24,7 @@ public class PlanScoreWeightConfiguration : IEntityTypeConfiguration<PlanScoreWe
             .HasPrecision(5, 2);
 
         builder.HasOne(x => x.Plan)
-            .WithMany(x => x.PlanScoreWeights)
+            .WithMany()
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 

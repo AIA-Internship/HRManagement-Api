@@ -14,12 +14,8 @@ public class Assessment : BaseTable
     public string? RatingDescription { get; private set; }
 
     public PerformanceReviewPlan Plan { get; private set; } = null!;
-
-    public ICollection<AssessmentQuestion> Questions { get; private set; }
-    = new List<AssessmentQuestion>();
-
-    public ICollection<AssessmentGroup> Groups { get; private set; }
-    = new List<AssessmentGroup>();
+    public ICollection<AssessmentGroup> Groups { get; private set; } = new List<AssessmentGroup>();
+    public ICollection<AssessmentQuestion> Questions { get; private set; } = new List<AssessmentQuestion>();
 
     protected Assessment() { }
 

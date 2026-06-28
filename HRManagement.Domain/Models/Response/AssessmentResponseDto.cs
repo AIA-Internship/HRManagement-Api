@@ -17,4 +17,15 @@ namespace HRManagement.Domain.Models.Response
         string? RatingDescription,
         List<AssessmentQuestionResponseDto> Questions
     );
+
+    public class AssessmentBriefResponseDto
+    {
+        public int Id { get; set; }
+        public string AnswerType { get; set; } = string.Empty;
+        public string AssessmentType { get; set; } = string.Empty;
+        public int? FillerRoleId { get; set; }
+        public string? FillerJobTitle { get; set; }
+        public int? SubjectRoleId { get; set; }
+        public string? SubjectJobTitle { get; set; }
+    }
 }
