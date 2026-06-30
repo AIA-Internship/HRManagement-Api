@@ -1,5 +1,4 @@
 ﻿using HRManagement.Domain.Models.Tables;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,10 +21,15 @@ public class ReviewAssignmentConfiguration : IEntityTypeConfiguration<ReviewAssi
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<FillAssignment>()
+        builder.HasOne<PerformanceReviewPlanInterval>()
+            .WithMany()
+            .HasForeignKey(x => x.IntervalId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Assignment)
             .WithMany()
             .HasForeignKey(x => x.AssignmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Employee>()
             .WithMany()
@@ -33,5 +37,10 @@ public class ReviewAssignmentConfiguration : IEntityTypeConfiguration<ReviewAssi
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
