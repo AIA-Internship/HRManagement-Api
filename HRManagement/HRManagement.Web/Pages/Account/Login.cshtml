@@ -135,8 +135,6 @@
             if (response.ok && token) {
                 const payload = parseJwt(token);
                 window.aiaAuth.set(token, payload, rememberMe);
-                document.cookie =
-                `access_token=${token}; path=/; SameSite=Lax`;
                 window.location.href = "/Profile";
             } else {
                 emailEl.classList.add("is-invalid");

@@ -1,4 +1,4 @@
-﻿@page "/Leave/Employee/Dashboard"
+@page "/Leave/Employee/Dashboard"
 @model HRManagement.Web.Pages.Modules.Leave.Employee.HomepageModel
 @{
     ViewData["Title"] = "Leave Dashboard";
@@ -64,16 +64,16 @@
                         </i>
                         </small>
                         <div class="d-flex align-items-center">
-                            <div class="d-flex me-3 fw-bolder" style="font-size:6rem;line-height:1.2;">
-                                @Model.LeaveBalance
+                                <div class="d-flex me-3 fw-bolder" style="font-size:6rem;line-height:1.2;">
+                                    <span id="leaveBalance">-</span>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold mt-6" style="font-size:2rem; line-height:1.2;">
+                                        Days
+                                    </span>
+                                    <small class="">Remaining</small>
+                                </div>
                             </div>
-                            <div class="d-flex flex-column">
-                                <span class="fw-bold mt-6" style="font-size:2rem; line-height:1.2;">
-                                    Days
-                                </span>
-                                <small class="">Remaining</small>
-                            </div>
-                        </div>
                         </div>
                     </div>
                 </div>
@@ -89,10 +89,10 @@
                     </div>
 
                     <div class="mb-6 mt-5">
-                        
+
                         <div class="d-flex justify-content-between mb-1">
                             <small>Paid Leave</small>
-                            <small>@Model.LeaveTypeCount.PaidLeave</small>
+                            <small id="paidCount">0</small>
                         </div>
                         <div class="progress" style="height:8px;">
                             <div id="paidBar" class="progress-bar bg-danger" role="progressbar"></div>
@@ -102,7 +102,7 @@
                     <div class="mb-1">
                         <div class="d-flex justify-content-between mb-1">
                             <small>Unpaid Leave</small>
-                            <small>@Model.LeaveTypeCount.UnpaidLeave</small>
+                            <small id="unpaidCount">0</small>
                         </div>
 
                         <div class="progress" style="height:8px;">
@@ -161,101 +161,17 @@
                     </tr>
                 </thead>
                 <tbody id="leaveTableBody">
-                    @if (Model.PagedRequests != null && Model.PagedRequests.Count > 0)
-                    {
-                        foreach (var req in Model.PagedRequests)
-                        {
-                            <tr>
-                                <td>
-                                    @{
-                                        var leaveTypeText = req.LeaveType switch
-                                        {
-                                            "1" => "Paid",
-                                            "2" => "Unpaid",
-                                            _ => req.LeaveType
-                                        };
-                                    }
-
-                                    @leaveTypeText
-                                </td>
-                                <td>
-                                    @req.LeaveStartDate.ToString("dddd, d MMMM yyyy")
-                                </td>
-
-                                <td>
-                                    @req.endDate.ToString("dddd, d MMMM yyyy")
-                                </td>
-
-                                <td>
-                                    @(req.DayAmount % 1 == 0
-                                        ? ((int)req.DayAmount).ToString()
-                                        : req.DayAmount.ToString())
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-center">
-                                        @{
-                                            var status = req.LeaveStatus ?? "0";
-
-                                            if (status == "1")
-                                            {
-                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                                      style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
-                                                    <i class="bi bi-clock" style="color:#B77938"></i>
-                                                    <strong>Needs Approval</strong>
-                                                </span>
-                                            }
-                                            else if (status == "2")
-                                            {
-                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                                      style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
-                                                    <i class="bi bi-check-circle" style="color:#2B8B15"></i>
-                                                    <strong>Approved</strong>
-                                                </span>
-                                            }
-                                            else if (status == "3")
-                                            {
-                                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                                      style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
-                                                    <i class="bi bi-x-circle" style="color:#D31145"></i>
-                                                    <strong>Rejected</strong>
-                                                </span>
-                                            }
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">No leave requests found.</td>
-                        </tr>
-                    }
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Loading...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="d-flex align-items-center justify-content-between mt-3 ms-7 me-7">
-            <div class="text-muted" id="showingText">Showing @Model.StartItem-@Model.EndItem of @Model.TotalItems requests</div>
+            <div class="text-muted" id="showingText">Showing 0-0 of 0 requests</div>
             <nav aria-label="pagination">
                 <ul class="pagination mb-0" id="paginationList">
-                    @{ 
-                        var prevPage = Model.CurrentPage - 1;
-                        var nextPage = Model.CurrentPage + 1;
-                        var prevDisabled = Model.CurrentPage <= 1;
-                        var nextDisabled = Model.CurrentPage >= Model.TotalPages;
-                    }
-                    <li class="@(prevDisabled ? "page-item disabled" : "page-item")">
-                        <a class="page-link" data-page="@(prevDisabled ? Model.CurrentPage : prevPage)" href="#" aria-label="Previous">&laquo;</a>
-                    </li>
-                    @for (int i = 1; i <= Model.TotalPages; i++)
-                    {
-                        <li class="@(i == Model.CurrentPage ? "page-item active" : "page-item")"><a class="page-link" data-page="@i" href="#">@i</a></li>
-                    }
-                    <li class="@(nextDisabled ? "page-item disabled" : "page-item")">
-                        <a class="page-link" data-page="@(nextDisabled ? Model.CurrentPage : nextPage)" href="#" aria-label="Next">&raquo;</a>
-                    </li>
                 </ul>
             </nav>
         </div>
@@ -263,244 +179,14 @@
 </div>
 
 @section Scripts {
-    <script>
-        const paid = @Model.LeaveTypeCount.PaidLeave;
-        const unpaid = @Model.LeaveTypeCount.UnpaidLeave;
-    </script>
     <script src="~/apps/modules/leave/js/dashboard.js" asp-append-version="true"></script>
     <script>
-        (function () {
-            const paginationList = document.getElementById('paginationList');
-            const tableBody = document.getElementById('leaveTableBody');
-            const showingText = document.getElementById('showingText');
-            const sortSelect = document.getElementById('sortSelect');
-
-            if (!paginationList || !tableBody || !showingText) {
-                return;
+        document.addEventListener("DOMContentLoaded", function () {
+            const u = window.aiaAuth ? window.aiaAuth.getUserInfo() : null;
+            const nameEl = document.querySelector('h2.fw-bold');
+            if (u && (u.fullName || u.name) && nameEl) {
+                nameEl.textContent = 'Hello, ' + (u.fullName || u.name);
             }
-
-            let currentStatusOrder = '1,2,3';
-
-            const filterGroup = document.querySelector('.btn-group[aria-label="filters"]');
-            if (filterGroup) {
-                const buttons = Array.from(filterGroup.querySelectorAll('button'));
-                const priorityMap = {
-                    0: '1,2', // Paid, Unpaid
-                    1: '2,1', // Unpaid, Paid
-                };
-
-                buttons.forEach((btn, idx) => {
-                    btn.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        buttons.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        currentStatusOrder = priorityMap[idx] || currentStatusOrder;
-                        loadPage(1);
-                    });
-                });
-            }
-
-            function renderRows(items) {
-                if (!items || items.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No leave requests found.</td></tr>';
-                    return;
-                }
-
-                tableBody.innerHTML = items.map(i => { 
-                
-                    const badge = (function (status) {
-                        if (!status && status !== 0) {
-                            return `
-                                <div class="d-flex justify-content-center">
-                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                          style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
-                                        <i class="bi bi-clock" style="color:#B77938"></i>
-                                        <strong>Needs Approval</strong>
-                                    </span>
-                                </div>`;
-                        }
-
-                        const n = Number(status);
-                        if (!Number.isNaN(n)) {
-                            switch (n) {
-                                case 2:
-                                    return `
-                                    <div class="d-flex justify-content-center">
-                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                              style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
-                                            <i class="bi bi-check-circle" style="color:#2B8B15"></i>
-                                            <strong>Approved</strong>
-                                        </span>
-                                    </div>`;
-                                case 3:
-                                    return `
-                                    <div class="d-flex justify-content-center">
-                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                              style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
-                                            <i class="bi bi-x-circle" style="color:#D31145"></i>
-                                            <strong>Rejected</strong>
-                                        </span>
-                                    </div>`;
-                                case 1:
-                                default:
-                                    return `
-                                    <div class="d-flex justify-content-center">
-                                        <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                              style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
-                                            <i class="bi bi-clock" style="color:#B77938"></i>
-                                            <strong>Needs Approval</strong>
-                                        </span>
-                                    </div>`;
-                            }
-                        }
-
-                        const s = String(status).toLowerCase();
-                        if (s.includes('approve')) {
-                            return `
-                                <div class="d-flex justify-content-center">
-                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                          style="border-radius:2rem; height:2.1rem; width:8rem; color:#065F46; background-color:#D1FAE5">
-                                        <i class="bi bi-check-circle" style="color:#2B8B15"></i>
-                                        <strong>Approved</strong>
-                                    </span>
-                                </div>`;
-                        }
-                        if (s.includes('reject')) {
-                            return `
-                                <div class="d-flex justify-content-center">
-                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                          style="border-radius:2rem; height:2.1rem; width:8rem; color:#D31145; background-color:#FFE4E6">
-                                        <i class="bi bi-x-circle" style="color:#D31145"></i>
-                                        <strong>Rejected</strong>
-                                    </span>
-                                </div>`;
-                        }
-                        if (s.includes('need') || s.includes('approval')) {
-                            return `
-                                <div class="d-flex justify-content-center">
-                                    <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                          style="border-radius:2rem; height:2.1rem; width:10.5rem; color:#B77938; background-color:#FEF3C7">
-                                        <i class="bi bi-clock" style="color:#B77938"></i>
-                                        <strong>Needs Approval</strong>
-                                    </span>
-                                </div>`;
-                        }
-
-                        return `
-                            <div class="d-flex justify-content-center">
-                                <span class="d-inline-flex align-items-center justify-content-center gap-1 text-center"
-                                      style="border-radius:2rem; height:2.1rem; width:auto; color:#fff; background-color:#6c757d">
-                                    <strong>${status}</strong>
-                                </span>
-                            </div>`;
-
-                    })(i.status);
-            
-        const leaveTypeText = (function(type) {
-
-            const t = type?.toString() ?? "";
-
-            if (t === "1") return "Paid";
-            if (t === "2") return "Unpaid";
-
-            return type;
-
-        })(i.leaveType);
-
-        return `
-            <tr>
-                <td>${leaveTypeText}</td>
-                            <td>${i.startDate}</td>
-                            <td>${i.endDate}</td>
-                            <td>${i.duration}</td>
-                            <td>${badge}</td>
-                        </tr>`;
-                }).join('');
-            }
-
-            function renderPagination(meta) {
-                const { currentPage, totalPages } = meta;
-                const prevDisabled = currentPage <= 1;
-                const nextDisabled = currentPage >= totalPages;
-
-                const maxButtons = 3;
-                let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-                let endPage = startPage + maxButtons - 1;
-                if (endPage > totalPages) {
-                    endPage = totalPages;
-                    startPage = Math.max(1, endPage - maxButtons + 1);
-                }
-
-                let html = '';
-                // Prev arrow
-                html += `<li class="${prevDisabled ? 'page-item disabled' : 'page-item'}"><a class="page-link" data-page="${prevDisabled ? currentPage : currentPage-1}" href="#" aria-label="Previous">&laquo;</a></li>`;
-
-                for (let i = startPage; i <= endPage; i++) {
-                    html += `<li class="${i === currentPage ? 'page-item active' : 'page-item'}"><a class="page-link" data-page="${i}" href="#">${i}</a></li>`;
-                }
-
-                // Next arrow
-                html += `<li class="${nextDisabled ? 'page-item disabled' : 'page-item'}"><a class="page-link" data-page="${nextDisabled ? currentPage : currentPage+1}" href="#" aria-label="Next">&raquo;</a></li>`;
-
-                paginationList.innerHTML = html;
-            }
-
-            async function loadPage(page) {
-            try {
-
-                const sort = sortSelect.value;
-
-                const url = `${window.location.pathname}?handler=Page&page=${encodeURIComponent(page)}&sort=${encodeURIComponent(sort)}&statusOrder=${encodeURIComponent(currentStatusOrder)}`;
-
-                console.log('loadPage url=', url);
-
-                const resp = await fetch(url, {
-                    credentials: 'same-origin',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                console.log('fetch response', resp.status, resp.headers.get('content-type'));
-
-                if (!resp.ok) throw new Error('Network error: ' + resp.status);
-
-                const data = await resp.json();
-
-                console.log('page data', data);
-
-                renderRows(data.items);
-
-                renderPagination({
-                    currentPage: data.currentPage,
-                    totalPages: data.totalPages
-                });
-
-                showingText.textContent =
-                    `Showing ${data.startItem}-${data.endItem} of ${data.totalItems} requests`;
-            }
-            catch (err) {
-                console.error(err);
-
-                tableBody.innerHTML =
-                    '<tr><td colspan="5" class="text-center text-danger">Failed to load page. See console for details.</td></tr>';
-            }
-        }
-
-            paginationList.addEventListener('click', function (e) {
-                const a = e.target.closest ? e.target.closest('a.page-link') : null;
-                console.log('pagination click', e.target, a);
-                if (!a) return;
-                e.preventDefault();
-                const page = parseInt(a.getAttribute('data-page'), 10) || 1;
-                console.log('loading page', page);
-                loadPage(page);
-            });
-                sortSelect.addEventListener('change', function () {
-                loadPage(1);
-            });
-        })();
+        });
     </script>
-
 }
