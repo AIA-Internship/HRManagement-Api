@@ -5,143 +5,165 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/modules/leave/css/SupervisorDashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/leave/css/dashboard.css" asp-append-version="true" />
     <style>
-        #requestTableBody tr:hover {
-            background-color: #dc3545 !important;
-            color: #fff !important;
+        /* Card / container to match the mock */
+        .card.mx-10.mb-15 {
+            background: #FFFFFF;
+            border: 1px solid #EFF2F5;
+            border-radius: 12px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.03);
         }
-        #requestTableBody tr:hover td {
-            color: #fff !important;
+
+        .card.mx-10.mb-15 .card-body {
+            padding: 0.5rem 0;
         }
-        #requestTableBody tr:hover .badge {
-            color: #fff !important;
-            opacity: 1 !important;
+
+        /* Employee avatar & info */
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
         }
+
+        .employee-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-weight: 700;
+            color: #181C32;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.1;
+        }
+
+        .employee-role {
+            font-size: 12px;
+            color: #7E8299;
+            margin: 0;
+        }
+
+        /* Keep existing row hover behavior - do not override it */
+        #requestTableBody tr {
+            border-bottom: 1px solid #EFF2F5;
+            transition: background-color 0.18s ease;
+        }
+
         #requestTableBody td {
             padding: 1.1rem 2rem;
             vertical-align: middle;
         }
-        #requestTableBody tr {
-            box-sizing: border-box;
-        }
-        .leave-tab {
+
+        /* Status badges - pill style to match image */
+        .status-badge {
             display: inline-flex;
             align-items: center;
-            padding-bottom: 12px;
-            color: #7E8299;
-            text-decoration: none;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
             font-weight: 600;
-            border-bottom: 2px solid transparent;
-            transition: .2s;
+            min-width: 110px;
+            justify-content: center;
         }
 
-            .leave-tab.active {
-                color: #E31837;
-                border-color: #E31837;
-            }
+        /* Pending / Needs Approval */
+        .status-needs-approval {
+            color: #B54708 !important;
+            background-color: #FFFAEB !important;
+            border: 1px solid #FEDF89 !important;
+        }
 
-            .leave-tab:hover {
-                color: #E31837;
-            }
+        /* Approved */
+        .status-approved {
+            color: #027A48 !important;
+            background-color: #ECFDF3 !important;
+            border: 1px solid #ABEFC6 !important;
+        }
 
-        .status-filter {
+        /* Rejected */
+        .status-rejected {
+            color: #B42318 !important;
+            background-color: #FEF3F2 !important;
+            border: 1px solid #FECDCA !important;
+        }
+
+        /* Filter buttons (pill) */
+        .btn-outline-secondary {
             border: 1px solid #E4E6EF;
-            background: white;
+            color: #5E6278;
+            background: #fff;
             border-radius: 20px;
-            padding: 6px 16px;
+            padding: 6px 14px;
             font-size: 13px;
-            transition: .2s;
+            font-weight: 600;
+            transition: all 0.15s ease;
         }
 
-            .status-filter.active {
-                background: #FFF5F8;
-                border-color: #E31837;
-                color: #E31837;
-            }
-
-            .status-filter:hover {
-                border-color: #E31837;
-            }
-
-        .card {
-            border-radius: 16px;
+        .btn-outline-secondary:hover {
+            border-color: #E31837;
+            color: #E31837;
+            background: #fff;
         }
 
+        .btn-outline-secondary.active {
+            background: #E31837;
+            color: white;
+            border-color: #E31837;
+        }
+
+        /* center search and tidy toolbar layout */
+        .toolbar-row { display:flex; align-items:center; gap:1rem; padding:0.75rem 1.25rem; }
+        .toolbar-left { flex:0 0 auto; }
+        .toolbar-center { flex:1 1 600px; display:flex; justify-content:center; }
+        .toolbar-right { flex:0 0 auto; display:flex; align-items:center; gap:0.75rem; }
+
+        .search-input { width:100%; max-width:720px; border-radius:24px; padding:12px 18px 12px 42px; }
+        .position-relative .bi-search { left:14px; }
+
+        /* center column data except first column */
+        .table tbody td { text-align:center; }
+        .table tbody td:first-child { text-align:left; }
+
+        /* make table header stand out with bolder line */
+        .table thead th { border-bottom:2px solid #EFF2F5; background:#fff; }
+
+        /* Table header styling */
         .table thead th {
+            background-color: transparent;
+            border-bottom: 1px solid #EFF2F5;
             color: #181C32;
             font-size: 13px;
             font-weight: 700;
-            border-bottom: 1px solid #EFF2F5;
+            padding: 1.1rem 2rem;
         }
 
-        #requestTableBody td {
-            padding: 18px 20px;
+        /* Pagination - subtle rounded */
+        .pagination .page-link {
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
         }
 
-        #requestTableBody tr {
-            transition: .18s;
+        .pagination .page-item.active .page-link {
+            background: #E31837;
+            border-color: #E31837;
+            color: #fff;
         }
 
-            #requestTableBody tr:hover {
-                background: #E31837;
-                color: white;
-            }
-
-                #requestTableBody tr:hover td,
-                #requestTableBody tr:hover strong,
-                #requestTableBody tr:hover small {
-                    color: white !important;
-                }
-
-        .table-responsive {
-            min-height: 550px;
-        }
-
-        #requestTableBody {
-            min-height: 480px;
-        }
-
-        .empty-row td {
-            height: 480px;
-            vertical-align: middle !important;
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #7E8299;
-            height: 100%;
-        }
-
-        .status-filter {
-            border: 1px solid #E4E6EF;
-            background: #fff;
-            color: #5E6278;
-            border-radius: 20px;
-            padding: 6px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: .2s;
-        }
-
-            .status-filter:hover {
-                border-color: #E31837;
-                color: #E31837;
-            }
-
-            .status-filter.active {
-                background: #E31837;
-                color: #fff;
-                border-color: #E31837;
-            }
-
-                .status-filter.active:hover {
-                    background: #C8102E;
-                    color: #fff;
-                }
+        /* Empty state */
+        .empty-row td { height: 480px; vertical-align: middle !important; }
+        .empty-state { display:flex; flex-direction:column; justify-content:center; align-items:center; color:#7E8299; height:100%; }
+        .empty-row:hover > td, .empty-row td:hover { background-color: transparent !important; }
     </style>
 }
 
@@ -157,142 +179,70 @@
     })
 </div>
 
-<div class="container-fluid px-10">
-
-    <!-- Greeting -->
-    <div class="mb-8">
-        <h2 class="fw-bold fs-1 mb-1">
-            Hello, <span id="userName">Supervisor</span>
-        </h2>
-
-        <div class="text-gray-600 fs-6">
-            Here is an overview of your leave status and activity.
+<div class="container-fluid px-5">
+    <div class="row mb-4 mx-3">
+        <div class="col">
+            <h2 class="fw-bold">Hello, <span id="userName">Supervisor</span></h2>
+            <p class="text-muted">Here is an overview of your leave status and activity</p>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="d-flex align-items-center gap-8 border-bottom mb-8">
-
-        <a href="/Leave/Supervisor/Dashboard"
-           class="leave-tab active">
-            Request List
-        </a>
-
-        <a href="/Leave/Supervisor/Calendar"
-           class="leave-tab">
-            Calendar
-        </a>
-
-    </div>
-
-    <!-- Card -->
-    <div class="card shadow-sm border-0 rounded-4">
-
-        <div class="card-body p-8">
-
-            <!-- Toolbar -->
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-5 mb-8">
-
-                <!-- Filter -->
-                <button class="status-filter active"
-                        onclick="filterStatus('1', this)">
-                    Needs Approval
-                </button>
-
-                <button class="status-filter"
-                        onclick="filterStatus('2', this)">
-                    Approved
-                </button>
-
-                <button class="status-filter"
-                        onclick="filterStatus('3', this)">
-                    Rejected
-                </button>
-
-                <!-- Search -->
-                <div class="position-relative">
-
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute top-50 start-0 translate-middle-y ms-4 text-gray-500"></i>
-
-                    <input id="searchInput"
-                           type="text"
-                           class="form-control ps-12"
-                           placeholder="Search Leave..."
-                           style="width:320px;" />
-
+    <div class="card mx-10 mb-15">
+        <div class="card-body ps-0 pe-0">
+            <div class="toolbar-row">
+                <div class="toolbar-left ms-7">
+                    <div class="btn-group" role="group" aria-label="filters">
+                        <button class="btn btn-outline-secondary" onclick="filterStatus('1', this)">Needs Approval</button>
+                        <button class="btn btn-outline-secondary" onclick="filterStatus('2', this)">Approved</button>
+                        <button class="btn btn-outline-secondary" onclick="filterStatus('3', this)">Rejected</button>
+                    </div>
                 </div>
 
-                <!-- Sort -->
-                <div class="d-flex align-items-center gap-3">
+                <div class="toolbar-center">
+                    <div class="position-relative" style="width:100%; max-width:720px;">
+                        <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left:14px;"></i>
+                        <input id="searchInput"
+                               type="text"
+                               class="form-control search-input ps-5"
+                               placeholder="Search Leave..." />
+                    </div>
+                </div>
 
-                    <span class="text-gray-600">
-                        Sort by:
-                    </span>
-
-                    <select id="sortSelect"
-                            class="form-select form-select-sm"
-                            style="width:120px;">
-                        <option value="newest">
-                            newest
-                        </option>
-
-                        <option value="oldest">
-                            oldest
-                        </option>
+                <div class="toolbar-right me-4">
+                    <label class="me-2">Sort by:</label>
+                    <select id="sortSelect" class="form-select form-select-sm" style="width:120px;">
+                        <option value="newest">newest</option>
+                        <option value="oldest" selected>oldest</option>
                     </select>
-
                 </div>
-
             </div>
 
-            <!-- Table -->
             <div class="table-responsive">
-
                 <table class="table align-middle">
-
                     <thead>
-
                         <tr>
-
-                            <th>Employee Name</th>
-                            <th>Leave Type</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Day(s)</th>
-                            <th class="text-center">
-                                Status
-                            </th>
-
+                            <th class="px-7"><strong>Employee Name</strong></th>
+                            <th class="px-7"><strong>Leave Type</strong></th>
+                            <th class="px-7"><strong>Start Date</strong></th>
+                            <th class="px-7"><strong>End Date</strong></th>
+                            <th class="px-7"><strong>Day(s)</strong></th>
+                            <th class="px-7 text-center"><strong>Status</strong></th>
                         </tr>
-
                     </thead>
-
                     <tbody id="requestTableBody">
                     </tbody>
-
                 </table>
-
             </div>
 
-            <!-- Footer -->
-
-            <div class="d-flex justify-content-between align-items-center mt-7">
-
-                <span id="showingText"
-                      class="text-gray-600">
-                    Showing 0-0 of 0 requests
-                </span>
-
-                <ul class="pagination mb-0"
-                    id="paginationList">
-                </ul>
-
+            <div class="d-flex align-items-center justify-content-between mt-3 ms-7 me-7">
+                <div class="text-muted" id="showingText">Showing 0-0 of 0 requests</div>
+                <nav aria-label="pagination">
+                    <ul class="pagination mb-0" id="paginationList">
+                    </ul>
+                </nav>
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 @section Scripts {

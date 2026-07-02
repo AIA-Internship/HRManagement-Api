@@ -368,3 +368,4 @@ FodyWeavers.xsd
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 >>>>>>> 395b5fe2d1c34e45da356467deda1ee05746ab6a
+/HRManagement.Application/Features/Timesheet/Command/GetEmployeeDashboardQuery.cs

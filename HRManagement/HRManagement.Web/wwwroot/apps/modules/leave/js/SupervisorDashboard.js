@@ -1,9 +1,10 @@
-const API_URL = "https://localhost:7089"; // placeholder
+﻿const API_URL = "https://localhost:7089"; // placeholder
 let requests = [];
 let filteredRequests = [];
 let employees = []
 let currentPage = 1;
 const pageSize = 8;
+let activeStatus = null; // currently selected status filter (null = no filter)
 
 window.app = window.app || {
     loading: {
@@ -36,7 +37,7 @@ async function getEmployees() {
         empIds.map(async id => {
 
             const response = await fetch(
-                `${API_URL}/api/employee/employment-info/${id}`,
+                `${API_URL}/api/employee/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -55,10 +56,13 @@ async function getEmployees() {
     mergeData();
 }
 function mergeData() {
-
+    if (requests.length === 0) {
+        renderTable()
+        return
+    }
     requests = requests.map(req => {
 
-        const emp = employees.find(e => e.employeeId === req.requesterId);
+        const emp = employees.find(e => e.id === req.requesterId);
 
         return {
             ...req,
@@ -81,6 +85,7 @@ function mergeData() {
                         ? "Sick Leave"
                         : "Other",
 
+            startDateRaw: new Date(req.leaveStartDate),
             startDate: new Date(req.leaveStartDate).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
@@ -97,16 +102,59 @@ function mergeData() {
 
             status:
                 req.leaveStatus === "1"
-                    ? "Pending"
+                    ? "Needs Approval"
                     : req.leaveStatus === "2"
                         ? "Approved"
-                        : "Rejected"
+                        : "Rejected",
+
+            statusClass:
+                req.leaveStatus === "1"
+                    ? "status-needs-approval"
+                    : req.leaveStatus === "2"
+                        ? "status-approved"
+                        : "status-rejected",
+
+            avatarColor: getAvatarColor(emp?.fullName || "--")
         };
+    });
+
+    // Default sort: Needs Approval first, then by start date (oldest first)
+    const priority = {
+        'Needs Approval': 0,
+        'Approved': 1,
+        'Rejected': 2
+    };
+
+    requests.sort((a, b) => {
+        const pa = priority[a.status] ?? 9;
+        const pb = priority[b.status] ?? 9;
+        if (pa !== pb) return pa - pb;
+        return a.startDateRaw - b.startDateRaw;
     });
 
     filteredRequests = [...requests];
 
     renderTable();
+}
+
+function getAvatarColor(name) {
+    const colors = [
+        '#FF69B4', // Pink
+        '#87CEEB', // Sky Blue
+        '#90EE90', // Light Green
+        '#FFD700', // Gold
+        '#FF6347', // Tomato
+        '#4169E1', // Royal Blue
+        '#FFA500'  // Orange
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
 }
 
 function loadUser() {
@@ -142,20 +190,17 @@ async function fetchRequests() {
             throw new Error("Failed to fetch");
         }
 
-        requests = await response.json();
+        responseData = await response.json();
 
-        filteredRequests = requests;
+        requests = responseData.content;
 
+        // fetch employee details then merge and render inside getEmployees/mergeData
         getEmployees();
-        mergeData();
-
-        renderTable();
 
     } catch (err) {
         console.error(err);
         app.loading.hide();
 
-        requests = mockData();
         filteredRequests = requests;
         renderTable();
     }
@@ -174,9 +219,8 @@ function renderTable() {
             <tr class="empty-row">
                 <td colspan="6" class="text-center">
                     <div class="empty-state">
-                        <i class="ki-outline ki-information-5 fs-1 text-gray-400 mb-3"></i>
-                        <div class="fw-semibold text-gray-600 fs-5">
-                            No data available in table
+                        <div style="height:180px; display:flex; align-items:center; justify-content:center;">
+                            <div class="text-gray-500">No data available in table</div>
                         </div>
                     </div>
                 </td>
@@ -188,14 +232,20 @@ function renderTable() {
     }
 
     paginated.forEach(req => {
+        const statusIcon = req.statusClass === 'status-needs-approval' 
+            ? '⊙' 
+            : req.statusClass === 'status-approved'
+                ? '✓'
+                : '✕';
+
         tbody.innerHTML += `
             <tr>
                 <td>
                     <div class="employee-cell">
-                        <div class="avatar">${req.initials}</div>
-                        <div>
-                            <strong>${req.name}</strong>
-                            <div class="subtext">${req.position}</div>
+                        <div class="employee-avatar" style="background-color: ${req.avatarColor};">${req.initials}</div>
+                        <div class="employee-details">
+                            <p class="employee-name">${req.name}</p>
+                            <p class="employee-role">${req.position}</p>
                         </div>
                     </div>
                 </td>
@@ -204,9 +254,9 @@ function renderTable() {
                 <td>${req.endDate}</td>
                 <td>${req.days}</td>
                 <td class="text-center">
-                    <span class="status-badge ${req.statusClass}">
+                    <button class="btn leave-status-btn ${req.statusClass}" tabindex="-1">
                         ${req.status}
-                    </span>
+                    </button>
                 </td>
             </tr>
         `;
@@ -252,10 +302,10 @@ function renderPagination() {
         </li>
     `;
 
-    document.getElementById("showingText").textContent =
-        `Showing ${filteredRequests.length === 0 ? 0 : ((currentPage - 1) * pageSize + 1)}
-        -${Math.min(currentPage * pageSize, filteredRequests.length)}
-        of ${filteredRequests.length} requests`;
+    const total = filteredRequests.length;
+    const from = total === 0 ? 0 : ((currentPage - 1) * pageSize + 1);
+    const to = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
+    document.getElementById("showingText").textContent = `Showing ${from}-${to} of ${total} requests`;
 }
 
 function goToPage(page) {
@@ -263,8 +313,30 @@ function goToPage(page) {
     renderTable();
 }
 
-function filterStatus(status) {
-    filteredRequests = requests.filter(r => r.status === status);
+function filterStatus(status, button) {
+    // Map status parameter to status text
+    const statusMap = {
+        '1': 'Needs Approval',
+        '2': 'Approved',
+        '3': 'Rejected'
+    };
+
+    const statusText = statusMap[status] || status;
+
+    // Toggle behavior: if same status clicked, clear filter
+    if (activeStatus === statusText) {
+        activeStatus = null;
+        filteredRequests = [...requests];
+        // remove active class from buttons
+        document.querySelectorAll('.btn-outline-secondary').forEach(btn => btn.classList.remove('active'));
+    } else {
+        activeStatus = statusText;
+        filteredRequests = requests.filter(r => r.status === statusText);
+        // update active class
+        document.querySelectorAll('.btn-outline-secondary').forEach(btn => btn.classList.remove('active'));
+        if (button) button.classList.add('active');
+    }
+
     currentPage = 1;
     renderTable();
 }
@@ -275,6 +347,7 @@ function filterStatus(status) {
 
 
 function addlistener() {
+
     document.addEventListener("DOMContentLoaded", function () {
         loadUser();
         fetchRequests();
@@ -288,13 +361,11 @@ function addSortLogic() {
 
             if (this.value === "newest") {
 
-                filteredRequests.sort((a, b) =>
-                    new Date(b.startDate) - new Date(a.startDate));
+                filteredRequests.sort((a, b) => b.startDateRaw - a.startDateRaw);
 
             } else {
 
-                filteredRequests.sort((a, b) =>
-                    new Date(a.startDate) - new Date(b.startDate));
+                filteredRequests.sort((a, b) => a.startDateRaw - b.startDateRaw);
             }
 
             renderTable();
@@ -328,9 +399,11 @@ function renderSupervisorInfo() {
     document.getElementById("userName").textContent =
         user.fullName || "Supervisor";
 }
+
 function main() {
     addlistener();
     addSearchLogic();
+    addSortLogic();
     renderSupervisorInfo();
 }
 main();
