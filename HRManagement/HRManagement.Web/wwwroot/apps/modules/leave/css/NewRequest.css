@@ -3,17 +3,52 @@
     font-family: Segoe UI,Roboto,Arial,Helvetica,sans-serif;
     color: #222;
 }
-.breadcrumb{color:#6b6b6b;font-size:13px;margin-bottom:12px}
-.page-title{font-size:32px;margin:6px 0 4px;font-weight:700}
-.lead{color:#6b6b6b;margin-bottom:24px}
 
-.row{display:flex;gap:24px}
-.col-left{flex:1}
-.col-right{width:320px}
+.breadcrumb {
+    color: #6b6b6b;
+    font-size: 13px;
+    margin-bottom: 12px
+}
 
-.card-form{background:transparent;padding:0}
-.field-label{display:block;color:#6b6b6b;font-weight:600;margin-bottom:8px}
-.required{color:#e11d48}
+.page-title {
+    font-size: 32px;
+    margin: 6px 0 4px;
+    font-weight: 700
+}
+
+.lead {
+    color: #6b6b6b;
+    margin-bottom: 24px
+}
+
+.row {
+    display: flex;
+    gap: 24px
+}
+
+.col-left {
+    flex: 1
+}
+
+.col-right {
+    width: 320px
+}
+
+.card-form {
+    background: transparent;
+    padding: 0
+}
+
+.field-label {
+    display: block;
+    color: #6b6b6b;
+    font-weight: 600;
+    margin-bottom: 8px
+}
+
+.required {
+    color: #e11d48
+}
 
 .ts-wrapper {
     width: 100%;
@@ -28,9 +63,9 @@
     font-size: 12px;
 }
 
-.ts-control:hover {
-    border-color: #b8c0d4 !important;
-}
+    .ts-control:hover {
+        border-color: #b8c0d4 !important;
+    }
 
 .ts-wrapper.focus .ts-control {
     border-color: #222 !important;
@@ -44,20 +79,20 @@
     box-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.04);
 }
 
-.ts-dropdown .option {
-    padding: 14px 16px;
-    font-size: 12px;
-    transition: background .15s ease;
-}
+    .ts-dropdown .option {
+        padding: 14px 16px;
+        font-size: 12px;
+        transition: background .15s ease;
+    }
 
-.ts-dropdown .option:hover {
-    background: #D91F3E;
-}
+        .ts-dropdown .option:hover {
+            background: #D91F3E;
+        }
 
-.ts-dropdown .active {
-    background: #D91F3E !important;
-    color: white !important;
-}
+    .ts-dropdown .active {
+        background: #D91F3E !important;
+        color: white !important;
+    }
 
 
 
@@ -76,14 +111,14 @@
     color: #6b6b6b;
 }
 
-.input-date::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    position: absolute;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
+    .input-date::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
 
 .icon {
     position: absolute;
@@ -120,9 +155,9 @@
     justify-content: center;
 }
 
-.custom-arrow i {
-    transition: transform .25s ease;
-}
+    .custom-arrow i {
+        transition: transform .25s ease;
+    }
 
 .custom-select-wrapper.open .custom-arrow i {
     transform: rotate(180deg);
@@ -132,12 +167,42 @@
 
 
 
-.grid-3{display:grid;grid-template-columns:1fr 1fr 140px;gap:16px;margin-bottom:16px}
-.input-with-icon{position:relative}
-.input-date{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e9e9e9; color:#6b6b6b}
-.input-with-icon .icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#6b6b6b}
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 140px;
+    gap: 16px;
+    margin-bottom: 16px
+}
 
-.textarea{width:100%;min-height:110px;max-height: 300px;padding:12px;border-radius:8px;border:1px solid #e9e9e9;background:#fff}
+.input-with-icon {
+    position: relative
+}
+
+.input-date {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e9e9e9;
+    color: #6b6b6b
+}
+
+.input-with-icon .icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b6b6b
+}
+
+.textarea {
+    width: 100%;
+    min-height: 110px;
+    max-height: 300px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e9e9e9;
+    background: #fff
+}
 
 .dropzone {
     border: 2px dashed #f0c7cc;
@@ -146,6 +211,7 @@
     text-align: center;
     position: relative
 }
+
 .dropzone-empty {
     border: 2px dashed #f0c7cc;
     background: #fff0f2;
@@ -153,16 +219,35 @@
     border-radius: 10px;
     text-align: center;
 }
+
 .dropzone .dropzone-content {
     pointer-events: auto;
 }
-.drop-icon{font-size:28px;margin-bottom:8px;color:#d73b5c}
-.drop-title{font-weight:600;margin-bottom:6px}
-.drop-sub{font-size:12px;color:#9a2334}
+
+.drop-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #d73b5c
+}
+
+.drop-title {
+    font-weight: 600;
+    margin-bottom: 6px
+}
+
+.drop-sub {
+    font-size: 12px;
+    color: #9a2334
+}
+
 .drop-input {
     display: none;
 }
-.dropzone.drag{background:#fdecea;border-color:#e7aeb4}
+
+.dropzone.drag {
+    background: #fdecea;
+    border-color: #e7aeb4
+}
 
 
 .attachment-error {
@@ -180,34 +265,126 @@
 }
 
 
-.form-actions{display:flex;gap:16px;justify-content:flex-start;margin-top:18px}
-.btn{padding:10px 22px;border-radius:12px;border:1px solid transparent;cursor:pointer}
-.btn-outline{background:#fff;border-color:#ffc6d0;color:#d13b51;box-shadow:0 6px 18px rgba(209,59,81,0.08)}
-.btn-primary{background:#d81b48;color:#fff;box-shadow:0 8px 22px rgba(216,27,72,0.18);border-color:#d81b48}
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-start;
+    margin-top: 18px
+}
 
-.card-calendar{padding:18px}
-.calendar-header{font-weight:700;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.calendar-grid{background:#fff;border-radius:6px;padding:12px;border:1px solid #f1f1f1}
-.week-days{color:#9aa0a6;font-size:12px;margin-bottom:8px}
-.date-row{color:#333;margin:6px 0}
-.calendar-footer{padding-top:12px;font-size:13px;text-align:right}
-.text-danger{color:#d81b48;font-weight:700}
+.btn {
+    padding: 10px 22px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer
+}
 
-.note{display:flex;align-items:center;gap:12px;background:#fff6d9;border:1px solid #f1e4a8;padding:14px;border-radius:6px;margin-top:22px}
+.btn-outline {
+    background: #fff;
+    border-color: #ffc6d0;
+    color: #d13b51;
+    box-shadow: 0 6px 18px rgba(209,59,81,0.08)
+}
+
+.btn-primary {
+    background: #d81b48;
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(216,27,72,0.18);
+    border-color: #d81b48
+}
+
+.card-calendar {
+    padding: 18px
+}
+
+.calendar-header {
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px
+}
+
+.calendar-grid {
+    background: #fff;
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid #f1f1f1
+}
+
+.week-days {
+    color: #9aa0a6;
+    font-size: 12px;
+    margin-bottom: 8px
+}
+
+.date-row {
+    color: #333;
+    margin: 6px 0
+}
+
+.calendar-footer {
+    padding-top: 12px;
+    font-size: 13px;
+    text-align: right
+}
+
+.text-danger {
+    color: #d81b48;
+    font-weight: 700
+}
+
+.note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff6d9;
+    border: 1px solid #f1e4a8;
+    padding: 14px;
+    border-radius: 6px;
+    margin-top: 22px
+}
+
 .note-icon {
     color: #d81b48;
     padding: 6px;
     border-radius: 6px;
-    font-size:20px
+    font-size: 20px
 }
-.note-text{color:#6b6b6b;font-size:13px}
+
+.note-text {
+    color: #6b6b6b;
+    font-size: 13px
+}
 
 
 /*Day(s)*/
 
-.stepper{display:inline-flex;align-items:center;border-radius:8px;border:1px solid #e6e6e6; color:#6b6b6b; width: 10.5rem; justify-content:center}
-.stepper-btn{background:#fff;border:none;padding:9.5px 10px;cursor:pointer;color:#6b6b6b; font-size:13px; border-radius:8px}
-.stepper-input{width:56px;text-align:center;border:none}
+.stepper {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 8px;
+    border: 1px solid #e6e6e6;
+    color: #6b6b6b;
+    width: 10.5rem;
+    justify-content: center
+}
+
+.stepper-btn {
+    background: #fff;
+    border: none;
+    padding: 9.5px 10px;
+    cursor: pointer;
+    color: #6b6b6b;
+    font-size: 13px;
+    border-radius: 8px
+}
+
+.stepper-input {
+    width: 56px;
+    text-align: center;
+    border: none
+}
 
 
 
@@ -411,8 +588,8 @@
 }
 
     .flatpickr-day.today {
-        height:auto;
-        justify-content:center;
+        height: auto;
+        justify-content: center;
         align-items: center;
         align-content: center;
         border: 1px solid #D91F3E;
@@ -431,7 +608,7 @@
         background: #D91F3E !important;
         border-color: #D91F3E !important;
         color: white !important;
-        height:auto;
+        height: auto;
     }
 
 
@@ -466,7 +643,7 @@
 .card-calendar .fc-toolbar-title {
     font-size: 14px;
     font-weight: 700;
-    color: #111827; 
+    color: #111827;
 }
 
 .card-calendar .fc .fc-toolbar-chunk:last-child {
@@ -486,7 +663,7 @@
     border-radius: 6px;
 }
 
-.card-calendar .fc-view-harness{
+.card-calendar .fc-view-harness {
     height: 20rem !important;
 }
 
@@ -528,7 +705,7 @@
     color: #D91F3E;
 }
 
-.card-calendar .fc-daygrid-day-frame{
+.card-calendar .fc-daygrid-day-frame {
     align-content: center !important;
     justify-items: center !important;
 }
@@ -540,7 +717,8 @@
 .card-calendar .calendar-divider {
     height: 1px;
     background: #ececec;
-    margin-top: 12px;s
+    margin-top: 12px;
+    s
 }
 
 .card-calendar {
@@ -548,6 +726,6 @@
     box-shadow: none;
 }
 
-.card-calendar .fc .fc-scroller-harness {
-    max-height: none;
-}
+    .card-calendar .fc .fc-scroller-harness {
+        max-height: none;
+    }

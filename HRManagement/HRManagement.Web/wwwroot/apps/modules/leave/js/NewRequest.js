@@ -480,17 +480,17 @@
     // =========================
     // SUBMIT
     // =========================
-    var form = document.querySelector('.leave-form');
+    var leaveForm = document.querySelector('.leave-form');
 
     startDateInput.addEventListener('change', function () {
         document.getElementById('startDateError').style.display = 'none';
     });
 
     document.getElementById('description').addEventListener('input', function () {
-            document.getElementById('descriptionError').style.display = 'none';
+        document.getElementById('descriptionError').style.display = 'none';
     });
 
-    form.addEventListener('submit', function (e) {
+    leaveForm.addEventListener('submit', function (e) {
 
         e.preventDefault();
 
@@ -531,7 +531,7 @@
             return;
         }
 
-        var formData = new FormData(form);
+        var formData = new FormData(leaveForm);
 
         formData.delete("Attachment");
 
@@ -539,7 +539,7 @@
             formData.append("Attachment", file);
         });
 
-        fetch(form.action || window.location.href, {
+        fetch(leaveForm.action || window.location.href, {
             method: "POST",
             body: formData
         })
