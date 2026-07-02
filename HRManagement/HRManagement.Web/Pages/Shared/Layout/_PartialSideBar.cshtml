@@ -117,40 +117,17 @@
 
 
 
-
-
-
-
                     <!-- Leave Menu -->
                     <div class="menu-item">
                         <a class="menu-link @(currentPath == "/Leave/Employee/Dashboard" ? "active" : "")"
                            href="/Leave/Employee/Dashboard">
 
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-calendar-8 fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                    <span class="path6"></span>
-                                </i>
-                            </span>
-
+                                <span class="menu-icon">
+                                    <i class="bi bi-person-3 fs-3"></i>
+                                </span>
                             <span class="menu-title">Leave</span>
                         </a>
                     </div>
-
-
-
-
-
-
-
-
-
-
-
 
 
                     <!-- Timesheet Submenu -->
@@ -239,6 +216,18 @@
                                     <i class="bi bi-diagram-3 fs-3"></i>
                                 </span>
                                 <span class="menu-title" style="font-size: 1.1rem; font-weight: 500;">Projects</span>
+                            </a>
+                        </div>
+
+                        @* leave *@
+
+                        <div class="menu-item">
+                            <a class="menu-link @(currentPath == "/Leave/Supervisor/Dashboard" ? "active" : "")"
+                               href="/Leave/Supervisor/dashboard">
+                                <span class="menu-icon">
+                                    <i class="bi bi-person-3 fs-3"></i>
+                                </span>
+                                <span class="menu-title">Leave</span>
                             </a>
                         </div>
                         

@@ -1,4 +1,4 @@
-@page
+@page "/leave/supervisor/dashboard"
 
 @{
     ViewData["Title"] = "Leave Supervisor Dashboard";
@@ -25,6 +25,123 @@
         #requestTableBody tr {
             box-sizing: border-box;
         }
+        .leave-tab {
+            display: inline-flex;
+            align-items: center;
+            padding-bottom: 12px;
+            color: #7E8299;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: .2s;
+        }
+
+            .leave-tab.active {
+                color: #E31837;
+                border-color: #E31837;
+            }
+
+            .leave-tab:hover {
+                color: #E31837;
+            }
+
+        .status-filter {
+            border: 1px solid #E4E6EF;
+            background: white;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 13px;
+            transition: .2s;
+        }
+
+            .status-filter.active {
+                background: #FFF5F8;
+                border-color: #E31837;
+                color: #E31837;
+            }
+
+            .status-filter:hover {
+                border-color: #E31837;
+            }
+
+        .card {
+            border-radius: 16px;
+        }
+
+        .table thead th {
+            color: #181C32;
+            font-size: 13px;
+            font-weight: 700;
+            border-bottom: 1px solid #EFF2F5;
+        }
+
+        #requestTableBody td {
+            padding: 18px 20px;
+        }
+
+        #requestTableBody tr {
+            transition: .18s;
+        }
+
+            #requestTableBody tr:hover {
+                background: #E31837;
+                color: white;
+            }
+
+                #requestTableBody tr:hover td,
+                #requestTableBody tr:hover strong,
+                #requestTableBody tr:hover small {
+                    color: white !important;
+                }
+
+        .table-responsive {
+            min-height: 550px;
+        }
+
+        #requestTableBody {
+            min-height: 480px;
+        }
+
+        .empty-row td {
+            height: 480px;
+            vertical-align: middle !important;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #7E8299;
+            height: 100%;
+        }
+
+        .status-filter {
+            border: 1px solid #E4E6EF;
+            background: #fff;
+            color: #5E6278;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: .2s;
+        }
+
+            .status-filter:hover {
+                border-color: #E31837;
+                color: #E31837;
+            }
+
+            .status-filter.active {
+                background: #E31837;
+                color: #fff;
+                border-color: #E31837;
+            }
+
+                .status-filter.active:hover {
+                    background: #C8102E;
+                    color: #fff;
+                }
     </style>
 }
 
@@ -35,77 +152,147 @@
         Subtitle = "Overview of pending leave requests from your team",
         Breadcrumbs = new List<BreadcrumbItem> {
             new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
-            new BreadcrumbItem { Title = "Supervisor Dashboard" }
+            new BreadcrumbItem { Title = "Request List" }
         },
     })
 </div>
 
-<div class="container-fluid px-5">
-    <div class="row mb-4 mx-3">
-        <div class="col">
-            <h2 class="fw-bold">Hello, <span id="userName">Supervisor</span></h2>
-            <p class="text-muted">Here is an overview of your leave status and activity</p>
+<div class="container-fluid px-10">
+
+    <!-- Greeting -->
+    <div class="mb-8">
+        <h2 class="fw-bold fs-1 mb-1">
+            Hello, <span id="userName">Supervisor</span>
+        </h2>
+
+        <div class="text-gray-600 fs-6">
+            Here is an overview of your leave status and activity.
         </div>
     </div>
-</div>
 
-<div class="card mx-10 mb-15">
-    <div class="card-body ps-0 pe-0">
-        <div class="d-flex align-items-center justify-content-between mb-3 px-4"
-             style="overflow-x:auto; gap:1rem;">
-            <div>
-                <div class="btn-group ms-7" role="group" aria-label="filters">
-                    <button class="btn btn-outline-secondary active" onclick="filterStatus('1')">Needs Approval</button>
-                    <button class="btn btn-outline-secondary" onclick="filterStatus('2')">Approved</button>
-                    <button class="btn btn-outline-secondary" onclick="filterStatus('3')">Rejected</button>
+    <!-- Tabs -->
+    <div class="d-flex align-items-center gap-8 border-bottom mb-8">
+
+        <a href="/Leave/Supervisor/Dashboard"
+           class="leave-tab active">
+            Request List
+        </a>
+
+        <a href="/Leave/Supervisor/Calendar"
+           class="leave-tab">
+            Calendar
+        </a>
+
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-4">
+
+        <div class="card-body p-8">
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-5 mb-8">
+
+                <!-- Filter -->
+                <button class="status-filter active"
+                        onclick="filterStatus('1', this)">
+                    Needs Approval
+                </button>
+
+                <button class="status-filter"
+                        onclick="filterStatus('2', this)">
+                    Approved
+                </button>
+
+                <button class="status-filter"
+                        onclick="filterStatus('3', this)">
+                    Rejected
+                </button>
+
+                <!-- Search -->
+                <div class="position-relative">
+
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute top-50 start-0 translate-middle-y ms-4 text-gray-500"></i>
+
+                    <input id="searchInput"
+                           type="text"
+                           class="form-control ps-12"
+                           placeholder="Search Leave..."
+                           style="width:320px;" />
+
                 </div>
+
+                <!-- Sort -->
+                <div class="d-flex align-items-center gap-3">
+
+                    <span class="text-gray-600">
+                        Sort by:
+                    </span>
+
+                    <select id="sortSelect"
+                            class="form-select form-select-sm"
+                            style="width:120px;">
+                        <option value="newest">
+                            newest
+                        </option>
+
+                        <option value="oldest">
+                            oldest
+                        </option>
+                    </select>
+
+                </div>
+
             </div>
 
-            <div class="d-flex align-items-center flex-shrink-0"
-                 style="gap:1rem;">
-                <label class="me-2">Sort By:</label>
-                <select id="sortSelect" class="form-select form-select-sm me-3" style="width:160px;">
-                    <option value="newest" selected>Newest</option>
-                    <option value="oldest">Oldest</option>
-                </select>
-                <a href="/Leave/Supervisor/Calendar"
-                   class="btn btn-danger d-flex align-items-center justify-content-center"
-                   style="
-                    height:2.7rem;
-                    min-width:7rem;
-                    white-space:nowrap;
-                    text-align:center;
-                    ">
-                    Calendar
-                </a>
+            <!-- Table -->
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Employee Name</th>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Day(s)</th>
+                            <th class="text-center">
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="requestTableBody">
+                    </tbody>
+
+                </table>
+
             </div>
-        </div>
 
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th class="px-7"><strong>Employee Name</strong></th>
-                        <th class="px-7"><strong>Leave Type</strong></th>
-                        <th class="px-7"><strong>Start Date</strong></th>
-                        <th class="px-7"><strong>End Date</strong></th>
-                        <th class="px-7"><strong>Duration</strong></th>
-                        <th class="px-7 text-center"><strong>Status</strong></th>
-                    </tr>
-                </thead>
-                <tbody id="requestTableBody">
-                </tbody>
-            </table>
-        </div>
+            <!-- Footer -->
 
-        <div class="d-flex align-items-center justify-content-between mt-3 ms-7 me-7">
-            <div class="text-muted" id="showingText">Showing 0-0 of 0 requests</div>
-            <nav aria-label="pagination">
-                <ul class="pagination mb-0" id="paginationList">
+            <div class="d-flex justify-content-between align-items-center mt-7">
+
+                <span id="showingText"
+                      class="text-gray-600">
+                    Showing 0-0 of 0 requests
+                </span>
+
+                <ul class="pagination mb-0"
+                    id="paginationList">
                 </ul>
-            </nav>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
 
 @section Scripts {

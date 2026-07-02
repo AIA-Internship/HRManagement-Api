@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HRManagement.Web.Pages.Modules.Leave;
 
-[Authorize]
+
 public class index : PageModel
 {
     public void OnGet()
