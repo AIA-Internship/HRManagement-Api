@@ -1,5 +1,4 @@
 ﻿using HRManagement.Domain.Models.Tables;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,18 +21,23 @@ public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignme
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Employee>()
+        builder.HasOne(x => x.Interval)
+            .WithMany()
+            .HasForeignKey(x => x.IntervalId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Filler)
             .WithMany()
             .HasForeignKey(x => x.FillerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Employee>()
+        builder.HasOne(x => x.Subject)
             .WithMany()
             .HasForeignKey(x => x.SubjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Assessment>()
-            .WithMany()
+        builder.HasOne(x => x.Assessment)
+            .WithMany(p => p.FillAssignments)
             .HasForeignKey(x => x.AssessmentId)
             .OnDelete(DeleteBehavior.Restrict);
 

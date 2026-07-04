@@ -19,7 +19,7 @@ public class AssessmentAnswerConfiguration : IEntityTypeConfiguration<Assessment
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.AssessmentQuestion)
-            .WithMany()
+            .WithMany(x => x.Answers)
             .HasForeignKey(x => x.AssessmentQuestionId)
             .OnDelete(DeleteBehavior.Restrict);
 

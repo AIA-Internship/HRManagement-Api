@@ -11,8 +11,8 @@ public class FillAssignment : BaseTable
     public string Status { get; private set; } = string.Empty;
 
     public PerformanceReviewPlanInterval Interval { get; set; } = null!;
-    public EmploymentInformation Filler { get; set; } = null!;
-    public EmploymentInformation Subject { get; set; } = null!;
+    public Employee Filler { get; set; } = null!;
+    public Employee Subject { get; set; } = null!;
     public Assessment Assessment { get; set; } = null!;
 
     protected FillAssignment() { }
