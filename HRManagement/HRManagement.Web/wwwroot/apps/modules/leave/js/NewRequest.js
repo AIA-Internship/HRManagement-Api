@@ -490,7 +490,7 @@
         document.getElementById('descriptionError').style.display = 'none';
     });
 
-    leaveForm.addEventListener('submit', function (e) {
+    leaveForm.addEventListener('submit', async function (e) {
 
         e.preventDefault();
 
@@ -531,25 +531,49 @@
             return;
         }
 
-        var formData = new FormData(leaveForm);
+        const formData = new FormData(leaveForm);
 
-        formData.delete("Attachment");
+        const leaveResponse = await fetch(
+            leaveForm.action || window.location.href,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
 
-        selectedFiles.forEach(function (file) {
-            formData.append("Attachment", file);
-        });
+        if (!leaveResponse.ok) {
+            alert("Failed to create leave request");
+            return;
+        }
 
-        fetch(leaveForm.action || window.location.href, {
-            method: "POST",
-            body: formData
-        })
-            .then(function (res) {
+        const leaveResult = await leaveResponse.json();
 
-                if (res.ok) {
-                    window.location.reload();
-                }
+        const leaveId = leaveResult.data.leaveId;
 
+        // upload attachment
+        if (selectedFiles.length > 0) {
+
+            const attachmentForm = new FormData();
+
+            attachmentForm.append(
+                "DocumentType",
+                "Supporting Document"
+            );
+
+            selectedFiles.forEach(file => {
+                attachmentForm.append("Files", file);
             });
+
+            await fetch(
+                `/employees/${employeeId}/leaves/${leaveId}/attachments`,
+                {
+                    method: "POST",
+                    body: attachmentForm
+                }
+            );
+        }
+
+        window.location.reload();
 
     });
 

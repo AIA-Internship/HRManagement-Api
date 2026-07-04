@@ -69,7 +69,6 @@ namespace HRManagement.Application.Features.Leave.Commands
 
             prev.IsCompleted = dto.LeaveStatus == 2 ? 1 : 0;
 
-            prev.ModifiedBy = dto.IsSupervisor ? prev.SupervisorId : prev.RequesterId;
             prev.ModifiedUtcDate = DateTime.UtcNow;
 
             return prev;
@@ -82,7 +81,6 @@ namespace HRManagement.Application.Features.Leave.Commands
 
                 RequesterId = dto.RequesterId,
                 SupervisorId = dto.SupervisorId,
-
                 LeaveStartDate = dto.LeaveStartDate,
                 LeaveStatus = dto.LeaveStatus ,
                 LeaveDescription = dto.LeaveDescription ,
@@ -93,7 +91,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                 IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
                 InitialRequestId = dto.LeaveId,
 
-                CreatedBy = dto.CreatedBy,
+                CreatedBy = dto.RequesterId,
                 CreatedUtcDate = dto.CreatedUtcDate,
 
                 ModifiedBy = dto.RequesterId,

@@ -11,9 +11,9 @@ namespace HRManagement.Application.Features.Leave.Queries
     {
         public int RequesterId { get; set; }
 
-        public getEmployeeTypeAmountQuery(int requesterid)
+        public getEmployeeTypeAmountQuery(int requesterId)
         {
-            RequesterId = requesterid;
+            RequesterId = requesterId;
         }
     }
 

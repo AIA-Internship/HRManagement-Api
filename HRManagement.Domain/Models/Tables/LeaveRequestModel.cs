@@ -15,7 +15,7 @@ public partial class    LeaveRequestModel
     public int RequesterId { get; set; }
 
     [Column("supervisor_id")]
-    public int SupervisorId { get; set; }
+    public string? SupervisorId { get; set; }
 
     [Column("leave_description")]
     public string LeaveDescription { get; set; } = null!;
@@ -54,5 +54,8 @@ public partial class    LeaveRequestModel
 
     [Column("modified_utc_date")]
     public DateTime ModifiedUtcDate { get; set; }
+
+    [Column("requester_display_id")]
+    public string? RequesterDisplayId { get; set; }
 
 }

@@ -43,7 +43,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             var req = request.LeaveRequestDto;
 
             Employee spv = await _employeeRepository.GetByIdAsync(req.SupervisorId);
-            Employee emp = await _employeeRepository.GetByIdAsync(req.RequesterId);
+            Employee emp = await _employeeRepository.GetByReqByIdAsync(req.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
@@ -109,7 +109,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             LeaveRequestModel request = mapFromCreateDto(dto);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
             Employee? supervisor = await _employeeRepository.GetByIdAsync(request.SupervisorId);
-            Employee? requester = await _employeeRepository.GetByIdAsync(request.RequesterId);
+            Employee? requester = await _employeeRepository.GetByReqByIdAsync(request.RequesterId);
             string subject = LeaveEmailTemplate.GetRequestApprovalToSpvSubject();
 
             try

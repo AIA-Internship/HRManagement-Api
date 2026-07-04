@@ -65,6 +65,11 @@ namespace HRManagement.MsSQL.Repositories
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+        public async Task AddLeaveAttachmentsAsync(List<LeaveAttachment> entities, CancellationToken ct)
+        {
+            await _sqldbContext.Set<LeaveAttachment>().AddRangeAsync(entities, ct);
+        }
+
 
 
         public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
@@ -238,7 +243,7 @@ namespace HRManagement.MsSQL.Repositories
 
             return result ?? new LeaveTypeCountDto();
         }
-        public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max)
+        public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(string? supervisorId, int max)
         {
             var result = await _dbContext.LeaveRequest
                 .Where(x => x.SupervisorId == supervisorId && x.IsDeleted == 0)
