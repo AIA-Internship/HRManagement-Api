@@ -24,7 +24,7 @@ public class PerformanceReviewPlanScoreWeightConfiguration : IEntityTypeConfigur
             .HasPrecision(5, 2);
 
         builder.HasOne(x => x.Plan)
-            .WithMany()
+            .WithMany(p => p.PerformanceReviewPlanScoreWeights)
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
