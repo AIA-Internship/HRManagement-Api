@@ -17,7 +17,7 @@ public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignme
             .IsRequired();
 
         builder.HasOne<PerformanceReviewPlan>()
-            .WithMany()
+            .WithMany(p => p.FillAssignments)
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -40,6 +40,16 @@ public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignme
             .WithMany(p => p.FillAssignments)
             .HasForeignKey(x => x.AssessmentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Modifier)
+           .WithMany()
+           .HasForeignKey(x => x.ModifiedBy)
+           .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
     }

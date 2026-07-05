@@ -35,6 +35,11 @@ public class PerformanceReviewPlanIntervalConfiguration : IEntityTypeConfigurati
 
         builder.HasQueryFilter(x => !x.IsDeleted);
 
+        builder.HasMany(x => x.FillAssignments)
+            .WithOne(fa => fa.Interval)
+            .HasForeignKey(fa => fa.IntervalId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(x => x.PerformanceReviewPlan)
             .WithMany(p => p.Intervals)
             .HasForeignKey(x => x.PlanId)

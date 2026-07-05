@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Features\Master\References\Commands\" />
-    <Folder Include="Features\Performance Review\Commands\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 

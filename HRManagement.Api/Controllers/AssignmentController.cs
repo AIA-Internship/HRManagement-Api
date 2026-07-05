@@ -1,6 +1,7 @@
 ﻿using HRManagement.Application.Auth.Permissions;
 using HRManagement.Application.Features.ESS.Employee.Commands;
 using HRManagement.Application.Features.PerformanceReview.Assignments.Queries;
+using HRManagement.Application.Features.PerformanceReview.Commands;
 using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using MediatR;
@@ -41,7 +42,18 @@ public class FillAssignmentController(ISender sender) : BaseApiController(sender
     [FromBody] SaveOrSubmitPeerReviewPayload payload,
     CancellationToken ct)
     {
-        var command = new SaveOrSubmitPeerReviewCommand(intervalId, payload, CurrentUserId);
+        var command = new SaveOrSubmitPeerReviewCommand(intervalId, payload, CurrentEmployeeId);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
+    }
+
+    [HttpPost("assignments/{assignmentId:int}/self-assessment")]
+    public async Task<IActionResult> SaveOrSubmitSelfAssessment(
+    int assignmentId,
+    [FromBody] SaveOrSubmitSelfAssessmentPayload payload,
+    CancellationToken ct)
+    {
+        var command = new SaveOrSubmitSelfAssessmentCommand(assignmentId, payload, CurrentEmployeeId);
         var result = await Sender.Send(command, ct);
         return HandleResult(result);
     }
