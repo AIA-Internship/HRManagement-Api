@@ -17,7 +17,6 @@
         0% {
             background-position: 200% 0;
         }
-
         100% {
             background-position: -200% 0;
         }
@@ -26,9 +25,59 @@
     .bg-locked-row {
         background-color: #f9f9f9 !important;
     }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: #4b5563;
+        transition: color 0.15s ease;
+    }
+
+    .breadcrumb-link:hover {
+        color: #111827;
+    }
+
+    .badge-status-done {
+        background-color: #e6f4ea !important;
+        color: #137333 !important;
+        border-color: #ceead6 !important;
+    }
+
+    .badge-status-review {
+        background-color: #eff6ff !important;
+        color: #1d4ed8 !important;
+        border-color: #bfdbfe !important;
+    }
+
+    .badge-status-progress {
+        background-color: #fef7e0 !important;
+        color: #b06000 !important;
+        border-color: #feebc8 !important;
+    }
+
+    .badge-status-started {
+        background-color: #fce8e6 !important;
+        color: #c5221f !important;
+        border-color: #fad2cf !important;
+    }
+
+    .badge-status-locked {
+        background-color: #f1f5f9 !important;
+        color: #64748b !important;
+        border-color: #cbd5e1 !important;
+    }
 </style>
 
 <div class="px-10">
+    <!-- Cohesive Breadcrumb Navigation -->
+    <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            <i class="ki-duotone ki-left fs-7"></i> Performance Review
+        </a>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-900 fw-semibold">Assignments</span>
+    </nav>
+
+    <!-- Header Section -->
     <div class="mb-6">
         <h1 class="fw-bold text-gray-900 mb-2" id="pageTitle"><span id="planTypeHeader">...</span> Assignments</h1>
         <p class="text-muted fs-6" id="pageSubtitle">View and manage your <span id="planTypeSub">...</span> performance review assignments</p>
@@ -88,13 +137,16 @@
             if (response.status === 401) { window.aiaAuth.signOut(); return null; }
             if (response.status === 404) return null;
             if (!response.ok) throw new Error("Failed to fetch ongoing plan");
-
-            return await response.json();
+            const parsed = await response.json()
+            console.log("parsed", parsed)
+            return parsed;
         }
 
         async function initializeAssignmentsPage() {
             try {
                 const apiResult = await getOngoingPlanData();
+
+                console.log("apiResult", apiResult)
 
                 if (!apiResult || apiResult.isError || !apiResult.content) {
                     renderEmptyState("No active performance review plans found for this period.");
@@ -106,73 +158,55 @@
                 document.getElementById("planTypeHeader").innerText = plan.periodType;
                 document.getElementById("planTypeSub").innerText = plan.periodType.toLowerCase();
 
-                // Group assignments by their nested interval definitions dynamically
-                const intervalsMap = new Map();
-
-                (plan.assignments || []).forEach(assignment => {
-                    const intNumber = assignment.intervalId;
-
-                    if (!intervalsMap.has(intNumber)) {
-                        let friendlyLabel = `Interval ${intNumber}`;
-
-                        if (assignment.interval) {
-                            const sDate = new Date(assignment.interval.startDate);
-                            friendlyLabel = plan.periodType.toLowerCase() === 'monthly'
-                                ? sDate.toLocaleString('default', { month: 'long', year: 'numeric' })
-                                : `Quarter ${Math.floor(sDate.getMonth() / 3) + 1} ${sDate.getFullYear()}`;
-                        }
-
-                        intervalsMap.set(intNumber, {
-                            intervalNumber: intNumber,
-                            period: friendlyLabel,
-                            planId: plan.planId,
-                            rawInterval: assignment.interval,
-                            assignments: []
-                        });
-                    }
-                    intervalsMap.get(intNumber).assignments.push(assignment);
-                });
-
-                const now = new Date();
-
-                // Map out configurations sorted sequentially by interval sequence ID
-                const mappedIntervals = Array.from(intervalsMap.values())
-                    .sort((a, b) => a.intervalNumber - b.intervalNumber)
-                    .map(group => {
-                        let isLocked = false;
-
-                        if (group.rawInterval) {
-                            const startDate = new Date(group.rawInterval.startDate);
-                            if (now < startDate || group.rawInterval.status.toLowerCase() === 'locked') {
-                                isLocked = true;
-                            }
-                        }
-
-                        let overallStatus = isLocked ? 'locked' : 'not-started';
-
-                        if (!isLocked && group.assignments.length > 0) {
-                            const statuses = group.assignments.map(a => a.status.toLowerCase());
-                            if (statuses.every(s => s === 'done' || s === 'completed')) {
-                                overallStatus = 'done';
-                            } else if (statuses.some(s => s === 'ongoing' || s === 'in-progress' || s === 'on-review')) {
-                                overallStatus = 'on-review';
-                            }
-                        }
-
-                        return {
-                            period: group.period,
-                            intervalNumber: group.intervalNumber,
-                            planId: group.planId,
-                            status: overallStatus,
-                            locked: isLocked,
-                            assignments: group.assignments
-                        };
-                    });
-
-                if (mappedIntervals.length === 0) {
+                if (!plan.intervals || plan.intervals.length === 0) {
                     renderEmptyState("No evaluation intervals assigned for this timeframe.");
                     return;
                 }
+
+                const now = new Date();
+
+                // Refactored to leverage the direct structural timeline arrays from API
+                const mappedIntervals = plan.intervals.map(interval => {
+                    const isLocked = interval.status.toLowerCase() === 'locked' || now < new Date(interval.startDate);
+                    
+                    let friendlyLabel = `Interval ${interval.intervalNumber}`;
+                    const sDate = new Date(interval.startDate);
+                    
+                    if (plan.periodType.toLowerCase() === 'monthly') {
+                        friendlyLabel = sDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    } else if (plan.periodType.toLowerCase() === 'quarterly') {
+                        friendlyLabel = `Quarter ${Math.floor(sDate.getMonth() / 3) + 1} ${sDate.getFullYear()}`;
+                    }
+
+                    // Derived state calculation logic based on nested internal properties
+                    let overallStatus = isLocked ? 'locked' : 'not-started';
+                    const assignments = interval.assignments || [];
+
+                    if (!isLocked && assignments.length > 0) {
+                        const statuses = assignments.map(a => String(a.status).toLowerCase().trim());
+                        console.log(assignments, statuses)
+                        if (statuses.every(s => s === 'done')) {
+                            overallStatus = 'done';
+                            console.log(1)
+                        } else if (statuses.every(s => s === 'on review' || s === 'done')) {
+                            overallStatus = 'on-review';
+                        } else if (statuses.some(s => s === 'drafted' || s === 'on review')) {
+                            overallStatus = 'in-progress';
+                        } else if (statuses.every(s => s === 'not started')) {
+                            overallStatus = 'not-started';
+                        } else {
+                            overallStatus = 'not-started';
+                        }
+                    }
+                    
+                    return {
+                        period: friendlyLabel,
+                        intervalId: interval.id,
+                        status: overallStatus,
+                        locked: isLocked,
+                        assignments: assignments
+                    };
+                });
 
                 renderAssignmentSection(mappedIntervals);
 
@@ -183,21 +217,24 @@
 
         function renderAssignmentSection(intervals) {
             const container = document.getElementById("assignmentsContainer");
-
             const itemsHtml = intervals.map((item) => {
                 const badgeStyles = {
-                    'done': 'badge-light-success text-success',
-                    'on-review': 'badge-light-warning text-warning',
-                    'not-started': 'badge-light-danger text-danger',
-                    'locked': 'text-muted'
+                    'done': 'badge-status-done',
+                    'on-review': 'badge-status-review',
+                    'in-progress': 'badge-status-progress',
+                    'not-started': 'badge-status-started',
+                    'locked': 'badge-status-locked'
                 };
 
                 const badgeLabels = {
                     'done': 'Done',
                     'on-review': 'On Review',
+                    'in-progress': 'In Progress',
                     'not-started': 'Not Started',
                     'locked': 'LOCKED'
                 };
+
+                console.log(item.status)
 
                 const badgeClass = badgeStyles[item.status] || 'badge-light-secondary';
                 const labelText = badgeLabels[item.status] || 'Not Started';
@@ -207,7 +244,7 @@
                 const selfAsstId = selfAsst ? selfAsst.assignmentId : 0;
 
                 const selfAssessmentUrl = `/PerformanceReview/Assignments/SelfAssessment/${selfAsstId}`;
-                const peerReviewUrl = `/PerformanceReview/Assignments/PeerReview/${item.intervalNumber}`;
+                const peerReviewUrl = `/PerformanceReview/Assignments/PeerReview/${item.intervalId}`;
 
                 return `
                     <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100 ${rowBackgroundClass}">
@@ -274,30 +311,12 @@
             document.getElementById("assignmentsContainer").innerHTML = `
                 <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light-neutral">
                     <i class="bi bi-journal-x fs-3x text-muted mb-3"></i>
-                    <div class="text-gray-700 fw-bold fs-5 mb-1">No Operational Sessions Active</div>
+                    <div class="text-gray-700 fw-bold fs-5 mb-1">No Active Evaluation Contexts Found</div>
                     <p class="text-muted m-0">${escapeHtml(message)}</p>
                 </div>
             `;
             document.getElementById("planTypeHeader").innerText = "Review";
             document.getElementById("planTypeSub").innerText = "review";
-        }
-
-        function renderEmptyState(message) {
-            const skeleton = document.getElementById("skeletonContainer");
-            if (skeleton) skeleton.remove();
-
-            document.getElementById("assessmentTitle").innerText = "Review Assignment";
-            document.getElementById("assessmentMeta").innerText = "Terjadi kendala data penilaian";
-
-            document.getElementById("questionsWrapper").innerHTML = `
-                <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light rounded-3 shadow-sm">
-                    <div class="mb-3">
-                        <i class="ki-duotone ki-information-2 text-muted fs-3x" style="font-size: 3rem;"></i>
-                    </div>
-                    <div class="text-gray-800 fw-bold fs-5 mb-1">Tidak Dapat Memuat Penilaian</div>
-                    <p class="text-muted m-0">${escapeHtml(message)}</p>
-                </div>
-            `;
         }
 
         function escapeHtml(str) {

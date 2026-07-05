@@ -90,7 +90,7 @@
 
     <div class="mb-6">
         <h1 class="fw-bold text-gray-900 mb-2" id="assessmentTitle">Self Assessment Processing</h1>
-        <p class="text-muted fs-6" id="assessmentMeta">Memuat detail data penugasan penilaian...</p>
+        <p class="text-muted fs-6 d-flex flex-wrap align-items-center gap-2" id="assessmentMeta">Memuat detail data penugasan penilaian...</p>
     </div>
 
     <div id="questionsWrapper" class="d-flex flex-column gap-4">
@@ -132,6 +132,22 @@
             return;
         }
 
+        // Auto-grow tracking listener matching PeerReview logic
+        const wrapper = document.getElementById("questionsWrapper");
+        if (wrapper) {
+            wrapper.addEventListener("input", function (event) {
+                if (event.target.classList.contains("auto-grow")) {
+                    adjustTextareaHeight(event.target);
+                }
+            });
+        }
+
+        let resizeTimeout;
+        window.addEventListener("resize", function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(autoGrowAllTextareas, 150);
+        });
+
         try {
             const res = await getAssignmentData(currentAssignmentId);
 
@@ -146,6 +162,17 @@
             renderEmptyState("Gagal memuat detail data penilaian akibat masalah jaringan atau sistem.");
         }
     });
+
+    function adjustTextareaHeight(textarea) {
+        if (!textarea) return;
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    function autoGrowAllTextareas() {
+        const textareas = document.querySelectorAll("#questionsWrapper .auto-grow");
+        textareas.forEach(t => { adjustTextareaHeight(t); });
+    }
 
     async function getAssignmentData(assignmentId) {
         const token = window.aiaAuth && window.aiaAuth.getToken();
@@ -172,7 +199,6 @@
         return await response.json();
     }
 
-    // Remaining logic of original layout functions here...
     function renderAssessmentData(content) {
         const assessment = content.assessment;
         if (!assessment || !assessment.questions) {
@@ -183,8 +209,34 @@
         const typeLabel = assessment.assessmentType.replace('-', ' ').toUpperCase();
         const statusLabel = content.status.toLowerCase();
 
+        // 1. Resolve localized audit tracking string if assignment has history
+        let auditHtml = "";
+
+        if (statusLabel !== "not started") {
+            const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
+
+            // Format UTC timestamp to Local user browser format safely
+            let formattedDate = "N/A";
+            if (content.modifiedUtcDate) {
+                const dateObj = new Date(content.modifiedUtcDate.endsWith('Z') ? content.modifiedUtcDate : content.modifiedUtcDate + 'Z');
+                formattedDate = dateObj.toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            }
+
+            const modifierName = content.modifiedBy || "System";
+                auditHtml = `
+                <span class="badge badge-light-dark border border-gray-300 px-3 py-1.5 fs-7 ms-md-2 text-muted fw-normal">
+                    Last ${verb}&nbsp;at&nbsp;<strong>${escapeHtml(formattedDate)}</strong>&nbsp;by&nbsp;<strong>${escapeHtml(modifierName)}</strong>
+                </span>`;
+        }
+
         document.getElementById("assessmentTitle").innerText = typeLabel;
-        document.getElementById("assessmentMeta").innerText = `Status: ${statusLabel.toUpperCase()} • ASSIGNMENT ID: ${content.assignmentId} • PLAN ID: ${content.planId}`;
+        document.getElementById("assessmentMeta").innerHTML = `
+            <span>Take a moment to reflect on your journey and growth. Self Assessment status: ${statusLabel.toUpperCase()}</span>
+            ${auditHtml}
+        `;
 
         const wrapper = document.getElementById("questionsWrapper");
         const skeleton = document.getElementById("skeletonContainer");
@@ -206,14 +258,17 @@
             renderRatingLayout(assessment.questions, cardContainer, isEditable);
         } else if (assessment.answerType === "text") {
             renderTextLayout(assessment.questions, cardContainer, isEditable);
+            setTimeout(autoGrowAllTextareas, 50);
         }
 
         const actionContainer = document.getElementById("actionButtonsContainer");
         actionContainer.classList.replace("d-none", "d-flex");
 
         if (!isEditable) {
-            document.getElementById("btnSave").remove();
-            document.getElementById("btnSubmit").remove();
+            const saveBtn = document.getElementById("btnSave");
+            const submitBtn = document.getElementById("btnSubmit");
+            if (saveBtn) saveBtn.remove();
+            if (submitBtn) submitBtn.remove();
         }
     }
 
@@ -266,14 +321,14 @@
             let inputElementHtml = "";
             if (isEditable) {
                 inputElementHtml = `
-                    <textarea class="form-control bg-light text-gray-800 border rounded-3 p-4"
+                    <textarea class="form-control bg-light text-gray-600 border rounded-3 p-4 fs-7 p-0 border-0 w-100 flex-grow-1 auto-grow"
                               rows="3"
                               placeholder="Tuliskan tanggapan evaluasi di sini..."
-                              style="resize: vertical; min-height: 100px; line-height: 1.6;"
-                              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; handleTextUpdate(${item.id}, this.value);">${escapeHtml(rawTextValue)}</textarea>
+                              style="resize: none; min-height: 90px; line-height: 1.6; overflow-y: hidden; font-size: 0.85rem; background: transparent;"
+                              oninput="handleTextUpdate(${item.id}, this.value);">${escapeHtml(rawTextValue)}</textarea>
                 `;
             } else {
-                const fallbackDisplay = rawTextValue ? escapeHtml(rawTextValue) : `<em class="text-muted">Belum ada jawaban teks...</em>`;
+                const fallbackDisplay = rawTextValue ? escapeHtml(rawTextValue).replace(/\n/g, '<br>') : `<em class="text-muted">Belum ada jawaban teks...</em>`;
                 inputElementHtml = `
                     <div class="rounded-3 p-4 bg-light border text-gray-700" style="line-height: 1.6; word-break: break-word;">
                         <p class="m-0">${fallbackDisplay}</p>
@@ -306,7 +361,8 @@
                 <div class="text-gray-800 fw-bold fs-5 mb-1">Gagal Memuat Informasi</div>
                 <p class="text-muted m-0">${escapeHtml(message)}</p>
             </div>`;
-        document.getElementById("actionButtonsContainer").remove();
+        const actionButtons = document.getElementById("actionButtonsContainer");
+        if (actionButtons) actionButtons.remove();
     }
 
     function escapeHtml(str) {
@@ -314,7 +370,115 @@
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
+    // Existing event mechanics retained...
     function handleCancel() { window.location.href = "/PerformanceReview/Assignments"; }
-    function handleSaveChanges() { console.log("Save draft triggered."); }
-    function handleSubmitAssignment() { console.log("Submit triggered."); }
+
+    function handleRatingSelection(btn, questionId, value) {
+        document.querySelectorAll(`.btn-rating-node-${questionId}`).forEach(el => {
+            el.classList.remove('btn-rating-active');
+            el.classList.add('bg-white');
+        });
+
+        btn.classList.add('btn-rating-active');
+        btn.classList.remove('bg-white');
+
+        const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+        if (targetQuestion) {
+            targetQuestion.answer = targetQuestion.answer || {};
+            targetQuestion.answer.ratingValue = value;
+        }
+    }
+
+    function handleTextUpdate(questionId, value) {
+        const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+        if (targetQuestion) {
+            targetQuestion.answer = targetQuestion.answer || {};
+            targetQuestion.answer.textValue = value;
+        }
+    }
+
+    function buildPayload(isDraftValue) {
+        const mode = (currentAssignmentData.assessment?.answerType || "text").toLowerCase();
+
+        const answersPayload = (currentAssignmentData.assessment?.questions || []).map(q => {
+            let currentVal = "";
+            if (q.answer) {
+                if (typeof q.answer === 'object') {
+                    currentVal = mode === "text" ? q.answer.textValue : q.answer.ratingValue;
+                } else {
+                    currentVal = q.answer;
+                }
+            }
+
+            return {
+                assessmentQuestionId: q.id,
+                textValue: mode === "text" ? (String(currentVal || "")) : null,
+                ratingValue: mode === "rating" ? (parseInt(currentVal, 10) || null) : null
+            };
+        });
+
+        return {
+            isDraft: isDraftValue,
+            answers: answersPayload
+        };
+    }
+
+    async function sendSelfAssessment(payload) {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) {
+            alert("Session expired. Please log in again.");
+            window.aiaAuth && window.aiaAuth.signOut();
+            return;
+        }
+
+        try {
+            document.getElementById("btnSave").disabled = true;
+            document.getElementById("btnSubmit").disabled = true;
+
+            const response = await fetch(`${API_BASE}/api/assignment/assignments/${currentAssignmentId}/self-assessment`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || "Failed to process self assessment evaluation request.");
+            }
+
+            alert(payload.isDraft ? "Draft self assessment successfully saved!" : "Self assessment submitted successfully!");
+            window.location.href = "/PerformanceReview/Assignments";
+
+        } catch (error) {
+            console.error(error);
+            alert(error.message || "An unexpected system error occurred.");
+        } finally {
+            const btnSave = document.getElementById("btnSave");
+            const btnSubmit = document.getElementById("btnSubmit");
+            if (btnSave) btnSave.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+        }
+    }
+
+    function handleSaveChanges() {
+        const payload = buildPayload(true);
+        sendSelfAssessment(payload);
+    }
+
+    function handleSubmitAssignment() {
+        if (!confirm("Are you sure you want to finalize this self assessment? This action cannot be undone.")) {
+            return;
+        }
+        const payload = buildPayload(false);
+        sendSelfAssessment(payload);
+    }
 </script>
