@@ -61,12 +61,6 @@ namespace HRManagement.Application.Features.Leave.Commands
             prev.DayAmount = dto.DayAmount ?? prev.DayAmount;
             prev.LeaveType = dto.LeaveType ?? prev.LeaveType;
 
-            // handle attachment null / kosong
-            if (dto.AttachmentPath != null && dto.AttachmentPath.Length > 0)
-            {
-                prev.AttachmentPath = MappingHelper.joinAttachmentPath(dto.AttachmentPath);
-            }
-
             prev.IsCompleted = dto.LeaveStatus == 2 ? 1 : 0;
 
             prev.ModifiedUtcDate = DateTime.UtcNow;
@@ -86,7 +80,6 @@ namespace HRManagement.Application.Features.Leave.Commands
                 LeaveDescription = dto.LeaveDescription ,
                 DayAmount = dto.DayAmount ,
                 LeaveType = dto.LeaveType ,
-                AttachmentPath = dto.AttachmentPath,
 
                 IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
                 InitialRequestId = dto.LeaveId,

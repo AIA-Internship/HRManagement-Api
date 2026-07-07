@@ -2,15 +2,6 @@
 {
     public class MappingHelper
     {
-        public static string[] splitAttachmentPath(string attachmentPath)
-        {
-            return attachmentPath.Split(";");
-        }
-
-        public static string joinAttachmentPath(string[] attachmentPaths)
-        {
-            return string.Join(";", attachmentPaths);
-        }
         public static LeaveType leaveTypeFromInt(int num)
         {
             if (Enum.IsDefined(typeof(LeaveType), num))

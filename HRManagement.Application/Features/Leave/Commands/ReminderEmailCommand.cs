@@ -80,7 +80,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             {
                 LeaveTableConfig config = await _repo.getLeaveTableConfig();
                 Employee? supervisor = await _employeeRepo.GetByIdAsync(request.SupervisorId);
-                Employee? requester = await _employeeRepo.GetByReqByIdAsync(request.RequesterId);
+                Employee? requester = await _employeeRepo.GetByIdAsync(request.RequesterId);
                 string subject = LeaveTemplate.ReminderEmailSubject();
                 string body = LeaveTemplate.ReminderEmailBody(request, requester, supervisor, config.redirect_link);
 

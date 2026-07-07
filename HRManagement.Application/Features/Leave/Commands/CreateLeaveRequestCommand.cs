@@ -43,15 +43,15 @@ namespace HRManagement.Application.Features.Leave.Commands
             var req = request.LeaveRequestDto;
 
             Employee spv = await _employeeRepository.GetByIdAsync(req.SupervisorId);
-            Employee emp = await _employeeRepository.GetByReqByIdAsync(req.RequesterId);
+            Employee emp = await _employeeRepository.GetByIdAsync(req.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
             try
             {
-                bool created = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
+                int createdId = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
 
-                if(!created)
+                if (createdId <= 0)
                 {
                     return ApiHelperResponse.Failed("Failed to create leave request");
                 }
@@ -89,17 +89,18 @@ namespace HRManagement.Application.Features.Leave.Commands
                 RequesterId = dto.RequesterId,
                 SupervisorId = dto.SupervisorId,
                 LeaveDescription = dto.LeaveDescription,
+                LeaveStatus = 1,
                 LeaveStartDate = dto.leaveStartDate,
                 DayAmount = dto.DayAmount,
                 LeaveType = dto.LeaveType,
-                AttachmentPath = MappingHelper.joinAttachmentPath(dto.AttachmentPath),
                 IsDeleted = 0,
                 IsEdited = 0,
                 IsCompleted = 0,
                 CreatedBy = dto.RequesterId,
                 CreatedUtcDate = DateTime.UtcNow,
                 ModifiedBy = dto.RequesterId,
-                ModifiedUtcDate = DateTime.UtcNow
+                ModifiedUtcDate = DateTime.UtcNow,
+                RequesterDisplayId = dto.RequesterDisplayId
             };
 
         }
@@ -109,7 +110,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             LeaveRequestModel request = mapFromCreateDto(dto);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
             Employee? supervisor = await _employeeRepository.GetByIdAsync(request.SupervisorId);
-            Employee? requester = await _employeeRepository.GetByReqByIdAsync(request.RequesterId);
+            Employee? requester = await _employeeRepository.GetByIdAsync(request.RequesterId);
             string subject = LeaveEmailTemplate.GetRequestApprovalToSpvSubject();
 
             try

@@ -15,10 +15,10 @@ public partial class    LeaveRequestModel
     public int RequesterId { get; set; }
 
     [Column("supervisor_id")]
-    public string? SupervisorId { get; set; }
+    public int SupervisorId { get; set; }
 
     [Column("leave_description")]
-    public string LeaveDescription { get; set; } = null!;
+    public string? LeaveDescription { get; set; } = null!;
 
     [Column("leave_status")]
     public int LeaveStatus { get; set; }
@@ -39,9 +39,6 @@ public partial class    LeaveRequestModel
 
     [Column("is_completed")]
     public int IsCompleted { get; set; }
-
-    [Column("attachment_path")]
-    public string? AttachmentPath { get; set; }
 
     [Column("created_by")]
     public int CreatedBy { get; set; }

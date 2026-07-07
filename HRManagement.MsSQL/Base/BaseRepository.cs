@@ -16,12 +16,7 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
         _dbContext = _sqldbContext.Set<T>(); // Inisialisasi DbSet
     }
 
-    public virtual async Task<T?> GetByIdAsync(string? id, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.FindAsync(new object[] { id }, cancellationToken);
-    }
-
-    public virtual async Task<T?> GetByReqByIdAsync(int id, CancellationToken cancellationToken = default)
+    public virtual async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.FindAsync(new object[] { id }, cancellationToken);
     }

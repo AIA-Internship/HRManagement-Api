@@ -13,7 +13,6 @@
 
         public int? LeaveType { get; set; } = 1;
 
-        public string[]? AttachmentPath { get; set; } = {""};
         public bool IsSupervisor { get; set; } = true;
     }
 }

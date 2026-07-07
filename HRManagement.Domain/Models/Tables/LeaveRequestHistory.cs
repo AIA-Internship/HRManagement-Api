@@ -13,7 +13,7 @@ namespace HRManagement.Domain.Models.Tables
         public int RequesterId { get; set; }
 
         [Column("supervisor_id")]
-        public string? SupervisorId { get; set; }
+        public int SupervisorId { get; set; }
 
         [Column("leave_description")]
         public string LeaveDescription { get; set; } = null!;
@@ -39,9 +39,6 @@ namespace HRManagement.Domain.Models.Tables
         [Column("initial_request_id")]
         public int InitialRequestId { get; set; }
 
-
-        [Column("attachment_path")]
-        public string? AttachmentPath { get; set; }
 
         [Column("created_by")]
         public int CreatedBy { get; set; }

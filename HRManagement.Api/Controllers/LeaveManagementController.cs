@@ -127,7 +127,7 @@ namespace HRManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<ApiResponse>> getBySupervisorId([FromQuery] int max = 10)
         {
-            string objectName = nameof(getBySupervisorId).ToString();
+            string objectName = nameof(getBySupervisorId);
 
             try
             {
@@ -138,7 +138,7 @@ namespace HRManagement.Api.Controllers
                 if (userIdClaim == null)
                     return Unauthorized("UserId not found in token");
 
-                string? supervisorId = userIdClaim;
+                int supervisorId = int.Parse(userIdClaim);
 
                 var query = new GetLeaveRequestBySupervisorId(supervisorId, max);
 
@@ -157,21 +157,33 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+
+        [Authorize]
         [HttpPost]
         [Route("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<ApiResponse>> createLeaveRequest([FromBody] CreateLeaveRequestDto content)
         {
-            string objectName = nameof(createLeaveRequest).ToString();
+            string objectName = nameof(createLeaveRequest);
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                content.RequesterId = int.Parse(userIdClaim);
+
                 var command = new CreateLeaveRequestCommand(content);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
 
@@ -182,7 +194,6 @@ namespace HRManagement.Api.Controllers
                 _logger.LogError(ex, "Error in {Service}.", objectName);
                 return BadRequest(ex.Message);
             }
-
         }
 
 

@@ -8,11 +8,11 @@ namespace HRManagement.Api.Application.Interfaces
     {
         public Task<LeaveRequestModel> getLeaveRequestById(int id);
         public Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max);
-        public Task<bool> createLeaveRequest(LeaveRequestModel leaveRequest);
+        public Task<int> createLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> updateLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> softDelete(int id);
         public Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month);
-        public Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(string? supervisorId, int max);
+        public Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max);
         //public Task<LeaveDetailDto> getLeaveDetailById(int leaveId);
 
         

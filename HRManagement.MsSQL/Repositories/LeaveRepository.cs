@@ -16,7 +16,7 @@ namespace HRManagement.MsSQL.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task<bool> createLeaveRequest(LeaveRequestModel leaveRequest)
+        public async Task<int> createLeaveRequest(LeaveRequestModel leaveRequest)
         {
             try
             {
@@ -24,12 +24,18 @@ namespace HRManagement.MsSQL.Repositories
 
                 var affectedRows = await _dbContext.SaveChangesAsync();
 
-                return affectedRows > 0;
+                if (affectedRows > 0)
+                {
+                    // After SaveChanges, EF should have populated the LeaveId
+                    return leaveRequest.LeaveId;
+                }
+
+                return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return false;
+                return 0;
             }
 
         }
@@ -120,7 +126,6 @@ namespace HRManagement.MsSQL.Repositories
                     lr.DayAmount,
                     lr.LeaveType,
                     lr.IsCompleted,
-                    lr.AttachmentPath,
                     lr.CreatedUtcDate,
                     e.FullName
                 )
@@ -243,7 +248,7 @@ namespace HRManagement.MsSQL.Repositories
 
             return result ?? new LeaveTypeCountDto();
         }
-        public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(string? supervisorId, int max)
+        public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max)
         {
             var result = await _dbContext.LeaveRequest
                 .Where(x => x.SupervisorId == supervisorId && x.IsDeleted == 0)

@@ -8,9 +8,9 @@ using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class GetLeaveRequestBySupervisorId(string? supervisorId, int max): IRequest<Result<ApiResponse<List<ReadLeaveRequestDto>>>>
+    public class GetLeaveRequestBySupervisorId(int supervisorId, int max): IRequest<Result<ApiResponse<List<ReadLeaveRequestDto>>>>
     {
-        public string? SupervisorId { get; set; } = supervisorId;
+        public int SupervisorId { get; set; } = supervisorId;
         public int Max { get; set; } = max;
 
 
@@ -92,9 +92,6 @@ namespace HRManagement.Application.Features.Leave.Queries
                 dayAmount = model.DayAmount,
                 leaveType = (model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
-                attachmentPath = model.AttachmentPath != null
-                    ? MappingHelper.splitAttachmentPath(model.AttachmentPath)
-                    : null,
                 createdUtcDate = model.CreatedUtcDate
             };
         }

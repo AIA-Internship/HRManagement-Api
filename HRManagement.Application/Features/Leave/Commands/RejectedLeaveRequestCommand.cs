@@ -45,7 +45,7 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
 
             LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
-            Employee requester = await _employeeRepository.GetByReqByIdAsync(leaveRequest.RequesterId);
+            Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(RejectedLeaveRequestCommandHandler));
