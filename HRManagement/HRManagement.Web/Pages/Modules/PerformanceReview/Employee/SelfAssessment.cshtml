@@ -12,6 +12,9 @@
         --foreground: #111827;
         --muted-foreground: #4b5563;
         --destructive: #dc2626;
+        --destructive-hover: #b91c1c;
+        --transparent-hover: #f1f5f9;
+        --border-gray: #cbd5e1;
     }
 
     .btn-rating-active {
@@ -19,6 +22,32 @@
         color: white !important;
         border-color: var(--destructive) !important;
     }
+
+    /* Cohesive Action Button Variants */
+    .btn-action-primary {
+        background-color: var(--destructive) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-primary:hover {
+            background-color: var(--destructive-hover) !important;
+        }
+
+    .btn-action-secondary {
+        background-color: transparent !important;
+        color: var(--muted-foreground) !important;
+        border: 1px solid var(--border-gray) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-secondary:hover {
+            background-color: var(--transparent-hover) !important;
+            color: var(--foreground) !important;
+        }
 
     .skeleton-placeholder {
         background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
@@ -37,7 +66,6 @@
         }
     }
 
-    /* Breadcrumb Utilities */
     .breadcrumb-link {
         text-decoration: none;
         color: var(--muted-foreground);
@@ -62,11 +90,10 @@
 
     <div class="mb-6">
         <h1 class="fw-bold text-gray-900 mb-2" id="assessmentTitle">Self Assessment Processing</h1>
-        <p class="text-muted fs-6" id="assessmentMeta">Memuat detail data penugasan penilaian...</p>
+        <p class="text-muted fs-6 d-flex flex-wrap align-items-center gap-2" id="assessmentMeta">Memuat detail data penugasan penilaian...</p>
     </div>
 
     <div id="questionsWrapper" class="d-flex flex-column gap-4">
-
         <div id="skeletonContainer" class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
             <div class="d-flex flex-column">
                 <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
@@ -80,33 +107,21 @@
                         <div class="skeleton-placeholder h-40px w-40px"></div>
                     </div>
                 </div>
-                <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
-                    <div class="d-flex flex-column gap-2 flex-grow-1">
-                        <div class="skeleton-placeholder h-25px w-60 rounded-1"></div>
-                        <div class="skeleton-placeholder h-15px w-40 rounded-1"></div>
-                    </div>
-                    <div class="d-flex gap-2 ms-4">
-                        <div class="skeleton-placeholder h-40px w-40px"></div>
-                        <div class="skeleton-placeholder h-40px w-40px"></div>
-                        <div class="skeleton-placeholder h-40px w-40px"></div>
-                    </div>
-                </div>
             </div>
         </div>
-
     </div>
 
     <div id="actionButtonsContainer" class="d-none justify-content-end gap-3 mt-6 mb-10">
-        <button type="button" class="btn btn-light fw-bold" onclick="handleCancel()">Kembali</button>
-        <button type="button" id="btnSave" class="btn btn-light-primary fw-bold" onclick="handleSaveChanges()">Simpan Draft</button>
-        <button type="button" id="btnSubmit" class="btn btn-primary fw-bold" onclick="handleSubmitAssignment()">Kirim Penilaian</button>
+        <button type="button" class="btn btn-action-secondary fw-bold" onclick="handleCancel()">Kembali</button>
+        <button type="button" id="btnSave" class="btn btn-action-secondary fw-bold" onclick="handleSaveChanges()">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn btn-action-primary fw-bold" onclick="handleSubmitAssignment()">Kirim Penilaian</button>
     </div>
 </div>
 
 <script>
     const API_BASE = "https://localhost:7089";
     let currentAssignmentId = null;
-    let currentAssignmentData = null; // Stores runtime response data modification state
+    let currentAssignmentData = null;
 
     document.addEventListener("DOMContentLoaded", async function () {
         const pathSegments = window.location.pathname.split('/');
@@ -116,6 +131,22 @@
             renderEmptyState("ID Penugasan tidak valid atau tidak ditemukan pada URL.");
             return;
         }
+
+        // Auto-grow tracking listener matching PeerReview logic
+        const wrapper = document.getElementById("questionsWrapper");
+        if (wrapper) {
+            wrapper.addEventListener("input", function (event) {
+                if (event.target.classList.contains("auto-grow")) {
+                    adjustTextareaHeight(event.target);
+                }
+            });
+        }
+
+        let resizeTimeout;
+        window.addEventListener("resize", function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(autoGrowAllTextareas, 150);
+        });
 
         try {
             const res = await getAssignmentData(currentAssignmentId);
@@ -131,6 +162,17 @@
             renderEmptyState("Gagal memuat detail data penilaian akibat masalah jaringan atau sistem.");
         }
     });
+
+    function adjustTextareaHeight(textarea) {
+        if (!textarea) return;
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    function autoGrowAllTextareas() {
+        const textareas = document.querySelectorAll("#questionsWrapper .auto-grow");
+        textareas.forEach(t => { adjustTextareaHeight(t); });
+    }
 
     async function getAssignmentData(assignmentId) {
         const token = window.aiaAuth && window.aiaAuth.getToken();
@@ -167,8 +209,34 @@
         const typeLabel = assessment.assessmentType.replace('-', ' ').toUpperCase();
         const statusLabel = content.status.toLowerCase();
 
+        // 1. Resolve localized audit tracking string if assignment has history
+        let auditHtml = "";
+
+        if (statusLabel !== "not started") {
+            const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
+
+            // Format UTC timestamp to Local user browser format safely
+            let formattedDate = "N/A";
+            if (content.modifiedUtcDate) {
+                const dateObj = new Date(content.modifiedUtcDate.endsWith('Z') ? content.modifiedUtcDate : content.modifiedUtcDate + 'Z');
+                formattedDate = dateObj.toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            }
+
+            const modifierName = content.modifiedBy || "System";
+                auditHtml = `
+                <span class="badge badge-light-dark border border-gray-300 px-3 py-1.5 fs-7 ms-md-2 text-muted fw-normal">
+                    Last ${verb}&nbsp;at&nbsp;<strong>${escapeHtml(formattedDate)}</strong>&nbsp;by&nbsp;<strong>${escapeHtml(modifierName)}</strong>
+                </span>`;
+        }
+
         document.getElementById("assessmentTitle").innerText = typeLabel;
-        document.getElementById("assessmentMeta").innerText = `Status: ${statusLabel.toUpperCase()} • ASSIGNMENT ID: ${content.assignmentId} • PLAN ID: ${content.planId}`;
+        document.getElementById("assessmentMeta").innerHTML = `
+            <span>Take a moment to reflect on your journey and growth. Self Assessment status: ${statusLabel.toUpperCase()}</span>
+            ${auditHtml}
+        `;
 
         const wrapper = document.getElementById("questionsWrapper");
         const skeleton = document.getElementById("skeletonContainer");
@@ -190,21 +258,22 @@
             renderRatingLayout(assessment.questions, cardContainer, isEditable);
         } else if (assessment.answerType === "text") {
             renderTextLayout(assessment.questions, cardContainer, isEditable);
+            setTimeout(autoGrowAllTextareas, 50);
         }
 
-        // Display and manage action buttons container layout base properties
         const actionContainer = document.getElementById("actionButtonsContainer");
         actionContainer.classList.replace("d-none", "d-flex");
 
         if (!isEditable) {
-            document.getElementById("btnSave").remove();
-            document.getElementById("btnSubmit").remove();
+            const saveBtn = document.getElementById("btnSave");
+            const submitBtn = document.getElementById("btnSubmit");
+            if (saveBtn) saveBtn.remove();
+            if (submitBtn) submitBtn.remove();
         }
     }
 
     function renderRatingLayout(questions, container, isEditable) {
         let htmlContent = "";
-
         questions.forEach(item => {
             const currentRating = item.answer ? item.answer.ratingValue : 0;
             const indexStr = String(item.questionOrder).padStart(2, '0');
@@ -227,7 +296,7 @@
             }).join('');
 
             htmlContent += `
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-gray-100 last-border-0">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-gray-100 last-border-0 py-4">
                     <div class="flex-grow-1 pe-md-4 mb-3 mb-md-0">
                         <p class="m-0 fw-semibold text-gray-900">
                             <span class="text-danger">${indexStr}.</span> ${escapedQuestion}
@@ -239,30 +308,27 @@
                 </div>
             `;
         });
-
         container.innerHTML = htmlContent;
     }
 
     function renderTextLayout(questions, container, isEditable) {
         let htmlContent = "";
-
         questions.forEach(item => {
             const indexStr = String(item.questionOrder).padStart(2, '0');
             const escapedQuestion = escapeHtml(item.questionText);
             const rawTextValue = item.answer && item.answer.textValue ? item.answer.textValue : "";
 
             let inputElementHtml = "";
-
             if (isEditable) {
                 inputElementHtml = `
-                    <textarea class="form-control bg-light text-gray-800 border rounded-3 p-4"
+                    <textarea class="form-control bg-light text-gray-600 border rounded-3 p-4 fs-7 p-0 border-0 w-100 flex-grow-1 auto-grow"
                               rows="3"
                               placeholder="Tuliskan tanggapan evaluasi di sini..."
-                              style="resize: vertical; min-height: 100px; line-height: 1.6;"
-                              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; handleTextUpdate(${item.id}, this.value);">${escapeHtml(rawTextValue)}</textarea>
+                              style="resize: none; min-height: 90px; line-height: 1.6; overflow-y: hidden; font-size: 0.85rem; background: transparent;"
+                              oninput="handleTextUpdate(${item.id}, this.value);">${escapeHtml(rawTextValue)}</textarea>
                 `;
             } else {
-                const fallbackDisplay = rawTextValue ? escapeHtml(rawTextValue) : `<em class="text-muted">Belum ada jawaban teks...</em>`;
+                const fallbackDisplay = rawTextValue ? escapeHtml(rawTextValue).replace(/\n/g, '<br>') : `<em class="text-muted">Belum ada jawaban teks...</em>`;
                 inputElementHtml = `
                     <div class="rounded-3 p-4 bg-light border text-gray-700" style="line-height: 1.6; word-break: break-word;">
                         <p class="m-0">${fallbackDisplay}</p>
@@ -283,128 +349,136 @@
                 </div>
             `;
         });
-
         container.innerHTML = htmlContent;
     }
 
-    /* Input Synchronization Handlers */
-    function handleRatingSelection(element, questionId, numValue) {
-        const structuralNodes = document.querySelectorAll(`.btn-rating-node-${questionId}`);
-        structuralNodes.forEach(btn => btn.classList.remove('btn-rating-active'));
-        element.classList.add('btn-rating-active');
-
-        if (currentAssignmentData && currentAssignmentData.assessment.questions) {
-            const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
-            if (targetQuestion) {
-                if (!targetQuestion.answer) targetQuestion.answer = { id: 0, textValue: null };
-                targetQuestion.answer.ratingValue = numValue;
-            }
-        }
-    }
-
-    function handleTextUpdate(questionId, textValue) {
-        if (currentAssignmentData && currentAssignmentData.assessment.questions) {
-            const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
-            if (targetQuestion) {
-                if (!targetQuestion.answer) targetQuestion.answer = { id: 0, ratingValue: null };
-                targetQuestion.answer.textValue = textValue;
-            }
-        }
-    }
-
-    /* Action Handlers */
-    function handleCancel() {
-        window.location.href = "/PerformanceReview/Assignments";
-    }
-
-    async function handleSaveChanges() {
-        const token = window.aiaAuth && window.aiaAuth.getToken();
-        if (!token) return;
-
-        // Visual State Optimization Mock
-        const btnSave = document.getElementById("btnSave");
-        const originalText = btnSave.innerText;
-        btnSave.innerText = "Menyimpan...";
-        btnSave.disabled = true;
-
-        try {
-            const response = await fetch(`${API_BASE}/api/assignment/${currentAssignmentId}/save`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(currentAssignmentData)
-            });
-
-            if (!response.ok) throw new Error("Failed to save evaluation changes");
-
-            alert("Draft berhasil disimpan!");
-        } catch (err) {
-            console.error("Save Error:", err);
-            alert("Terjadi kegagalan sistem saat menyimpan data.");
-        } finally {
-            btnSave.innerText = originalText;
-            btnSave.disabled = false;
-        }
-    }
-
-    async function handleSubmitAssignment() {
-        if (!confirm("Apakah Anda yakin ingin mengirimkan penilaian ini? Data yang terkirim tidak dapat diubah kembali.")) {
-            return;
-        }
-
-        const token = window.aiaAuth && window.aiaAuth.getToken();
-        if (!token) return;
-
-        const btnSubmit = document.getElementById("btnSubmit");
-        btnSubmit.innerText = "Mengirim...";
-        btnSubmit.disabled = true;
-
-        try {
-            const response = await fetch(`${API_BASE}/api/assignment/${currentAssignmentId}/submit`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(currentAssignmentData)
-            });
-
-            if (!response.ok) throw new Error("Failed to finalize assignment workflow submission");
-
-            alert("Penilaian berhasil dikirim!");
-            window.location.href = "/PerformanceReview/Assignments";
-        } catch (err) {
-            console.error("Submission Error:", err);
-            alert("Terjadi kesalahan sistem saat memproses pengiriman data.");
-            btnSubmit.innerText = "Kirim Penilaian";
-            btnSubmit.disabled = false;
-        }
-    }
-
     function renderEmptyState(message) {
-        const skeleton = document.getElementById("skeletonContainer");
-        if (skeleton) skeleton.remove();
-
+        const wrapper = document.getElementById("questionsWrapper");
         document.getElementById("assessmentTitle").innerText = "Review Assignment";
-        document.getElementById("assessmentMeta").innerText = "Terjadi kendala data penilaian";
-        document.getElementById("questionsWrapper").innerHTML = `
+        wrapper.innerHTML = `
             <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light rounded-3 shadow-sm">
-                <i class="ki-duotone ki-information-2 text-muted fs-3x mb-3" style="font-size: 3rem;"></i>
-                <div class="text-gray-800 fw-bold fs-5 mb-1">Tidak Dapat Memuat Penilaian</div>
+                <div class="mb-3"><i class="bi bi-exclamation-circle text-muted fs-3x"></i></div>
+                <div class="text-gray-800 fw-bold fs-5 mb-1">Gagal Memuat Informasi</div>
                 <p class="text-muted m-0">${escapeHtml(message)}</p>
-            </div>
-        `;
+            </div>`;
+        const actionButtons = document.getElementById("actionButtonsContainer");
+        if (actionButtons) actionButtons.remove();
     }
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Existing event mechanics retained...
+    function handleCancel() { window.location.href = "/PerformanceReview/Assignments"; }
+
+    function handleRatingSelection(btn, questionId, value) {
+        document.querySelectorAll(`.btn-rating-node-${questionId}`).forEach(el => {
+            el.classList.remove('btn-rating-active');
+            el.classList.add('bg-white');
+        });
+
+        btn.classList.add('btn-rating-active');
+        btn.classList.remove('bg-white');
+
+        const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+        if (targetQuestion) {
+            targetQuestion.answer = targetQuestion.answer || {};
+            targetQuestion.answer.ratingValue = value;
+        }
+    }
+
+    function handleTextUpdate(questionId, value) {
+        const targetQuestion = currentAssignmentData.assessment.questions.find(q => q.id === questionId);
+        if (targetQuestion) {
+            targetQuestion.answer = targetQuestion.answer || {};
+            targetQuestion.answer.textValue = value;
+        }
+    }
+
+    function buildPayload(isDraftValue) {
+        const mode = (currentAssignmentData.assessment?.answerType || "text").toLowerCase();
+
+        const answersPayload = (currentAssignmentData.assessment?.questions || []).map(q => {
+            let currentVal = "";
+            if (q.answer) {
+                if (typeof q.answer === 'object') {
+                    currentVal = mode === "text" ? q.answer.textValue : q.answer.ratingValue;
+                } else {
+                    currentVal = q.answer;
+                }
+            }
+
+            return {
+                assessmentQuestionId: q.id,
+                textValue: mode === "text" ? (String(currentVal || "")) : null,
+                ratingValue: mode === "rating" ? (parseInt(currentVal, 10) || null) : null
+            };
+        });
+
+        return {
+            isDraft: isDraftValue,
+            answers: answersPayload
+        };
+    }
+
+    async function sendSelfAssessment(payload) {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) {
+            alert("Session expired. Please log in again.");
+            window.aiaAuth && window.aiaAuth.signOut();
+            return;
+        }
+
+        try {
+            document.getElementById("btnSave").disabled = true;
+            document.getElementById("btnSubmit").disabled = true;
+
+            const response = await fetch(`${API_BASE}/api/assignment/assignments/${currentAssignmentId}/self-assessment`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || "Failed to process self assessment evaluation request.");
+            }
+
+            alert(payload.isDraft ? "Draft self assessment successfully saved!" : "Self assessment submitted successfully!");
+            window.location.href = "/PerformanceReview/Assignments";
+
+        } catch (error) {
+            console.error(error);
+            alert(error.message || "An unexpected system error occurred.");
+        } finally {
+            const btnSave = document.getElementById("btnSave");
+            const btnSubmit = document.getElementById("btnSubmit");
+            if (btnSave) btnSave.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+        }
+    }
+
+    function handleSaveChanges() {
+        const payload = buildPayload(true);
+        sendSelfAssessment(payload);
+    }
+
+    function handleSubmitAssignment() {
+        if (!confirm("Are you sure you want to finalize this self assessment? This action cannot be undone.")) {
+            return;
+        }
+        const payload = buildPayload(false);
+        sendSelfAssessment(payload);
     }
 </script>

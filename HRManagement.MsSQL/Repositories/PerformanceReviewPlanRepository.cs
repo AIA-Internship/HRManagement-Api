@@ -231,7 +231,8 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .Where(p => !p.IsDeleted
                      && p.Status == "ongoing"
                      && currentDate >= p.StartDate
-                     && currentDate <= p.EndDate)
+                     && currentDate <= p.EndDate
+                     )
             .Select(p => new EmployeeOngoingPerformanceReviewPlanResponseDto
             {
                 PlanId = p.Id,
@@ -241,49 +242,47 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
 
-                Assignments = _sqldbContext.FillAssignments
-                    .Where(fa => !fa.IsDeleted
-                              && fa.PlanId == p.Id
-                              && fa.FillerId == fillerId)
-                    .Select(fa => new FillAssignmentResponseDto
+                // 1. Navigate from Plan -> Intervals (Sorted chronologically on DB level)
+                Intervals = p.Intervals
+                    .Where(i => !i.IsDeleted)
+                    .OrderBy(i => i.IntervalNumber)
+                    .Select(i => new PerformanceReviewPlanIntervalResponseDto
                     {
-                        AssignmentId = fa.Id,
-                        IntervalId = fa.IntervalId,
-                        SubjectId = fa.SubjectId,
-                        AssessmentId = fa.AssessmentId,
-                        Status = fa.Status,
+                        Id = i.Id,
+                        PlanId = i.PlanId,
+                        IntervalNumber = i.IntervalNumber,
+                        StartDate = i.StartDate,
+                        DueDate = i.DueDate,
+                        EndDate = i.EndDate,
+                        Status = i.Status,
 
-                        // NESTED INTERVAL INFORMATION
-                        // Correlates the assignment's IntervalId back to the Plan's concrete Interval details
-                        Interval = p.Intervals
-                            .Where(i => !i.IsDeleted && i.Id == fa.IntervalId)
-                            .Select(i => new PerformanceReviewPlanIntervalResponseDto(
-                                i.Id,
-                                i.PlanId,
-                                i.IntervalNumber,
-                                i.StartDate,
-                                i.DueDate,
-                                i.EndDate,
-                                i.Status
-                            ))
-                            .FirstOrDefault(),
-
-                        Assessment = _sqldbContext.Assessments
-                            .Where(a => !a.IsDeleted && a.Id == fa.AssessmentId)
-                            .Select(a => new AssessmentBriefResponseDto
+                        Assignments = i.FillAssignments
+                            .Where(fa => !fa.IsDeleted && fa.FillerId == fillerId)
+                            .Select(fa => new FillAssignmentResponseDto
                             {
-                                Id = a.Id,
-                                AnswerType = a.AnswerType,
-                                AssessmentType = a.AssessmentType,
-                                FillerRoleId = a.FillerRoleId,
-                                FillerJobTitle = a.FillerJobTitle,
-                                SubjectRoleId = a.SubjectRoleId,
-                                SubjectJobTitle = a.SubjectJobTitle
+                                AssignmentId = fa.Id,
+                                SubjectId = fa.SubjectId,
+                                AssessmentId = fa.AssessmentId,
+                                Status = fa.Status,
+
+                                Assessment = fa.Assessment != null && !fa.Assessment.IsDeleted
+                                    ? new AssessmentBriefResponseDto
+                                    {
+                                        Id = fa.Assessment.Id,
+                                        AnswerType = fa.Assessment.AnswerType,
+                                        AssessmentType = fa.Assessment.AssessmentType,
+                                        FillerRoleId = fa.Assessment.FillerRoleId,
+                                        FillerJobTitle = fa.Assessment.FillerJobTitle,
+                                        SubjectRoleId = fa.Assessment.SubjectRoleId,
+                                        SubjectJobTitle = fa.Assessment.SubjectJobTitle
+                                    }
+                                    : null
                             })
-                            .FirstOrDefault()
+                            .ToList()
                     })
                     .ToList()
             })
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         return planDetail;

@@ -10,6 +10,7 @@ public class AssessmentQuestion : BaseTable
     public string QuestionType { get; private set; } = string.Empty;
 
     public Assessment Assessment { get; private set; } = null!;
+    public ICollection<AssessmentAnswer> Answers { get; set; } = new List<AssessmentAnswer>();
 
     protected AssessmentQuestion() { }
 

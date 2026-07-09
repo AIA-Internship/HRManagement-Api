@@ -11,9 +11,10 @@ public class FillAssignment : BaseTable
     public string Status { get; private set; } = string.Empty;
 
     public PerformanceReviewPlanInterval Interval { get; set; } = null!;
-    public EmploymentInformation Filler { get; set; } = null!;
-    public EmploymentInformation Subject { get; set; } = null!;
+    public Employee Filler { get; set; } = null!;
+    public Employee Subject { get; set; } = null!;
     public Assessment Assessment { get; set; } = null!;
+    public Employee? Modifier { get; set; }
 
     protected FillAssignment() { }
 
@@ -40,5 +41,22 @@ public class FillAssignment : BaseTable
     {
         Status = UseIfProvided(status, Status);
         MarkAsModified(actionerId);
+    }
+
+    public void FinalizeSubmission(bool isDraft, int actionerId)
+    {
+        string calculatedStatus;
+
+        if (isDraft)
+        {
+            calculatedStatus = "drafted";
+        }
+        else
+        {
+            string answerType = Assessment?.AnswerType?.ToLower() ?? "text";
+            calculatedStatus = answerType == "rating" ? "done" : "on review";
+        }
+
+        this.ApplyUpdate(calculatedStatus, actionerId);
     }
 }

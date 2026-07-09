@@ -1,33 +1,764 @@
-﻿@page "/PerformanceReview/Assignments/PeerReview/{planId}/{intervalNumber}"
+﻿@page "/PerformanceReview/Assignments/PeerReview/{intervalNumber}"
 @model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.PeerReviewModel
 
 @{
-    ViewData["Title"] = "Peer Review";
+    ViewData["Title"] = "Peer Review Details";
 }
 
-<div class="card p-6 m-10 bg-white shadow-sm">
-    <h2 class="fw-bold text-gray-800 mb-4">Peer Review Processing</h2>
-    <div class="d-flex flex-column gap-3 p-4 bg-light rounded text-gray-700 font-monospace">
-        <div>Captured Plan ID: <span id="displayPlanId" class="fw-bold text-success">...</span></div>
-        <div>Captured Interval Number: <span id="displayIntervalNumber" class="fw-bold text-info">...</span></div>
+<style>
+    :root {
+        --destructive: #dc2626;
+        --destructive-hover: #b91c1c;
+        --transparent-hover: #f1f5f9;
+        --border-gray: #cbd5e1;
+    }
+
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Rating block styling */
+    .rating-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e4e6ef;
+        background-color: #ffffff;
+        color: #7e8299;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border-radius: 0.35rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .rating-btn:hover {
+            background-color: #f5f8fa;
+            border-color: #b5b5c3;
+        }
+
+        .rating-btn.active {
+            background-color: var(--destructive) !important;
+            color: #ffffff !important;
+            border-color: var(--destructive) !important;
+        }
+
+    /* Cohesive Action Button Variants */
+    .btn-action-primary {
+        background-color: var(--destructive) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-primary:hover {
+            background-color: var(--destructive-hover) !important;
+        }
+
+    .btn-action-secondary {
+        background-color: transparent !important;
+        color: #4b5563 !important;
+        border: 1px solid var(--border-gray) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-secondary:hover {
+            background-color: var(--transparent-hover) !important;
+            color: #111827 !important;
+        }
+
+    /* Matrix CSS Grid Styling */
+    .matrix-grid-container {
+        display: grid;
+        width: 100%;
+    }
+
+    .matrix-grid-header {
+        background-color: #f5f8fa;
+        color: #5e6278;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05rem;
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid #eff2f5;
+        display: flex;
+        align-items: center;
+    }
+
+    .matrix-grid-cell {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid #eff2f5;
+        color: #3f4254;
+    }
+
+    .matrix-question-text {
+        font-weight: 600;
+        color: #181c32;
+    }
+
+    /* Base Peer Badge Colors & Variables */
+    .peer-badge {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+        border: 1px solid var(--badge-border-color, #e4e6ef);
+    }
+
+        .peer-badge.status-empty {
+            --badge-border-color: #e4e6ef;
+            background-color: #f5f8fa;
+            color: #7e8299;
+        }
+
+        .peer-badge.status-partial {
+            --badge-border-color: #ffeb9c;
+            background-color: #fff8dd;
+            color: #edab2f;
+        }
+
+        .peer-badge.status-complete {
+            --badge-border-color: #d4edda;
+            background-color: #e8fff3;
+            color: #50cd89;
+        }
+
+        .peer-badge.matrix-selected {
+            border-width: 4px !important;
+            border-color: var(--badge-border-color) !important;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+        }
+
+    .peer-badge-check {
+        width: 16px;
+        height: 16px;
+        background-color: #a0a5b1;
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+
+    .peer-badge.status-empty.matrix-selected .peer-badge-check {
+        background-color: #7e8299;
+    }
+
+    .peer-badge.status-partial.matrix-selected .peer-badge-check {
+        background-color: #ffc700;
+    }
+
+    .peer-badge.status-complete.matrix-selected .peer-badge-check {
+        background-color: #50cd89;
+    }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: #4b5563;
+        transition: color 0.15s ease;
+    }
+
+        .breadcrumb-link:hover {
+            color: #111827;
+        }
+
+    .text-warning-flash {
+        color: #f1416c !important;
+        font-weight: 800 !important;
+        transform: scale(1.03);
+        transition: all 0.15s ease-in-out;
+    }
+
+    .limit-text-label {
+        transition: all 0.2s ease;
+    }
+</style>
+
+<div class="px-10">
+    <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            <i class="ki-duotone ki-left fs-7"></i> Performance Review
+        </a>
+        <span class="text-gray-300">/</span>
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link">Assignments</a>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-900 fw-semibold">Peer Review History</span>
+    </nav>
+
+    <div class="mb-6">
+        <h1 id="assessmentTitle" class="fw-bold text-gray-900 mb-2">PEER REVIEW</h1>
+        <div id="assessmentMeta" class="text-muted fw-semibold fs-6 d-flex flex-wrap align-items-center gap-2">
+            Select up to 3 peers to compare and complete your evaluations.
+        </div>
+    </div>
+
+    <div id="peersHeaderCard" class="card p-6 bg-white shadow-sm border border-gray-100 mb-6 d-none">
+        <div class="fs-7 fw-bold text-gray-400 text-uppercase mb-3 tracking-wider">
+            Peers Assignment Checklist <span id="limitWarningLabel" class="limit-text-label">(Only <span id="dynamicLimitText">1-3</span> subjects can be visible in matrix at the same time)</span>
+        </div>
+        <div id="peersBadgeContainer" class="d-flex flex-wrap gap-3"></div>
+    </div>
+
+    <div id="skeletonContainer" class="d-flex flex-column gap-6">
+        <div class="card p-8 bg-white shadow-sm border border-gray-100">
+            <div class="skeleton-placeholder h-20px w-30 mb-4"></div>
+            <div class="skeleton-placeholder h-40px w-100"></div>
+        </div>
+    </div>
+
+    <div id="questionsWrapper" class="card bg-white border border-gray-100 shadow-sm rounded-lg d-none overflow-hidden">
+        <div class="overflow-auto">
+            <div id="matrixGrid" class="matrix-grid-container"></div>
+        </div>
+    </div>
+
+    <div id="actionButtonsContainer" class="d-none justify-content-end gap-3 mt-6 mb-10">
+        <button type="button" class="btn btn-action-secondary fw-bold" onclick="handleCancel()">Kembali</button>
+        <button type="button" id="btnSave" class="btn btn-action-secondary fw-bold" onclick="handleSaveChanges()">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn btn-action-primary fw-bold" onclick="handleSubmitAssignment()">Kirim Penilaian</button>
     </div>
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Split the pathname path segments into an array array elements
-        const pathSegments = window.location.pathname.split('/');
-        
-        // Count backward from the trailing edge arrays
-        const intervalNumber = pathSegments[pathSegments.length - 1];
-        const planId = pathSegments[pathSegments.length - 2];
+@section Scripts {
+    <script>
+        let globalAssignments = [];
+        let selectedAssignmentIds = [];
+        let currentMaxVisible = 3;
 
-        // Print to Console
-        console.log("Captured Plan ID:", planId);
-        console.log("Captured Interval Number:", intervalNumber);
+        let currentIntervalId = 0;
+        const API_BASE = "https://localhost:7089";
 
-        // Print to Screen UI
-        document.getElementById("displayPlanId").innerText = planId;
-        document.getElementById("displayIntervalNumber").innerText = intervalNumber;
-    });
-</script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const segments = window.location.pathname.split('/');
+            currentIntervalId = parseInt(segments[segments.length - 1], 10) || 0;
+
+            setupBreakpointObserver();
+            initializePeerReviewPage(currentIntervalId);
+
+            const matrixGrid = document.getElementById("matrixGrid");
+            if (matrixGrid) {
+                matrixGrid.addEventListener("input", function (event) {
+                    if (event.target.classList.contains("auto-grow")) {
+                        adjustRowHeightsForTextarea(event.target);
+                    }
+                });
+            }
+
+            let resizeTimeout;
+            window.addEventListener("resize", function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(autoGrowAllVisibleTextareas, 150);
+            });
+        });
+
+        function adjustRowHeightsForTextarea(textarea) {
+            const matrixGrid = document.getElementById("matrixGrid");
+            if (!matrixGrid || !textarea) return;
+
+            const cell = textarea.closest('.matrix-grid-cell');
+            if (!cell) return;
+
+            const activeAssignments = globalAssignments.filter(a => selectedAssignmentIds.includes(a.assignmentId));
+            const totalColumns = 1 + activeAssignments.length;
+
+            const gridItems = Array.from(matrixGrid.children);
+            const cellIndex = gridItems.indexOf(cell);
+            if (cellIndex === -1) return;
+
+            const rowIndex = Math.floor(cellIndex / totalColumns);
+            const startRowIndex = rowIndex * totalColumns;
+            const endRowIndex = startRowIndex + totalColumns;
+
+            const rowItems = gridItems.slice(startRowIndex, endRowIndex);
+            const rowTextareas = rowItems.map(item => item.querySelector('.auto-grow')).filter(t => t !== null);
+
+            rowTextareas.forEach(t => { t.style.height = "auto"; });
+            const maxHeight = Math.max(...rowTextareas.map(t => t.scrollHeight));
+            rowTextareas.forEach(t => { t.style.height = maxHeight + "px"; });
+        }
+
+        function autoGrowAllVisibleTextareas() {
+            setTimeout(() => {
+                const textareas = document.querySelectorAll("#matrixGrid .auto-grow");
+                textareas.forEach(t => { adjustRowHeightsForTextarea(t); });
+            }, 100);
+        }
+
+        function setupBreakpointObserver() {
+            const mediaQuerySmall = window.matchMedia('(max-width: 767.98px)');
+            const mediaQueryMedium = window.matchMedia('(min-width: 768px) and (max-width: 991.98px)');
+
+            function handleBreakpointChange() {
+                const limitTextEl = document.getElementById("dynamicLimitText");
+
+                if (mediaQuerySmall.matches) {
+                    currentMaxVisible = 1;
+                    if (limitTextEl) limitTextEl.innerText = "1";
+                } else if (mediaQueryMedium.matches) {
+                    currentMaxVisible = 2;
+                    if (limitTextEl) limitTextEl.innerText = "1-2";
+                } else {
+                    currentMaxVisible = 3;
+                    if (limitTextEl) limitTextEl.innerText = "1-3";
+                }
+
+                if (selectedAssignmentIds.length > currentMaxVisible) {
+                    selectedAssignmentIds = selectedAssignmentIds.slice(-currentMaxVisible);
+                    if (globalAssignments.length > 0) {
+                        renderPeersChecklist();
+                        renderMatrixView();
+                    }
+                }
+            }
+
+            mediaQuerySmall.addEventListener('change', handleBreakpointChange);
+            mediaQueryMedium.addEventListener('change', handleBreakpointChange);
+            handleBreakpointChange();
+        }
+
+        async function fetchPeerReviewDetails(intervalId) {
+            const token = window.aiaAuth && window.aiaAuth.getToken();
+            if (!token) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return null;
+            }
+
+            const response = await fetch(`${API_BASE}/api/assignment/intervals/${intervalId}/peer-reviews`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return null;
+            }
+            if (response.status === 404) return null;
+            if (!response.ok) throw new Error("Failed to fetch assignment detail");
+            return await response.json();
+        }
+
+        async function initializePeerReviewPage(intervalId) {
+            try {
+                let apiResult = await fetchPeerReviewDetails(intervalId);
+
+                const skeleton = document.getElementById("skeletonContainer");
+                if (skeleton) skeleton.remove();
+
+                if (!apiResult || apiResult.isError || !apiResult.content || apiResult.content.length === 0) {
+                    renderEmptyState("No assignments found or configured for this execution window.");
+                    return;
+                }
+
+                globalAssignments = apiResult.content;
+                selectedAssignmentIds = globalAssignments.slice(0, currentMaxVisible).map(a => a.assignmentId);
+
+                // --- Audit Tracking Engine (Finds Most Recent Status & Timestamp) ---
+                let baselineAssessment = globalAssignments[0]?.assessment;
+                if (baselineAssessment && baselineAssessment.assessmentType) {
+                    document.getElementById("assessmentTitle").innerText = baselineAssessment.assessmentType.replace('-', ' ').toUpperCase();
+                }
+
+                // Check for overall submitted flag vs drafted context
+                const isSubmitted = globalAssignments.some(a => String(a.status).toLowerCase() === "done" || String(a.status).toLowerCase() === "on review");
+                const hasAnyDrafts = globalAssignments.some(a => String(a.status).toLowerCase() === "drafted");
+
+                if (isSubmitted || hasAnyDrafts) {
+                    const verb = isSubmitted ? "Submitted" : "Saved";
+
+                    // Filter down to valid modification timestamps to isolate the truest recent record
+                    const elementsWithDates = globalAssignments.filter(a => a.modifiedUtcDate);
+
+                    if (elementsWithDates.length > 0) {
+                        // Sort records descendingly by datetime stamp
+                        elementsWithDates.sort((a, b) => {
+                            const dateA = new Date(a.modifiedUtcDate.endsWith('Z') ? a.modifiedUtcDate : a.modifiedUtcDate + 'Z');
+                            const dateB = new Date(b.modifiedUtcDate.endsWith('Z') ? b.modifiedUtcDate : b.modifiedUtcDate + 'Z');
+                            return dateB - dateA;
+                        });
+
+                        const mostRecentRecord = elementsWithDates[0];
+                        const dateObj = new Date(mostRecentRecord.modifiedUtcDate.endsWith('Z') ? mostRecentRecord.modifiedUtcDate : mostRecentRecord.modifiedUtcDate + 'Z');
+
+                        const formattedDate = dateObj.toLocaleString(undefined, {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                        });
+                        const modifierName = mostRecentRecord.modifiedBy || "System";
+
+                        const auditHtml = `
+                            <span class="badge badge-light-dark border border-gray-300 px-3 py-1.5 fs-7 ms-md-2 text-muted fw-normal">
+                                Last ${verb}&nbsp;at&nbsp;<strong>${escapeHtml(formattedDate)}</strong>&nbsp;by&nbsp;<strong>${escapeHtml(modifierName)}</strong>
+                            </span>`;
+
+                        document.getElementById("assessmentMeta").innerHTML = `
+                            <span>Select up to 3 peers to compare and complete your evaluations.</span>
+                            ${auditHtml}
+                        `;
+                    }
+                }
+
+                renderPeersChecklist();
+                renderMatrixView();
+
+                document.getElementById("actionButtonsContainer").classList.replace("d-none", "d-flex");
+
+                if (isSubmitted) {
+                    document.getElementById("btnSave").classList.add("d-none");
+                    document.getElementById("btnSubmit").classList.add("d-none");
+                    // Update text if finalized but keep meta structure
+                    const textSpan = document.getElementById("assessmentMeta").querySelector("span");
+                    if (textSpan) textSpan.innerText = "This peer review assessment has already been finalized and submitted.";
+                } else {
+                    document.getElementById("btnSave").classList.remove("d-none");
+                    document.getElementById("btnSubmit").classList.remove("d-none");
+                }
+
+            } catch (error) {
+                console.error(error);
+                renderEmptyState("An error occurred while displaying assignment configurations.");
+            }
+        }
+
+        function getAssignmentCompletionStatus(assignment) {
+            const questions = assignment.assessment?.questions || [];
+            if (questions.length === 0) return "status-empty";
+
+            const answeredCount = questions.filter(q => {
+                if (!q.answer) return false;
+
+                const textVal = typeof q.answer === 'object' ? q.answer.textValue : q.answer;
+                const ratingVal = typeof q.answer === 'object' ? q.answer.ratingValue : null;
+
+                return String(textVal ?? ratingVal ?? '').trim() !== "";
+            }).length;
+
+            if (answeredCount === 0) return "status-empty";
+            if (answeredCount === questions.length) return "status-complete";
+            return "status-partial";
+        }
+
+        function triggerLimitWarningEffect() {
+            const label = document.getElementById("limitWarningLabel");
+            if (!label) return;
+
+            label.classList.add("text-warning-flash");
+            setTimeout(() => {
+                label.classList.remove("text-warning-flash");
+            }, 800);
+        }
+
+        function renderPeersChecklist() {
+            const peersHeaderCard = document.getElementById("peersHeaderCard");
+            const peersBadgeContainer = document.getElementById("peersBadgeContainer");
+
+            peersBadgeContainer.innerHTML = "";
+
+            globalAssignments.forEach(assignment => {
+                const name = assignment.subject?.fullName || "Unknown Peer";
+                const isSelected = selectedAssignmentIds.includes(assignment.assignmentId);
+
+                const selectedClass = isSelected ? "matrix-selected" : "";
+                const completionStatusClass = getAssignmentCompletionStatus(assignment);
+                const checkMark = isSelected ? "✓" : "+";
+
+                const badgeId = `badge-${assignment.assignmentId}`;
+
+                peersBadgeContainer.innerHTML += `
+                    <div id="${badgeId}" class="peer-badge ${completionStatusClass} ${selectedClass}" onclick="togglePeerSelection(${assignment.assignmentId})">
+                        <div class="peer-badge-check">${checkMark}</div>&nbsp;
+                        <span>${escapeHtml(name)}</span>
+                    </div>
+                `;
+            });
+
+            peersHeaderCard.classList.remove("d-none");
+        }
+
+        function togglePeerSelection(assignmentId) {
+            const index = selectedAssignmentIds.indexOf(assignmentId);
+            if (index > -1) {
+                if (selectedAssignmentIds.length === 1) {
+                    triggerLimitWarningEffect();
+                    return;
+                }
+                selectedAssignmentIds.splice(index, 1);
+            } else {
+                if (selectedAssignmentIds.length >= currentMaxVisible) {
+                    selectedAssignmentIds.shift();
+                }
+                selectedAssignmentIds.push(assignmentId);
+            }
+
+            renderPeersChecklist();
+            renderMatrixView();
+        }
+
+        function handleTextChange(assignmentId, questionId, value) {
+            const assignment = globalAssignments.find(a => a.assignmentId === assignmentId);
+            if (assignment && assignment.assessment && assignment.assessment.questions) {
+                const question = assignment.assessment.questions.find(q => q.id === questionId);
+                if (question) {
+                    question.answer = value;
+
+                    const badgeEl = document.getElementById(`badge-${assignmentId}`);
+                    if (badgeEl) {
+                        const newStatus = getAssignmentCompletionStatus(assignment);
+                        badgeEl.classList.remove('status-empty', 'status-partial', 'status-complete');
+                        badgeEl.classList.add(newStatus);
+                    }
+                }
+            }
+        }
+
+        function handleRatingSelect(assignmentId, questionId, ratingValue) {
+            const assignment = globalAssignments.find(a => a.assignmentId === assignmentId);
+            if (assignment && assignment.assessment && assignment.assessment.questions) {
+                const question = assignment.assessment.questions.find(q => q.id === questionId);
+                if (question) {
+                    const stringRating = String(ratingValue);
+
+                    if (question.answer === stringRating) {
+                        question.answer = "";
+                    } else {
+                        question.answer = stringRating;
+                    }
+
+                    renderPeersChecklist();
+                    renderMatrixView();
+                }
+            }
+        }
+
+        function renderMatrixView() {
+            const activeAssignments = globalAssignments.filter(a => selectedAssignmentIds.includes(a.assignmentId));
+            const gridContainer = document.getElementById("matrixGrid");
+            const wrapper = document.getElementById("questionsWrapper");
+
+            gridContainer.innerHTML = "";
+
+            if(activeAssignments.length === 0) return;
+
+            const peerCount = activeAssignments.length;
+            const columnPercentage = 72 / peerCount;
+            gridContainer.style.gridTemplateColumns = `28% repeat(${peerCount}, ${columnPercentage}%)`;
+
+            let gridHtml = "";
+
+            gridHtml += `<div class="matrix-grid-header" style="border: 0.25px solid #cccccc">Questions</div>`;
+            activeAssignments.forEach(assignment => {
+                const name = assignment.subject?.fullName || "Unknown Peer";
+                gridHtml += `
+                    <div class="matrix-grid-header justify-content-center text-center" style="border: 0.25px solid #cccccc">
+                        ${escapeHtml(name).toUpperCase()}
+                    </div>
+                `;
+            });
+
+            const baselineAssessment = activeAssignments[0]?.assessment;
+            if (!baselineAssessment || !baselineAssessment.questions) return;
+
+            const sortedQuestions = [...baselineAssessment.questions].sort((a, b) => a.questionOrder - b.questionOrder);
+            const mode = (baselineAssessment.answerType || "text").toLowerCase();
+
+            sortedQuestions.forEach(baseQ => {
+                gridHtml += `<div class="matrix-grid-cell" style="border: 0.25px solid #cccccc"><div class="matrix-question-text">${escapeHtml(baseQ.questionText)}</div></div>`;
+
+                activeAssignments.forEach(assignment => {
+                    const peerQ = assignment.assessment?.questions.find(q => q.id === baseQ.id) || {};
+
+                    let answerValue = "";
+                    if (peerQ.answer) {
+                        if (typeof peerQ.answer === 'object') {
+                            answerValue = mode === "text" ? (peerQ.answer.textValue || "") : (peerQ.answer.ratingValue || "");
+                        } else {
+                            answerValue = peerQ.answer;
+                        }
+                    }
+
+                    const isSubmitted = globalAssignments.some(a => String(a.status).toLowerCase() === "done" || String(a.status).toLowerCase() === "on review");
+                    const disabledAttr = isSubmitted ? "disabled" : "";
+
+                    if (mode === "text") {
+                        gridHtml += `
+                            <div class="matrix-grid-cell d-flex" style="border: 0.25px solid #cccccc">
+                                <textarea
+                                    class="auto-grow form-control text-gray-600 fs-7 p-0 border-0 w-100 flex-grow-1"
+                                    style="min-height: 90px; height: 100%; resize: none; font-size:0.85rem; background: transparent;"
+                                    placeholder="Provide feedback details..."
+                                    ${disabledAttr}
+                                    oninput="handleTextChange(${assignment.assignmentId}, ${baseQ.id}, this.value)">${escapeHtml(answerValue)}</textarea>
+                            </div>`;
+                    } else {
+                        const activeRating = parseInt(answerValue, 10) || 0;
+                        let ratingButtonsHtml = "";
+
+                        for (let i = 1; i <= 5; i++) {
+                            const activeClass = (i === activeRating) ? "active" : "";
+                            const clickHandler = isSubmitted ? "" : `onclick="handleRatingSelect(${assignment.assignmentId}, ${baseQ.id}, ${i})"`;
+                            const inlineStyle = isSubmitted ? "style='cursor: default; opacity: 0.8;'" : "";
+
+                            ratingButtonsHtml += `
+                                <div class="rating-btn ${activeClass}" ${inlineStyle} ${clickHandler}>
+                                    ${i}
+                                </div>`;
+                        }
+
+                        gridHtml += `
+                            <div class="matrix-grid-cell" style="border: 0.25px solid #cccccc">
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    ${ratingButtonsHtml}
+                                </div>
+                            </div>`;
+                    }
+                });
+            });
+
+            gridContainer.innerHTML = gridHtml;
+            wrapper.classList.remove("d-none");
+
+            autoGrowAllVisibleTextareas();
+        }
+
+        function renderEmptyState(message) {
+            const wrapper = document.getElementById("questionsWrapper");
+            wrapper.classList.remove("d-none");
+            document.getElementById("assessmentTitle").innerText = "Review Assignment";
+            wrapper.innerHTML = `
+                <div class="card card-flush text-center py-10 px-6 border border-dashed border-gray-300 bg-light rounded-3 shadow-sm">
+                    <div class="mb-3"><i class="bi bi-exclamation-circle text-muted fs-3x"></i></div>
+                    <div class="text-gray-800 fw-bold fs-5 mb-1">Cannot Load Assessment Info</div>
+                    <p class="text-muted m-0">${escapeHtml(message)}</p>
+                </div>`;
+            document.getElementById("actionButtonsContainer").remove();
+        }
+
+        function escapeHtml(str) {
+            const stringValue = String(str ?? '');
+            return stringValue
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function handleCancel() { window.location.href = "/PerformanceReview/Assignments"; }
+
+        function buildPayload(isDraftValue) {
+            return {
+                isDraft: isDraftValue,
+                peerReviews: globalAssignments.map(assignment => {
+                    const mode = (assignment.assessment?.answerType || "text").toLowerCase();
+
+                    const answersPayload = (assignment.assessment?.questions || []).map(q => {
+                        let currentVal = "";
+                        if (q.answer) {
+                            if (typeof q.answer === 'object') {
+                                currentVal = mode === "text" ? q.answer.textValue : q.answer.ratingValue;
+                            } else {
+                                currentVal = q.answer;
+                            }
+                        }
+
+                        return {
+                            assessmentQuestionId: q.id,
+                            textValue: mode === "text" ? (String(currentVal || "")) : null,
+                            ratingValue: mode === "rating" ? (parseInt(currentVal, 10) || null) : null
+                        };
+                    });
+
+                    return {
+                        assignmentId: assignment.assignmentId,
+                        answers: answersPayload
+                    };
+                })
+            };
+        }
+
+        async function sendPeerReviews(payload) {
+            const token = window.aiaAuth && window.aiaAuth.getToken();
+            if (!token) {
+                alert("Session expired. Please log in again.");
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+
+            try {
+                document.getElementById("btnSave").disabled = true;
+                document.getElementById("btnSubmit").disabled = true;
+
+                const response = await fetch(`${API_BASE}/api/assignment/intervals/${currentIntervalId}/peer-reviews`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401) {
+                    window.aiaAuth && window.aiaAuth.signOut();
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.message || "Failed to process evaluations request.");
+                }
+
+                alert(payload.isDraft ? "Draft successfully saved!" : "Evaluations submitted successfully!");
+                window.location.href = "/PerformanceReview/Assignments";
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message || "An unexpected system error occurred.");
+            } finally {
+                const btnSave = document.getElementById("btnSave");
+                const btnSubmit = document.getElementById("btnSubmit");
+                if (btnSave) btnSave.disabled = false;
+                if (btnSubmit) btnSubmit.disabled = false;
+            }
+        }
+
+        function handleSaveChanges() {
+            const payload = buildPayload(true);
+            sendPeerReviews(payload);
+        }
+
+        function handleSubmitAssignment() {
+            if (!confirm("Are you sure you want to finalize this assessment? This action cannot be undone.")) {
+                return;
+            }
+            const payload = buildPayload(false);
+            sendPeerReviews(payload);
+        }
+    </script>
+}

@@ -11,6 +11,7 @@ public class PerformanceReviewPlanInterval : BaseTable
     public string Status { get; private set; } = string.Empty;
 
     public PerformanceReviewPlan PerformanceReviewPlan { get; private set; } = null!;
+    public ICollection<FillAssignment> FillAssignments { get; private set; } = new List<FillAssignment>();
 
     protected PerformanceReviewPlanInterval() { }
 

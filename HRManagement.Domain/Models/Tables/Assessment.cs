@@ -11,11 +11,12 @@ public class Assessment : BaseTable
     public int? SubjectRoleId { get; private set; }
     public string? SubjectJobTitle { get; private set; }
 
-    public string? RatingDescription { get; private set; }
+    public string? RatingDescription { get; private set; }    
 
     public PerformanceReviewPlan Plan { get; private set; } = null!;
     public ICollection<AssessmentGroup> Groups { get; private set; } = new List<AssessmentGroup>();
     public ICollection<AssessmentQuestion> Questions { get; private set; } = new List<AssessmentQuestion>();
+    public ICollection<FillAssignment> FillAssignments { get; set; } = new List<FillAssignment>();
 
     public ICollection<AssessmentReceiver> Receivers { get; set; } = new List<AssessmentReceiver>();
 

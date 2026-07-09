@@ -13,9 +13,11 @@ namespace HRManagement.Domain.Models.Response
         public int SubjectId { get; set; }
         public int AssessmentId { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string ModifiedBy { get; set; } = string.Empty;
+        public DateTime? ModifiedUtcDate { get; set; }
 
-        public PerformanceReviewPlanIntervalResponseDto? Interval { get; set; }
-        public AssessmentDetailResponseDto? Assessment { get; set; }
+        public AssessmentDetailResponseDto? Assessment { get; set; } = null!;
+        public EmployeeMinimalInfoResponseDto? Subject { get; set; } = null!;
     }
 
     public class AssessmentDetailResponseDto
@@ -36,5 +38,11 @@ namespace HRManagement.Domain.Models.Response
         public int Id { get; set; }
         public string? TextValue { get; set; }
         public int? RatingValue { get; set; }
+    }
+
+    public class EmployeeMinimalInfoResponseDto
+    {
+        public int Id { get; set; }
+        public string? FullName { get; set; }
     }
 }

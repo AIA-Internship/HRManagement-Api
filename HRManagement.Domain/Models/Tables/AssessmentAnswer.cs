@@ -28,10 +28,18 @@ public class AssessmentAnswer : BaseTable
         MarkAsModified(actionerId);
     }
 
-    public void ApplyUpdate(string? textValue, int? ratingValue, int actionerId)
+    public void ApplyUpdate(string? textValue, int? ratingValue, string answerType, int actionerId)
     {
-        TextValue = textValue ?? TextValue;
-        RatingValue = ratingValue ?? RatingValue;
+        if (answerType.Equals("text", StringComparison.OrdinalIgnoreCase))
+        {
+            TextValue = textValue;
+            RatingValue = null;
+        }
+        else if (answerType.Equals("rating", StringComparison.OrdinalIgnoreCase))
+        {
+            RatingValue = ratingValue;
+            TextValue = null;
+        }
         MarkAsModified(actionerId);
     }
 }
