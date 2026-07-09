@@ -39,5 +39,6 @@ public class AssessmentConfiguration : IEntityTypeConfiguration<Assessment>
             .HasForeignKey(x => x.ModifiedBy)
             .OnDelete(DeleteBehavior.Restrict);
 
+
     }
 }

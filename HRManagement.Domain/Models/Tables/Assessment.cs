@@ -17,6 +17,8 @@ public class Assessment : BaseTable
     public ICollection<AssessmentGroup> Groups { get; private set; } = new List<AssessmentGroup>();
     public ICollection<AssessmentQuestion> Questions { get; private set; } = new List<AssessmentQuestion>();
 
+    public ICollection<AssessmentReceiver> Receivers { get; set; } = new List<AssessmentReceiver>();
+
     protected Assessment() { }
 
     public Assessment(

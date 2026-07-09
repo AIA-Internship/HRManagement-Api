@@ -24,6 +24,8 @@ public class AppDbContext : DbContext
     public virtual DbSet<PerformanceReviewPlanScoreWeight> PerformanceReviewPlanScoreWeights { get; set; }
     public virtual DbSet<PerformanceReviewPlanInterval> PerformanceReviewPlanIntervals { get; set; }
     public virtual DbSet<Assessment> Assessments { get; set; }
+
+    public virtual DbSet<AssessmentReceiver> AssessmentRecievers { get; set; }
     public virtual DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
     public virtual DbSet<AssessmentGroup> AssessmentGroups { get; set; }
     public virtual DbSet<AssessmentGroupMember> AssessmentGroupMembers { get; set; }

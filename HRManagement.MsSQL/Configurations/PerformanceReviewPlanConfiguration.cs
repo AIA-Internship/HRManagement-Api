@@ -36,5 +36,11 @@ public class PerformanceReviewPlanConfiguration : IEntityTypeConfiguration<Perfo
             .WithMany()
             .HasForeignKey(x => x.ModifiedBy)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.PerformanceReviewPlanScoreWeights)
+            .WithOne(x => x.Plan)
+            .HasForeignKey(x => x.ModifiedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

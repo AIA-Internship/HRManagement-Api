@@ -1,4 +1,5 @@
 ﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
@@ -17,161 +18,170 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
     {
         var plan = await _sqldbContext.PerformanceReviewPlans
             .AsNoTracking()
-            .Include(x => x.Assessments)
-                .ThenInclude(x => x.Questions)
-            .Include(x => x.Assessments)
-                .ThenInclude(x => x.Groups)
-                    .ThenInclude(x => x.Members)
-                        .ThenInclude(x => x.Employee)
-                            .ThenInclude(x => x.EmploymentInformation)
-            .Include(x => x.PerformanceReviewPlanScoreWeights)
-            .FirstOrDefaultAsync(
-                x => x.Id == planId && !x.IsDeleted,
-                cancellationToken);
+            .Where(x => x.Id == planId && !x.IsDeleted)
+            .Select(plan => new PerformanceReviewPlanDetailResponseDto(
+                plan.Id,
+                plan.Name,
+                plan.PeriodType,
+                plan.StartDate,
+                plan.EndDate,
+                plan.MinReviewDurationInDays,
+                plan.DurationInMonth,
+                plan.Status,
 
-        if (plan is null)
-            return null;
+                // self assessments
+                plan.Assessments
+                    .Where(a => !a.IsDeleted && a.AssessmentType == "self-assessment")
+                    .Select(a => new SelfAssessmentDto(
+                        a.Id,
+                        a.SubjectJobTitle ?? "",
+                        a.AnswerType,
+                        a.RatingDescription,
 
-        var selfAssessments = plan.Assessments
-            .Where(x => x.AssessmentType == "self-assessment")
-            .Select(x => new SelfAssessmentDto(
-                x.Id,
-                x.SubjectJobTitle ?? "",
-                x.AnswerType,
-                x.RatingDescription,
+                        a.Questions
+                            .Where(q => !q.IsDeleted)
+                            .OrderBy(q => q.QuestionOrder)
+                            .Select(q => new AssessmentQuestionResponseDto(
+                                q.Id,
+                                q.AssessmentId,
+                                q.QuestionText,
+                                q.QuestionOrder,
+                                q.QuestionType
+                            ))
+                            .ToList(),
 
-                x.Questions
-                    .Where(q => !q.IsDeleted)
-                    .OrderBy(q => q.QuestionOrder)
-                    .Select(q => new AssessmentQuestionResponseDto(
-                        q.Id,
-                        q.AssessmentId,
-                        q.QuestionText,
-                        q.QuestionOrder,
-                        q.QuestionType
+                            // Employee List
+                            a.Receivers
+                                .Where(r =>
+                                    !r.IsDeleted &&
+                                    r.ReceiverType == "self-assessment")
+                                    .Select(r => new EmployeeListResponseDto(
+                                        r.Employee.FullName,
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.DisplayId
+                                            : "",
+                                        "",
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.DepartmentName
+                                            : "",
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.PositionName
+                                            : ""
+                                    ))
+                                .ToList()
                     ))
                     .ToList(),
 
-                _sqldbContext.Set<EmploymentInformation>()
-                    .Where(e =>
-                        !e.IsDeleted &&
-                        e.StatusCode == 1 &&
-                        e.PositionName == x.SubjectJobTitle)
-                    .Select(e => new EmployeeListResponseDto(
-                        e.Employee.FullName,
-                        e.DisplayId ?? "",
-                        "",
-                        e.DepartmentName ?? "",
-                        e.PositionName ?? ""
-                    ))
-                    .ToList()
-            ))
-            .ToList();
+                // peer reviews
+                plan.Assessments
+                    .Where(a => a.AssessmentType == "peer-review" && !a.IsDeleted)
+                    .Select(a => new PeerReviewDto(
+                        a.Id,
+                        a.SubjectJobTitle ?? "",
+                        a.AnswerType,
+                        a.RatingDescription,
 
-        var peerReviews = plan.Assessments
-            .Where(x => x.AssessmentType == "peer-review")
-            .Select(x => new PeerReviewDto(
-                x.Id,
-                x.SubjectJobTitle ?? "",
-                x.AnswerType,
-                x.RatingDescription,
+                        // Questions
+                        a.Questions
+                            .Where(q => !q.IsDeleted)
+                            .OrderBy(q => q.QuestionOrder)
+                            .Select(q => new AssessmentQuestionResponseDto(
+                                q.Id,
+                                q.AssessmentId,
+                                q.QuestionText,
+                                q.QuestionOrder,
+                                q.QuestionType
+                            ))
+                            .ToList(),
 
-                x.Questions
-                    .Where(q => !q.IsDeleted)
-                    .OrderBy(q => q.QuestionOrder)
-                    .Select(q => new AssessmentQuestionResponseDto(
-                        q.Id,
-                        q.AssessmentId,
-                        q.QuestionText,
-                        q.QuestionOrder,
-                        q.QuestionType
-                    ))
-                    .ToList(),
+                        // Groups
+                        a.Groups
+                            .Where(g => !g.IsDeleted)
+                            .Select(g => new AssessmentGroupDto(
+                                g.Id,
+                                g.Name,
+                                g.Description ?? "",
 
-                x.Groups
-                    .Where(g => !g.IsDeleted)
-                    .Select(g => new AssessmentGroupDto(
-                        g.Id,
-                        g.Name,
-                        g.Description ?? "",
+                                // Members
+                                g.Members
+                                    .Where(m => !m.IsDeleted)
+                                    .Select(m => new AssessmentGroupMemberDto(
+                                        m.EmployeeId,
 
-                        g.Members
-                            .Where(m => !m.IsDeleted)
-                            .Select(m => new AssessmentGroupMemberDto(
-                                m.EmployeeId,
-                                m.Employee.EmploymentInformation?.DisplayId ?? "",
-                                m.Employee.FullName
+                                        // Employment Information
+                                        m.Employee.EmploymentInformation != null
+                                            ? m.Employee.EmploymentInformation.DisplayId ?? ""
+                                            : "",
+
+                                        m.Employee.FullName
+                                    ))
+                                    .ToList()
                             ))
                             .ToList()
                     ))
-                    .ToList()
-            ))
-            .ToList();
+                    .ToList(),
 
-        var supervisorAssessments = plan.Assessments
-            .Where(x => x.AssessmentType == "supervisor-assessment")
-            .Select(x => new SupervisorAssessmentDto(
-                x.Id,
-                x.SubjectJobTitle ?? "",
-                x.AnswerType,
-                x.RatingDescription,
+                // supervisor
+                plan.Assessments
+                    .Where(a => !a.IsDeleted && a.AssessmentType == "supervisor-assessment")
+                    .Select(a => new SupervisorAssessmentDto(
+                        a.Id,
+                        a.SubjectJobTitle ?? "",
+                        a.AnswerType,
+                        a.RatingDescription,
 
-                x.Questions
-                    .Where(q => !q.IsDeleted)
-                    .OrderBy(q => q.QuestionOrder)
-                    .Select(q => new AssessmentQuestionResponseDto(
-                        q.Id,
-                        q.AssessmentId,
-                        q.QuestionText,
-                        q.QuestionOrder,
-                        q.QuestionType
+                        a.Questions
+                            .Where(q => !q.IsDeleted)
+                            .OrderBy(q => q.QuestionOrder)
+                            .Select(q => new AssessmentQuestionResponseDto(
+                                q.Id,
+                                q.AssessmentId,
+                                q.QuestionText,
+                                q.QuestionOrder,
+                                q.QuestionType
+                            ))
+                            .ToList(),
+
+                            a.Receivers
+                                .Where(r =>
+                                    !r.IsDeleted &&
+                                    r.ReceiverType == "supervisor-assessment")
+                                    .Select(r => new EmployeeListResponseDto(
+                                        r.Employee.FullName,
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.DisplayId
+                                            : "",
+                                        "",
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.DepartmentName
+                                            : "",
+                                        r.Employee.EmploymentInformation != null
+                                            ? r.Employee.EmploymentInformation.PositionName
+                                            : ""
+                                    ))
+                                .ToList()
                     ))
                     .ToList(),
 
-                _sqldbContext.Set<EmploymentInformation>()
-                    .Where(e =>
-                        !e.IsDeleted &&
-                        e.StatusCode == 1 &&
-                        e.PositionName == "Supervisor")
-                    .Select(e => new EmployeeListResponseDto(
-                        e.Employee.FullName,
-                        e.DisplayId ?? "",
-                        "",
-                        e.DepartmentName ?? "",
-                        e.PositionName ?? ""
+                // score weight
+                plan.PerformanceReviewPlanScoreWeights
+                    .Where(sw => !sw.IsDeleted)
+                    .GroupBy(sw => sw.SubjectJobTitle)
+                    .Select(g => new PerformanceReviewPlanScoreWeightResponseDto(
+                        g.Key ?? "",
+                        g.Select(sw => new ScoreWeightItemDto(
+                            sw.ScoreType,
+                            sw.Weights
+                        ))
+                        .ToList()
                     ))
                     .ToList()
             ))
-            .ToList();
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var scoreWeights = plan.PerformanceReviewPlanScoreWeights
-            .Where(x => !x.IsDeleted)
-            .GroupBy(x => x.SubjectJobTitle)
-            .Select(g => new PerformanceReviewPlanScoreWeightResponseDto(
-                g.Key ?? "",
-                g.Select(x => new ScoreWeightItemDto(
-                    x.ScoreType,
-                    x.Weights
-                ))
-                .ToList()
-            ))
-            .ToList();
 
-        return new PerformanceReviewPlanDetailResponseDto(
-            plan.Id,
-            plan.Name,
-            plan.PeriodType,
-            plan.StartDate,
-            plan.EndDate,
-            plan.MinReviewDurationInDays,
-            plan.DurationInMonth,
-            plan.Status,
+        return plan;
 
-            selfAssessments,
-            peerReviews,
-            supervisorAssessments,
-            scoreWeights
-        );
     }
 
     public async Task<List<PerformanceReviewPlanResponseDto>> GetAllPlansAsync(CancellationToken cancellationToken = default)
@@ -277,5 +287,116 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .FirstOrDefaultAsync(cancellationToken);
 
         return planDetail;
+    }
+
+    public async Task AddPerformanceReviewPlan(CreatePerformanceReviewPlanPayload payload, int actionerId, CancellationToken cancellationToken)
+    {
+        var plan =
+            new PerformanceReviewPlan(
+                payload.Name,
+                payload.PeriodType,
+                payload.DurationInMonth,
+                payload.MinReviewDurationInDays,
+                payload.StartDate,
+                payload.EndDate,
+                payload.Status,
+                actionerId
+            );
+
+        foreach (var assessmentPayload in payload.Assessments)
+        {
+            var assessment =
+                new Assessment(
+                    0,
+                    assessmentPayload.AnswerType,
+                    assessmentPayload.AssessmentType,
+                    assessmentPayload.FillerRoleId,
+                    assessmentPayload.FillerJobTitle,
+                    assessmentPayload.SubjectRoleId,
+                    assessmentPayload.SubjectJobTitle,
+                    actionerId,
+                    assessmentPayload.RatingDescription
+                );
+
+            plan.Assessments.Add(assessment);
+
+            foreach (var questionPayload in assessmentPayload.Questions)
+            {
+                var question =
+                    new AssessmentQuestion(
+                        0,
+                        questionPayload.QuestionText,
+                        questionPayload.QuestionOrder,
+                        actionerId,
+                        questionPayload.QuestionType
+                    );
+
+                assessment.Questions.Add(question);
+            }
+
+            foreach (var receiverId in assessmentPayload.ReceiverIds)
+            {
+                var receiver =
+                    new AssessmentReceiver(
+                        0,
+                        receiverId,
+                        assessmentPayload.AssessmentType,
+                        actionerId
+                    );
+
+                assessment.Receivers.Add(receiver);
+            }
+
+
+            if (assessmentPayload.Groups?.Any() == true)
+            {
+                foreach (var groupPayload in assessmentPayload.Groups)
+                {
+                    var group =
+                        new AssessmentGroup(
+                            0,
+                            groupPayload.Name,
+                            groupPayload.Description,
+                            actionerId
+                        );
+
+                    assessment.Groups.Add(group);
+
+                    foreach (var memberId in groupPayload.MemberIds)
+                    {
+                        var member =
+                            new AssessmentGroupMember(
+                                0,
+                                memberId,
+                                actionerId
+                            );
+
+                        group.Members.Add(member);
+                    }
+                }
+
+            }
+
+
+        }
+
+        foreach (var scoreWeightPayload in payload.ScoreWeights)
+        {
+            var scoreWeight =
+                new PerformanceReviewPlanScoreWeight(
+                    0,
+                    scoreWeightPayload.SubjectRoleId,
+                    scoreWeightPayload.SubjectJobTitle,
+                    scoreWeightPayload.ScoreType,
+                    scoreWeightPayload.Weight,
+                    actionerId
+                );
+
+            plan.PerformanceReviewPlanScoreWeights.Add(scoreWeight);
+
+        }
+
+        await _sqldbContext.PerformanceReviewPlans.AddAsync(plan, cancellationToken);
+
     }
 }
