@@ -4,11 +4,11 @@
     {
         public int RequesterId { get; set; }
         public int SupervisorId { get; set; }
-        public string LeaveDescription { get; set; }
+        public string? LeaveDescription { get; set; }
         public DateTime leaveStartDate { get; set; }
         public decimal DayAmount { get; set; }
         public int LeaveType { get; set; }
-        public string[] AttachmentPath { get; set; }
-        
+        public string? RequesterDisplayId { get; set; }
+
     }
 }

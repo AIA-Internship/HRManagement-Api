@@ -37,8 +37,95 @@
         .getElementById('confirmSubmitBtn')
         .addEventListener('click', function () {
 
-            form.submit();
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            }
+            else {
+
+                var evt = new Event('submit', { bubbles: true, cancelable: true });
+                var canceled = !form.dispatchEvent(evt);
+
+                if (canceled === false) {
+                    form.submit();
+                }
+            }
         });
+
+
+    async function getMyProfile() {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+
+        if (!token) {
+            window.aiaAuth && window.aiaAuth.signOut();
+            return null;
+        }
+
+        try {
+            const res = await fetch(`${API_PREFIX}/api/employee/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (res.status === 401) {
+                window.aiaAuth.signOut();
+                return null;
+            }
+
+            const json = await res.json();
+
+            return json?.content || json?.data || json;
+        }
+        catch (err) {
+            console.error('getMyProfile failed:', err);
+            return null;
+        }
+    }
+
+
+    const API_PREFIX = "https://localhost:7089";
+
+    async function apiPost(endpoint, payload) {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+
+        const res = await fetch(`${API_PREFIX}${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json().catch(() => null);
+
+        console.log("STATUS =", res.status);
+        console.log("RESPONSE =", json);
+
+        return json;
+    }
+
+    async function apiUpload(endpoint, formData) {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) { window.aiaAuth && window.aiaAuth.signOut(); return null; }
+        try {
+            const res = await fetch(`${API_PREFIX}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (res.status === 401) { window.aiaAuth.signOut(); return null; }
+
+            return res;
+        }
+        catch (err) {
+            console.error('apiUpload failed:', err);
+            return null;
+        }
+    }
 
     // =========================
     // TOM SELECT
@@ -356,7 +443,6 @@
         renderFiles();
     }
 
-
     function renderFiles() {
 
         var totalSize = selectedFiles.reduce(function (sum, file) {
@@ -490,7 +576,7 @@
         document.getElementById('descriptionError').style.display = 'none';
     });
 
-    leaveForm.addEventListener('submit', function (e) {
+    leaveForm.addEventListener('submit', async function (e) {
 
         e.preventDefault();
 
@@ -505,7 +591,7 @@
         startDateError.style.display = 'none';
         descriptionError.style.display = 'none';
 
-        // Start Date validation
+        // validation
         if (!startDate.value.trim()) {
 
             startDateError.textContent =
@@ -516,7 +602,6 @@
             isValid = false;
         }
 
-        // Description validation
         if (!description.value.trim()) {
 
             descriptionError.textContent =
@@ -531,25 +616,87 @@
             return;
         }
 
-        var formData = new FormData(leaveForm);
+        try {
 
-        formData.delete("Attachment");
+            const profile = await getMyProfile();
 
-        selectedFiles.forEach(function (file) {
-            formData.append("Attachment", file);
-        });
+            console.log("profile =", profile);
 
-        fetch(leaveForm.action || window.location.href, {
-            method: "POST",
-            body: formData
-        })
-            .then(function (res) {
+            if (!profile) {
+                alert("Failed to get employee profile");
+                return;
+            }
 
-                if (res.ok) {
-                    window.location.reload();
+            const leavePayload = {
+                requesterId: profile.id,
+                supervisorId: profile.employmentInformation?.supervisorId?? null,
+                leaveDescription: description.value.trim(),
+                leaveStartDate: startDate.value,
+                dayAmount: parseFloat(daysInput.value),
+                leaveType: leaveTs.getValue() === "Paid Leave" ? 1 : 2,
+                attachmentPath: [],
+                requesterDisplayId: profile.employmentInformation?.displayId ?? null
+            };
+
+            console.log("leavePayload =", leavePayload);
+            console.log(JSON.stringify(leavePayload, null, 2));
+            const leaveResult = await apiPost('/api/leave/create', leavePayload);
+
+            if (!leaveResult) {
+                alert('Failed to create leave request AAA');
+                return;
+            }
+
+            console.log('leaveResult:', leaveResult);
+
+            // try multiple naming conventions
+            const leaveId = leaveResult?.data?.leaveId || leaveResult?.leaveId || leaveResult?.id;
+
+            if (!leaveId) {
+                alert('Failed to create leave request (no id returned)');
+                console.log('leaveId:', leaveId);
+                return;
+            }
+
+
+            if (selectedFiles.length > 0) {
+
+                for (const file of selectedFiles) {
+
+                    const attachmentForm = new FormData();
+
+                    attachmentForm.append(
+                        'DocumentType',
+                        'Supporting Document'
+                    );
+
+                    attachmentForm.append(
+                        'Files',
+                        file
+                    );
+
+                    const attachmentResponse = await apiUpload(`/api/leave/${leaveId}/attachments`, attachmentForm);
+
+                    if (!attachmentResponse || !attachmentResponse.ok) {
+
+                        console.error(
+                            `Failed upload file: ${file.name}`
+                        );
+                    }
                 }
+            }
 
-            });
+            alert('Leave request submitted successfully');
+
+            window.location.reload();
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert('Something went wrong');
+        }
 
     });
 

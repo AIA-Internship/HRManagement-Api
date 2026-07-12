@@ -49,9 +49,9 @@ namespace HRManagement.Application.Features.Leave.Commands
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
             try
             {
-                bool created = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
+                int createdId = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
 
-                if(!created)
+                if (createdId <= 0)
                 {
                     return ApiHelperResponse.Failed("Failed to create leave request");
                 }
@@ -89,17 +89,18 @@ namespace HRManagement.Application.Features.Leave.Commands
                 RequesterId = dto.RequesterId,
                 SupervisorId = dto.SupervisorId,
                 LeaveDescription = dto.LeaveDescription,
+                LeaveStatus = 1,
                 LeaveStartDate = dto.leaveStartDate,
                 DayAmount = dto.DayAmount,
                 LeaveType = dto.LeaveType,
-                AttachmentPath = MappingHelper.joinAttachmentPath(dto.AttachmentPath),
                 IsDeleted = 0,
                 IsEdited = 0,
                 IsCompleted = 0,
                 CreatedBy = dto.RequesterId,
                 CreatedUtcDate = DateTime.UtcNow,
                 ModifiedBy = dto.RequesterId,
-                ModifiedUtcDate = DateTime.UtcNow
+                ModifiedUtcDate = DateTime.UtcNow,
+                RequesterDisplayId = dto.RequesterDisplayId
             };
 
         }

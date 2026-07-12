@@ -18,7 +18,7 @@ public partial class    LeaveRequestModel
     public int SupervisorId { get; set; }
 
     [Column("leave_description")]
-    public string LeaveDescription { get; set; } = null!;
+    public string? LeaveDescription { get; set; } = null!;
 
     [Column("leave_status")]
     public int LeaveStatus { get; set; }
@@ -40,9 +40,6 @@ public partial class    LeaveRequestModel
     [Column("is_completed")]
     public int IsCompleted { get; set; }
 
-    [Column("attachment_path")]
-    public string? AttachmentPath { get; set; }
-
     [Column("created_by")]
     public int CreatedBy { get; set; }
 
@@ -54,5 +51,8 @@ public partial class    LeaveRequestModel
 
     [Column("modified_utc_date")]
     public DateTime ModifiedUtcDate { get; set; }
+
+    [Column("requester_display_id")]
+    public string? RequesterDisplayId { get; set; }
 
 }

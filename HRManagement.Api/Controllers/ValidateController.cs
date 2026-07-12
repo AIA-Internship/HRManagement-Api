@@ -72,4 +72,28 @@ public abstract class ValidateController<T> : ControllerBase
             StatusMessage = result.Error
         };
     }
+
+    // Support handlers that return a non-generic Result (no payload / ApiResponse wrapper)
+    public async Task<ActionResult<ApiResponse>> ValidateAndExecute<TRequest>(TRequest request, Func<TRequest, Task<Result>> handler)
+    {
+        var result = await handler(request).ConfigureAwait(false);
+
+        if (result.IsSuccess)
+        {
+            return new ApiResponse
+            {
+                Title = "Success",
+                StatusCode = 200,
+                IsError = false
+            };
+        }
+
+        return new ApiResponse
+        {
+            Title = "Error",
+            StatusCode = 500,
+            IsError = true,
+            StatusMessage = result.Error
+        };
+    }
 }

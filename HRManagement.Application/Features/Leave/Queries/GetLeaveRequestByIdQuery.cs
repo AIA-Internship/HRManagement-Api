@@ -59,9 +59,6 @@ namespace HRManagement.Application.Features.Leave.Queries
                 dayAmount = model.DayAmount,
                 leaveType = MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
-                attachmentPath = model.AttachmentPath != null
-                    ? MappingHelper.splitAttachmentPath(model.AttachmentPath)
-                    : null,
                 createdUtcDate = model.CreatedUtcDate
             };
         }

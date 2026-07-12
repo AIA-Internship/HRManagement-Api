@@ -6,6 +6,8 @@ using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using HRManagement.Domain.Models.Payload;
+using HRManagement.Application.Features.System.Commands;
 using System.Security.Claims;
 
 namespace HRManagement.Api.Controllers
@@ -67,6 +69,57 @@ namespace HRManagement.Api.Controllers
         }
 
         [Authorize]
+        [HttpPost("{id}/attachments")]
+        [Consumes( "multipart/form-data")]
+        public async Task<ActionResult<ApiResponse>> UploadAttachments([FromRoute] int id, [FromForm] UploadAttachmentPayload payload)
+        {
+            string objectName = nameof(UploadAttachments).ToString();
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int currentUserId = int.Parse(userIdClaim);
+
+                if (payload.Files.Count <= 0)
+                    return BadRequest(ApiResponse<object>.Fail("File tidak ditemukan."));
+
+                var files = payload.Files;
+                var fileDtos = files.Select(f => new FileItemDto(
+                    f.OpenReadStream(),
+                    f.FileName,
+                    f.ContentType,
+                    f.Length
+                )).ToList();
+
+                var uploadCommand = new FileUploadCommand(fileDtos);
+                var uploadResult = await _mediator.Send(uploadCommand);
+
+                if (uploadResult.IsFailure)
+                    return BadRequest(uploadResult.Error);
+
+                var uploadTasks = uploadResult.Value;
+
+                var command = new UploadLeaveAttachmentCommand(id, payload.DocumentType, uploadTasks, currentUserId);
+                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
         [HttpGet]
         [Route("get-by-supervisor-id")]
         [ProducesResponseType(200)]
@@ -74,7 +127,7 @@ namespace HRManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<ApiResponse>> getBySupervisorId([FromQuery] int max = 10)
         {
-            string objectName = nameof(getBySupervisorId).ToString();
+            string objectName = nameof(getBySupervisorId);
 
             try
             {
@@ -104,21 +157,33 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+
+        [Authorize]
         [HttpPost]
         [Route("create")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<ApiResponse>> createLeaveRequest([FromBody] CreateLeaveRequestDto content)
         {
-            string objectName = nameof(createLeaveRequest).ToString();
+            string objectName = nameof(createLeaveRequest);
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                content.RequesterId = int.Parse(userIdClaim);
+
                 var command = new CreateLeaveRequestCommand(content);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
 
@@ -129,7 +194,6 @@ namespace HRManagement.Api.Controllers
                 _logger.LogError(ex, "Error in {Service}.", objectName);
                 return BadRequest(ex.Message);
             }
-
         }
 
 

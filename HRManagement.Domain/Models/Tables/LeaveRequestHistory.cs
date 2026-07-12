@@ -40,9 +40,6 @@ namespace HRManagement.Domain.Models.Tables
         public int InitialRequestId { get; set; }
 
 
-        [Column("attachment_path")]
-        public string? AttachmentPath { get; set; }
-
         [Column("created_by")]
         public int CreatedBy { get; set; }
 
@@ -54,6 +51,9 @@ namespace HRManagement.Domain.Models.Tables
 
         [Column("modified_utc_date")]
         public DateTime ModifiedUtcDate { get; set; }
+
+        [Column("requester_display_id")]
+        public string? RequesterDisplayId { get; set; }
 
     }
 }

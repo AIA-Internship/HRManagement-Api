@@ -8,9 +8,9 @@ using MediatR;
 
 namespace HRManagement.Application.Features.Leave.Queries
 {
-    public class GetLeaveRequestBySupervisorId(int requsterId, int max): IRequest<Result<ApiResponse<List<ReadLeaveRequestDto>>>>
+    public class GetLeaveRequestBySupervisorId(int supervisorId, int max): IRequest<Result<ApiResponse<List<ReadLeaveRequestDto>>>>
     {
-        public int RequesterId { get; set; } = requsterId;
+        public int SupervisorId { get; set; } = supervisorId;
         public int Max { get; set; } = max;
 
 
@@ -38,7 +38,7 @@ namespace HRManagement.Application.Features.Leave.Queries
 
             try
             {
-                var entity = await _repo.getLeaveRequestBySupervisorId(request.RequesterId, request.Max);
+                var entity = await _repo.getLeaveRequestBySupervisorId(request.SupervisorId, request.Max);
 
                 if (entity == null) return ApiHelperResponse.Failed<List<ReadLeaveRequestDto>>("data not found in system");
 
@@ -92,9 +92,6 @@ namespace HRManagement.Application.Features.Leave.Queries
                 dayAmount = model.DayAmount,
                 leaveType = (model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
-                attachmentPath = model.AttachmentPath != null
-                    ? MappingHelper.splitAttachmentPath(model.AttachmentPath)
-                    : null,
                 createdUtcDate = model.CreatedUtcDate
             };
         }

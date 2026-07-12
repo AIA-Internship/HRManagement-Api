@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<EmployeeUpdateRequest> EmployeeUpdateRequest { get; set; }
     public virtual DbSet<EmploymentInformation> EmploymentInformation { get; set; }
     public virtual DbSet<EmployeeAttachment> EmployeeAttachment { get; set; }
+    public virtual DbSet<LeaveAttachment> LeaveAttachment { get; set; }
 
     public virtual DbSet<LeaveRequestModel> LeaveRequest { get; set; }
     public virtual DbSet<LeaveRequestHistory> LeaveRequestHistory { get; set; }

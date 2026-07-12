@@ -8,7 +8,7 @@ namespace HRManagement.Api.Application.Interfaces
     {
         public Task<LeaveRequestModel> getLeaveRequestById(int id);
         public Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max);
-        public Task<bool> createLeaveRequest(LeaveRequestModel leaveRequest);
+        public Task<int> createLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> updateLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> softDelete(int id);
         public Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month);
@@ -29,6 +29,7 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<bool> createLeaveBalance(LeaveBalanceModel leaveRequest);
         public Task<bool> updateLeaveBalance(LeaveBalanceModel leaveRequest);
         public Task<bool> deleteLeaveBalance(int id);
+        public Task AddLeaveAttachmentsAsync(List<LeaveAttachment> entities, CancellationToken ct);
 
     }
 }
