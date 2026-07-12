@@ -14,15 +14,15 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
     public EmployeeRepository(AppDbContext dbContext) : base(dbContext) { }
 
     public async Task<bool> IsUniqueAsync<TProperty>(
-        Expression<Func<Employee, TProperty>> propertySelector, 
-        TProperty value, 
+        Expression<Func<Employee, TProperty>> propertySelector,
+        TProperty value,
         int? excludeId = null)
     {
         var query = _dbContext.AsQueryable();
-        
-        if (excludeId.HasValue) 
+
+        if (excludeId.HasValue)
             query = query.Where(e => e.Id != excludeId.Value);
-        
+
         var parameter = Expression.Parameter(typeof(Employee), "e");
         var property = Expression.Invoke(propertySelector, parameter);
         var constant = Expression.Constant(value);
@@ -30,7 +30,7 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
         var lambda = Expression.Lambda<Func<Employee, bool>>(body, parameter);
         return !await query.AnyAsync(lambda);
     }
-    
+
     public async Task AddEmployeeUpdateRequestAsync(EmployeeUpdateRequest entity, CancellationToken ct)
     {
         await _sqldbContext.Set<EmployeeUpdateRequest>().AddAsync(entity, ct);

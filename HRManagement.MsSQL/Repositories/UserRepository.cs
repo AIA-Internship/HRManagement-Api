@@ -16,8 +16,10 @@ public class UserRepository : BaseRepository<Users>, IUserRepository
 
         var user = await _dbContext
             .Include(u => u.Role)
+            .ThenInclude(r => r.RolePermissions)
+            .ThenInclude(rp => rp.Permission)
             .AsNoTracking()
-            .Where(u => u.EmployeeEmail.ToLower() == cleanEmail && !u.IsDeleted)
+            .Where(u => u.EmployeeEmail.ToLower() == email.ToLower() && !u.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
         return user;

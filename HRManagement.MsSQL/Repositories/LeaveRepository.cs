@@ -127,7 +127,8 @@ namespace HRManagement.MsSQL.Repositories
                     lr.LeaveType,
                     lr.IsCompleted,
                     lr.CreatedUtcDate,
-                    e.FullName
+                    e.FullName,
+                    e.EmploymentInformation != null ? e.EmploymentInformation.DisplayId : null
                 )
 
                 ).ToListAsync();

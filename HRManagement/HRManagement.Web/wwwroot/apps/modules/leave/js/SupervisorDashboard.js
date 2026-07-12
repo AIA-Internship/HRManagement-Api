@@ -29,31 +29,62 @@ window.app = window.app || {
     }
 };
 async function getEmployees() {
+    try {
+        const empIds = [...new Set(requests.map(x => x.requesterDisplayId))];
+        const token = window.aiaAuth ? window.aiaAuth.getToken() : null;
 
-    const empIds = [...new Set(requests.map(x => x.requesterId))];
-    const token = window.aiaAuth.getToken();
-
-    const responses = await Promise.all(
-        empIds.map(async id => {
-
-            const response = await fetch(
-                `${API_URL}/api/employee/${id}`,
-                {
+        const responses = await Promise.all(
+            empIds.map(async id => {
+                const response = await fetch(`${API_URL}/api/employee/${id}`, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: token ? `Bearer ${token}` : undefined,
                         "Content-Type": "application/json"
                     }
                 });
 
-            const result = await response.json();
+                if (response.status === 401) {
+                    redirectToLogin();
+                    throw new Error('Unauthorized');
+                }
 
-            return result.content;
-        })
-    );
+                if (!response.ok) {
+                    // return null for missing employee to avoid breaking merge
+                    return null;
+                }
 
-    employees = responses;
+                const result = await response.json();
+                return result.content;
+            })
+        );
 
-    mergeData();
+        employees = responses.filter(r => r != null);
+        mergeData();
+    } catch (err) {
+        console.error('getEmployees error', err);
+        // if unauthorized, redirectToLogin already called; otherwise continue with available data
+        employees = [];
+        mergeData();
+    }
+}
+
+function redirectToLogin() {
+    try {
+        // clear local session storage keys used by auth
+        localStorage.removeItem('aia_user_info');
+    } catch (e) {}
+    // redirect to login page
+    window.location.href = '/Account/Login';
+}
+
+function isAuthenticated() {
+    try {
+        if (window.aiaAuth && typeof window.aiaAuth.getToken === 'function') {
+            const t = window.aiaAuth.getToken();
+            return !!t;
+        }
+    } catch (e) {}
+    const u = localStorage.getItem('aia_user_info');
+    return !!u;
 }
 function mergeData() {
     if (requests.length === 0) {
@@ -87,14 +118,16 @@ function mergeData() {
 
             startDateRaw: new Date(req.leaveStartDate),
             startDate: new Date(req.leaveStartDate).toLocaleDateString("en-GB", {
+                weekday: 'long',
                 day: "numeric",
-                month: "short",
+                month: "long",
                 year: "numeric"
             }),
 
             endDate: new Date(req.endDate).toLocaleDateString("en-GB", {
+                weekday: 'long',
                 day: "numeric",
-                month: "short",
+                month: "long",
                 year: "numeric"
             }),
 
@@ -167,6 +200,7 @@ function loadUser() {
             redirectToDashboard(user.role_id);
         }
     }
+    return;
 }
 
 
@@ -186,13 +220,19 @@ async function fetchRequests() {
             }
         });
 
+        if (response.status === 401) {
+            // session expired / unauthorized
+            redirectToLogin();
+            return;
+        }
+
         if (!response.ok) {
             throw new Error("Failed to fetch");
         }
 
         responseData = await response.json();
 
-        requests = responseData.content;
+        requests = responseData.content || [];
 
         // fetch employee details then merge and render inside getEmployees/mergeData
         getEmployees();
@@ -249,10 +289,10 @@ function renderTable() {
                         </div>
                     </div>
                 </td>
-                <td>${req.type}</td>
-                <td>${req.startDate}</td>
-                <td>${req.endDate}</td>
-                <td>${req.days}</td>
+                <td class="leave-type">${req.type}</td>
+                <td class="date-text">${req.startDate}</td>
+                <td class="date-text">${req.endDate}</td>
+                <td class="days-cell">${req.days}</td>
                 <td class="text-center">
                     <button class="btn leave-status-btn ${req.statusClass}" tabindex="-1">
                         ${req.status}
@@ -349,10 +389,45 @@ function filterStatus(status, button) {
 function addlistener() {
 
     document.addEventListener("DOMContentLoaded", function () {
-        loadUser();
+        // if not authenticated, redirect to login
+        if (!isAuthenticated()) {
+            redirectToLogin();
+            return;
+        }
+
+        // load user if needed
+        try { loadUser(); } catch (e) {}
         fetchRequests();
+
+        // initial layout adjustment (no @media usage)
+        adjustToolbarLayout();
     });
 }
+
+// Toggle stacked toolbar class based on window width (no @media)
+function adjustToolbarLayout() {
+    const card = document.querySelector('.card.mx-10.mb-15');
+    if (!card) return;
+
+    // threshold matches previous media breakpoint (992px)
+    if (window.innerWidth < 992) {
+        card.classList.add('stacked-toolbar');
+    } else {
+        card.classList.remove('stacked-toolbar');
+    }
+}
+
+// debounce helper for resize
+function debounce(fn, wait) {
+    let t;
+    return function () {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, arguments), wait);
+    };
+}
+
+// listen to resize to adjust layout dynamically
+window.addEventListener('resize', debounce(adjustToolbarLayout, 120));
 
 function addSortLogic() {
     document
