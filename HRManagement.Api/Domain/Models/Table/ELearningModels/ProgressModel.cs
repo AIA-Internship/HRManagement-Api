@@ -3,22 +3,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Api.Domain.Models.Table.ELearningModels
 {
-    [Table("ELearningProgress")]
+    [Table("ELearningModuleProgress")]
     public class ProgressModel : BaseTableModel
     {
         [Column("progress_id")]
         public int ProgressId { get; set; }
 
-        [Column("user_id")]
-        public int UserId { get; set; }
+        [Column("employee_id")] 
+        public int EmployeeId { get; set; }
 
-        [Column("content_id")]
-        public int ContentId { get; set; }
+        [Column("module_id")] 
+        public int ModuleId { get; set; }
 
-        [Column("is_opened")]
-        public bool IsOpened { get; set; }
+        [Column("progress_status")]
+        public string ProgressStatus { get; set; } = "Not Started"; 
 
-        [Column("is_completed")]
-        public bool IsCompleted { get; set; }
+        [Column("completed_utc_date")]
+        public System.DateTime? CompletedUtcDate { get; set; }
     }
 }

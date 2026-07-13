@@ -15,24 +15,13 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels
         [Column("content_title")]
         public string ContentTitle { get; set; } = null!;
 
-        [Column("is_quiz")]
-        public bool IsQuiz { get; set; }
+        [Column("content_type")]
+        public string ContentType { get; set; } = null!; 
 
-        [Column("original_file_name")]
-        public string OriginalFileName { get; set; } = null!;
-
-        [Column("stored_file_name")]
-        public string StoredFileName { get; set; } = null!;
-
-        [Column("file_path")]
-        public string FilePath { get; set; } = null!;
-
-        [Column("file_ext")]
-        public string? FileExt { get; set; }
+        [Column("content_url")]
+        public string ContentUrl { get; set; } = null!; 
 
         [Column("sort_order")]
-        public int SortOrder { get; set; }
-
-        public virtual ModuleModel Module { get; set; } = null!;
+        public int? SortOrder { get; set; }
     }
 }

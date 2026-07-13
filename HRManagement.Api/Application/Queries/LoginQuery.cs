@@ -76,7 +76,6 @@ namespace HRManagement.Api.Application.Queries
             var jwtSettings = _configuration.GetSection("AppSetting");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Jwt:Key"]!));
 
-            // Claims berisi informasi tentang user
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
@@ -91,7 +90,7 @@ namespace HRManagement.Api.Application.Queries
                 issuer: jwtSettings["Jwt:Issuer"],
                 audience: jwtSettings["Jwt:AudienceWeb"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToInt16(jwtSettings["Jwt:DurationInMinutes"])), // Token berlaku selama 1 jam
+                expires: DateTime.Now.AddMinutes(Convert.ToInt16(jwtSettings["Jwt:DurationInMinutes"])), 
                 signingCredentials: creds
             );
 

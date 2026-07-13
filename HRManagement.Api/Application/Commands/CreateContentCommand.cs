@@ -24,15 +24,20 @@ namespace HRManagement.Api.Application.Commands
 
         public async Task<int> Handle(AddContentCommand request, CancellationToken ct)
         {
+            var cleanContentType = request.Extension?.Replace(".", "").ToLower() ?? "pdf";
+
+            var uniqueFileName = Guid.NewGuid().ToString() + request.Extension;
+
             var content = new ModuleContentModel
             {
                 ModuleId = request.ModuleId,
                 ContentTitle = request.Title,
-                IsQuiz = request.IsQuiz,
-                OriginalFileName = request.FileName,
-                StoredFileName = Guid.NewGuid().ToString() + request.Extension, // Clean Code: Unique filename
-                FilePath = request.FilePath,
-                FileExt = request.Extension,
+
+                ContentType = cleanContentType,
+                ContentUrl = uniqueFileName,
+                SortOrder = null, 
+
+                IsDeleted = false,
                 CreatedBy = request.CurrentUserId.ToString(),
                 CreatedUtcDate = DateTime.UtcNow
             };

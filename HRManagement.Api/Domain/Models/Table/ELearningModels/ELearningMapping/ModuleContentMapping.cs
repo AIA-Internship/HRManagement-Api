@@ -11,10 +11,10 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningMapping
                 contentId = model.ContentId,
                 moduleId = model.ModuleId,
                 title = model.ContentTitle,
-                isQuiz = model.IsQuiz,
-                fileName = model.StoredFileName,
-                filePath = model.FilePath,
-                sortOrder = model.SortOrder
+                isQuiz = false,
+                fileName = model.ContentUrl,
+                filePath = $"/elearning/{model.ContentUrl}",
+                sortOrder = model.SortOrder ?? 0
             };
         }
     }

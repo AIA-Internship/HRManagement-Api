@@ -9,10 +9,9 @@ public class ModuleMapping
         {
             moduleId = model.ModuleId,
             title = model.ModuleTitle,
-            description = model.ModuleDescription,
             role = model.TargetRole,
             isPriority = model.IsPriority,
-            createdUtcDate = model.CreatedUtcDate
+            dueDate = model.DueDate
         };
     }
 }

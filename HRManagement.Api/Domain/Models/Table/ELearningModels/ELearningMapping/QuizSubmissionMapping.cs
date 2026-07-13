@@ -9,9 +9,6 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningMapping
             return new ReadQuizSubmissionDto
             {
                 submissionId = model.SubmissionId,
-                contentId = model.ContentId,
-                userId = model.UserId,
-                score = model.Score?? 0m,
                 submittedAt = model.CreatedUtcDate
             };
         }

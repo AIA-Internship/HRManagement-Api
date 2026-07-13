@@ -3,7 +3,6 @@ using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
 using HRManagement.Api.Domain.Models.Response.Shared;
 using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Domain.SeedWork;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,9 +21,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
         private readonly ILogger<CreateModuleHandler> _logger;
         private readonly IELearningRepository _repo;
 
-        public CreateModuleHandler(
-            IELearningRepository repo,
-            ILogger<CreateModuleHandler> logger)
+        public CreateModuleHandler(IELearningRepository repo, ILogger<CreateModuleHandler> logger)
         {
             _repo = repo;
             _logger = logger;
@@ -33,32 +30,29 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
         public async Task<Result<ApiResponse>> Handle(CreateModuleCommand request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateModuleHandler));
-
             try
             {
                 var newModule = new ModuleModel
                 {
+                    BatchId = request.Dto.batchId,
                     ModuleTitle = request.Dto.title,
                     ModuleDescription = request.Dto.description,
                     TargetRole = request.Dto.role,
                     IsPriority = request.Dto.isPriority,
-                    CreatedBy = request.Dto.CurrentUserId.ToString(),
+                    DueDate = request.Dto.dueDate,
+                    CreatedBy = request.Dto.currentUserId.ToString(),
                     CreatedUtcDate = DateTime.UtcNow,
                     IsDeleted = false
                 };
 
                 var moduleId = await _repo.CreateModuleAsync(newModule);
-
-                if (moduleId <= 0)
-                {
-                    return ApiHelperResponse.Failed("Failed to create module in system");
-                }
+                if (moduleId <= 0) return ApiHelperResponse.Failed("Failed to create module");
 
                 return ApiHelperResponse.Success("Module created successfully", new { id = moduleId });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating module: {message}", ex.Message);
+                _logger.LogError(ex, "Error creating module: {message}", ex.Message);
                 return ApiHelperResponse.Failed(ex.Message);
             }
         }

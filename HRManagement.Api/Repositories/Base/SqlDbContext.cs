@@ -38,7 +38,6 @@ namespace HRManagement.Api.Repositories.Base
 
             modelBuilder.Entity<QuizSubmissionModel>().ToTable("ELearningQuizSubmissions");
             modelBuilder.Entity<QuizSubmissionModel>().HasKey(p => p.SubmissionId);
-            //modelBuilder.Entity<ViewMemberModel>().ToView("vw_members").HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -47,11 +46,28 @@ namespace HRManagement.Api.Repositories.Base
         public virtual DbSet<RoleModel> Role { get; set; }
         public virtual DbSet<EmployeeModel> Employee { get; set; }
         public virtual DbSet<LoginActivityModel> LoginActivity { get; set; }
+        public DbSet<EmploymentInformationModel> EmploymentInformation { get; set; } = null!;
 
         public virtual DbSet<ModuleModel> ELearningModules { get; set; }
         public virtual DbSet<ModuleContentModel> ELearningModuleContents { get; set; }
         public virtual DbSet<ProgressModel> ELearningProgress { get; set; }
         public virtual DbSet<QuizSubmissionModel> ELearningQuizSubmissions { get; set; }
         public DbSet<InternProfileModel> InternProfiles { get; set; }
+
+        public DbSet<GroupModel> ELearningGroups { get; set; } = null!;
+        public DbSet<GroupMemberModel> ELearningGroupMembers { get; set; } = null!;
+        public DbSet<ProgramModel> ELearningPrograms { get; set; } = null!;
+        public DbSet<BatchModel> ELearningBatches { get; set; } = null!;
+        public DbSet<ProgressModel> ELearningModuleProgress { get; set; } = null!;
+
+        public DbSet<QuizModel> ELearningQuizzes { get; set; } = null!;
+
+        public DbSet<QuizQuestionModel> ELearningQuizQuestions { get; set; } = null!;
+
+        public DbSet<QuizQuestionOptionModel> ELearningQuizQuestionOptions { get; set; } = null!;
+
+        public DbSet<StudentAnswerModel> ELearningStudentAnswers { get; set; } = null!;
+
+
     }
 }

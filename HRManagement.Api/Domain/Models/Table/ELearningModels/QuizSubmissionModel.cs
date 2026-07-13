@@ -10,28 +10,22 @@ namespace HRManagement.Api.Domain.Models.Table.ELearningModels
         [Column("submission_id")]
         public int SubmissionId { get; set; }
 
-        [Column("content_id")]
-        public int ContentId { get; set; }
+        [Column("quiz_id")]
+        public int QuizId { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int UserId { get; set; } 
 
-        [Column("answer_original_file_name")]
-        public string AnswerOriginalFileName { get; set; } = null!;
+        [Column("total_score")]
+        public decimal? TotalScore { get; set; } 
 
-        [Column("answer_stored_file_name")]
-        public string AnswerStoredFileName { get; set; } = null!;
+        [Column("is_passed")]
+        public bool? IsPassed { get; set; } 
 
-        [Column("answer_file_path")]
-        public string AnswerFilePath { get; set; } = null!;
+        [Column("graded_by")]
+        public string? GradedBy { get; set; } 
 
-        [Column("submitted_utc_date")]
-        public DateTime SubmittedUtcDate { get; set; }
-
-        [Column("score")]
-        public decimal? Score { get; set; }
-
-        [Column("graded_utc_date")] 
+        [Column("graded_utc_date")]
         public DateTime? GradedUtcDate { get; set; }
     }
 }
