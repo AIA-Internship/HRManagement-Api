@@ -31,6 +31,13 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
         return !await query.AnyAsync(lambda);
     }
 
+    public async Task<Employee?> GetByIdWithEmploymentAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _sqldbContext.Set<Employee>()
+            .Include(e => e.EmploymentInformation)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
     public async Task AddEmployeeUpdateRequestAsync(EmployeeUpdateRequest entity, CancellationToken ct)
     {
         await _sqldbContext.Set<EmployeeUpdateRequest>().AddAsync(entity, ct);

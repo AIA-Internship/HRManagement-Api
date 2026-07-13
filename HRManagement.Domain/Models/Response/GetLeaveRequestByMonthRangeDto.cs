@@ -6,7 +6,6 @@ namespace HRManagement.Domain.Models.Response
     {
         public int? leaveId { get; set; }
         public int requesterId { get; set; }
-        public string? requesterDisplayId { get; set; }
         public int supervisorId { get; set; }
         public string? leaveDescription { get; set; }
         public string? leaveStatus { get; set; }
@@ -17,7 +16,7 @@ namespace HRManagement.Domain.Models.Response
         public DateTime createdUtcDate { get; set; }
         public string? requesterName { get; set; }
 
-        public GetLeaveRequestByMonthRangeDto(int leaveId, int requesterId, int supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, decimal? dayAmount, int? leaveType, int? isCompleted, DateTime createdUtcDate, string? requesterName, string? requesterDisplayId = null)
+        public GetLeaveRequestByMonthRangeDto(int leaveId, int requesterId, int supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, decimal? dayAmount, int? leaveType, int? isCompleted, DateTime createdUtcDate, string? requesterName)
         {
             this.leaveId = leaveId;
             this.requesterId = requesterId;
@@ -30,7 +29,6 @@ namespace HRManagement.Domain.Models.Response
             this.isCompleted = isCompleted == 1;
             this.createdUtcDate = createdUtcDate;
             this.requesterName = requesterName;
-            this.requesterDisplayId = requesterDisplayId;
         }
     }
 }

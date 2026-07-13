@@ -229,7 +229,22 @@
         </div>
     </div>
 
-    <div class="card mx-10 mb-15">
+    <!-- Tabs: Request list / Calendar -->
+    <div class="mb-4 px-5">
+        <a href="#" id="tabRequest" class="leave-tab active me-4">Request list</a>
+        <a href="#" id="tabCalendar" class="leave-tab">Calendar</a>
+    </div>
+
+<!-- Calendar Card (hidden by default) -->
+<div class="card mx-10 mb-15" id="calendarCard" style="display:none;">
+    <div class="card-body ps-0 pe-0">
+        <div class="p-4">
+            <div id="kt_calendar_app" style="min-height:540px;"></div>
+        </div>
+    </div>
+</div>
+
+    <div class="card mx-10 mb-15" id="requestCard">
         <div class="card-body ps-0 pe-0">
             <div class="toolbar-row">
                 <div class="toolbar-left ms-7">
@@ -289,4 +304,6 @@
 
 @section Scripts {
     <script src="~/apps/modules/leave/js/SupervisorDashboard.js" asp-append-version="true"></script>
+    <script src="/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" asp-append-version="true"></script>
+    <script src="/assets/js/custom/apps/calendar/calendar.js" asp-append-version="true"></script>
 }

@@ -480,5 +480,6 @@ function main() {
     addSearchLogic();
     addSortLogic();
     renderSupervisorInfo();
+    addTabLogic();
 }
 main();
