@@ -56,6 +56,12 @@ internal sealed class LoginQueryHandler(
         var profile = await employeeRepository.GetProfileByEmailAsync(request.Email, cancellationToken);
         string fullName = profile?.FullName ?? user.EmployeeEmail;
 
+        logger.LogInformation(
+    "Role: {Role}, Permission Count: {Count}",
+    user.Role.Name,
+    user.Role.RolePermissions.Count
+);
+
         string token = GenerateToken(user, fullName, request.RememberMe);
 
         return Result.Success(new TokenResponseDto(token));

@@ -20,6 +20,18 @@ namespace HRManagement.MsSQL.Repositories
         {
             try
             {
+                // Ensure RequesterDisplayId is populated server-side to cover all callers
+                if (string.IsNullOrWhiteSpace(leaveRequest.RequesterDisplayId))
+                {
+                    var emp = await _dbContext.Employee
+                        .Include(e => e.EmploymentInformation)
+                        .FirstOrDefaultAsync(e => e.Id == leaveRequest.RequesterId);
+
+                    leaveRequest.RequesterDisplayId = emp?.EmploymentInformation?.DisplayId
+                        ?? emp?.NIK
+                        ?? emp?.Id.ToString();
+                }
+
                 await _dbContext.LeaveRequest.AddAsync(leaveRequest);
 
                 var affectedRows = await _dbContext.SaveChangesAsync();

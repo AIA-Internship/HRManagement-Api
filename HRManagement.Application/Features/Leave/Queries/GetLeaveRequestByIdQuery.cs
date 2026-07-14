@@ -55,6 +55,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             return new ReadLeaveRequestDto
             {
                 leaveId = model.LeaveId,
+                requesterDisplayId = model.RequesterDisplayId,
                 requesterId = model.RequesterId,
                 supervisorId = model.SupervisorId,
                 leaveDescription = model.LeaveDescription,

@@ -16,6 +16,8 @@ public interface IEmployeeRepository : IBaseRepository<Employee>
 
     Task<EmploymentInformation?> GetEmploymentInformationByDisplayIdAsync(string displayId, CancellationToken cancellationToken = default);
 
+    Task<Employee?> GetByIdWithEmploymentAsync(int id, CancellationToken cancellationToken = default);
+
     Task<string?> GetLastEmployeeDisplayIdAsync(CancellationToken cancellationToken = default);
 
     Task<string?> GetLookupNameAsync(string category, int value, CancellationToken cancellationToken = default);
