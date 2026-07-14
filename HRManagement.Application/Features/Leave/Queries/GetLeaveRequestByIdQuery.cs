@@ -51,10 +51,19 @@ namespace HRManagement.Application.Features.Leave.Queries
 
         public ReadLeaveRequestDto mapToReadDto(LeaveRequestModel model)
         {
+            // Ensure RequesterDisplayId is never null/empty by using fallback logic
+            var displayId = model.RequesterDisplayId;
+            if (string.IsNullOrWhiteSpace(displayId))
+            {
+                // If not in the leave request model, it will need to be populated from employee data
+                // This is handled at read time in repository
+                displayId = "N/A";
+            }
 
             return new ReadLeaveRequestDto
             {
                 leaveId = model.LeaveId,
+                requesterDisplayId = displayId,
                 requesterId = model.RequesterId,
                 supervisorId = model.SupervisorId,
                 leaveDescription = model.LeaveDescription,

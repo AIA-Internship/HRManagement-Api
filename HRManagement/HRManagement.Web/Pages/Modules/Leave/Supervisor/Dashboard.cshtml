@@ -5,103 +5,224 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/modules/leave/css/SupervisorDashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/leave/css/dashboard.css" asp-append-version="true" />
     <style>
+        /* Card / container to match the mock */
+        .card.mx-10.mb-15 {
+            background: #FFFFFF;
+            border: 1px solid #EFF2F5;
+            border-radius: 12px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+        }
+
+            .card.mx-10.mb-15 .card-body {
+                padding: 0.5rem 0;
+            }
+
+        /* Employee avatar & info */
+        .employee-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .employee-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .employee-name {
+            font-weight: 700;
+            color: #181C32;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.1;
+        }
+
+        .employee-role {
+            font-size: 12px;
+            color: #7E8299;
+            margin: 0;
+        }
+
+        /* Leave type and date formatting */
+        .leave-type {
+            color: #4B5563;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .date-text {
+            color: #6B7280;
+            font-size: 13px;
+        }
+
+        .days-cell {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Use same table layout & alignment as Employee dashboard */
+        /* On hover, only change row background (subtle) - status badge colors unchanged. */
         #requestTableBody tr:hover {
-            background-color: #dc3545 !important;
-            color: #fff !important;
+            background-color: #F9FAFB !important;
         }
-        #requestTableBody tr:hover td {
-            color: #fff !important;
-        }
-        #requestTableBody tr:hover .badge {
-            color: #fff !important;
-            opacity: 1 !important;
-        }
+
         #requestTableBody td {
             padding: 1.1rem 2rem;
             vertical-align: middle;
         }
+
         #requestTableBody tr {
             box-sizing: border-box;
         }
-        .leave-tab {
+
+        /* Status badges - pill style to match image */
+        .status-badge {
             display: inline-flex;
             align-items: center;
-            padding-bottom: 12px;
-            color: #7E8299;
-            text-decoration: none;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
             font-weight: 600;
-            border-bottom: 2px solid transparent;
-            transition: .2s;
+            min-width: 110px;
+            justify-content: center;
         }
 
-            .leave-tab.active {
-                color: #E31837;
-                border-color: #E31837;
-            }
+        /* Pending / Needs Approval */
+        .status-needs-approval {
+            color: #B54708 !important;
+            background-color: #FFFAEB !important;
+            border: 1px solid #FEDF89 !important;
+        }
 
-            .leave-tab:hover {
-                color: #E31837;
-            }
+        /* Approved */
+        .status-approved {
+            color: #027A48 !important;
+            background-color: #ECFDF3 !important;
+            border: 1px solid #ABEFC6 !important;
+        }
 
-        .status-filter {
+        /* Rejected */
+        .status-rejected {
+            color: #B42318 !important;
+            background-color: #FEF3F2 !important;
+            border: 1px solid #FECDCA !important;
+        }
+
+        /* Filter buttons (pill) */
+        .btn-outline-secondary {
             border: 1px solid #E4E6EF;
-            background: white;
+            color: #5E6278;
+            background: #fff;
             border-radius: 20px;
-            padding: 6px 16px;
+            padding: 6px 14px;
             font-size: 13px;
-            transition: .2s;
+            font-weight: 600;
+            transition: all 0.15s ease;
         }
 
-            .status-filter.active {
-                background: #FFF5F8;
+            .btn-outline-secondary:hover {
                 border-color: #E31837;
                 color: #E31837;
+                background: #fff;
             }
 
-            .status-filter:hover {
+            .btn-outline-secondary.active {
+                background: #E31837;
+                color: white;
                 border-color: #E31837;
             }
 
-        .card {
-            border-radius: 16px;
+        /* center search and tidy toolbar layout */
+        .toolbar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
         }
 
+        .toolbar-left {
+            flex: 0 0 auto;
+        }
+
+        .toolbar-center {
+            flex: 1 1 600px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .toolbar-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            border-radius: 24px;
+            padding: 12px 18px 12px 42px;
+        }
+
+        .position-relative .bi-search {
+            position: relative;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* Column alignment: left-aligned text columns, Day(s) & Status centered to match Figma */
+        .table thead th,
+        .table tbody td {
+            text-align: left;
+        }
+
+            .table thead th:nth-child(5),
+            .table tbody td:nth-child(5),
+            .table thead th:nth-child(6),
+            .table tbody td:nth-child(6) {
+                text-align: center;
+            }
+
+        /* make table header stand out with bolder line */
         .table thead th {
+            border-bottom: 2px solid #EFF2F5;
+            background: #fff;
+        }
+
+        /* Table header styling */
+        .table thead th {
+            background-color: transparent;
             color: #181C32;
             font-size: 13px;
             font-weight: 700;
-            border-bottom: 1px solid #EFF2F5;
+            padding: 1.1rem 2rem;
         }
 
-        #requestTableBody td {
-            padding: 18px 20px;
+        /* Pagination - subtle rounded */
+        .pagination .page-link {
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
         }
 
-        #requestTableBody tr {
-            transition: .18s;
+        .pagination .page-item.active .page-link {
+            background: #E31837;
+            border-color: #E31837;
+            color: #fff;
         }
 
-            #requestTableBody tr:hover {
-                background: #E31837;
-                color: white;
-            }
-
-                #requestTableBody tr:hover td,
-                #requestTableBody tr:hover strong,
-                #requestTableBody tr:hover small {
-                    color: white !important;
-                }
-
-        .table-responsive {
-            min-height: 550px;
-        }
-
-        #requestTableBody {
-            min-height: 480px;
-        }
-
+        /* Empty state */
         .empty-row td {
             height: 480px;
             vertical-align: middle !important;
@@ -116,185 +237,281 @@
             height: 100%;
         }
 
-        .status-filter {
-            border: 1px solid #E4E6EF;
-            background: #fff;
+        .empty-row:hover > td, .empty-row td:hover {
+            background-color: transparent !important;
+        }
+
+
+        .stacked-toolbar .toolbar-row {
+            padding: 0.5rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stacked-toolbar .toolbar-left,
+        .stacked-toolbar .toolbar-right {
+            flex: 0 0 100%;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .stacked-toolbar .toolbar-center {
+            order: 2;
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .stacked-toolbar .toolbar-right {
+            justify-content: flex-end;
+        }
+
+        .stacked-toolbar .search-input {
+            max-width: 100%;
+        }
+
+        .stacked-toolbar .btn-group {
+            gap: 0.4rem;
+        }
+
+        .stacked-toolbar .toolbar-left,
+        .stacked-toolbar .toolbar-right {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .stacked-toolbar .search-input {
+            padding-left: 42px;
+        }
+
+        .stacked-toolbar .table thead th,
+        .stacked-toolbar .table tbody td {
+            padding: 0.75rem 0.75rem;
+        }
+
+        /* Tab styling - breadcrumb style header + underline nav */
+        .leave-tab-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 14px;
+            color: #7E8299;
+            padding: 0 2rem;
+        }
+
+            .leave-tab-header a {
+                color: #7E8299;
+                text-decoration: none;
+            }
+
+                .leave-tab-header a:hover {
+                    color: #E31837;
+                }
+
+            .leave-tab-header .leave-tab-link.active {
+                color: #E31837;
+                font-weight: 600;
+            }
+
+            .leave-tab-header .breadcrumb-sep {
+                color: #D5D8DB;
+            }
+        /* ===== Leave Tabs ===== */
+        .leave-tabs-nav {
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+            border-bottom: 1px solid #E4E6EF;
+            margin-bottom: 1.5rem;
+        }
+
+        .leave-tab-control {
+            position: relative;
+            padding: 14px 0;
+            border: none;
+            background: transparent;
             color: #5E6278;
-            border-radius: 20px;
-            padding: 6px 18px;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
+            cursor: pointer;
             transition: .2s;
         }
 
-            .status-filter:hover {
+            .leave-tab-control:hover {
+                color: #E31837;
+            }
+
+            .leave-tab-control::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: -1px;
+                width: 100%;
+                height: 3px;
+                background: transparent;
+                border-radius: 3px 3px 0 0;
+                transition: .2s;
+            }
+
+            .leave-tab-control.active {
+                color: #E31837;
+            }
+
+                .leave-tab-control.active::after {
+                    background: #E31837;
+                }
+
+        /* ===== Status Filter ===== */
+
+        .status-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-filter-btn {
+            border: 1px solid #D0D5DD;
+            background: #fff;
+            color: #344054;
+            border-radius: 999px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: .2s;
+        }
+
+            .status-filter-btn:hover {
                 border-color: #E31837;
                 color: #E31837;
             }
 
-            .status-filter.active {
+            .status-filter-btn.active {
                 background: #E31837;
-                color: #fff;
                 border-color: #E31837;
+                color: #fff;
             }
 
-                .status-filter.active:hover {
-                    background: #C8102E;
-                    color: #fff;
-                }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
     </style>
+
 }
 
-<div class="mx-11">
+<div class="container-fluid px-5">
     @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
     {
         Title = "Leave",
         Subtitle = "Overview of pending leave requests from your team",
         Breadcrumbs = new List<BreadcrumbItem> {
-            new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
-            new BreadcrumbItem { Title = "Request List" }
+        new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
+        new BreadcrumbItem { Title = "Request List" }
         },
-    })
+        })
 </div>
 
-<div class="container-fluid px-10">
-
-    <!-- Greeting -->
-    <div class="mb-8">
-        <h2 class="fw-bold fs-1 mb-1">
-            Hello, <span id="userName">Supervisor</span>
-        </h2>
-
-        <div class="text-gray-600 fs-6">
-            Here is an overview of your leave status and activity.
+<div class="container-fluid px-5">
+    <div class="row mb-4 mx-3">
+        <div class="col">
+            <h2 class="fw-bold">Hello, <span id="userName">Supervisor</span></h2>
+            <p class="text-muted">Here is an overview of your leave status and activity</p>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="d-flex align-items-center gap-8 border-bottom mb-8">
-
-        <a href="/Leave/Supervisor/Dashboard"
-           class="leave-tab active">
-            Request List
-        </a>
-
-        <a href="/Leave/Supervisor/Calendar"
-           class="leave-tab">
-            Calendar
-        </a>
-
+    <!-- Tabs: Request list / Calendar -->
+    <div class="leave-tabs-nav">
+        <button id="tabRequest" class="leave-tab-control active" type="button">Request list</button>
+        <button id="tabCalendar" class="leave-tab-control" type="button">Calendar</button>
     </div>
 
-    <!-- Card -->
-    <div class="card shadow-sm border-0 rounded-4">
+    <!-- Calendar Card (hidden by default) -->
+    <div class="card mx-10 mb-15 leave-tab-content" id="calendarCard" style="display:none;">
+        <div class="card-body ps-0 pe-0">
+            <div class="p-4">
+                <div id="kt_calendar_app" style="min-height:540px;"></div>
+            </div>
+        </div>
+    </div>
 
-        <div class="card-body p-8">
+    <div class="card mx-10 mb-15 leave-tab-content" id="requestCard">
+        <div class="card-body ps-0 pe-0">
+            <div class="toolbar-row">
+                <div class="toolbar-left ms-7">
+                    <div class="status-filter">
+                        <button class="status-filter-btn active"
+                                onclick="filterStatus('1', this)">
+                            Needs Approval
+                        </button>
 
-            <!-- Toolbar -->
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-5 mb-8">
+                        <button class="status-filter-btn"
+                                onclick="filterStatus('2', this)">
+                            Approved
+                        </button>
 
-                <!-- Filter -->
-                <button class="status-filter active"
-                        onclick="filterStatus('1', this)">
-                    Needs Approval
-                </button>
-
-                <button class="status-filter"
-                        onclick="filterStatus('2', this)">
-                    Approved
-                </button>
-
-                <button class="status-filter"
-                        onclick="filterStatus('3', this)">
-                    Rejected
-                </button>
-
-                <!-- Search -->
-                <div class="position-relative">
-
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute top-50 start-0 translate-middle-y ms-4 text-gray-500"></i>
-
-                    <input id="searchInput"
-                           type="text"
-                           class="form-control ps-12"
-                           placeholder="Search Leave..."
-                           style="width:320px;" />
-
+                        <button class="status-filter-btn"
+                                onclick="filterStatus('3', this)">
+                            Rejected
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Sort -->
-                <div class="d-flex align-items-center gap-3">
+                <div class="toolbar-center">
+                    <div class="position-relative" style="width:100%; max-width:720px;">
+                        <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left:14px;"></i>
+                        <input id="searchInput"
+                               type="text"
+                               class="form-control search-input ps-5"
+                               placeholder="Search Leave..." />
+                    </div>
+                </div>
 
-                    <span class="text-gray-600">
-                        Sort by:
-                    </span>
-
-                    <select id="sortSelect"
-                            class="form-select form-select-sm"
-                            style="width:120px;">
-                        <option value="newest">
-                            newest
-                        </option>
-
-                        <option value="oldest">
-                            oldest
-                        </option>
+                <div class="toolbar-right me-4">
+                    <label class="me-2">Sort by:</label>
+                    <select id="sortSelect" class="form-select form-select-sm" style="width:120px;">
+                        <option value="newest" selected>newest</option>
+                        <option value="oldest">oldest</option>
                     </select>
-
                 </div>
-
             </div>
 
-            <!-- Table -->
             <div class="table-responsive">
-
                 <table class="table align-middle">
-
                     <thead>
-
                         <tr>
-
-                            <th>Employee Name</th>
-                            <th>Leave Type</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Day(s)</th>
-                            <th class="text-center">
-                                Status
-                            </th>
-
+                            <th class="px-7"><strong>Employee Name</strong></th>
+                            <th class="px-7"><strong>Leave Type</strong></th>
+                            <th class="px-7"><strong>Start Date</strong></th>
+                            <th class="px-7"><strong>End Date</strong></th>
+                            <th class="px-7"><strong>Day(s)</strong></th>
+                            <th class="px-7"><strong>Status</strong></th>
                         </tr>
-
                     </thead>
-
                     <tbody id="requestTableBody">
                     </tbody>
-
                 </table>
-
             </div>
 
-            <!-- Footer -->
-
-            <div class="d-flex justify-content-between align-items-center mt-7">
-
-                <span id="showingText"
-                      class="text-gray-600">
-                    Showing 0-0 of 0 requests
-                </span>
-
-                <ul class="pagination mb-0"
-                    id="paginationList">
-                </ul>
-
+            <div class="d-flex align-items-center justify-content-between mt-3 ms-7 me-7">
+                <div class="text-muted" id="showingText">Showing 0-0 of 0 requests</div>
+                <nav aria-label="pagination">
+                    <ul class="pagination mb-0" id="paginationList">
+                    </ul>
+                </nav>
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 @section Scripts {
     <script src="~/apps/modules/leave/js/SupervisorDashboard.js" asp-append-version="true"></script>
+    <script src="/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" asp-append-version="true"></script>
+    <script src="/assets/js/custom/apps/calendar/calendar.js" asp-append-version="true"></script>
 }

@@ -20,6 +20,8 @@ namespace HRManagement.MsSQL.Repositories
         {
             try
             {
+
+
                 await _dbContext.LeaveRequest.AddAsync(leaveRequest);
 
                 var affectedRows = await _dbContext.SaveChangesAsync();
@@ -42,22 +44,27 @@ namespace HRManagement.MsSQL.Repositories
 
         public async Task<LeaveRequestModel> getLeaveRequestById(int id, int requesterId)
         {
-            return await _dbContext.LeaveRequest
+            var leaveRequest = await _dbContext.LeaveRequest
                 .FirstOrDefaultAsync(x =>
                     x.LeaveId == id &&
                     x.RequesterId == requesterId &&
                     x.IsDeleted == 0);
+
+
+            return leaveRequest;
         }
 
         public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max)
         {
             try
             {
-                return await _dbContext.LeaveRequest
+                var requests = await _dbContext.LeaveRequest
                     .Where(x => x.RequesterId == requesterId && x.IsDeleted == 0)
                     .OrderByDescending(x => x.CreatedUtcDate)
                     .Take(max)
                     .ToListAsync();
+
+                return requests;
             }
             catch (Exception ex)
             {
@@ -129,7 +136,10 @@ namespace HRManagement.MsSQL.Repositories
                     lr.LeaveType,
                     lr.IsCompleted,
                     lr.CreatedUtcDate,
-                    e.FullName
+                    e.FullName,
+                    !string.IsNullOrWhiteSpace(lr.RequesterDisplayId) 
+                        ? lr.RequesterDisplayId 
+                        : (e.EmploymentInformation != null ? e.EmploymentInformation.DisplayId : null)
                 )
 
                 ).ToListAsync();
@@ -258,6 +268,18 @@ namespace HRManagement.MsSQL.Repositories
                 .ThenBy(x => x.CreatedUtcDate)
                 .Take(max)
                 .ToListAsync();
+
+            // Populate RequesterDisplayId for any empty entries
+            foreach (var req in result.Where(r => string.IsNullOrWhiteSpace(r.RequesterDisplayId)))
+            {
+                var emp = await _dbContext.Employee
+                    .Include(e => e.EmploymentInformation)
+                    .FirstOrDefaultAsync(e => e.Id == req.RequesterId);
+
+                req.RequesterDisplayId = emp?.EmploymentInformation?.DisplayId
+                    ?? emp?.NIK
+                    ?? emp?.Id.ToString();
+            }
 
             return result;
         }

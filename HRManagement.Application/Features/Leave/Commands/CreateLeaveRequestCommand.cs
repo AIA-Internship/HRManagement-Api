@@ -43,13 +43,32 @@ namespace HRManagement.Application.Features.Leave.Commands
             var req = request.LeaveRequestDto;
 
             Employee spv = await _employeeRepository.GetByIdAsync(req.SupervisorId);
-            Employee emp = await _employeeRepository.GetByIdAsync(req.RequesterId);
+            // Get employee with EmploymentInformation included so DisplayId is available
+            Employee emp = await _employeeRepository.GetByIdWithEmploymentAsync(req.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateLeaveRequestCommandHandler));
             try
             {
-                int createdId = await _repo.createLeaveRequest(mapFromCreateDto(request.LeaveRequestDto));
+                var leaveModel = mapFromCreateDto(request.LeaveRequestDto);
+
+                // Ensure RequesterDisplayId is populated from employee record when not provided
+                if (string.IsNullOrWhiteSpace(leaveModel.RequesterDisplayId))
+                {
+                    // Prefer EmploymentInformation.DisplayId, fall back to NIK or employee Id to guarantee non-empty value
+                    leaveModel.RequesterDisplayId = emp?.EmploymentInformation?.DisplayId
+                        ?? emp?.NIK
+                        ?? emp?.Id.ToString();
+                }
+
+                // Log values to help debug missing display id
+                _logger.LogDebug("CreateLeaveRequest: requesterId={RequesterId}, emp.DisplayId={DisplayId}, emp.NIK={NIK}, leaveModel.RequesterDisplayId={RequesterDisplayId}",
+                    req.RequesterId,
+                    emp?.EmploymentInformation?.DisplayId,
+                    emp?.NIK,
+                    leaveModel.RequesterDisplayId);
+
+                int createdId = await _repo.createLeaveRequest(leaveModel);
 
                 if (createdId <= 0)
                 {
