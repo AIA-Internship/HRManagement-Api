@@ -1,0 +1,48 @@
+@model HRManagement.Web.Models.Shared.PageHeaderViewModel
+
+@* AIA GLOBAL PAGE HEADER COMPONENT *@
+<div class="aia-page-header">
+    @if (Model.Breadcrumbs != null && Model.Breadcrumbs.Any())
+    {
+        <nav aria-label="breadcrumb">
+            <ul class="aia-breadcrumb">
+                @for (int i = 0; i < Model.Breadcrumbs.Count; i++)
+                {
+                    var item = Model.Breadcrumbs[i];
+                    bool isLast = (i == Model.Breadcrumbs.Count - 1);
+                    
+                    if (isLast)
+                    {
+                        <li class="aia-breadcrumb-item active" aria-current="page">@item.Title</li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="@item.Url" class="aia-breadcrumb-item">@item.Title</a>
+                        </li>
+                        <li class="aia-breadcrumb-separator">
+                            <i class="bi bi-chevron-right"></i>
+                        </li>
+                    }
+                }
+            </ul>
+        </nav>
+    }
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-5">
+        <div class="d-flex flex-column">
+            <h1 id="@(string.IsNullOrEmpty(Model.Id) ? "page_title_header" : Model.Id)" class="aia-page-title">@Model.Title</h1>
+            @if (!string.IsNullOrEmpty(Model.Subtitle))
+            {
+                <div class="aia-page-subtitle">@Html.Raw(Model.Subtitle)</div>
+            }
+        </div>
+
+        @if (Model.RenderActions != null)
+        {
+            <div class="d-flex align-items-center gap-3">
+                @Model.RenderActions
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,153 @@
+/* 
+   SUPERVISOR TIMESHEET CALENDAR TRACKER 
+   Matches AIA Design System 
+*/
+
+/* --- Top Navigation --- */
+.btn-nav-segment {
+    color: #7E8299;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-weight: 800;
+    transition: all 0.2s;
+}
+.btn-nav-segment.active {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    color: var(--aia-red);
+}
+.btn-nav-segment:hover:not(.active) {
+    color: var(--aia-red);
+    background: #FFF5F8;
+}
+
+/* --- Profile Selectors --- */
+.hover-bg-light:hover {
+    background-color: #F8F9FA !important;
+}
+.tracking-wider {
+    letter-spacing: 0.5px;
+}
+.transition-all {
+    transition: all 0.2s;
+}
+
+/* --- Calendar Grid System --- */
+.calendar-wrapper {
+    overflow: hidden; /* Cuts off border radii inner bleeding */
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #F1F4F9; /* Forms borders between cells */
+    gap: 1px;            /* 1px borders */
+}
+
+/* Headers */
+.calendar-header-cell {
+    background: #FDFDFD;
+    padding: 16px 12px;
+    text-align: center;
+    font-size: 0.70rem;
+    font-weight: 800;
+    color: #A1A5B7;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #F1F4F9;
+}
+
+/* Body Cells */
+.calendar-day-cell {
+    background: white;
+    min-height: 160px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    transition: background 0.2s;
+}
+.calendar-day-cell:hover {
+    background: #FDFDFD;
+}
+.calendar-day-cell.other-month {
+    background: #FBFBFB;
+}
+
+/* Day Numbers */
+.day-number {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #3F4254;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+.calendar-day-cell.other-month .day-number {
+    color: #D1D5DB;
+}
+.today-circle {
+    background: #3F4254; /* Dark gray for today */
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- Internal Objects --- */
+.project-pill {
+    background: #FFF5F8;
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 1px solid transparent;
+}
+.project-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    border-color: rgba(211, 17, 69, 0.1);
+}
+.pt-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #3F4254;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+}
+.pt-hours {
+    font-size: 0.70rem;
+    font-weight: 800;
+    color: #009EF7;
+}
+
+.holiday-pill {
+    background: #D31145;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    border-left: none;
+}
+
+/* Responsive constraints */
+@media (max-width: 1200px) {
+    .calendar-grid {
+        grid-template-columns: repeat(3, 1fr); /* Mobile fallback */
+    }
+}

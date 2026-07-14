@@ -1,0 +1,375 @@
+@page "/Profile/Edit"
+@model HRManagement.Web.Pages.Modules.Profile.EditModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+    <style>
+        .profile-pic-wrapper { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: #f5f7fa; display: flex; align-items: center; justify-content: center; border: 2px dashed #d9d9d9; }
+        .profile-pic-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .attachment-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #e7e9eb; border-radius: 8px; margin-bottom: 8px; }
+        .attachment-remove { color: #d31145; cursor: pointer; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+        Title = "Personal Information",
+        Subtitle = "View and manage your personal information",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Profile", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Personal Information", Url = "/Profile" },
+            new BreadcrumbItem { Title = "Edit Profile" }
+        },
+        RenderActions = Html.Raw(@"
+            <a href='javascript:aiaGoBack()' class='btn btn-sm btn-light fw-bold d-inline-flex align-items-center'><i class='bi bi-arrow-left fs-5 me-1'></i>Back</a>
+            <a href='/Profile' class='btn btn-sm btn-light fw-bold'>Cancel</a>
+            <button type='button' onclick='submitForApproval()' class='btn btn-sm btn-brand fw-bold'>
+                <i class='bi bi-check2-circle text-white fs-4 me-1'></i> Submit for Approval
+            </button>")
+    })
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!-- Tab Navigation -->
+            <div class="card shadow-sm mb-6">
+                <div class="card-body p-0">
+                    <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold ms-5" id="profileEditTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5 active" data-bs-toggle="tab" href="#kt_tab_personal" role="tab">Personal Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_employment" role="tab">Employment Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_emergency" role="tab">Emergency Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5" data-bs-toggle="tab" href="#kt_tab_attachment" role="tab">Attachments</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="card shadow-sm">
+                <div class="card-body p-10 tab-content" id="profileEditTabsContent">
+
+                    <!-- PERSONAL DETAILS -->
+                    <div class="tab-pane fade show active" id="kt_tab_personal" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-address-book fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <h3 class="fw-bold mb-0">Personal Details</h3>
+                        </div>
+
+                        <!-- Profile Picture -->
+                        <div class="row g-9 mb-10 align-items-center">
+                            <div class="col-md-3">
+                                <div class="profile-pic-wrapper" id="profilePicPreview">
+                                    <i class="bi bi-person fs-1 text-muted"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="form-label fw-bold">Profile Picture</label>
+                                <input type="file" class="form-control form-control-lg form-control-solid" id="editProfilePicture" accept="image/*">
+                                <div class="form-text">Upload an image (JPG/PNG).</div>
+                            </div>
+                        </div>
+
+                        <div class="sub-section-heading fs-7 text-muted text-uppercase fw-bold mb-7 border-bottom pb-2">Identity & Contact</div>
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Full Name<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editFullName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-block">Gender<span class="text-danger">*</span></label>
+                                <div class="nav-group nav-group-outline d-inline-flex">
+                                    <input class="btn-check" type="radio" name="gender" id="genderMale" value="Male" checked>
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-3 me-3" for="genderMale">
+                                        <span class="fw-bold fs-6">Male</span>
+                                    </label>
+
+                                    <input class="btn-check" type="radio" name="gender" id="genderFemale" value="Female">
+                                    <label class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex align-items-center px-6 py-3" for="genderFemale">
+                                        <span class="fw-bold fs-6">Female</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Personal Email<span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg form-control-solid" id="editPersonalEmail" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Company Email</label>
+                                <input type="email" class="form-control form-control-lg form-control-solid bg-light" id="editCompanyEmail" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone Number<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editPhoneNumber" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">National ID (NIK)<span class="text-danger">*</span></label>
+                                <input type="password" class="form-control form-control-lg form-control-solid" id="editNik" maxlength="16" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tax ID (NPWP)</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editNpwp">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Place of Birth<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editPlaceOfBirth" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-10">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Date of Birth<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editDateOfBirth" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Marital Status<span class="text-danger">*</span></label>
+                                <select class="form-select form-select-lg form-select-solid" id="editMaritalStatus" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Residential Address -->
+                        <div class="sub-section-heading fs-7 text-muted text-uppercase fw-bold mb-7 border-bottom pb-2">Residential Address</div>
+                        <div class="row g-9 mb-10">
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Address<span class="text-danger">*</span></label>
+                                <textarea class="form-control form-control-lg form-control-solid" id="editResidentialStreet" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">City<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editResidentialCity" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Province<span class="text-danger">*</span></label>
+                                <select class="form-select form-select-lg form-select-solid" id="editResidentialProvince" required>
+                                    <option value="">-- Select --</option>
+                                    <option>DKI Jakarta</option>
+                                    <option>West Java</option>
+                                    <option>Central Java</option>
+                                    <option>East Java</option>
+                                    <option>Banten</option>
+                                    <option>Yogyakarta</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Zip Code<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editResidentialPostal" required>
+                            </div>
+                        </div>
+
+                        <!-- Current Address -->
+                        <div class="sub-section-heading fs-7 text-muted text-uppercase fw-bold mb-7 border-bottom pb-2">
+                            Current Address
+                            <label class="ms-3 fw-normal text-lowercase">
+                                <input type="checkbox" id="sameAsResidential"> same as residential
+                            </label>
+                        </div>
+                        <div class="row g-9">
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Address<span class="text-danger">*</span></label>
+                                <textarea class="form-control form-control-lg form-control-solid" id="editCurrentStreet" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">City<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editCurrentCity" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Province<span class="text-danger">*</span></label>
+                                <select class="form-select form-select-lg form-select-solid" id="editCurrentProvince" required>
+                                    <option value="">-- Select --</option>
+                                    <option>DKI Jakarta</option>
+                                    <option>West Java</option>
+                                    <option>Central Java</option>
+                                    <option>East Java</option>
+                                    <option>Banten</option>
+                                    <option>Yogyakarta</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Zip Code<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editCurrentPostal" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMPLOYMENT DETAILS (read-only for employee) -->
+                    <div class="tab-pane fade" id="kt_tab_employment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-briefcase fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Employment Details</h3>
+                        </div>
+
+                        <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-10">
+                            <i class="ki-duotone ki-information-4 fs-2tx text-warning me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-semibold text-gray-700 fs-6">Employment data is managed by HR/Supervisor. Discrepancies must be raised with your supervisor.</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Employee ID</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editEmployeeId" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted d-block">Employee Status</label>
+                                <div class="nav-group nav-group-outline d-inline-flex">
+                                    <label class="btn btn-outline btn-outline-dashed d-flex align-items-center px-6 py-3 me-3">
+                                        <input class="btn-check" type="radio" name="employeeStatus" id="statusActive" value="Active" disabled>
+                                        <span class="fw-bold fs-6">Active</span>
+                                    </label>
+                                    <label class="btn btn-outline btn-outline-dashed d-flex align-items-center px-6 py-3">
+                                        <input class="btn-check" type="radio" name="employeeStatus" id="statusInactive" value="Inactive" disabled>
+                                        <span class="fw-bold fs-6">Inactive</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Start Date</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editStartDate" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Employment Type</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editEmploymentType" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Department</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editDepartment" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">Position</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editPosition" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row g-9">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted d-block">Role</label>
+                                <div class="nav-group nav-group-outline d-inline-flex">
+                                    <label class="btn btn-outline btn-outline-dashed d-flex align-items-center px-6 py-3 me-3">
+                                        <input class="btn-check" type="radio" name="employeeRole" id="roleSupervisor" value="Supervisor" disabled>
+                                        <span class="fw-bold fs-6">Supervisor</span>
+                                    </label>
+                                    <label class="btn btn-outline btn-outline-dashed d-flex align-items-center px-6 py-3">
+                                        <input class="btn-check" type="radio" name="employeeRole" id="roleIntern" value="Intern" disabled>
+                                        <span class="fw-bold fs-6">Intern</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="supervisorNameWrapper">
+                                <label class="form-label fw-bold text-muted">Supervisor Name</label>
+                                <input type="text" class="form-control form-control-lg form-control-solid bg-light" id="editSupervisorName" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMERGENCY CONTACT -->
+                    <div class="tab-pane fade" id="kt_tab_emergency" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-phone fs-1 text-brand me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <h3 class="fw-bold mb-0">Emergency Contact</h3>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Name<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Relationship<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyRelationship" required>
+                            </div>
+                        </div>
+                        <div class="row g-9">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone Number<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editEmergencyPhone" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ATTACHMENTS -->
+                    <div class="tab-pane fade" id="kt_tab_attachment" role="tabpanel">
+                        <div class="d-flex align-items-center mb-10">
+                            <i class="ki-duotone ki-paper-clip fs-1 text-brand me-3"></i>
+                            <h3 class="fw-bold mb-0">Attachments</h3>
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Attachment Name<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg form-control-solid" id="editAttachmentName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">File (PDF or Image)<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control form-control-lg form-control-solid" id="editAttachmentFile" accept=".pdf,image/*">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-sm btn-light-primary fw-bold" onclick="addAttachment()">
+                                <i class="bi bi-plus-circle me-1"></i> Add Attachment
+                            </button>
+                        </div>
+
+                        <div id="attachmentList"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Confirm Submission</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">You are about to submit changes for approval. Once submitted, the request will be set to <strong>"Needs Approval"</strong> and routed to your supervisor.</p>
+                <p class="text-muted small mb-0">Please review your changes before confirming.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-brand fw-bold" onclick="confirmSubmission()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,102 @@
+@page "/Profile/RequestDetails"
+@model HRManagement.Web.Pages.Modules.Profile.RequestDetailsModel
+@{
+    ViewData["Title"] = "Request Details";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/profile/css/profile-detail-styles.css" asp-append-version="true" />
+    <style>
+        .text-brand { color: #D31145 !important; }
+        .badge-light-pending { background-color: #FEF3C7; color: #92400E; }
+        .badge-light-approved { background-color: #D1FAE5; color: #2B8B15; }
+        .badge-light-rejected { background-color: #FFE4E6; color: #D31145; }
+        .meta-label { color: #7e8299; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .meta-value { color: #181c32; font-weight: 700; }
+        .change-row { padding: 12px 0; border-bottom: 1px solid #eff2f5; }
+        .change-row:last-child { border-bottom: 0; }
+        .change-prev { color: #7e8299; text-decoration: line-through; }
+        .change-new { color: #181c32; font-weight: 600; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <a href="javascript:aiaGoBack()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</a>
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                        <li class="breadcrumb-item"><a href="/Profile" class="text-decoration-none text-muted text-hover-primary">Profile</a></li>
+                        <li class="breadcrumb-item"><a href="/Profile/History" class="text-decoration-none text-muted text-hover-primary">Request History</a></li>
+                        <li class="breadcrumb-item active text-brand" aria-current="page">Request Details</li>
+                    </ol>
+                </nav>
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0" id="detailHeading">
+                    Request Details
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!-- Meta Card -->
+            <div class="card shadow-sm mb-6">
+                <div class="card-body">
+                    <div class="row g-6">
+                        <div class="col-md-3">
+                            <div class="meta-label">Request ID</div>
+                            <div class="meta-value" id="metaId">-</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="meta-label">Status</div>
+                            <div id="metaStatus">-</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="meta-label">Submitted Date</div>
+                            <div class="meta-value" id="metaSubmitted">-</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="meta-label">Fields Changed</div>
+                            <div class="meta-value" id="metaCount">-</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mt-2" id="approvalMetaRow" style="display:none;">
+                        <div class="col-md-4">
+                            <div class="meta-label" id="approvalByLabel">Approved By</div>
+                            <div class="meta-value" id="metaActionBy">-</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="meta-label" id="approvalDateLabel">Approved Date</div>
+                            <div class="meta-value" id="metaActionDate">-</div>
+                        </div>
+                        <div class="col-md-4" id="commentsCol" style="display:none;">
+                            <div class="meta-label">Supervisor Comments</div>
+                            <div class="meta-value" id="metaComments">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Changes Card -->
+            <div class="card shadow-sm">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <h3 class="fw-bold fs-4">Changes Requested</h3>
+                    </div>
+                </div>
+                <div class="card-body pt-0" id="changesContainer">
+                    <div class="text-muted">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/profile/js/request-details.js" asp-append-version="true"></script>
+}
