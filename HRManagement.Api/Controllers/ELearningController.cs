@@ -203,6 +203,20 @@ public class ELearningController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("interns/{employeeId}/programs/{programId}/module-progress")]
+    public async Task<IActionResult> GetInternModuleProgress(int employeeId, int programId)
+    {
+        var result = await _mediator.Send(new GetInternModuleProgressQuery(employeeId, programId));
+        return FromResult(result);
+    }
+
+    [HttpGet("interns/{employeeId}/programs/{programId}/quiz-progress")]
+    public async Task<IActionResult> GetInternQuizProgress(int employeeId, int programId)
+    {
+        var result = await _mediator.Send(new GetInternQuizProgressQuery(employeeId, programId));
+        return FromResult(result);
+    }
+
     [HttpPut("grade-submission")]
     public async Task<IActionResult> GradeSubmission([FromBody] SubmitQuizReviewCommand command)
     {

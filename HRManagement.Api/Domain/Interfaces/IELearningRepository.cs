@@ -34,6 +34,9 @@ namespace HRManagement.Api.Domain.Interfaces
 
         Task<IEnumerable<ModuleModel>> GetAvailableModulesAsync(string role, string search);
         Task<IEnumerable<ModuleModel>> GetModulesByBatchIdAsync(int batchId, string search, IEnumerable<string> roles);
+        Task<IEnumerable<ModuleModel>> GetModulesByProgramIdAsync(int programId);
+        Task<IEnumerable<QuizModel>> GetQuizzesByProgramIdAsync(int programId);
+        Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByUserAndQuizIdsAsync(int userId, IEnumerable<int> quizIds);
         Task<int> GetTotalModulesCountByRoleAsync(string role);
         Task<int> GetCompletedModulesCountAsync(int userId);
 

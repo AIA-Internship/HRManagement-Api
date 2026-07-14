@@ -82,6 +82,12 @@ namespace HRManagement.Api.Infrastructure.Repositories
             var programModuleIds = programModules.Select(m => m.ModuleId).ToList();
             int totalModulesCountDenominator = programModuleIds.Count;
 
+            var programQuizIds = await _context.ELearningQuizzes
+                .Where(q => programModuleIds.Contains(q.ModuleId) && !q.IsDeleted)
+                .Select(q => q.QuizId)
+                .ToListAsync();
+            int totalQuizzesCountDenominator = programQuizIds.Count;
+
             var cohortQuery = from member in _context.ELearningGroupMembers
                               join prog in _context.ELearningPrograms on member.GroupId equals prog.GroupId
                               join u in _context.User on member.EmployeeId equals u.UserId
@@ -124,12 +130,19 @@ namespace HRManagement.Api.Infrastructure.Repositories
                     ? $"{Math.Round(studentSubmissions.Average(), 0)}/100"
                     : "No submissions yet";
 
+                int quizzesPassedNumerator = await _context.ELearningQuizSubmissions
+                    .Where(s => s.UserId == intern.UserId && programQuizIds.Contains(s.QuizId) && s.IsPassed == true)
+                    .Select(s => s.QuizId)
+                    .Distinct()
+                    .CountAsync();
+
                 compiledList.Add(new
                 {
                     EmployeeId = intern.UserId,
                     Name = intern.FullName,
                     Role = row.PositionName ?? "Intern",
                     TotalModulesCompletedText = $"{itemsCompletedNumerator} / {totalModulesCountDenominator}",
+                    TotalQuizzesCompletedText = $"{quizzesPassedNumerator} / {totalQuizzesCountDenominator}",
                     AccumulativeScoreDisplay = accumulativeScoreDisplay
                 });
             }
@@ -195,6 +208,30 @@ namespace HRManagement.Api.Infrastructure.Repositories
         {
             return await Context.ELearningQuizzes
                 .FirstOrDefaultAsync(q => q.ModuleId == moduleId && !q.IsDeleted);
+        }
+
+        public async Task<IEnumerable<ModuleModel>> GetModulesByProgramIdAsync(int programId)
+        {
+            return await (from batch in Context.ELearningBatches
+                          join mdle in Context.ELearningModules on batch.BatchId equals mdle.BatchId
+                          where batch.ProgramId == programId && !mdle.IsDeleted
+                          select mdle).ToListAsync();
+        }
+
+        public async Task<IEnumerable<QuizModel>> GetQuizzesByProgramIdAsync(int programId)
+        {
+            return await (from batch in Context.ELearningBatches
+                          join mdle in Context.ELearningModules on batch.BatchId equals mdle.BatchId
+                          join quiz in Context.ELearningQuizzes on mdle.ModuleId equals quiz.ModuleId
+                          where batch.ProgramId == programId && !mdle.IsDeleted && !quiz.IsDeleted
+                          select quiz).ToListAsync();
+        }
+
+        public async Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByUserAndQuizIdsAsync(int userId, IEnumerable<int> quizIds)
+        {
+            return await Context.ELearningQuizSubmissions
+                .Where(s => s.UserId == userId && quizIds.Contains(s.QuizId) && !s.IsDeleted)
+                .ToListAsync();
         }
 
         public async Task<int> GetQuestionCountByQuizIdAsync(int quizId)
