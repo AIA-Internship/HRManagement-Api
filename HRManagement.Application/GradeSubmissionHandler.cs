@@ -1,9 +1,9 @@
-﻿using HRManagement.Api.Domain.Interfaces;
+﻿using HRManagement.Domain.Interfaces;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application
+namespace HRManagement.Application
 {
     public record GradeSubmissionCommand(int SubmissionId, decimal Score, long GraderId) : IRequest<bool>;
 

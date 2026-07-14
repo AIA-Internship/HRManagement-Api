@@ -1,19 +1,19 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningMapping;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningMapping;
 using MediatR;
 using System.Linq;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetModuleByIdQuery(int moduleId) : IRequest<Result<ApiResponse>>
+    public class GetModuleByIdQuery(int moduleId) : IRequest<Result<ReadModuleDetailDto>>
     {
         public int ModuleId { get; set; } = moduleId;
     }
 
-    internal class GetModuleByIdHandler : IRequestHandler<GetModuleByIdQuery, Result<ApiResponse>>
+    internal class GetModuleByIdHandler : IRequestHandler<GetModuleByIdQuery, Result<ReadModuleDetailDto>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetModuleByIdHandler> _logger;
@@ -24,13 +24,13 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetModuleByIdQuery request, CancellationToken ct)
+        public async Task<Result<ReadModuleDetailDto>> Handle(GetModuleByIdQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetModuleByIdHandler));
             try
             {
                 var m = await _repo.GetModuleByIdAsync(request.ModuleId);
-                if (m == null) return ApiHelperResponse.Failed("Module not found");
+                if (m == null) return Result.Failure<ReadModuleDetailDto>("Module not found");
 
                 var contents = await _repo.GetContentsByModuleIdAsync(request.ModuleId);
                 var quiz = await _repo.GetQuizByModuleIdAsync(request.ModuleId);
@@ -63,12 +63,12 @@ namespace HRManagement.Api.Application.Queries
                     contents = contents.Select(ModuleContentMapping.MapToReadDto).ToList(),
                     quiz = quizDto
                 };
-                return ApiHelperResponse.Success("Module detail retrieved", dto);
+                return Result.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching module detail for ID {id}", request.ModuleId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<ReadModuleDetailDto>(ex.Message);
             }
         }
     }

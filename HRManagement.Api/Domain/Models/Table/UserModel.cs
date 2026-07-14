@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+/*
+using System.ComponentModel.DataAnnotations;
 
 namespace HRManagement.Api.Domain.Models.Table
 {
@@ -87,3 +88,4 @@ namespace HRManagement.Api.Domain.Models.Table
         }
     }
 }
+*/

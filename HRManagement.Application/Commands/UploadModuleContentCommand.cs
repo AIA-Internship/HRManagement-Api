@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Repositories.Base;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -9,9 +9,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
-    public class UploadModuleContentCommand : IRequest<Result<ApiResponse>>
+    public class UploadModuleContentCommand : IRequest<Result>
     {
         public int ModuleId { get; set; }
         public string Title { get; set; } = null!;
@@ -19,23 +19,23 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
         public int CurrentUserId { get; set; }
     }
 
-    internal class UploadModuleContentHandler : IRequestHandler<UploadModuleContentCommand, Result<ApiResponse>>
+    internal class UploadModuleContentHandler : IRequestHandler<UploadModuleContentCommand, Result>
     {
-        private readonly SqlDbContext _context;
-        private const long MaxFileSizeBytes = 150 * 1024 * 1024; // Strict 150MB layout rule
+        private readonly AppDbContext _context;
+        private const long MaxFileSizeBytes = 150 * 1024 * 1024;
 
-        public UploadModuleContentHandler(SqlDbContext context) => _context = context;
+        public UploadModuleContentHandler(AppDbContext context) => _context = context;
 
-        public async Task<Result<ApiResponse>> Handle(UploadModuleContentCommand request, CancellationToken ct)
+        public async Task<Result> Handle(UploadModuleContentCommand request, CancellationToken ct)
         {
             if (request.FilePayload.Length > MaxFileSizeBytes)
-                return ApiHelperResponse.Failed("File size violates limits. Maximum allowed is 150MB.");
+                return Result.Failure("File size violates limits. Maximum allowed is 150MB.");
 
             var extension = Path.GetExtension(request.FilePayload.FileName).ToLower();
             if (extension != ".pdf" && extension != ".ppt" && extension != ".pptx" &&
                 extension != ".mp4" && extension != ".docx")
             {
-                return ApiHelperResponse.Failed("Unsupported file format. Use PDF, PPT, MP4, or DOCX.");
+                return Result.Failure("Unsupported file format. Use PDF, PPT, MP4, or DOCX.");
             }
 
             var baseStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "elearning");
@@ -49,7 +49,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 await request.FilePayload.CopyToAsync(stream, ct);
             }
 
-            var cleanContentType = extension.Replace(".", ""); // e.g. "mp4"
+            var cleanContentType = extension.Replace(".", "");
 
             var newContent = new ModuleContentModel
             {
@@ -67,7 +67,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
             _context.ELearningModuleContents.Add(newContent);
             await _context.SaveChangesAsync(ct);
 
-            return ApiHelperResponse.Success("File content uploaded successfully.");
+            return Result.Success();
         }
     }
 }

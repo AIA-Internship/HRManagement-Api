@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,14 +9,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetBatchesByProgramQuery(int programId) : IRequest<Result<ApiResponse>>
+    public class GetBatchesByProgramQuery(int programId) : IRequest<Result<List<ReadBatchDto>>>
     {
         public int ProgramId { get; set; } = programId;
     }
 
-    internal class GetBatchesByProgramHandler : IRequestHandler<GetBatchesByProgramQuery, Result<ApiResponse>>
+    internal class GetBatchesByProgramHandler : IRequestHandler<GetBatchesByProgramQuery, Result<List<ReadBatchDto>>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetBatchesByProgramHandler> _logger;
@@ -27,14 +27,14 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetBatchesByProgramQuery request, CancellationToken ct)
+        public async Task<Result<List<ReadBatchDto>>> Handle(GetBatchesByProgramQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetBatchesByProgramHandler));
             try
             {
                 var programExists = await _repo.ProgramExistsAsync(request.ProgramId);
                 if (!programExists)
-                    return ApiHelperResponse.Failed("Program not found.");
+                    return Result.Failure<List<ReadBatchDto>>("Program not found.");
 
                 var batches = await _repo.GetBatchesByProgramIdAsync(request.ProgramId);
                 var mapped = batches
@@ -48,12 +48,12 @@ namespace HRManagement.Api.Application.Queries
                         endDate = b.EndDate
                     }).ToList();
 
-                return ApiHelperResponse.Success("Batches retrieved successfully", mapped);
+                return Result.Success(mapped);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching batches for program {programId}", request.ProgramId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<List<ReadBatchDto>>(ex.Message);
             }
         }
     }

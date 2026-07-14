@@ -1,23 +1,23 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
 using MediatR;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetTotalModulesCountQuery(string role) : IRequest<Result<ApiResponse>>
+    public class GetTotalModulesCountQuery(string role) : IRequest<Result<int>>
     {
         public string Role { get; set; } = role;
     }
 
     internal class GetTotalModulesCountHandler(IELearningRepository repo, ILogger<GetTotalModulesCountHandler> logger)
-        : IRequestHandler<GetTotalModulesCountQuery, Result<ApiResponse>>
+        : IRequestHandler<GetTotalModulesCountQuery, Result<int>>
     {
-        public async Task<Result<ApiResponse>> Handle(GetTotalModulesCountQuery request, CancellationToken ct)
+        public async Task<Result<int>> Handle(GetTotalModulesCountQuery request, CancellationToken ct)
         {
             logger.LogTrace("Executing handler for request : {request}", nameof(GetTotalModulesCountHandler));
             var count = await repo.GetTotalModulesCountByRoleAsync(request.Role);
-            return ApiHelperResponse.Success("Total modules count retrieved", count);
+            return Result.Success(count);
         }
     }
 

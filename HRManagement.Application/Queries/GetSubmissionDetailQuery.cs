@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,14 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetSubmissionDetailQuery(int submissionId) : IRequest<Result<ApiResponse>>
+    public class GetSubmissionDetailQuery(int submissionId) : IRequest<Result<ReadSubmissionFullDetailDto>>
     {
         public int SubmissionId { get; set; } = submissionId;
     }
 
-    internal class GetSubmissionDetailHandler : IRequestHandler<GetSubmissionDetailQuery, Result<ApiResponse>>
+    internal class GetSubmissionDetailHandler : IRequestHandler<GetSubmissionDetailQuery, Result<ReadSubmissionFullDetailDto>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetSubmissionDetailHandler> _logger;
@@ -26,16 +26,16 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetSubmissionDetailQuery request, CancellationToken ct)
+        public async Task<Result<ReadSubmissionFullDetailDto>> Handle(GetSubmissionDetailQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetSubmissionDetailHandler));
             try
             {
                 var submission = await _repo.GetSubmissionByIdAsync(request.SubmissionId);
-                if (submission == null) return ApiHelperResponse.Failed("Submission not found");
+                if (submission == null) return Result.Failure<ReadSubmissionFullDetailDto>("Submission not found");
 
                 var quiz = await _repo.GetQuizByIdAsync(submission.QuizId);
-                if (quiz == null) return ApiHelperResponse.Failed("Quiz configuration not found");
+                if (quiz == null) return Result.Failure<ReadSubmissionFullDetailDto>("Quiz configuration not found");
 
                 var intern = await _repo.GetUserByIdAsync(submission.UserId);
                 var questions = (await _repo.GetQuestionsByQuizIdAsync(submission.QuizId)).ToList();
@@ -52,7 +52,7 @@ namespace HRManagement.Api.Application.Queries
                         var answer = answers.FirstOrDefault(a => a.QuestionId == q.QuestionId);
                         bool isMc = q.QuestionType == "MC";
 
-                        return new
+                        return new ReadSubmissionAnswerDetailDto
                         {
                             answerId = answer?.AnswerId,
                             questionId = q.QuestionId,
@@ -66,14 +66,14 @@ namespace HRManagement.Api.Application.Queries
                             options = isMc
                                 ? options
                                     .Where(o => o.QuestionId == q.QuestionId)
-                                    .Select(o => new { optionLetter = o.OptionLetter, optionText = o.OptionText, isCorrect = o.IsCorrect })
+                                    .Select(o => new ReadAnswerOptionDto { optionLetter = o.OptionLetter, optionText = o.OptionText, isCorrect = o.IsCorrect })
                                     .ToList()
                                 : null
                         };
                     })
                     .ToList();
 
-                var dto = new
+                var dto = new ReadSubmissionFullDetailDto
                 {
                     submissionId = submission.SubmissionId,
                     quizId = submission.QuizId,
@@ -86,12 +86,12 @@ namespace HRManagement.Api.Application.Queries
                     answers = answerDtos
                 };
 
-                return ApiHelperResponse.Success("Submission detail retrieved", dto);
+                return Result.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching submission detail for submission {submissionId}", request.SubmissionId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<ReadSubmissionFullDetailDto>(ex.Message);
             }
         }
     }

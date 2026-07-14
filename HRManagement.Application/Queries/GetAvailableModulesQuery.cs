@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,16 +10,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetAvailableModulesQuery(int employeeId, string statusFilter, string search) : IRequest<Result<ApiResponse>>
+    public class GetAvailableModulesQuery(int employeeId, string statusFilter, string search) : IRequest<Result<List<ReadModuleDto>>>
     {
         public int EmployeeId { get; set; } = employeeId;
-        public string StatusFilter { get; set; } = statusFilter; 
+        public string StatusFilter { get; set; } = statusFilter;
         public string Search { get; set; } = search;
     }
 
-    internal class GetAvailableModulesHandler : IRequestHandler<GetAvailableModulesQuery, Result<ApiResponse>>
+    internal class GetAvailableModulesHandler : IRequestHandler<GetAvailableModulesQuery, Result<List<ReadModuleDto>>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetAvailableModulesHandler> _logger;
@@ -30,7 +30,7 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetAvailableModulesQuery request, CancellationToken ct)
+        public async Task<Result<List<ReadModuleDto>>> Handle(GetAvailableModulesQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetAvailableModulesHandler));
             try
@@ -57,12 +57,12 @@ namespace HRManagement.Api.Application.Queries
                     mappedList.Add(mappedModule);
                 }
 
-                return ApiHelperResponse.Success("Available modules retrieved successfully", mappedList);
+                return Result.Success(mappedList);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching available modules for Employee Id {employeeId}", request.EmployeeId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<List<ReadModuleDto>>(ex.Message);
             }
         }
     }

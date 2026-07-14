@@ -1,6 +1,6 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,14 +9,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetQuizSubmissionsQuery(int quizId) : IRequest<Result<ApiResponse>>
+    public class GetQuizSubmissionsQuery(int quizId) : IRequest<Result<ReadQuizSubmissionsListDto>>
     {
         public int QuizId { get; set; } = quizId;
     }
 
-    internal class GetQuizSubmissionsHandler : IRequestHandler<GetQuizSubmissionsQuery, Result<ApiResponse>>
+    internal class GetQuizSubmissionsHandler : IRequestHandler<GetQuizSubmissionsQuery, Result<ReadQuizSubmissionsListDto>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetQuizSubmissionsHandler> _logger;
@@ -27,7 +27,7 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetQuizSubmissionsQuery request, CancellationToken ct)
+        public async Task<Result<ReadQuizSubmissionsListDto>> Handle(GetQuizSubmissionsQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetQuizSubmissionsHandler));
             try
@@ -42,7 +42,7 @@ namespace HRManagement.Api.Application.Queries
                     .Select(s =>
                     {
                         var intern = eligibleInterns.FirstOrDefault(u => u.UserId == s.UserId);
-                        return new
+                        return new ReadSubmittedItemDto
                         {
                             submissionId = s.SubmissionId,
                             userId = s.UserId,
@@ -55,23 +55,23 @@ namespace HRManagement.Api.Application.Queries
 
                 var notSubmitted = eligibleInterns
                     .Where(u => !submittedUserIds.Contains(u.UserId))
-                    .Select(u => new { userId = u.UserId, name = u.FullName })
+                    .Select(u => new ReadNotSubmittedItemDto { userId = u.UserId, name = u.FullName })
                     .ToList();
 
-                var result = new
+                var result = new ReadQuizSubmissionsListDto
                 {
                     totalEligible = eligibleInterns.Count(),
                     submittedCount = submittedUserIds.Count,
-                    submitted,
-                    notSubmitted
+                    submitted = submitted,
+                    notSubmitted = notSubmitted
                 };
 
-                return ApiHelperResponse.Success("Quiz submissions retrieved", result);
+                return Result.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching submissions for quiz {quizId}", request.QuizId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<ReadQuizSubmissionsListDto>(ex.Message);
             }
         }
     }

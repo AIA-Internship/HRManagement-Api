@@ -1,8 +1,8 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
-using HRManagement.Api.Repositories.Base;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
+using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,46 +11,46 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
-    public class CreateQuizCommand(CreateQuizConfigurationDto dto) : IRequest<Result<ApiResponse>>
+    public class CreateQuizCommand(CreateQuizConfigurationDto dto) : IRequest<Result<int>>
     {
         public CreateQuizConfigurationDto Dto { get; set; } = dto;
     }
 
-    internal class CreateQuizHandler : IRequestHandler<CreateQuizCommand, Result<ApiResponse>>
+    internal class CreateQuizHandler : IRequestHandler<CreateQuizCommand, Result<int>>
     {
-        private readonly SqlDbContext _context;
+        private readonly AppDbContext _context;
         private readonly ILogger<CreateQuizHandler> _logger;
 
-        public CreateQuizHandler(SqlDbContext context, ILogger<CreateQuizHandler> logger)
+        public CreateQuizHandler(AppDbContext context, ILogger<CreateQuizHandler> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(CreateQuizCommand request, CancellationToken ct)
+        public async Task<Result<int>> Handle(CreateQuizCommand request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateQuizHandler));
 
             var dto = request.Dto;
 
             if (dto.mcWeight + dto.essayWeight != 100)
-                return ApiHelperResponse.Failed("MC weight and essay weight must add up to 100%.");
+                return Result.Failure<int>("MC weight and essay weight must add up to 100%.");
 
             var mcQuestions = dto.questions.Where(q => q.questionType == "MC").ToList();
             var essayQuestions = dto.questions.Where(q => q.questionType == "Essay").ToList();
 
             if (mcQuestions.Count != dto.mcCount)
-                return ApiHelperResponse.Failed($"Expected {dto.mcCount} multiple choice question(s), received {mcQuestions.Count}.");
+                return Result.Failure<int>($"Expected {dto.mcCount} multiple choice question(s), received {mcQuestions.Count}.");
 
             if (essayQuestions.Count != dto.essayCount)
-                return ApiHelperResponse.Failed($"Expected {dto.essayCount} essay question(s), received {essayQuestions.Count}.");
+                return Result.Failure<int>($"Expected {dto.essayCount} essay question(s), received {essayQuestions.Count}.");
 
             foreach (var mc in mcQuestions)
             {
                 if (mc.options.Count(o => o.isCorrect) != 1)
-                    return ApiHelperResponse.Failed($"Question \"{mc.questionText}\" must have exactly one correct option.");
+                    return Result.Failure<int>($"Question \"{mc.questionText}\" must have exactly one correct option.");
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync(ct);
@@ -58,11 +58,11 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
             {
                 var module = await _context.ELearningModules
                     .FirstOrDefaultAsync(m => m.ModuleId == dto.moduleId && !m.IsDeleted, ct);
-                if (module == null) return ApiHelperResponse.Failed("Module not found.");
+                if (module == null) return Result.Failure<int>("Module not found.");
 
                 var existingQuiz = await _context.ELearningQuizzes
                     .FirstOrDefaultAsync(q => q.ModuleId == dto.moduleId && !q.IsDeleted, ct);
-                if (existingQuiz != null) return ApiHelperResponse.Failed("This module already has a quiz.");
+                if (existingQuiz != null) return Result.Failure<int>("This module already has a quiz.");
 
                 var quiz = new QuizModel
                 {
@@ -102,13 +102,13 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 await _context.SaveChangesAsync(ct);
 
                 await transaction.CommitAsync(ct);
-                return ApiHelperResponse.Success("Quiz created successfully", new { quizId = quiz.QuizId });
+                return Result.Success(quiz.QuizId);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(ct);
                 _logger.LogError(ex, "Error creating quiz for module {moduleId}", dto.moduleId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<int>(ex.Message);
             }
         }
     }

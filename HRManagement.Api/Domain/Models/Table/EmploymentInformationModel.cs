@@ -1,3 +1,4 @@
+/*
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,3 +12,4 @@ namespace HRManagement.Api.Domain.Models.Table
         public string? PositionName { get; set; }
     }
 }
+*/

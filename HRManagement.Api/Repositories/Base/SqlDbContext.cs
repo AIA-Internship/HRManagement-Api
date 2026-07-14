@@ -1,4 +1,5 @@
-﻿using HRManagement.Api.Domain.Models.Table;
+/*
+using HRManagement.Api.Domain.Models.Table;
 using HRManagement.Api.Domain.Models.Table.ELearningModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -71,3 +72,4 @@ namespace HRManagement.Api.Repositories.Base
 
     }
 }
+*/

@@ -1,0 +1,17 @@
+﻿using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
+
+public class ModuleMapping
+{
+    public static ReadModuleDto MapToReadDto(ModuleModel model)
+    {
+        return new ReadModuleDto
+        {
+            moduleId = model.ModuleId,
+            title = model.ModuleTitle,
+            role = model.TargetRole,
+            isPriority = model.IsPriority,
+            dueDate = model.DueDate
+        };
+    }
+}

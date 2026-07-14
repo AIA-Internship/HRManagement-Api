@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Repositories.Base;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
     public class GradeEssayAnswerDto
     {
@@ -17,32 +17,31 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
         public decimal score { get; set; }
     }
 
-    public class SubmitQuizReviewCommand : IRequest<Result<ApiResponse>>
+    public class SubmitQuizReviewCommand : IRequest<Result>
     {
         public int SubmissionId { get; set; }
         public int SupervisorId { get; set; }
         public List<GradeEssayAnswerDto> GradedEssays { get; set; } = new();
     }
 
-    internal class SubmitQuizReviewHandler : IRequestHandler<SubmitQuizReviewCommand, Result<ApiResponse>>
+    internal class SubmitQuizReviewHandler : IRequestHandler<SubmitQuizReviewCommand, Result>
     {
-        private readonly SqlDbContext _context;
+        private readonly AppDbContext _context;
 
-        public SubmitQuizReviewHandler(SqlDbContext context) => _context = context;
+        public SubmitQuizReviewHandler(AppDbContext context) => _context = context;
 
-        public async Task<Result<ApiResponse>> Handle(SubmitQuizReviewCommand request, CancellationToken ct)
+        public async Task<Result> Handle(SubmitQuizReviewCommand request, CancellationToken ct)
         {
             using var transaction = await _context.Database.BeginTransactionAsync(ct);
             try
             {
                 var submission = await _context.ELearningQuizSubmissions
                     .FirstOrDefaultAsync(s => s.SubmissionId == request.SubmissionId, ct);
-                if (submission == null) return ApiHelperResponse.Failed("Submission history trace not found.");
+                if (submission == null) return Result.Failure("Submission history trace not found.");
 
                 var quizConfig = await _context.ELearningQuizzes
                     .FirstOrDefaultAsync(q => q.QuizId == submission.QuizId, ct);
 
-                // 1. Process Essay updates
                 var storedAnswers = await _context.ELearningStudentAnswers
                     .Where(a => a.SubmissionId == request.SubmissionId).ToListAsync(ct);
 
@@ -100,12 +99,12 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 await _context.SaveChangesAsync(ct);
                 await transaction.CommitAsync(ct);
 
-                return ApiHelperResponse.Success("Student final score calculated and pushed successfully.");
+                return Result.Success();
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(ct);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure(ex.Message);
             }
         }
     }

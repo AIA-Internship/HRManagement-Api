@@ -1,22 +1,23 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetInternQuizProgressQuery(int employeeId, int programId) : IRequest<Result<ApiResponse>>
+    public class GetInternQuizProgressQuery(int employeeId, int programId) : IRequest<Result<List<ReadInternQuizProgressDto>>>
     {
         public int EmployeeId { get; set; } = employeeId;
         public int ProgramId { get; set; } = programId;
     }
 
-    internal class GetInternQuizProgressHandler : IRequestHandler<GetInternQuizProgressQuery, Result<ApiResponse>>
+    internal class GetInternQuizProgressHandler : IRequestHandler<GetInternQuizProgressQuery, Result<List<ReadInternQuizProgressDto>>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetInternQuizProgressHandler> _logger;
@@ -27,7 +28,7 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetInternQuizProgressQuery request, CancellationToken ct)
+        public async Task<Result<List<ReadInternQuizProgressDto>>> Handle(GetInternQuizProgressQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetInternQuizProgressHandler));
             try
@@ -55,23 +56,23 @@ namespace HRManagement.Api.Application.Queries
                     else
                         status = "In Progress";
 
-                    return new
+                    return new ReadInternQuizProgressDto
                     {
                         quizId = q.QuizId,
                         moduleId = q.ModuleId,
                         moduleTitle = module?.ModuleTitle ?? "Unknown",
-                        status
+                        status = status
                     };
                 })
                 .OrderBy(q => q.moduleTitle)
                 .ToList();
 
-                return ApiHelperResponse.Success("Intern quiz progress retrieved", result);
+                return Result.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching quiz progress for employee {employeeId} in program {programId}", request.EmployeeId, request.ProgramId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<List<ReadInternQuizProgressDto>>(ex.Message);
             }
         }
     }

@@ -1,22 +1,23 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetInternModuleProgressQuery(int employeeId, int programId) : IRequest<Result<ApiResponse>>
+    public class GetInternModuleProgressQuery(int employeeId, int programId) : IRequest<Result<List<ReadInternModuleProgressDto>>>
     {
         public int EmployeeId { get; set; } = employeeId;
         public int ProgramId { get; set; } = programId;
     }
 
-    internal class GetInternModuleProgressHandler : IRequestHandler<GetInternModuleProgressQuery, Result<ApiResponse>>
+    internal class GetInternModuleProgressHandler : IRequestHandler<GetInternModuleProgressQuery, Result<List<ReadInternModuleProgressDto>>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetInternModuleProgressHandler> _logger;
@@ -27,7 +28,7 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetInternModuleProgressQuery request, CancellationToken ct)
+        public async Task<Result<List<ReadInternModuleProgressDto>>> Handle(GetInternModuleProgressQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetInternModuleProgressHandler));
             try
@@ -38,7 +39,7 @@ namespace HRManagement.Api.Application.Queries
                 var result = modules.Select(m =>
                 {
                     var progress = progressRecords.FirstOrDefault(p => p.ModuleId == m.ModuleId);
-                    return new
+                    return new ReadInternModuleProgressDto
                     {
                         moduleId = m.ModuleId,
                         title = m.ModuleTitle,
@@ -50,12 +51,12 @@ namespace HRManagement.Api.Application.Queries
                 .OrderBy(m => m.title)
                 .ToList();
 
-                return ApiHelperResponse.Success("Intern module progress retrieved", result);
+                return Result.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching module progress for employee {employeeId} in program {programId}", request.EmployeeId, request.ProgramId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<List<ReadInternModuleProgressDto>>(ex.Message);
             }
         }
     }

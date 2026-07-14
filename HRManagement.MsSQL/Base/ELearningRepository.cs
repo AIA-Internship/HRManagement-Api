@@ -1,21 +1,22 @@
-﻿using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Table;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Repositories.Base;
+﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
+using HRManagement.MsSQL.Base;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Infrastructure.Repositories
+namespace HRManagement.MsSQL.Base
 {
     public class ELearningRepository : IELearningRepository
     {
-        private readonly SqlDbContext _context;
+        private readonly AppDbContext _context;
 
-        public SqlDbContext Context => _context;
+        public AppDbContext Context => _context;
 
-        public ELearningRepository(SqlDbContext context)
+        public ELearningRepository(AppDbContext context)
         {
             _context = context;
         }
@@ -90,14 +91,15 @@ namespace HRManagement.Api.Infrastructure.Repositories
 
             var cohortQuery = from member in _context.ELearningGroupMembers
                               join prog in _context.ELearningPrograms on member.GroupId equals prog.GroupId
-                              join u in _context.User on member.EmployeeId equals u.UserId
-                              join emp in _context.EmploymentInformation on u.UserId equals emp.EmployeeId into empJoin
+                              join u in _context.Users on member.EmployeeId equals u.Id
+                              join employee in _context.Employee on u.EmployeeId equals employee.Id
+                              join emp in _context.EmploymentInformation on u.Id equals emp.EmployeeId into empJoin
                               from emp in empJoin.DefaultIfEmpty()
                               where prog.ProgramId == targetProgramId && u.RoleId == 1
-                              select new { User = u, PositionName = emp.PositionName };
+                              select new { User = u, Employee = employee, PositionName = emp.PositionName };
 
             if (!string.IsNullOrEmpty(search))
-                cohortQuery = cohortQuery.Where(x => x.User.FullName.Contains(search));
+                cohortQuery = cohortQuery.Where(x => x.Employee.FullName.Contains(search));
 
             if (!string.IsNullOrEmpty(role))
                 cohortQuery = cohortQuery.Where(x => x.PositionName == role);
@@ -105,7 +107,7 @@ namespace HRManagement.Api.Infrastructure.Repositories
             int totalCount = await cohortQuery.CountAsync();
 
             var rawInternData = await cohortQuery
-                .OrderBy(x => x.User.FullName)
+                .OrderBy(x => x.Employee.FullName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -117,13 +119,13 @@ namespace HRManagement.Api.Infrastructure.Repositories
                 var intern = row.User;
 
                 int itemsCompletedNumerator = await _context.ELearningModuleProgress
-                    .CountAsync(p => p.EmployeeId == intern.UserId &&
+                    .CountAsync(p => p.EmployeeId == intern.Id &&
                                      programModuleIds.Contains(p.ModuleId) &&
                                      p.ProgressStatus == "Completed");
 
                 var studentSubmissions = await (from q in _context.ELearningQuizzes
                                                 join s in _context.ELearningQuizSubmissions on q.QuizId equals s.QuizId
-                                                where programModuleIds.Contains(q.ModuleId) && s.UserId == intern.UserId && s.TotalScore != null
+                                                where programModuleIds.Contains(q.ModuleId) && s.UserId == intern.Id && s.TotalScore != null
                                                 select s.TotalScore.Value).ToListAsync();
 
                 string accumulativeScoreDisplay = studentSubmissions.Any()
@@ -131,15 +133,15 @@ namespace HRManagement.Api.Infrastructure.Repositories
                     : "No submissions yet";
 
                 int quizzesPassedNumerator = await _context.ELearningQuizSubmissions
-                    .Where(s => s.UserId == intern.UserId && programQuizIds.Contains(s.QuizId) && s.IsPassed == true)
+                    .Where(s => s.UserId == intern.Id && programQuizIds.Contains(s.QuizId) && s.IsPassed == true)
                     .Select(s => s.QuizId)
                     .Distinct()
                     .CountAsync();
 
                 compiledList.Add(new
                 {
-                    EmployeeId = intern.UserId,
-                    Name = intern.FullName,
+                    EmployeeId = intern.Id,
+                    Name = row.Employee.FullName,
                     Role = row.PositionName ?? "Intern",
                     TotalModulesCompletedText = $"{itemsCompletedNumerator} / {totalModulesCountDenominator}",
                     TotalQuizzesCompletedText = $"{quizzesPassedNumerator} / {totalQuizzesCountDenominator}",
@@ -280,7 +282,7 @@ namespace HRManagement.Api.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserModel>> GetEligibleInternsForQuizAsync(int quizId)
+        public async Task<IEnumerable<InternInfoDto>> GetEligibleInternsForQuizAsync(int quizId)
         {
             var employeeIds = await (from quiz in Context.ELearningQuizzes
                                       join mdle in Context.ELearningModules on quiz.ModuleId equals mdle.ModuleId
@@ -292,9 +294,11 @@ namespace HRManagement.Api.Infrastructure.Repositories
                                       .Distinct()
                                       .ToListAsync();
 
-            return await Context.User
-                .Where(u => employeeIds.Contains(u.UserId) && !u.IsDeleted)
-                .ToListAsync();
+            return await (from u in Context.Users
+                          join employee in Context.Employee on u.EmployeeId equals employee.Id
+                          where employeeIds.Contains(u.Id) && !u.IsDeleted
+                          select new InternInfoDto { UserId = u.Id, FullName = employee.FullName })
+                          .ToListAsync();
         }
 
         public async Task<QuizSubmissionModel?> GetSubmissionByIdAsync(int submissionId)
@@ -331,10 +335,13 @@ namespace HRManagement.Api.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<UserModel?> GetUserByIdAsync(int userId)
+        public async Task<InternInfoDto?> GetUserByIdAsync(int userId)
         {
-            return await Context.User
-                .FirstOrDefaultAsync(u => u.UserId == userId && !u.IsDeleted);
+            return await (from u in Context.Users
+                          join employee in Context.Employee on u.EmployeeId equals employee.Id
+                          where u.Id == userId && !u.IsDeleted
+                          select new InternInfoDto { UserId = u.Id, FullName = employee.FullName })
+                          .FirstOrDefaultAsync();
         }
 
         public async Task<bool> MarkContentAsOpenedAsync(int userId, int contentId)

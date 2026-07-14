@@ -1,9 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
-using HRManagement.Api.Repositories.Base;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
+using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,25 +12,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
-    public class CopyModuleCommand(CopyModuleDto dto) : IRequest<Result<ApiResponse>>
+    public class CopyModuleCommand(CopyModuleDto dto) : IRequest<Result>
     {
         public CopyModuleDto Dto { get; set; } = dto;
     }
 
-    internal class CopyModuleHandler : IRequestHandler<CopyModuleCommand, Result<ApiResponse>>
+    internal class CopyModuleHandler : IRequestHandler<CopyModuleCommand, Result>
     {
         private readonly ILogger<CopyModuleHandler> _logger;
-        private readonly SqlDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CopyModuleHandler(SqlDbContext context, ILogger<CopyModuleHandler> logger)
+        public CopyModuleHandler(AppDbContext context, ILogger<CopyModuleHandler> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(CopyModuleCommand request, CancellationToken ct)
+        public async Task<Result> Handle(CopyModuleCommand request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(CopyModuleHandler));
 
@@ -41,7 +41,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                     .FirstOrDefaultAsync(m => m.ModuleId == request.Dto.sourceModuleId && !m.IsDeleted, ct);
 
                 if (sourceModule == null)
-                    return ApiHelperResponse.Failed("Source module not found.");
+                    return Result.Failure("Source module not found.");
 
                 var clonedModule = new ModuleModel
                 {
@@ -84,13 +84,13 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 }
 
                 await transaction.CommitAsync(ct);
-                return ApiHelperResponse.Success("Module copied successfully to the new batch!");
+                return Result.Success();
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(ct);
                 _logger.LogError(ex, "Error copying module id {sourceId}", request.Dto.sourceModuleId);
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure(ex.Message);
             }
         }
     }

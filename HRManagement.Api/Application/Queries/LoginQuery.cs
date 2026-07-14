@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+/*
+using CSharpFunctionalExtensions;
 
 using HRManagement.Api.Domain.Interfaces;
 using HRManagement.Api.Domain.Models.Response.Shared;
@@ -90,7 +91,7 @@ namespace HRManagement.Api.Application.Queries
                 issuer: jwtSettings["Jwt:Issuer"],
                 audience: jwtSettings["Jwt:AudienceWeb"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToInt16(jwtSettings["Jwt:DurationInMinutes"])), 
+                expires: DateTime.Now.AddMinutes(Convert.ToInt16(jwtSettings["Jwt:DurationInMinutes"])),
                 signingCredentials: creds
             );
 
@@ -98,3 +99,4 @@ namespace HRManagement.Api.Application.Queries
         }
     }
 }
+*/

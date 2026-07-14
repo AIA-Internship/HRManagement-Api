@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,13 +9,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
-    public class GetProgramsQuery : IRequest<Result<ApiResponse>>
+    public class GetProgramsQuery : IRequest<Result<List<ReadProgramDto>>>
     {
     }
 
-    internal class GetProgramsHandler : IRequestHandler<GetProgramsQuery, Result<ApiResponse>>
+    internal class GetProgramsHandler : IRequestHandler<GetProgramsQuery, Result<List<ReadProgramDto>>>
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetProgramsHandler> _logger;
@@ -26,7 +26,7 @@ namespace HRManagement.Api.Application.Queries
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(GetProgramsQuery request, CancellationToken ct)
+        public async Task<Result<List<ReadProgramDto>>> Handle(GetProgramsQuery request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetProgramsHandler));
             try
@@ -39,12 +39,12 @@ namespace HRManagement.Api.Application.Queries
                     groupId = p.GroupId
                 }).ToList();
 
-                return ApiHelperResponse.Success("Programs retrieved successfully", mapped);
+                return Result.Success(mapped);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching programs");
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<List<ReadProgramDto>>(ex.Message);
             }
         }
     }

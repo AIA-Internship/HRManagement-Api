@@ -1,9 +1,9 @@
-using HRManagement.Api.Domain.Interfaces;
+using HRManagement.Domain.Interfaces;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Queries
+namespace HRManagement.Application.Queries
 {
     public class GetModuleContentFileQuery(int contentId) : IRequest<ModuleContentFileResult>
     {

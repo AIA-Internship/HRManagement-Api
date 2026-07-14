@@ -1,9 +1,9 @@
-﻿using HRManagement.Api.Domain.Interfaces;
+﻿using HRManagement.Domain.Interfaces;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application
+namespace HRManagement.Application
 {
     public record GetInternListQuery(int ProgramId, int PageNumber, string Search, string Role) : IRequest<object>;
 

@@ -1,11 +1,11 @@
-﻿using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
+﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Tables.ELearningModels;
 using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands
+namespace HRManagement.Application.Commands
 {
     public record AddContentCommand(
         int ModuleId,

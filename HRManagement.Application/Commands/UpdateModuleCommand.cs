@@ -1,18 +1,18 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Interfaces;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Domain.Models.Table.ELearningModels.ELearningDto;
+using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
-    public class UpdateModuleCommand(UpdateModuleDto dto) : IRequest<Result<ApiResponse>>
+    public class UpdateModuleCommand(UpdateModuleDto dto) : IRequest<Result>
     {
         public UpdateModuleDto Dto { get; set; } = dto;
     }
 
-    internal class UpdateModuleHandler : IRequestHandler<UpdateModuleCommand, Result<ApiResponse>>
+    internal class UpdateModuleHandler : IRequestHandler<UpdateModuleCommand, Result>
     {
         private readonly ILogger<UpdateModuleHandler> _logger;
         private readonly IELearningRepository _repo;
@@ -23,7 +23,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(UpdateModuleCommand request, CancellationToken ct)
+        public async Task<Result> Handle(UpdateModuleCommand request, CancellationToken ct)
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(UpdateModuleHandler));
             try
@@ -42,14 +42,14 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 };
 
                 var success = await _repo.UpdateModuleAsync(entity);
-                if (!success) return ApiHelperResponse.Failed("Module update failed");
+                if (!success) return Result.Failure("Module update failed");
 
-                return ApiHelperResponse.Success("Module updated successfully");
+                return Result.Success();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating module");
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure(ex.Message);
             }
         }
     }

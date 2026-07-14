@@ -1,8 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Domain.Models.Table.ELearningModels;
-using HRManagement.Api.Repositories;
-using HRManagement.Api.Repositories.Base;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
+using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Application.Commands.ELearningCommands
+namespace HRManagement.Application.Commands.ELearningCommands
 {
     public class SubmitStudentAnswersDto
     {
@@ -28,23 +27,23 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
         public string? essayAnswerText { get; set; } 
     }
 
-    public class SubmitQuizCommand(SubmitStudentAnswersDto dto) : IRequest<Result<ApiResponse>>
+    public class SubmitQuizCommand(SubmitStudentAnswersDto dto) : IRequest<Result<int>>
     {
         public SubmitStudentAnswersDto Dto { get; set; } = dto;
     }
 
-    internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, Result<ApiResponse>>
+    internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, Result<int>>
     {
-        private readonly SqlDbContext _context;
+        private readonly AppDbContext _context;
         private readonly ILogger<SubmitQuizHandler> _logger;
 
-        public SubmitQuizHandler(SqlDbContext context, ILogger<SubmitQuizHandler> logger)
+        public SubmitQuizHandler(AppDbContext context, ILogger<SubmitQuizHandler> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        public async Task<Result<ApiResponse>> Handle(SubmitQuizCommand request, CancellationToken ct)
+        public async Task<Result<int>> Handle(SubmitQuizCommand request, CancellationToken ct)
         {
             using var transaction = await _context.Database.BeginTransactionAsync(ct);
             try
@@ -52,7 +51,7 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 var quizConfig = await _context.Set<QuizModel>()
                     .FirstOrDefaultAsync(q => q.QuizId == request.Dto.quizId, ct);
 
-                if (quizConfig == null) return ApiHelperResponse.Failed("Quiz parameters not found.");
+                if (quizConfig == null) return Result.Failure<int>("Quiz parameters not found.");
 
                 var systemQuestions = await _context.Set<QuizQuestionModel>().Where(q => q.QuizId == request.Dto.quizId).ToListAsync(ct);
                 var mcOptions = await _context.Set<QuizQuestionOptionModel>().Where(o => systemQuestions.Select(q => q.QuestionId).Contains(o.QuestionId)).ToListAsync(ct);
@@ -149,13 +148,13 @@ namespace HRManagement.Api.Application.Commands.ELearningCommands
                 }
 
                 await transaction.CommitAsync(ct);
-                return ApiHelperResponse.Success("Submission processed successfully.", new { submissionId = executionSubmission.SubmissionId });
+                return Result.Success(executionSubmission.SubmissionId);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(ct);
                 _logger.LogError(ex, "Failed validating incoming submission stream execution sequence.");
-                return ApiHelperResponse.Failed(ex.Message);
+                return Result.Failure<int>(ex.Message);
             }
         }
     }
