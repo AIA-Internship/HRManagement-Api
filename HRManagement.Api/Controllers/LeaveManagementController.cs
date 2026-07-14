@@ -250,23 +250,35 @@ namespace HRManagement.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpGet]
         [Route("get-by-leave-id/{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<ApiResponse>> readByLeaveId([FromRoute] int id)
         {
-            string objectName = nameof(editLeaveRequest).ToString();
+            string objectName = nameof(readByLeaveId);
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var command = new GetLeaveRequestByIdQuery(id);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int requesterId = int.Parse(userIdClaim);
+
+                var query = new GetLeaveRequestByIdQuery(id, requesterId);
+
+                var response = await this
+                    .ValidateAndExecute(query, c => _mediator.Send(query))
+                    .ConfigureAwait(false);
 
                 _logger.LogInformation("End {Service}.", objectName);
+
                 return response;
             }
             catch (Exception ex)
@@ -408,7 +420,7 @@ namespace HRManagement.Api.Controllers
                     return Unauthorized("UserId not found in token");
 
                 int userId = int.Parse(userIdClaim);
-                var command = new ApprovedLeaveRequestCommand(id);
+                var command = new ApprovedLeaveRequestCommand(id, userId);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
                 _logger.LogInformation("End {Service}.", objectName);
 
@@ -435,7 +447,13 @@ namespace HRManagement.Api.Controllers
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var command = new RejectedLeaveRequestCommand(id);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int userId = int.Parse(userIdClaim);
+                var command = new RejectedLeaveRequestCommand(id, userId);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
                 _logger.LogInformation("End {Service}.", objectName);
 

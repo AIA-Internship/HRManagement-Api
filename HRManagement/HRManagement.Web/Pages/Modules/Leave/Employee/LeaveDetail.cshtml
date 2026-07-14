@@ -1,0 +1,103 @@
+﻿@page "/Leave/Employee/LeaveDetail"
+@model HRManagement.Web.Pages.Modules.Leave.Employee.LeaveDetailModel
+@{
+    ViewData["Title"] = "Leave Detail";
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/apps/modules/leave/css/LeaveDetail.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+}
+
+<div class="mx-11">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
+    {
+        Title = "Request Detail",
+        Subtitle = "View or cancel leave request",
+        Breadcrumbs = new List<BreadcrumbItem> {
+            new BreadcrumbItem { Title = "Leave", Url = "/Leave/Employee/Dashboard" },
+            new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Employee/Dashboard" },
+            new BreadcrumbItem { Title = "LeaveDetail", Url = "/Leave/Employee/LeaveDetail" },
+        },
+    })
+</div>
+
+<div class="mx-11 mb-6">
+    <div class="row">
+        <div class="col-md-8 d-flex flex-column">
+            <div class="card mb-4 pt-4 pb-4 ps-8 pe-8 request-summary">
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div class="first_row_info">
+                        <div class="text-muted small">Leave Type</div>
+                        <h4 class="mb-1" id="leaveType"></h4>
+
+                        <span class="badge" id="leaveStatus">
+                            <i class="bi me-1" id="leaveStatusIcon"></i>
+                            <span id="leaveStatusText"></span>
+                        </span>
+                    </div>
+
+                    <div class="text-start date_info">
+                        <div class="text-muted small">Start Date</div>
+                        <h4 class="mb-1" id="startDate"></h4>
+                    </div>
+
+                    <div class="text-start date_info me-1">
+                        <div class="text-muted small">End Date</div>
+                        <h4 class="mb-1" id="endDate"></h4>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Description card -->
+            <div class="card mb-4 p-4 description-card pt-4 pb-4 ps-8 pe-8">
+                <div class="d-flex align-items-center mb-3 mt-1">
+                    <i class="bi bi-chat-left icon_detail me-2"></i>
+                    <h6 class="mb-0">Description</h6>
+                </div>
+                <p class="small text_desc" id="leaveDescription"></p>
+            </div>
+
+            <!-- Attachment card -->
+            <div class="card mb-5 p-4 attachment-card pt-4 pb-4 ps-8 pe-8">
+                <div class="d-flex align-items-center mb-3 mt-1">
+                    <i class="bi bi-paperclip icon_detail fs-4 me-2 rotate-icon"></i>
+                    <h6 class="mb-0">Attachment</h6>
+                </div>
+
+                <div id="attachmentContainer">
+                    <!-- Attachment akan di-render dari JavaScript -->
+                </div>
+            </div>
+
+            <!-- Cancel button aligned left to match header -->
+            <div class="mb-5 text-start">
+                <button id="cancelBtn"
+                        class="btn btn-danger btn-lg shadow-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Right column: timeline -->
+        <div class="col-md-4 d-flex">
+            <div class="card timeline-card pt-8 pb-4 ps-8 pe-8 w-500px">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-history icon_detail fs-4 me-2"></i>
+                    <h6 class="justify-content-center align-center m-0">Request Timeline</h6>
+                </div>
+                <div class="text-muted small mb-4">Last updated: <span id="lastUpdated">-</span></div>
+
+                <ul class="timeline list-unstyled" id="timelineList">
+                    <!-- Timeline entries will be rendered dynamically by LeaveDetail.js -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/apps/modules/leave/js/LeaveDetail.js" asp-append-version="true"></script>
+}

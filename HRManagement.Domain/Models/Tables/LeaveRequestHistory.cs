@@ -54,6 +54,9 @@ namespace HRManagement.Domain.Models.Tables
 
         [Column("requester_display_id")]
         public string? RequesterDisplayId { get; set; }
+        
+        [Column("supervisor_comment")]
+        public string? SupervisorComment { get; set; }
 
     }
 }

@@ -13,5 +13,6 @@
         public string? leaveType { get; set; }
         public bool? isCompleted { get; set; }
         public DateTime createdUtcDate { get; set; }
+        public string? SupervisorComment { get; set; }
     }
 }

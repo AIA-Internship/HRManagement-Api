@@ -9,6 +9,7 @@
         public decimal DayAmount { get; set; }
         public int LeaveType { get; set; }
         public string? RequesterDisplayId { get; set; }
+        public string? SupervisorComment { get; set; }  
 
     }
 }

@@ -40,11 +40,13 @@ namespace HRManagement.MsSQL.Repositories
 
         }
 
-        public async Task<LeaveRequestModel> getLeaveRequestById(int id)
+        public async Task<LeaveRequestModel> getLeaveRequestById(int id, int requesterId)
         {
             return await _dbContext.LeaveRequest
-                 .FirstOrDefaultAsync(x => x.LeaveId == id && x.IsDeleted == 0 );
-
+                .FirstOrDefaultAsync(x =>
+                    x.LeaveId == id &&
+                    x.RequesterId == requesterId &&
+                    x.IsDeleted == 0);
         }
 
         public async Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max)

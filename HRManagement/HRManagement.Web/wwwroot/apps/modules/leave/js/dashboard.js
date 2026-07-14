@@ -69,13 +69,16 @@ function renderRows(items) {
         })(i.leaveType);
 
         return `
-            <tr>
-                <td>${leaveTypeText}</td>
-                <td>${i.startDate}</td>
-                <td>${i.endDate}</td>
-                <td>${i.duration}</td>
-                <td>${badge}</td>
-            </tr>`;
+        <tr class="leave-row"
+            data-id="${i.leaveId}"
+            style="cursor:pointer;">
+            <td>${leaveTypeText}</td>
+            <td>${i.startDate}</td>
+            <td>${i.endDate}</td>
+            <td>${i.duration}</td>
+            <td>${badge}</td>
+        </tr>
+        `;
     }).join('');
 }
 
@@ -162,6 +165,7 @@ async function loadAllAndRender({ page = 1, sort = 'newest', statusOrder = '1,2,
             const db = getCreatedTime(b);
             return (sort === 'oldest') ? da - db : db - da;
         });
+        console.log(sorted);
 
         const totalItems = sorted.length;
         const pageSize = 5;
@@ -169,15 +173,42 @@ async function loadAllAndRender({ page = 1, sort = 'newest', statusOrder = '1,2,
         const currentPage = Math.min(Math.max(1, page), totalPages);
         const startIdx = (currentPage - 1) * pageSize;
         const paged = sorted.slice(startIdx, startIdx + pageSize).map(x => ({
-            leaveType: x.leaveType || x.leaveType,
-            startDate: x.startDate || (x.leaveStartDate ? new Date(x.leaveStartDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ''),
-            endDate: x.endDate || (x.endDate ? new Date(x.endDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : (x.endDate || '')),
+            leaveId: x.leaveId ?? x.id,
+            leaveType: x.leaveType,
+            startDate: x.startDate || (x.leaveStartDate ? new Date(x.leaveStartDate).toLocaleDateString(undefined, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }) : ''),
+            endDate: x.endDate || (x.endDate ? new Date(x.endDate).toLocaleDateString(undefined, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }) : ''),
             duration: x.duration || x.dayAmount || x.DayAmount || '',
             status: x.status || x.leaveStatus || x.LeaveStatus
         }));
-
         renderRows(paged);
-        renderPagination({ currentPage, totalPages });
+
+        document.querySelectorAll(".leave-row").forEach(row => {
+
+            row.addEventListener("click", function () {
+
+                const leaveId = this.dataset.id;
+
+                window.location.href =
+                    `/Leave/Employee/LeaveDetail?id=${leaveId}`;
+
+            });
+
+        });
+
+        renderPagination({
+            currentPage,
+            totalPages
+        });
         if (showingText) showingText.textContent = `Showing ${totalItems === 0 ? 0 : startIdx + 1}-${startIdx + paged.length} of ${totalItems} requests`;
 
     } catch (err) {

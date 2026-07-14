@@ -16,10 +16,13 @@ namespace HRManagement.Application.Features.Leave.Commands
     public class RejectedLeaveRequestCommand : IRequest<Result<ApiResponse>>
     {
         public int LeaveId { get; set; }
+        public int RequestId { get; set; }
 
-        public RejectedLeaveRequestCommand(int id)
+
+        public RejectedLeaveRequestCommand(int id, int requestId)
         {
             LeaveId = id;
+            RequestId = requestId;
         }
     }
 
@@ -44,7 +47,7 @@ namespace HRManagement.Application.Features.Leave.Commands
         public async Task<Result<ApiResponse>> Handle(RejectedLeaveRequestCommand request, CancellationToken cancellationToken)
         {
 
-            LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
+            LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId, request.RequestId);
             Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 

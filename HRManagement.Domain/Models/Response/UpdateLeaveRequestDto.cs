@@ -3,6 +3,7 @@
     public class UpdateLeaveRequestDto
     {
         public int? InitialRequestId { get; set; } = -1;
+        public int? RequestId { get; set; } = 0;
         public DateTime? LeaveStartDate { get; set; } = DateTime.Now;
 
         public int? LeaveStatus { get; set; } = 1;

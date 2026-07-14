@@ -9,11 +9,15 @@ using MediatR;
 namespace HRManagement.Application.Features.Leave.Queries
 {
     public class GetLeaveRequestByIdQuery : IRequest<Result<ApiResponse<ReadLeaveRequestDto>>>
-     {
+    {
         public int RequestId { get; set; }
-        public GetLeaveRequestByIdQuery(int requestId)
+
+        public int RequesterId { get; set; }
+
+        public GetLeaveRequestByIdQuery(int requestId, int requesterId)
         {
             RequestId = requestId;
+            RequesterId = requesterId;
         }
     }
     internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse<ReadLeaveRequestDto>>>
@@ -32,8 +36,8 @@ namespace HRManagement.Application.Features.Leave.Queries
         {
             try
             {
-                var result = await _repo.getLeaveRequestById(request.RequestId);
-                if(result == null) return ApiHelperResponse.Failed<ReadLeaveRequestDto>("Leave request not found");
+                var result = await _repo.getLeaveRequestById(request.RequestId, request.RequesterId);
+                if (result == null) return ApiHelperResponse.Failed<ReadLeaveRequestDto>("Leave request not found");
 
 
                 return ApiHelperResponse.Success("read leave request successfully", mapToReadDto(result));

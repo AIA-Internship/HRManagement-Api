@@ -100,7 +100,8 @@ namespace HRManagement.Application.Features.Leave.Commands
                 CreatedUtcDate = DateTime.UtcNow,
                 ModifiedBy = dto.RequesterId,
                 ModifiedUtcDate = DateTime.UtcNow,
-                RequesterDisplayId = dto.RequesterDisplayId
+                RequesterDisplayId = dto.RequesterDisplayId,
+                SupervisorComment = null
             };
 
         }

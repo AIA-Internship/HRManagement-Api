@@ -1,0 +1,99 @@
+﻿body {
+}
+
+/* LeaveDetail specific styles (moved from inline styles in LeaveDetail.cshtml) */
+.pdf-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+}
+
+.timeline-card {
+    height: 80%;
+}
+
+.request-summary {
+    border-left: 6px solid #10B981; /* ketebalan bisa diubah */
+    height:110px;
+/*    justify-content:space-between;*/
+}
+
+/* status border colors applied dynamically */
+.request-summary.status-pending {
+    border-left-color: #FFDE58;
+}
+.request-summary.status-approved {
+    border-left-color: #10B981;
+}
+.request-summary.status-rejected {
+    border-left-color: #DC2626;
+}
+
+.first_row_info{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 80px;
+}
+
+.date_info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 45px
+}
+
+.badge{
+    justify-content: space-between;
+}
+
+.icon{
+    color: black !important;
+}
+
+.icon_detail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #D32F52 !important;
+}
+
+.rotate-icon {
+    transform: rotate(45deg);
+}
+
+.text_desc {
+    text-align: justify;
+    color: #4B5563;
+}
+
+.pending_status {
+    background-color: #FEF3C7 !important;
+    color: #92400E;
+    width: 90px;
+    border-radius: 5rem;
+    padding-right: 0.8rem;
+    justify-content: space-around;
+}
+
+.approved_status {
+    background-color: #D1FAE5 !important;
+    color: #065F46;
+    border-radius: 5rem;
+    padding-right: 1rem;
+    justify-content: space-around;
+    width: 95px;
+}
+
+.rejected_status {
+    background-color: #FFE4E6 !important;
+    color: #D31145;
+    border-radius: 5rem;
+    width:90px;
+    padding-right: 0.8rem;
+    justify-content: space-around;
+}
+
+.timeline-icon {
+    background-color: #E5E7EB !important;
+}

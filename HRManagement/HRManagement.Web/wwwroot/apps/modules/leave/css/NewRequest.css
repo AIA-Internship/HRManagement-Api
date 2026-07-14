@@ -279,6 +279,10 @@
     cursor: pointer
 }
 
+#CancelSubmitButton {
+    border: 1px solid #D1D5DB;
+}
+
 .btn-outline {
     background: #fff;
     border-color: #ffc6d0;
@@ -728,3 +732,23 @@
     .card-calendar .fc .fc-scroller-harness {
         max-height: none;
     }
+
+.is-invalid {
+    border: 2px solid #b02a37 !important;
+}
+
+.is-invalid:focus {
+    border: 2px solid #b02a37 !important;
+    box-shadow: 0 0 0 0.15rem rgba(176, 42, 55, 0.2) !important;
+    outline: none;
+}
+
+#submitBtn:focus,
+#submitBtn:hover,
+#submitBtn:active,
+#submitBtn:focus:active {
+    background-color: #b02a37 !important;
+    border-color: #b02a37 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}

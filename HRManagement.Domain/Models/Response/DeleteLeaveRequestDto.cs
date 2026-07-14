@@ -3,5 +3,6 @@
     public class DeleteLeaveRequestDto
     {
             public int RequestId { get; set; }
+            public int RequesterId { get; set; }
     }
 }

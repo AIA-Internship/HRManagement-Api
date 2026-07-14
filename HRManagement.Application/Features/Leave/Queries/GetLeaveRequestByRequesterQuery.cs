@@ -88,7 +88,8 @@ namespace HRManagement.Application.Features.Leave.Queries
                 dayAmount = model.DayAmount,
                 leaveType = (model.LeaveType ?? 0).ToString(),
                 isCompleted = model.IsCompleted == 0 ? false : true,
-                createdUtcDate = model.CreatedUtcDate
+                createdUtcDate = model.CreatedUtcDate,
+                SupervisorComment = model.SupervisorComment
             };
         }
     }   

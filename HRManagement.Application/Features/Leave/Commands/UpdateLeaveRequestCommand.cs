@@ -33,7 +33,7 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
             try
             {
-                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.InitialRequestId ?? -1);
+                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.InitialRequestId ?? -1, request.LeaveRequestDto.RequestId ?? -1);
                 if (readResult == null) return ApiHelperResponse.Failed("request with {request.LeaveRequestDto.InitialRequestId} initial id not found");
                 
                 var history = mapToHistory(readResult);
@@ -88,8 +88,8 @@ namespace HRManagement.Application.Features.Leave.Commands
                 CreatedUtcDate = dto.CreatedUtcDate,
 
                 ModifiedBy = dto.RequesterId,
-                ModifiedUtcDate = DateTime.UtcNow
-
+                ModifiedUtcDate = DateTime.UtcNow,
+                SupervisorComment = dto.SupervisorComment
             };
         }
     }

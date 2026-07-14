@@ -13,18 +13,31 @@
         let isValid = true;
 
         if (!startDate) {
-            document.getElementById('startDateError').textContent =
-                'Start date is required';
+            const sd = document.getElementById('startDate');
+            const sdErr = document.getElementById('startDateError');
+
+            sdErr.textContent = 'Start date is required';
+            sdErr.style.display = 'block';
+            sdErr.style.fontWeight = '600';
+            sd.classList.add('is-invalid');
             isValid = false;
         }
 
         if (!description) {
-            document.getElementById('descriptionError').textContent =
-                'Description is required';
+            const desc = document.getElementById('description');
+            const descErr = document.getElementById('descriptionError');
+
+            descErr.textContent = 'Description is required';
+            descErr.style.display = 'block';
+            descErr.style.fontWeight = '600';
+            desc.classList.add('is-invalid');
             isValid = false;
         }
 
-        if (!isValid) return;
+        if (!isValid) {
+            submitBtn.blur();
+            return;
+        }
 
         const modal = new bootstrap.Modal(
             document.getElementById('submitModal')
@@ -51,6 +64,9 @@
             }
         });
 
+    document.getElementById("cancelBtn").addEventListener("click", function () {
+        window.location.href = "/Leave/Employee/Dashboard";
+    });
 
     async function getMyProfile() {
         const token = window.aiaAuth && window.aiaAuth.getToken();
@@ -569,11 +585,17 @@
     var leaveForm = document.querySelector('.leave-form');
 
     startDateInput.addEventListener('change', function () {
-        document.getElementById('startDateError').style.display = 'none';
+        var sdErr = document.getElementById('startDateError');
+        sdErr.style.display = 'none';
+        sdErr.textContent = '';
+        startDateInput.classList.remove('is-invalid');
     });
 
     document.getElementById('description').addEventListener('input', function () {
-        document.getElementById('descriptionError').style.display = 'none';
+        var descErr = document.getElementById('descriptionError');
+        descErr.style.display = 'none';
+        descErr.textContent = '';
+        this.classList.remove('is-invalid');
     });
 
     leaveForm.addEventListener('submit', async function (e) {
@@ -591,6 +613,10 @@
         startDateError.style.display = 'none';
         descriptionError.style.display = 'none';
 
+        // clear invalid styles
+        startDate.classList.remove('is-invalid');
+        description.classList.remove('is-invalid');
+
         // validation
         if (!startDate.value.trim()) {
 
@@ -598,7 +624,7 @@
                 'Start Date is required.';
 
             startDateError.style.display = 'block';
-
+            startDate.classList.add('is-invalid');
             isValid = false;
         }
 
@@ -608,7 +634,7 @@
                 'Description is required.';
 
             descriptionError.style.display = 'block';
-
+            description.classList.add('is-invalid');
             isValid = false;
         }
 
