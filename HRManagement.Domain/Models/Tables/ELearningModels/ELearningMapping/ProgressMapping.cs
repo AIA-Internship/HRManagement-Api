@@ -11,7 +11,7 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningMapping
                 progressId = model.ProgressId,
                 userId = model.EmployeeId,
                 contentId = model.ProgressId,
-                completedUtcDate = model.ModifiedUtcDate 
+                completedUtcDate = model.CompletedUtcDate
             };
         }
     }

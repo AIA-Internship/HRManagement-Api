@@ -1,6 +1,6 @@
 ﻿using HRManagement.Domain.Models.Tables;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
@@ -8,6 +8,7 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
     [Table("ELearningModules")]
     public class ModuleModel : BaseTableModel
     {
+        [Key]
         [Column("module_id")]
         public int ModuleId { get; set; }
 
@@ -28,7 +29,5 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
 
         [Column("due_date")]
         public DateTime? DueDate { get; set; }
-
-        public virtual ICollection<ModuleContentModel> Contents { get; set; } = new List<ModuleContentModel>();
     }
 }

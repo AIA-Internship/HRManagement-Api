@@ -7,9 +7,7 @@ using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace HRManagement.Api.Controllers;
@@ -118,14 +116,7 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         var result = await Sender.Send(new GetModuleContentFileQuery(contentId));
         if (!result.Found) return NotFound(new { message = "Content not found" });
 
-        var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "elearning", result.StoredFileName);
-        if (!System.IO.File.Exists(physicalPath)) return NotFound(new { message = "File not found on disk" });
-
-        var contentTypeProvider = new FileExtensionContentTypeProvider();
-        if (!contentTypeProvider.TryGetContentType(physicalPath, out var mimeType))
-            mimeType = "application/octet-stream";
-
-        return PhysicalFile(physicalPath, mimeType, result.DownloadFileName);
+        return Redirect(result.FileUrl);
     }
 
     [HttpPost("copy-module")]

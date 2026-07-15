@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
 {
     [Table("ELearningPrograms")]
     public class ProgramModel
     {
+        [Key]
         [Column("program_id")]
         public int ProgramId { get; set; }
 

@@ -45,9 +45,12 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
         public async Task<Result<int>> Handle(SubmitQuizCommand request, CancellationToken ct)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(ct);
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
+                using var transaction = await _context.Database.BeginTransactionAsync(ct);
+                try
+                {
                 var quizConfig = await _context.Set<QuizModel>()
                     .FirstOrDefaultAsync(q => q.QuizId == request.Dto.quizId, ct);
 
@@ -62,9 +65,7 @@ namespace HRManagement.Application.Commands.ELearningCommands
                 var executionSubmission = new QuizSubmissionModel
                 {
                     QuizId = request.Dto.quizId,
-                    UserId = request.Dto.userId,
-                    CreatedBy = request.Dto.userId.ToString(),
-                    CreatedUtcDate = DateTime.UtcNow
+                    UserId = request.Dto.userId
                 };
 
                 _context.Set<QuizSubmissionModel>().Add(executionSubmission);
@@ -123,15 +124,12 @@ namespace HRManagement.Application.Commands.ELearningCommands
                         {
                             EmployeeId = request.Dto.userId,
                             ModuleId = quizConfig.ModuleId,
-                            ProgressStatus = finalStatusClassification,
-                            CreatedUtcDate = DateTime.UtcNow,
-                            CreatedBy = request.Dto.userId.ToString()
+                            ProgressStatus = finalStatusClassification
                         });
                     }
                     else
                     {
                         existingProgress.ProgressStatus = finalStatusClassification;
-                        existingProgress.ModifiedUtcDate = DateTime.UtcNow;
                     }
                     await _context.SaveChangesAsync(ct);
                 }
@@ -143,19 +141,29 @@ namespace HRManagement.Application.Commands.ELearningCommands
                     if (existingProgress != null)
                     {
                         existingProgress.ProgressStatus = "In Progress";
-                        await _context.SaveChangesAsync(ct);
                     }
+                    else
+                    {
+                        _context.Set<ProgressModel>().Add(new ProgressModel
+                        {
+                            EmployeeId = request.Dto.userId,
+                            ModuleId = quizConfig.ModuleId,
+                            ProgressStatus = "In Progress"
+                        });
+                    }
+                    await _context.SaveChangesAsync(ct);
                 }
 
                 await transaction.CommitAsync(ct);
                 return Result.Success(executionSubmission.SubmissionId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                _logger.LogError(ex, "Failed validating incoming submission stream execution sequence.");
-                return Result.Failure<int>(ex.Message);
-            }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(ct);
+                    _logger.LogError(ex, "Failed validating incoming submission stream execution sequence.");
+                    return Result.Failure<int>(ex.Message);
+                }
+            });
         }
     }
 }

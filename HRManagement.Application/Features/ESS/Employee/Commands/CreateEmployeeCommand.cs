@@ -17,6 +17,7 @@ public record CreateEmployeeCommand(AddEmployeePayload Payload, int CurrentUserI
 
 internal sealed class CreateEmployeeCommandHandler(
     IEmployeeRepository employeeRepository,
+    IELearningRepository eLearningRepository,
     ILogger<CreateEmployeeCommandHandler> logger,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateEmployeeCommand, Result>
 {
@@ -89,6 +90,13 @@ internal sealed class CreateEmployeeCommandHandler(
         await employeeRepository.AddAsync(data, cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        const int internRoleId = 2;
+        if (data.RoleId == internRoleId)
+        {
+            await eLearningRepository.AssignInternToGroupAsync(data.Id, DateTime.UtcNow);
+        }
+
         return Result.Success();
     }
 

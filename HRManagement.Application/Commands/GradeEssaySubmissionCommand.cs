@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Tables.ELearningModels;
 using HRManagement.MsSQL.Base;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -32,9 +33,12 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
         public async Task<Result> Handle(SubmitQuizReviewCommand request, CancellationToken ct)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync(ct);
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
+                using var transaction = await _context.Database.BeginTransactionAsync(ct);
+                try
+                {
                 var submission = await _context.ELearningQuizSubmissions
                     .FirstOrDefaultAsync(s => s.SubmissionId == request.SubmissionId, ct);
                 if (submission == null) return Result.Failure("Submission history trace not found.");
@@ -93,19 +97,28 @@ namespace HRManagement.Application.Commands.ELearningCommands
                 if (currentProgress != null)
                 {
                     currentProgress.ProgressStatus = determinationStatus;
-                    currentProgress.ModifiedUtcDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    _context.ELearningModuleProgress.Add(new ProgressModel
+                    {
+                        EmployeeId = submission.UserId,
+                        ModuleId = quizConfig.ModuleId,
+                        ProgressStatus = determinationStatus
+                    });
                 }
 
                 await _context.SaveChangesAsync(ct);
                 await transaction.CommitAsync(ct);
 
                 return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                return Result.Failure(ex.Message);
-            }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(ct);
+                    return Result.Failure(ex.Message);
+                }
+            });
         }
     }
 }

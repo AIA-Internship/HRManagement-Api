@@ -67,7 +67,6 @@ namespace HRManagement.MsSQL.Base
 
             submission.GradedBy = graderId.ToString();
             submission.GradedUtcDate = DateTime.UtcNow;
-            submission.ModifiedUtcDate = DateTime.UtcNow;
 
             await Context.SaveChangesAsync();
             return true;
@@ -95,7 +94,7 @@ namespace HRManagement.MsSQL.Base
                               join employee in _context.Employee on u.EmployeeId equals employee.Id
                               join emp in _context.EmploymentInformation on u.Id equals emp.EmployeeId into empJoin
                               from emp in empJoin.DefaultIfEmpty()
-                              where prog.ProgramId == targetProgramId && u.RoleId == 1
+                              where prog.ProgramId == targetProgramId && u.RoleId == 2
                               select new { User = u, Employee = employee, PositionName = emp.PositionName };
 
             if (!string.IsNullOrEmpty(search))
@@ -232,7 +231,7 @@ namespace HRManagement.MsSQL.Base
         public async Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByUserAndQuizIdsAsync(int userId, IEnumerable<int> quizIds)
         {
             return await Context.ELearningQuizSubmissions
-                .Where(s => s.UserId == userId && quizIds.Contains(s.QuizId) && !s.IsDeleted)
+                .Where(s => s.UserId == userId && quizIds.Contains(s.QuizId))
                 .ToListAsync();
         }
 
@@ -278,7 +277,7 @@ namespace HRManagement.MsSQL.Base
         public async Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByQuizIdAsync(int quizId)
         {
             return await Context.ELearningQuizSubmissions
-                .Where(s => s.QuizId == quizId && !s.IsDeleted)
+                .Where(s => s.QuizId == quizId)
                 .ToListAsync();
         }
 
@@ -294,17 +293,16 @@ namespace HRManagement.MsSQL.Base
                                       .Distinct()
                                       .ToListAsync();
 
-            return await (from u in Context.Users
-                          join employee in Context.Employee on u.EmployeeId equals employee.Id
-                          where employeeIds.Contains(u.Id) && !u.IsDeleted
-                          select new InternInfoDto { UserId = u.Id, FullName = employee.FullName })
+            return await Context.Employee
+                          .Where(e => employeeIds.Contains(e.Id) && e.IsActive)
+                          .Select(e => new InternInfoDto { UserId = e.Id, FullName = e.FullName })
                           .ToListAsync();
         }
 
         public async Task<QuizSubmissionModel?> GetSubmissionByIdAsync(int submissionId)
         {
             return await Context.ELearningQuizSubmissions
-                .FirstOrDefaultAsync(s => s.SubmissionId == submissionId && !s.IsDeleted);
+                .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
         }
 
         public async Task<QuizModel?> GetQuizByIdAsync(int quizId)
@@ -337,10 +335,9 @@ namespace HRManagement.MsSQL.Base
 
         public async Task<InternInfoDto?> GetUserByIdAsync(int userId)
         {
-            return await (from u in Context.Users
-                          join employee in Context.Employee on u.EmployeeId equals employee.Id
-                          where u.Id == userId && !u.IsDeleted
-                          select new InternInfoDto { UserId = u.Id, FullName = employee.FullName })
+            return await Context.Employee
+                          .Where(e => e.Id == userId && e.IsActive)
+                          .Select(e => new InternInfoDto { UserId = e.Id, FullName = e.FullName })
                           .FirstOrDefaultAsync();
         }
 
@@ -360,16 +357,12 @@ namespace HRManagement.MsSQL.Base
                 {
                     EmployeeId = userId,
                     ModuleId = content.ModuleId,
-                    ProgressStatus = "In Progress",
-                    CreatedUtcDate = DateTime.UtcNow,
-                    CreatedBy = userId.ToString()
+                    ProgressStatus = "In Progress"
                 });
             }
             else if (progress.ProgressStatus == "Not Started")
             {
                 progress.ProgressStatus = "In Progress";
-                progress.ModifiedUtcDate = DateTime.UtcNow;
-                progress.ModifiedBy = userId.ToString();
             }
 
             await Context.SaveChangesAsync();
@@ -377,46 +370,46 @@ namespace HRManagement.MsSQL.Base
         }
         public async Task<bool> SubmitQuizAsync(QuizSubmissionModel entity)
         {
-            using var transaction = await Context.Database.BeginTransactionAsync();
-            try
+            var strategy = Context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                Context.ELearningQuizSubmissions.Add(entity);
-
-                var currentQuiz = await Context.ELearningQuizzes
-                    .FirstOrDefaultAsync(q => q.QuizId == entity.QuizId);
-
-                if (currentQuiz == null) return false;
-
-                var progress = await Context.ELearningModuleProgress
-                    .FirstOrDefaultAsync(p => p.EmployeeId == entity.UserId && p.ModuleId == currentQuiz.ModuleId);
-
-                if (progress == null)
+                using var transaction = await Context.Database.BeginTransactionAsync();
+                try
                 {
-                    Context.ELearningModuleProgress.Add(new ProgressModel
+                    Context.ELearningQuizSubmissions.Add(entity);
+
+                    var currentQuiz = await Context.ELearningQuizzes
+                        .FirstOrDefaultAsync(q => q.QuizId == entity.QuizId);
+
+                    if (currentQuiz == null) return false;
+
+                    var progress = await Context.ELearningModuleProgress
+                        .FirstOrDefaultAsync(p => p.EmployeeId == entity.UserId && p.ModuleId == currentQuiz.ModuleId);
+
+                    if (progress == null)
                     {
-                        EmployeeId = entity.UserId,
-                        ModuleId = currentQuiz.ModuleId,
-                        ProgressStatus = "Completed",
-                        CreatedUtcDate = DateTime.UtcNow,
-                        CreatedBy = entity.UserId.ToString()
-                    });
-                }
-                else
-                {
-                    progress.ProgressStatus = "Completed";
-                    progress.ModifiedUtcDate = DateTime.UtcNow;
-                    progress.ModifiedBy = entity.UserId.ToString();
-                }
+                        Context.ELearningModuleProgress.Add(new ProgressModel
+                        {
+                            EmployeeId = entity.UserId,
+                            ModuleId = currentQuiz.ModuleId,
+                            ProgressStatus = "Completed"
+                        });
+                    }
+                    else
+                    {
+                        progress.ProgressStatus = "Completed";
+                    }
 
-                await Context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                return false;
-            }
+                    await Context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            });
         }
 
 

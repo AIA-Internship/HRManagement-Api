@@ -34,9 +34,12 @@ namespace HRManagement.Application.Commands.ELearningCommands
         {
             _logger.LogTrace("Executing handler for request : {request}", nameof(CopyModuleHandler));
 
-            using var transaction = await _context.Database.BeginTransactionAsync(ct);
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
+                using var transaction = await _context.Database.BeginTransactionAsync(ct);
+                try
+                {
                 var sourceModule = await _context.ELearningModules
                     .FirstOrDefaultAsync(m => m.ModuleId == request.Dto.sourceModuleId && !m.IsDeleted, ct);
 
@@ -85,13 +88,14 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
                 await transaction.CommitAsync(ct);
                 return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                _logger.LogError(ex, "Error copying module id {sourceId}", request.Dto.sourceModuleId);
-                return Result.Failure(ex.Message);
-            }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(ct);
+                    _logger.LogError(ex, "Error copying module id {sourceId}", request.Dto.sourceModuleId);
+                    return Result.Failure(ex.Message);
+                }
+            });
         }
     }
 }

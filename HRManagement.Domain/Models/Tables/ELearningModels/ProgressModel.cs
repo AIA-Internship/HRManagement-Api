@@ -1,11 +1,12 @@
-﻿using HRManagement.Domain.Models.Tables;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
 {
     [Table("ELearningModuleProgress")]
-    public class ProgressModel : BaseTableModel
+    public class ProgressModel
     {
+        [Key]
         [Column("progress_id")]
         public int ProgressId { get; set; }
 

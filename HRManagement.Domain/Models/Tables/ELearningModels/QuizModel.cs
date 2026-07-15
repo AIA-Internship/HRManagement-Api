@@ -1,11 +1,20 @@
-﻿using HRManagement.Domain.Models.Tables;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
 {
     [Table("ELearningQuizzes")]
-    public class QuizModel : BaseTableModel
+    public class QuizModel
     {
+        public QuizModel()
+        {
+            IsDeleted = false;
+            CreatedBy = "0";
+            CreatedUtcDate = DateTime.UtcNow;
+        }
+
+        [Key]
         [Column("quiz_id")]
         public int QuizId { get; set; }
 
@@ -26,5 +35,14 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
 
         [Column("minimum_passing_score")]
         public int MinimumPassingScore { get; set; }
+
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; }
+
+        [Column("created_by")]
+        public string? CreatedBy { get; set; }
+
+        [Column("CreatedUtcDate")]
+        public DateTime CreatedUtcDate { get; set; }
     }
 }

@@ -40,6 +40,6 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        modelBuilder.Entity<GroupMemberModel>().HasNoKey();
+        modelBuilder.Entity<GroupMemberModel>().HasKey(gm => new { gm.GroupId, gm.EmployeeId });
     }
 }

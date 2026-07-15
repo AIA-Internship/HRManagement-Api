@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
 {
     [Table("ELearningStudentAnswers")]
     public class StudentAnswerModel
     {
+        [Key]
         [Column("answer_id")]
         public int AnswerId { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Response.Shared;
 using HRManagement.Domain.Models.Tables.ELearningModels;
 using HRManagement.MsSQL.Base;
@@ -22,9 +23,14 @@ namespace HRManagement.Application.Commands.ELearningCommands
     internal class UploadModuleContentHandler : IRequestHandler<UploadModuleContentCommand, Result>
     {
         private readonly AppDbContext _context;
+        private readonly IFileStorageService _fileStorageService;
         private const long MaxFileSizeBytes = 150 * 1024 * 1024;
 
-        public UploadModuleContentHandler(AppDbContext context) => _context = context;
+        public UploadModuleContentHandler(AppDbContext context, IFileStorageService fileStorageService)
+        {
+            _context = context;
+            _fileStorageService = fileStorageService;
+        }
 
         public async Task<Result> Handle(UploadModuleContentCommand request, CancellationToken ct)
         {
@@ -38,16 +44,14 @@ namespace HRManagement.Application.Commands.ELearningCommands
                 return Result.Failure("Unsupported file format. Use PDF, PPT, MP4, or DOCX.");
             }
 
-            var baseStoragePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "elearning");
-            if (!Directory.Exists(baseStoragePath)) Directory.CreateDirectory(baseStoragePath);
-
             var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-            var absoluteFilePath = Path.Combine(baseStoragePath, uniqueFileName);
 
-            using (var stream = new FileStream(absoluteFilePath, FileMode.Create))
-            {
-                await request.FilePayload.CopyToAsync(stream, ct);
-            }
+            using var stream = request.FilePayload.OpenReadStream();
+            var blobUrl = await _fileStorageService.UploadBlobAsync(
+                uniqueFileName,
+                stream,
+                request.FilePayload.ContentType,
+                ct);
 
             var cleanContentType = extension.Replace(".", "");
 
@@ -57,7 +61,7 @@ namespace HRManagement.Application.Commands.ELearningCommands
                 ContentTitle = request.Title,
                 ContentType = cleanContentType,
 
-                ContentUrl = uniqueFileName,
+                ContentUrl = blobUrl,
 
                 IsDeleted = false,
                 CreatedBy = request.CurrentUserId.ToString(),

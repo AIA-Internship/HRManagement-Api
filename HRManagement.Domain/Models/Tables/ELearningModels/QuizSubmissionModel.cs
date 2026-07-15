@@ -1,12 +1,18 @@
-﻿using HRManagement.Domain.Models.Tables;
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels
 {
     [Table("ELearningQuizSubmissions")]
-    public class QuizSubmissionModel : BaseTableModel
+    public class QuizSubmissionModel
     {
+        public QuizSubmissionModel()
+        {
+            CreatedUtcDate = DateTime.UtcNow;
+        }
+
+        [Key]
         [Column("submission_id")]
         public int SubmissionId { get; set; }
 
@@ -27,5 +33,8 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
 
         [Column("graded_utc_date")]
         public DateTime? GradedUtcDate { get; set; }
+
+        [Column("CreatedUtcDate")]
+        public DateTime CreatedUtcDate { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace HRManagement.Application.Queries
     public class ModuleContentFileResult
     {
         public bool Found { get; set; }
-        public string StoredFileName { get; set; } = null!;
+        public string FileUrl { get; set; } = null!;
         public string DownloadFileName { get; set; } = null!;
     }
 
@@ -31,7 +31,7 @@ namespace HRManagement.Application.Queries
             return new ModuleContentFileResult
             {
                 Found = true,
-                StoredFileName = content.ContentUrl,
+                FileUrl = content.ContentUrl,
                 DownloadFileName = $"{content.ContentTitle}.{content.ContentType}"
             };
         }

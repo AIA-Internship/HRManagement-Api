@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,67 +50,78 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
             foreach (var mc in mcQuestions)
             {
+                if (mc.options.Count != 4)
+                    return Result.Failure<int>($"Question \"{mc.questionText}\" must have exactly 4 options (A, B, C, D).");
+
+                var letters = mc.options.Select(o => o.optionLetter.Trim().ToUpperInvariant()).ToList();
+                if (!new HashSet<string>(letters).SetEquals(new[] { "A", "B", "C", "D" }))
+                    return Result.Failure<int>($"Question \"{mc.questionText}\" options must be labeled A, B, C, and D.");
+
                 if (mc.options.Count(o => o.isCorrect) != 1)
                     return Result.Failure<int>($"Question \"{mc.questionText}\" must have exactly one correct option.");
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync(ct);
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                var module = await _context.ELearningModules
-                    .FirstOrDefaultAsync(m => m.ModuleId == dto.moduleId && !m.IsDeleted, ct);
-                if (module == null) return Result.Failure<int>("Module not found.");
-
-                var existingQuiz = await _context.ELearningQuizzes
-                    .FirstOrDefaultAsync(q => q.ModuleId == dto.moduleId && !q.IsDeleted, ct);
-                if (existingQuiz != null) return Result.Failure<int>("This module already has a quiz.");
-
-                var quiz = new QuizModel
+                using var transaction = await _context.Database.BeginTransactionAsync(ct);
+                try
                 {
-                    ModuleId = dto.moduleId,
-                    McCount = dto.mcCount,
-                    EssayCount = dto.essayCount,
-                    McWeight = dto.mcWeight,
-                    EssayWeight = dto.essayWeight,
-                    MinimumPassingScore = dto.minimumPassingScore
-                };
-                _context.ELearningQuizzes.Add(quiz);
-                await _context.SaveChangesAsync(ct);
+                    var module = await _context.ELearningModules
+                        .FirstOrDefaultAsync(m => m.ModuleId == dto.moduleId && !m.IsDeleted, ct);
+                    if (module == null) return Result.Failure<int>("Module not found.");
 
-                foreach (var q in dto.questions.OrderBy(q => q.sortOrder))
-                {
-                    var question = new QuizQuestionModel
+                    var existingQuiz = await _context.ELearningQuizzes
+                        .FirstOrDefaultAsync(q => q.ModuleId == dto.moduleId && !q.IsDeleted, ct);
+                    if (existingQuiz != null) return Result.Failure<int>("This module already has a quiz.");
+
+                    var quiz = new QuizModel
                     {
-                        QuizId = quiz.QuizId,
-                        QuestionText = q.questionText,
-                        QuestionType = q.questionType,
-                        SortOrder = q.sortOrder
+                        ModuleId = dto.moduleId,
+                        McCount = dto.mcCount,
+                        EssayCount = dto.essayCount,
+                        McWeight = dto.mcWeight,
+                        EssayWeight = dto.essayWeight,
+                        MinimumPassingScore = dto.minimumPassingScore
                     };
-                    _context.ELearningQuizQuestions.Add(question);
+                    _context.ELearningQuizzes.Add(quiz);
                     await _context.SaveChangesAsync(ct);
 
-                    foreach (var o in q.options)
+                    foreach (var q in dto.questions.OrderBy(q => q.sortOrder))
                     {
-                        _context.ELearningQuizQuestionOptions.Add(new QuizQuestionOptionModel
+                        var question = new QuizQuestionModel
                         {
-                            QuestionId = question.QuestionId,
-                            OptionLetter = o.optionLetter,
-                            OptionText = o.optionText,
-                            IsCorrect = o.isCorrect
-                        });
-                    }
-                }
-                await _context.SaveChangesAsync(ct);
+                            QuizId = quiz.QuizId,
+                            QuestionText = q.questionText,
+                            QuestionType = q.questionType,
+                            SortOrder = q.sortOrder
+                        };
+                        _context.ELearningQuizQuestions.Add(question);
+                        await _context.SaveChangesAsync(ct);
 
-                await transaction.CommitAsync(ct);
-                return Result.Success(quiz.QuizId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(ct);
-                _logger.LogError(ex, "Error creating quiz for module {moduleId}", dto.moduleId);
-                return Result.Failure<int>(ex.Message);
-            }
+                        foreach (var o in q.options)
+                        {
+                            _context.ELearningQuizQuestionOptions.Add(new QuizQuestionOptionModel
+                            {
+                                QuestionId = question.QuestionId,
+                                OptionLetter = o.optionLetter,
+                                OptionText = o.optionText,
+                                IsCorrect = o.isCorrect
+                            });
+                        }
+                    }
+                    await _context.SaveChangesAsync(ct);
+
+                    await transaction.CommitAsync(ct);
+                    return Result.Success(quiz.QuizId);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync(ct);
+                    _logger.LogError(ex, "Error creating quiz for module {moduleId}", dto.moduleId);
+                    return Result.Failure<int>(ex.Message);
+                }
+            });
         }
     }
 }

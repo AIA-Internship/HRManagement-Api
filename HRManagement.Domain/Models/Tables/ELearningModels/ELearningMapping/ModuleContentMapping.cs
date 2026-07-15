@@ -13,7 +13,7 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningMapping
                 title = model.ContentTitle,
                 isQuiz = false,
                 fileName = model.ContentUrl,
-                filePath = $"/elearning/{model.ContentUrl}",
+                filePath = model.ContentUrl,
                 sortOrder = model.SortOrder ?? 0
             };
         }
