@@ -461,12 +461,25 @@ function addTabLogic() {
         var requestCard = document.getElementById('requestCard');
         var calendarCard = document.getElementById('calendarCard');
         var calendarInitialized = false;
-
         function activate(tab, card, otherTab, otherCard) {
             tab.classList.add('active');
             otherTab.classList.remove('active');
-            card.style.display = '';
-            otherCard.style.display = 'none';
+
+            // Fade out the currently visible card
+            otherCard.style.opacity = '0';
+
+            setTimeout(function () {
+                otherCard.style.display = 'none';
+
+                // Prep the incoming card to fade in
+                card.style.display = '';
+                card.style.opacity = '0';
+
+                // Force reflow so the browser registers opacity:0 before transitioning
+                void card.offsetWidth;
+
+                card.style.opacity = '1';
+            }, 180); // matches the CSS transition duration
         }
 
         tabRequest.addEventListener('click', function () {

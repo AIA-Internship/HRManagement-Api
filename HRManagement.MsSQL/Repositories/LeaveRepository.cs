@@ -269,17 +269,6 @@ namespace HRManagement.MsSQL.Repositories
                 .Take(max)
                 .ToListAsync();
 
-            // Populate RequesterDisplayId for any empty entries
-            foreach (var req in result.Where(r => string.IsNullOrWhiteSpace(r.RequesterDisplayId)))
-            {
-                var emp = await _dbContext.Employee
-                    .Include(e => e.EmploymentInformation)
-                    .FirstOrDefaultAsync(e => e.Id == req.RequesterId);
-
-                req.RequesterDisplayId = emp?.EmploymentInformation?.DisplayId
-                    ?? emp?.NIK
-                    ?? emp?.Id.ToString();
-            }
 
             return result;
         }

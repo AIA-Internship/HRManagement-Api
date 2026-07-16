@@ -359,6 +359,15 @@
                 .leave-tab-control.active::after {
                     background: #E31837;
                 }
+        /* ===== Tab Content Fade ===== */
+        .leave-tab-content {
+            transition: opacity 0.18s ease-in-out;
+            opacity: 1;
+        }
+
+        .leave-tab-control::after {
+            transition: background-color 0.25s ease, width 0.25s ease;
+        }
 
         /* ===== Status Filter ===== */
 
