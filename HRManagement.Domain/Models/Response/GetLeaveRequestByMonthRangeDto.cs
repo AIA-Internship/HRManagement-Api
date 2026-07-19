@@ -6,6 +6,7 @@ namespace HRManagement.Domain.Models.Response
     {
         public int? leaveId { get; set; }
         public int requesterId { get; set; }
+        public string? requesterDisplayId { get; set; }
         public int supervisorId { get; set; }
         public string? leaveDescription { get; set; }
         public string? leaveStatus { get; set; }
@@ -16,10 +17,11 @@ namespace HRManagement.Domain.Models.Response
         public DateTime createdUtcDate { get; set; }
         public string? requesterName { get; set; }
 
-        public GetLeaveRequestByMonthRangeDto(int leaveId, int requesterId, int supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, decimal? dayAmount, int? leaveType, int? isCompleted, DateTime createdUtcDate, string? requesterName)
+        public GetLeaveRequestByMonthRangeDto(int leaveId, int requesterId, int supervisorId, string? leaveDescription, int? leaveStatus, DateTime? leaveStartDate, decimal? dayAmount, int? leaveType, int? isCompleted, DateTime createdUtcDate, string? requesterName, string? requesterDisplayId = null)
         {
             this.leaveId = leaveId;
             this.requesterId = requesterId;
+            this.requesterDisplayId = requesterDisplayId;
             this.supervisorId = supervisorId;
             this.leaveDescription = leaveDescription;
             this.leaveStatus = leaveStatus.HasValue ? MappingHelper.leaveStatusFromInt(leaveStatus.Value).ToString() : null;

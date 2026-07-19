@@ -165,9 +165,7 @@ function mergeData() {
         return a.startDateRaw - b.startDateRaw;
     });
 
-    filteredRequests = [...requests];
-
-    renderTable();
+    applyFilters();
 }
 
 function getAvatarColor(name) {
@@ -354,33 +352,29 @@ function goToPage(page) {
 }
 
 function filterStatus(status, button) {
-    // Map status parameter to status text
+
     const statusMap = {
-        '1': 'Needs Approval',
-        '2': 'Approved',
-        '3': 'Rejected'
+        "1": "Needs Approval",
+        "2": "Approved",
+        "3": "Rejected"
     };
 
-    const statusText = statusMap[status] || status;
+    const selected = statusMap[status];
 
-    // Toggle behavior: if same status clicked, clear filter
-    if (activeStatus === statusText) {
+    document
+        .querySelectorAll(".status-filter-btn")
+        .forEach(btn => btn.classList.remove("active"));
+
+    if (activeStatus === selected) {
         activeStatus = null;
-        filteredRequests = [...requests];
-        // remove active class from buttons
-        document.querySelectorAll('.btn-outline-secondary').forEach(btn => btn.classList.remove('active'));
-    } else {
-        activeStatus = statusText;
-        filteredRequests = requests.filter(r => r.status === statusText);
-        // update active class
-        document.querySelectorAll('.btn-outline-secondary').forEach(btn => btn.classList.remove('active'));
-        if (button) button.classList.add('active');
+    }
+    else {
+        activeStatus = selected;
+        button.classList.add("active");
     }
 
-    currentPage = 1;
-    renderTable();
+    applyFilters();
 }
-
 
 
 
@@ -430,38 +424,24 @@ function debounce(fn, wait) {
 window.addEventListener('resize', debounce(adjustToolbarLayout, 120));
 
 function addSortLogic() {
+
     document
         .getElementById("sortSelect")
         .addEventListener("change", function () {
 
-            if (this.value === "newest") {
+            applyFilters();
 
-                filteredRequests.sort((a, b) => b.startDateRaw - a.startDateRaw);
-
-            } else {
-
-                filteredRequests.sort((a, b) => a.startDateRaw - b.startDateRaw);
-            }
-
-            renderTable();
         });
 }
 
 function addSearchLogic() {
+
     document
         .getElementById("searchInput")
         .addEventListener("input", function () {
 
-            const keyword = this.value.toLowerCase();
+            applyFilters();
 
-            filteredRequests = requests.filter(x =>
-                x.name.toLowerCase().includes(keyword) ||
-                x.type.toLowerCase().includes(keyword)
-            );
-
-            currentPage = 1;
-
-            renderTable();
         });
 }
 
@@ -473,6 +453,90 @@ function renderSupervisorInfo() {
 
     document.getElementById("userName").textContent =
         user.fullName || "Supervisor";
+}
+function addTabLogic() {
+    document.addEventListener('DOMContentLoaded', function () {
+        var tabRequest = document.getElementById('tabRequest');
+        var tabCalendar = document.getElementById('tabCalendar');
+        var requestCard = document.getElementById('requestCard');
+        var calendarCard = document.getElementById('calendarCard');
+        var calendarInitialized = false;
+        function activate(tab, card, otherTab, otherCard) {
+            tab.classList.add('active');
+            otherTab.classList.remove('active');
+
+            // Fade out the currently visible card
+            otherCard.style.opacity = '0';
+
+            setTimeout(function () {
+                otherCard.style.display = 'none';
+
+                // Prep the incoming card to fade in
+                card.style.display = '';
+                card.style.opacity = '0';
+
+                // Force reflow so the browser registers opacity:0 before transitioning
+                void card.offsetWidth;
+
+                card.style.opacity = '1';
+            }, 180); // matches the CSS transition duration
+        }
+
+        tabRequest.addEventListener('click', function () {
+            activate(tabRequest, requestCard, tabCalendar, calendarCard);
+        });
+
+        tabCalendar.addEventListener('click', function () {
+            activate(tabCalendar, calendarCard, tabRequest, requestCard);
+
+            // Initialize the calendar plugin lazily, only once, the first
+            // time the Calendar tab is opened (avoids sizing issues that
+            // happen when a calendar is initialized inside a hidden element).
+            if (!calendarInitialized) {
+                if (typeof KTAppCalendar !== 'undefined' && typeof KTAppCalendar.init === 'function') {
+                    KTAppCalendar.init();
+                }
+                calendarInitialized = true;
+            }
+        });
+    });
+} 
+
+function applyFilters() {
+
+    let result = [...requests];
+
+    // Status filter
+    if (activeStatus) {
+        result = result.filter(x => x.status === activeStatus);
+    }
+
+    // Search filter
+    const keyword = document
+        .getElementById("searchInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    if (keyword) {
+        result = result.filter(x =>
+            x.name.toLowerCase().includes(keyword) ||
+            x.type.toLowerCase().includes(keyword)
+        );
+    }
+
+    // Sort
+    const sort = document.getElementById("sortSelect").value;
+
+    result.sort((a, b) => {
+        return sort === "newest"
+            ? b.startDateRaw - a.startDateRaw
+            : a.startDateRaw - b.startDateRaw;
+    });
+
+    filteredRequests = result;
+    currentPage = 1;
+    renderTable();
 }
 
 function main() {

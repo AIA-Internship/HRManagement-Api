@@ -15,9 +15,9 @@
             box-shadow: 0 1px 0 rgba(0,0,0,0.03);
         }
 
-        .card.mx-10.mb-15 .card-body {
-            padding: 0.5rem 0;
-        }
+            .card.mx-10.mb-15 .card-body {
+                padding: 0.5rem 0;
+            }
 
         /* Employee avatar & info */
         .employee-avatar {
@@ -71,19 +71,16 @@
         }
 
         /* Use same table layout & alignment as Employee dashboard */
-        /* On hover, only change row background and employee name color. Leave status badge colors unchanged. */
+        /* On hover, only change row background (subtle) - status badge colors unchanged. */
         #requestTableBody tr:hover {
-            background-color: #dc3545 !important;
+            background-color: #F9FAFB !important;
         }
 
-        /* make employee name visible on hover */
-        #requestTableBody tr:hover .employee-name {
-            color: #fff !important;
-        }
         #requestTableBody td {
             padding: 1.1rem 2rem;
             vertical-align: middle;
         }
+
         #requestTableBody tr {
             box-sizing: border-box;
         }
@@ -134,46 +131,84 @@
             transition: all 0.15s ease;
         }
 
-        .btn-outline-secondary:hover {
-            border-color: #E31837;
-            color: #E31837;
+            .btn-outline-secondary:hover {
+                border-color: #E31837;
+                color: #E31837;
+                background: #fff;
+            }
+
+            .btn-outline-secondary.active {
+                background: #E31837;
+                color: white;
+                border-color: #E31837;
+            }
+
+        /* center search and tidy toolbar layout */
+        .toolbar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
+        }
+
+        .toolbar-left {
+            flex: 0 0 auto;
+        }
+
+        .toolbar-center {
+            flex: 1 1 600px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .toolbar-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            border-radius: 24px;
+            padding: 12px 18px 12px 42px;
+        }
+
+        .position-relative .bi-search {
+            position: relative;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* Column alignment: left-aligned text columns, Day(s) & Status centered to match Figma */
+        .table thead th,
+        .table tbody td {
+            text-align: left;
+        }
+
+            .table thead th:nth-child(5),
+            .table tbody td:nth-child(5),
+            .table thead th:nth-child(6),
+            .table tbody td:nth-child(6) {
+                text-align: center;
+            }
+
+        /* make table header stand out with bolder line */
+        .table thead th {
+            border-bottom: 2px solid #EFF2F5;
             background: #fff;
         }
 
-        .btn-outline-secondary.active {
-            background: #E31837;
-            color: white;
-            border-color: #E31837;
-        }
-
-        /* center search and tidy toolbar layout */
-        .toolbar-row { display:flex; align-items:center; gap:1rem; padding:0.75rem 1.25rem; }
-        .toolbar-left { flex:0 0 auto; }
-        .toolbar-center { flex:1 1 600px; display:flex; justify-content:center; }
-        .toolbar-right { flex:0 0 auto; display:flex; align-items:center; gap:0.75rem; }
-
-        .search-input { width:100%; border-radius:24px; padding:12px 18px 12px 42px; }
-        .position-relative .bi-search { position:relative; left:14px; top:50%; transform:translateY(-50%); pointer-events:none; }
-
-        /* keep default left alignment; status column is centered via class */
-        .table tbody td:first-child { text-align:left; }
-
-        /* make table header stand out with bolder line */
-        .table thead th { border-bottom:2px solid #EFF2F5; background:#fff; }
-
-        /* Table header styling: align header text to match column content
-           - first column (employee) left-aligned
-           - other columns center-aligned to match cell content */
+        /* Table header styling */
         .table thead th {
             background-color: transparent;
             color: #181C32;
             font-size: 13px;
             font-weight: 700;
             padding: 1.1rem 2rem;
-            text-align: center;
         }
-
-        .table thead th:first-child { text-align: left; }
 
         /* Pagination - subtle rounded */
         .pagination .page-link {
@@ -188,25 +223,196 @@
         }
 
         /* Empty state */
-        .empty-row td { height: 480px; vertical-align: middle !important; }
-        .empty-state { display:flex; flex-direction:column; justify-content:center; align-items:center; color:#7E8299; height:100%; }
-        .empty-row:hover > td, .empty-row td:hover { background-color: transparent !important; }
+        .empty-row td {
+            height: 480px;
+            vertical-align: middle !important;
+        }
 
-    
-        .stacked-toolbar .toolbar-row { padding:0.5rem; gap:0.5rem; flex-wrap:wrap; }
-        .stacked-toolbar .toolbar-left,
-        .stacked-toolbar .toolbar-right { flex: 0 0 100%; display:flex; justify-content:flex-start; }
-        .stacked-toolbar .toolbar-center { order:2; flex: 1 1 100%; width:100%; }
-        .stacked-toolbar .toolbar-right { justify-content:flex-end; }
-        .stacked-toolbar .search-input { max-width:100%; }
-        .stacked-toolbar .btn-group { gap:0.4rem; }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #7E8299;
+            height: 100%;
+        }
+
+        .empty-row:hover > td, .empty-row td:hover {
+            background-color: transparent !important;
+        }
+
+
+        .stacked-toolbar .toolbar-row {
+            padding: 0.5rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
 
         .stacked-toolbar .toolbar-left,
-        .stacked-toolbar .toolbar-right { padding-left:0.5rem; padding-right:0.5rem; }
-        .stacked-toolbar .search-input { padding-left:42px; }
+        .stacked-toolbar .toolbar-right {
+            flex: 0 0 100%;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .stacked-toolbar .toolbar-center {
+            order: 2;
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .stacked-toolbar .toolbar-right {
+            justify-content: flex-end;
+        }
+
+        .stacked-toolbar .search-input {
+            max-width: 100%;
+        }
+
+        .stacked-toolbar .btn-group {
+            gap: 0.4rem;
+        }
+
+        .stacked-toolbar .toolbar-left,
+        .stacked-toolbar .toolbar-right {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .stacked-toolbar .search-input {
+            padding-left: 42px;
+        }
+
         .stacked-toolbar .table thead th,
-        .stacked-toolbar .table tbody td { padding: 0.75rem 0.75rem; }
+        .stacked-toolbar .table tbody td {
+            padding: 0.75rem 0.75rem;
+        }
+
+        /* Tab styling - breadcrumb style header + underline nav */
+        .leave-tab-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 14px;
+            color: #7E8299;
+            padding: 0 2rem;
+        }
+
+            .leave-tab-header a {
+                color: #7E8299;
+                text-decoration: none;
+            }
+
+                .leave-tab-header a:hover {
+                    color: #E31837;
+                }
+
+            .leave-tab-header .leave-tab-link.active {
+                color: #E31837;
+                font-weight: 600;
+            }
+
+            .leave-tab-header .breadcrumb-sep {
+                color: #D5D8DB;
+            }
+        /* ===== Leave Tabs ===== */
+        .leave-tabs-nav {
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+            border-bottom: 1px solid #E4E6EF;
+            margin-bottom: 1.5rem;
+        }
+
+        .leave-tab-control {
+            position: relative;
+            padding: 14px 0;
+            border: none;
+            background: transparent;
+            color: #5E6278;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+            .leave-tab-control:hover {
+                color: #E31837;
+            }
+
+            .leave-tab-control::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: -1px;
+                width: 100%;
+                height: 3px;
+                background: transparent;
+                border-radius: 3px 3px 0 0;
+                transition: .2s;
+            }
+
+            .leave-tab-control.active {
+                color: #E31837;
+            }
+
+                .leave-tab-control.active::after {
+                    background: #E31837;
+                }
+        /* ===== Tab Content Fade ===== */
+        .leave-tab-content {
+            transition: opacity 0.18s ease-in-out;
+            opacity: 1;
+        }
+
+        .leave-tab-control::after {
+            transition: background-color 0.25s ease, width 0.25s ease;
+        }
+
+        /* ===== Status Filter ===== */
+
+        .status-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-filter-btn {
+            border: 1px solid #D0D5DD;
+            background: #fff;
+            color: #344054;
+            border-radius: 999px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: .2s;
+        }
+
+            .status-filter-btn:hover {
+                border-color: #E31837;
+                color: #E31837;
+            }
+
+            .status-filter-btn.active {
+                background: #E31837;
+                border-color: #E31837;
+                color: #fff;
+            }
+
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
     </style>
+
 }
 
 <div class="container-fluid px-5">
@@ -215,10 +421,10 @@
         Title = "Leave",
         Subtitle = "Overview of pending leave requests from your team",
         Breadcrumbs = new List<BreadcrumbItem> {
-            new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
-            new BreadcrumbItem { Title = "Request List" }
+        new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
+        new BreadcrumbItem { Title = "Request List" }
         },
-    })
+        })
 </div>
 
 <div class="container-fluid px-5">
@@ -230,28 +436,39 @@
     </div>
 
     <!-- Tabs: Request list / Calendar -->
-    <div class="mb-4 px-5">
-        <a href="#" id="tabRequest" class="leave-tab active me-4">Request list</a>
-        <a href="#" id="tabCalendar" class="leave-tab">Calendar</a>
+    <div class="leave-tabs-nav">
+        <button id="tabRequest" class="leave-tab-control active" type="button">Request list</button>
+        <button id="tabCalendar" class="leave-tab-control" type="button">Calendar</button>
     </div>
 
-<!-- Calendar Card (hidden by default) -->
-<div class="card mx-10 mb-15" id="calendarCard" style="display:none;">
-    <div class="card-body ps-0 pe-0">
-        <div class="p-4">
-            <div id="kt_calendar_app" style="min-height:540px;"></div>
+    <!-- Calendar Card (hidden by default) -->
+    <div class="card mx-10 mb-15 leave-tab-content" id="calendarCard" style="display:none;">
+        <div class="card-body ps-0 pe-0">
+            <div class="p-4">
+                <div id="kt_calendar_app" style="min-height:540px;"></div>
+            </div>
         </div>
     </div>
-</div>
 
-    <div class="card mx-10 mb-15" id="requestCard">
+    <div class="card mx-10 mb-15 leave-tab-content" id="requestCard">
         <div class="card-body ps-0 pe-0">
             <div class="toolbar-row">
                 <div class="toolbar-left ms-7">
-                    <div class="btn-group" role="group" aria-label="filters">
-                        <button class="btn btn-outline-secondary" onclick="filterStatus('1', this)">Needs Approval</button>
-                        <button class="btn btn-outline-secondary" onclick="filterStatus('2', this)">Approved</button>
-                        <button class="btn btn-outline-secondary" onclick="filterStatus('3', this)">Rejected</button>
+                    <div class="status-filter">
+                        <button class="status-filter-btn active"
+                                onclick="filterStatus('1', this)">
+                            Needs Approval
+                        </button>
+
+                        <button class="status-filter-btn"
+                                onclick="filterStatus('2', this)">
+                            Approved
+                        </button>
+
+                        <button class="status-filter-btn"
+                                onclick="filterStatus('3', this)">
+                            Rejected
+                        </button>
                     </div>
                 </div>
 
@@ -268,8 +485,8 @@
                 <div class="toolbar-right me-4">
                     <label class="me-2">Sort by:</label>
                     <select id="sortSelect" class="form-select form-select-sm" style="width:120px;">
-                        <option value="newest">newest</option>
-                        <option value="oldest" selected>oldest</option>
+                        <option value="newest" selected>newest</option>
+                        <option value="oldest">oldest</option>
                     </select>
                 </div>
             </div>
@@ -283,7 +500,7 @@
                             <th class="px-7"><strong>Start Date</strong></th>
                             <th class="px-7"><strong>End Date</strong></th>
                             <th class="px-7"><strong>Day(s)</strong></th>
-                            <th class="px-7 text-center"><strong>Status</strong></th>
+                            <th class="px-7"><strong>Status</strong></th>
                         </tr>
                     </thead>
                     <tbody id="requestTableBody">
