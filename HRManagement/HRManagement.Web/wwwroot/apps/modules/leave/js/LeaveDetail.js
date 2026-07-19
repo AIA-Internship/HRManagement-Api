@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     }
 
-    // Helper to safely get a property in multiple naming conventions
     function getField(obj, ...names) {
         for (const n of names) {
             if (obj == null) continue;
@@ -72,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const statusRaw = getField(dto, 'leaveStatus');
     const status = String(statusRaw ?? '').toLowerCase();
+
     const statusText = (statusRaw == null)
         ? '-'
         : (status === '1' ? 'pending'
@@ -103,7 +103,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         else statusBadge.classList.add('bg-secondary');
     }
 
-    // Apply colored left border to request-summary and color the status icon background
     const requestSummary = document.querySelector('.request-summary');
     if (requestSummary) {
         requestSummary.classList.remove('status-pending', 'status-approved', 'status-rejected');
@@ -113,7 +112,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     if (statusIcon) {
-        // give icon a colored background and white icon color for visibility
         statusIcon.style.color = '#fff';
         statusIcon.style.display = 'inline-flex';
         statusIcon.style.alignItems = 'center';
@@ -144,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (startEl) startEl.textContent = startRaw ? formatDate(startRaw) : '-';
 
-    // compute end date if not provided
+    // compute end date
     if (endEl) {
         if (endRaw) {
             endEl.textContent = formatDate(endRaw);
@@ -166,39 +164,82 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Attachments
     const attachmentWrap = document.getElementById('attachmentContainer');
 
+    async function downloadFile(url, fileName) {
+        const response = await fetch(url);
+
+        const blob = await response.blob();
+
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(objectUrl);
+    }
+    window.downloadFile = downloadFile;
+
     function renderAttachments(items) {
         if (!attachmentWrap) return;
         if (!items || items.length === 0) {
             attachmentWrap.innerHTML = '<div class="text-muted fw-semibold fs-6">No attachments available.</div>';
             return;
         }
-
         const html = items.map(it => {
-            // try several possible fields
             const name = it.name || it.fileName || it.file_name || it.displayName || it.title || '';
             const url = it.url || it.path || it.filePath || it.fileUrl || it.downloadUrl || it.file || '';
+            const sizeBytes = it.size || it.fileSize || it.length || it.sizeInBytes || it.contentLength || null;
             const displayName = name || (url ? url.split('/').pop() : 'Attachment');
 
+            const sizeText = (sizeBytes || sizeBytes === 0) ? `${(Number(sizeBytes) / 1024).toFixed(1)} KB` : '';
+
+            const ext = (displayName.split('.').pop() || '').toLowerCase();
+            let iconClass = 'bi-file-earmark-fill';
+            let iconColor = '#6c757d';
+
+            if (ext === 'pdf') {
+                iconClass = 'bi-file-earmark-pdf-fill';
+                iconColor = '#dc3545';
+            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
+                iconClass = 'bi-file-earmark-image-fill';
+                iconColor = '#0d6efd';
+            } else if (ext === 'doc' || ext === 'docx') {
+                iconClass = 'bi-file-earmark-word-fill';
+                iconColor = '#0d6efd';
+            } else if (ext === 'zip' || ext === 'rar') {
+                iconClass = 'bi-file-earmark-zip-fill';
+                iconColor = '#6f42c1';
+            }
+
             if (url) {
-                // ensure absolute URL if backend returned relative path
                 const href = url.startsWith('http') ? url : (API_BASE + (url.startsWith('/') ? '' : '/') + url);
                 return `
                     <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2">
-                        <i class="bi bi-paperclip fs-3 text-brand"></i>
-                        <div class="flex-grow-1">
-                            <div class="fw-bold">${displayName}</div>
-                            <div class="text-muted small">${escapeHtml(url)}</div>
-                        </div>
-                        <a class="btn btn-sm btn-outline-primary" href="${href}" target="_blank">Open</a>
+                        <a class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none text-reset" href="${href}" target="_blank" rel="noopener noreferrer">
+                            <div class="uploaded-icon">
+                                <i class="bi ${iconClass}" style="color:${iconColor}; font-size:2rem"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">${escapeHtml(displayName)}</div>
+                                <div class="text-muted small">${escapeHtml(sizeText)}</div>
+                            </div>
+                        </a>
+                        <a class="btn btn-sm btn-outline-primary" href="${href}" target="_blank" download="${escapeHtml(displayName)}" onclick="event.stopPropagation();">Download</a>
                     </div>
                 `;
             }
 
             return `
                 <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2">
-                    <i class="bi bi-paperclip fs-3 text-brand"></i>
+                    <div class="uploaded-icon">
+                        <i class="bi ${iconClass}" style="color:${iconColor}; font-size:1.6rem"></i>
+                    </div>
                     <div class="flex-grow-1">
-                        <div class="fw-bold">${displayName}</div>
+                        <div class="fw-bold">${escapeHtml(displayName)}</div>
+                        <div class="text-muted small">${escapeHtml(sizeText)}</div>
                     </div>
                 </div>
             `;
@@ -207,34 +248,57 @@ document.addEventListener("DOMContentLoaded", async function () {
         attachmentWrap.innerHTML = html;
     }
 
-    // find attachments in several possible fields
-    const attachments = getField(dto, 'attachments', 'Attachments', 'attachmentPaths', 'attachmentPath', 'files') || [];
+
+    let attachments = [];
+    try {
+        const apiAttachments = await apiGet(`/api/leave/${leaveId}/attachments`);
+        if (Array.isArray(apiAttachments) && apiAttachments.length > 0) {
+            attachments = apiAttachments;
+        }
+    }
+    catch (err) {
+        console.warn('Failed to fetch attachments from API:', err);
+    }
+
+    if (!attachments || attachments.length === 0) {
+        attachments = getField(dto, 'attachments', 'Attachments', 'attachmentPaths', 'attachmentPath', 'files') || [];
+    }
+
     renderAttachments(attachments);
 
-    // Cancel button
     const cancelBtn = document.getElementById('cancelBtn');
     if (cancelBtn) cancelBtn.addEventListener('click', function () { window.location.href = '/Leave/Employee/Dashboard'; });
 
-    // Format CreatedUtcDate (assumed UTC) into WIB (UTC+7) with format d/M/yyyy, HH.mm WIB
+    const editBtn = document.getElementById("editBtn");
+    const deleteBtn = document.getElementById("cancelBtn");
+
+    if (editBtn) {
+        editBtn.addEventListener("click", function () {
+            window.location.href = `/Leave/Employee/EditLeave?id=${leaveId}`;
+        });
+
+        editBtn.classList.toggle("d-none", !(status === 'pending' || status === '1'));
+    }
+
+    if (deleteBtn) {
+        deleteBtn.classList.toggle("d-none", status === 'rejected' || status === '3');
+    }
+
     function formatDateTimeWib(input) {
         if (!input) return '-';
 
-        // Normalize string like '2026-07-05 16:35:41.2479079' to ISO UTC
         let s = input;
         if (typeof s === 'string') {
             s = s.trim();
             if (s.indexOf('T') === -1) {
-                // replace first space between date and time with T
                 s = s.replace(' ', 'T');
             }
-            // if no timezone info, treat as UTC
             if (!s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) s = s + 'Z';
         }
 
         const d = new Date(s);
         if (isNaN(d)) return '-';
 
-        // shift to WIB (UTC+7)
         const wib = new Date(d.getTime() + 7 * 60 * 60 * 1000);
 
         const day = wib.getUTCDate();
@@ -246,14 +310,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         return `${day}/${month}/${year}, ${hours}.${minutes} WIB`;
     }
 
-    // populate last updated
     (function () {
         const created = getField(dto, 'createdUtcDate', 'CreatedUtcDate', 'createdDate', 'createdUtc');
         const lastEl = document.getElementById('lastUpdated');
         if (lastEl) lastEl.textContent = formatDateTimeWib(created);
     })();
 
-    // Render timeline: REQ{id} and requester/leave type info
     (function () {
         const timeline = document.getElementById('timelineList') || document.querySelector('.timeline');
         if (!timeline) return;

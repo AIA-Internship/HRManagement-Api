@@ -69,11 +69,13 @@ namespace HRManagement.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}/attachments")]
-        [Consumes( "multipart/form-data")]
-        public async Task<ActionResult<ApiResponse>> UploadAttachments([FromRoute] int id, [FromForm] UploadAttachmentPayload payload)
+        [HttpPost("{attachmentId}/attachments")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<ApiResponse>> UploadAttachments(
+        [FromRoute] int attachmentId,
+        [FromForm] UploadAttachmentPayload payload)
         {
-            string objectName = nameof(UploadAttachments).ToString();
+            string objectName = nameof(UploadAttachments);
 
             try
             {
@@ -86,10 +88,24 @@ namespace HRManagement.Api.Controllers
 
                 int currentUserId = int.Parse(userIdClaim);
 
-                if (payload.Files.Count <= 0)
+                _logger.LogInformation("AttachmentId = {AttachmentId}", attachmentId);
+                _logger.LogInformation("DocumentType = {DocumentType}", payload.DocumentType);
+                _logger.LogInformation("Files Count = {Count}", payload.Files?.Count ?? 0);
+
+                if (payload.Files == null || payload.Files.Count <= 0)
                     return BadRequest(ApiResponse<object>.Fail("File tidak ditemukan."));
 
                 var files = payload.Files;
+
+                foreach (var file in files)
+                {
+                    _logger.LogInformation(
+                        "File: {Name}, Size: {Size}, Type: {Type}",
+                        file.FileName,
+                        file.Length,
+                        file.ContentType);
+                }
+
                 var fileDtos = files.Select(f => new FileItemDto(
                     f.OpenReadStream(),
                     f.FileName,
@@ -101,12 +117,24 @@ namespace HRManagement.Api.Controllers
                 var uploadResult = await _mediator.Send(uploadCommand);
 
                 if (uploadResult.IsFailure)
+                {
+                    _logger.LogError("FileUploadCommand failed: {Error}", uploadResult.Error);
                     return BadRequest(uploadResult.Error);
+                }
 
                 var uploadTasks = uploadResult.Value;
 
-                var command = new UploadLeaveAttachmentCommand(id, payload.DocumentType, uploadTasks, currentUserId);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+                _logger.LogInformation("Upload success. Uploaded count = {Count}", uploadTasks.Count);
+
+                var command = new UploadLeaveAttachmentCommand(
+                    attachmentId,
+                    payload.DocumentType,
+                    uploadTasks,
+                    currentUserId);
+
+                var response = await this.ValidateAndExecute(
+                    command,
+                    c => _mediator.Send(command));
 
                 _logger.LogInformation("End {Service}.", objectName);
 
@@ -114,8 +142,8 @@ namespace HRManagement.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in {Service}.", objectName);
-                return BadRequest(ex.Message);
+                _logger.LogError(ex, "Error in {Service}", objectName);
+                return BadRequest(ex.ToString());
             }
         }
 
@@ -198,22 +226,36 @@ namespace HRManagement.Api.Controllers
 
 
 
+        [Authorize]
         [HttpPost]
         [Route("edit")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-
         public async Task<ActionResult<ApiResponse>> editLeaveRequest([FromBody] UpdateLeaveRequestDto content)
         {
-            string objectName = nameof(editLeaveRequest).ToString();
+            string objectName = nameof(editLeaveRequest);
+
             try
             {
                 _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                content.RequestId = int.Parse(userIdClaim);
+
                 var command = new UpdateLeaveRequestCommand(content);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
+
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
+
                 _logger.LogInformation("End {Service}.", objectName);
+
                 return response;
             }
             catch (Exception ex)
@@ -221,8 +263,88 @@ namespace HRManagement.Api.Controllers
                 _logger.LogError(ex, "Error in {Service}.", objectName);
                 return BadRequest(ex.Message);
             }
-
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("{id}/attachments")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> getLeaveAttachments([FromRoute] int id)
+        {
+            string objectName = nameof(getLeaveAttachments);
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized("UserId not found in token");
+
+                int requesterId = int.Parse(userIdClaim);
+
+                var query = new GetLeaveAttachmentsQuery(id);
+
+                var response = await this
+                    .ValidateAndExecute(query, c => _mediator.Send(query))
+                    .ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("{id}/attachments")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> DeleteAttachments([FromRoute] int id)
+        {
+            string objectName = nameof(DeleteAttachments);
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrWhiteSpace(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                int requesterId = int.Parse(userIdClaim);
+
+                var command = new DeleteLeaveAttachmentCommand(
+                    id,
+                    requesterId);
+
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
+
+                _logger.LogInformation("End {Service}.", objectName);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
+
+
 
         [HttpPut]
         [Route("soft-delete")]

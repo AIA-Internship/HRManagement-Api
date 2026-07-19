@@ -97,3 +97,39 @@
 .timeline-icon {
     background-color: #E5E7EB !important;
 }
+
+/* ===========================
+   Action Buttons
+=========================== */
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+}
+
+.btn-outline-action {
+    min-width: 100px;
+    height: 48px;
+    background-color: #fff !important;
+    color: #D31145 !important;
+    border: 1.5px solid #D31145 !important;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(211, 17, 69, 0.15);
+    transition: all .2s ease;
+}
+
+    .btn-outline-action:hover {
+        background-color: #D31145 !important;
+        border-color: #D31145 !important;
+        color: #fff !important;
+    }
+
+    .btn-outline-action i {
+        color: inherit;
+    }

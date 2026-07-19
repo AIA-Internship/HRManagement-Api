@@ -39,14 +39,14 @@
                         </span>
                     </div>
 
-                    <div class="text-start date_info">
+                    <div class="text-start date_info mt-1">
                         <div class="text-muted small">Start Date</div>
-                        <h4 class="mb-1" id="startDate"></h4>
+                        <h4  class="mt-2" id="startDate"></h4>
                     </div>
 
-                    <div class="text-start date_info me-1">
+                    <div class="text-start date_info me-1 mt-1">
                         <div class="text-muted small">End Date</div>
-                        <h4 class="mb-1" id="endDate"></h4>
+                        <h4 class="mt-2" id="endDate"></h4>
                     </div>
 
                 </div>
@@ -74,10 +74,15 @@
             </div>
 
             <!-- Cancel button aligned left to match header -->
-            <div class="mb-5 text-start">
-                <button id="cancelBtn"
-                        class="btn btn-danger btn-lg shadow-sm">
-                    Cancel
+            <div class="action-buttons mb-5">
+                <button id="cancelBtn" class="btn btn-outline-action">
+                    <i class="bi bi-trash3 me-1 fs-3"></i>
+                    <p class="fs-3 mt-4">Delete</p>
+                </button>
+
+                <button id="editBtn" class="btn btn-outline-action d-none">
+                    <i class="bi bi-pencil me-1 fs-3"></i>
+                    <p class="fs-3 mt-4">Edit</p>
                 </button>
             </div>
         </div>

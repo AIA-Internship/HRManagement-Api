@@ -2,8 +2,7 @@ namespace HRManagement.Domain.Models.Tables;
 
 public class LeaveAttachment : BaseTable
 {
-    public int Id { get; private set; }
-    public int EmployeeId { get; private set; }
+    public int AttachmentId { get; private set; }
     public int LeaveId { get; private set; }
     public string DocumentType { get; private set; } = string.Empty;
     public string FileName { get; private set; } = string.Empty;
@@ -24,6 +23,9 @@ public class LeaveAttachment : BaseTable
         int actionerId
     )
     {
+        // Ensure EmployeeId is recorded (uploader/actioner). Previously this was not set
+        // which could lead to DB constraints or missing data when saving attachments.
+        //EmployeeId = actionerId;
         LeaveId = leaveId;
         DocumentType = documentType;
         FileName = fileName;
