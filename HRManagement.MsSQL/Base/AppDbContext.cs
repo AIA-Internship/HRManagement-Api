@@ -34,6 +34,7 @@ public class AppDbContext : DbContext
     public virtual DbSet<QuizSubmissionModel> ELearningQuizSubmissions { get; set; } = null!;
     public virtual DbSet<StudentAnswerModel> ELearningStudentAnswers { get; set; } = null!;
     public virtual DbSet<InternProfileModel> InternProfiles { get; set; } = null!;
+    public virtual DbSet<ContentProgressModel> ELearningContentProgress { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

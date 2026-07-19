@@ -64,7 +64,14 @@ namespace HRManagement.Domain.Interfaces
         Task<int> CreateBatchAsync(BatchModel entity);
         Task<bool> ProgramExistsAsync(int programId);
         Task<IEnumerable<BatchModel>> GetBatchesByProgramIdAsync(int programId);
+        Task<BatchModel?> GetBatchByIdAsync(int batchId);
+
+        Task<IEnumerable<int>> GetOpenedContentIdsByEmployeeAsync(int employeeId);
 
         Task<bool> SoftDeleteModuleAsync(int moduleId, string currentUserId);
+
+        Task<bool> DeleteQuizAsync(int quizId);
+
+        Task<bool> DeleteContentAsync(int contentId, string currentUserId);
     }
 }

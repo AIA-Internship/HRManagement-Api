@@ -11,7 +11,6 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public string internName { get; set; } = null!;
         public decimal? totalScore { get; set; }
         public bool? isPassed { get; set; }
-        public string? gradedBy { get; set; }
         public DateTime? gradedUtcDate { get; set; }
         public List<ReadSubmissionAnswerDetailDto> answers { get; set; } = new();
     }

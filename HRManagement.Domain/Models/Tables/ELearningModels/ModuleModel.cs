@@ -24,9 +24,6 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
         [Column("target_role")]
         public string TargetRole { get; set; } = null!;
 
-        [Column("is_priority")]
-        public bool IsPriority { get; set; }
-
         [Column("due_date")]
         public DateTime? DueDate { get; set; }
     }

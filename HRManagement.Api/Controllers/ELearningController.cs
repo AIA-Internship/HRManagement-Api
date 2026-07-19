@@ -87,6 +87,20 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         return HandleResult(result);
     }
 
+    [HttpDelete("delete-quiz")]
+    public async Task<IActionResult> DeleteQuiz([FromBody] DeleteQuizDto dto)
+    {
+        var result = await Sender.Send(new DeleteQuizCommand(dto));
+        return HandleResult(result);
+    }
+
+    [HttpDelete("delete-content")]
+    public async Task<IActionResult> DeleteContent([FromBody] DeleteContentDto dto)
+    {
+        var result = await Sender.Send(new DeleteContentCommand(dto));
+        return HandleResult(result);
+    }
+
     [HttpPost("add-content")]
     [RequestSizeLimit(157_286_400)]
     [RequestFormLimits(MultipartBodyLengthLimit = 157_286_400)]
@@ -187,6 +201,13 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
     public async Task<IActionResult> GetInternModuleProgress(int employeeId, int programId)
     {
         var result = await Sender.Send(new GetInternModuleProgressQuery(employeeId, programId));
+        return HandleResult(result);
+    }
+
+    [HttpGet("interns/{employeeId}/batches/{batchId}/status")]
+    public async Task<IActionResult> GetInternBatchStatus(int employeeId, int batchId)
+    {
+        var result = await Sender.Send(new GetInternBatchStatusQuery(employeeId, batchId));
         return HandleResult(result);
     }
 

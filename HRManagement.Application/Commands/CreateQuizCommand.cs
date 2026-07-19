@@ -82,7 +82,8 @@ namespace HRManagement.Application.Commands.ELearningCommands
                         EssayCount = dto.essayCount,
                         McWeight = dto.mcWeight,
                         EssayWeight = dto.essayWeight,
-                        MinimumPassingScore = dto.minimumPassingScore
+                        MinimumPassingScore = dto.minimumPassingScore,
+                        CreatedBy = dto.currentUserId.ToString()
                     };
                     _context.ELearningQuizzes.Add(quiz);
                     await _context.SaveChangesAsync(ct);

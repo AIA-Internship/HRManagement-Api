@@ -52,7 +52,6 @@ namespace HRManagement.Application.Commands.ELearningCommands
                     ModuleTitle = sourceModule.ModuleTitle,
                     ModuleDescription = sourceModule.ModuleDescription,
                     TargetRole = sourceModule.TargetRole,
-                    IsPriority = sourceModule.IsPriority,
                     DueDate = sourceModule.DueDate,
                     IsDeleted = false,
                     CreatedBy = request.Dto.currentUserId.ToString(),
@@ -82,6 +81,61 @@ namespace HRManagement.Application.Commands.ELearningCommands
                             CreatedUtcDate = DateTime.UtcNow
                         };
                         _context.ELearningModuleContents.Add(clonedContent);
+                    }
+                    await _context.SaveChangesAsync(ct);
+                }
+
+                var sourceQuiz = await _context.ELearningQuizzes
+                    .FirstOrDefaultAsync(q => q.ModuleId == request.Dto.sourceModuleId && !q.IsDeleted, ct);
+
+                if (sourceQuiz != null)
+                {
+                    var clonedQuiz = new QuizModel
+                    {
+                        ModuleId = clonedModule.ModuleId,
+                        McCount = sourceQuiz.McCount,
+                        EssayCount = sourceQuiz.EssayCount,
+                        McWeight = sourceQuiz.McWeight,
+                        EssayWeight = sourceQuiz.EssayWeight,
+                        MinimumPassingScore = sourceQuiz.MinimumPassingScore,
+                        IsDeleted = false,
+                        CreatedBy = request.Dto.currentUserId.ToString(),
+                        CreatedUtcDate = DateTime.UtcNow
+                    };
+                    _context.ELearningQuizzes.Add(clonedQuiz);
+                    await _context.SaveChangesAsync(ct);
+
+                    var sourceQuestions = await _context.ELearningQuizQuestions
+                        .Where(q => q.QuizId == sourceQuiz.QuizId)
+                        .OrderBy(q => q.SortOrder)
+                        .ToListAsync(ct);
+
+                    foreach (var question in sourceQuestions)
+                    {
+                        var clonedQuestion = new QuizQuestionModel
+                        {
+                            QuizId = clonedQuiz.QuizId,
+                            QuestionText = question.QuestionText,
+                            QuestionType = question.QuestionType,
+                            SortOrder = question.SortOrder
+                        };
+                        _context.ELearningQuizQuestions.Add(clonedQuestion);
+                        await _context.SaveChangesAsync(ct);
+
+                        var sourceOptions = await _context.ELearningQuizQuestionOptions
+                            .Where(o => o.QuestionId == question.QuestionId)
+                            .ToListAsync(ct);
+
+                        foreach (var option in sourceOptions)
+                        {
+                            _context.ELearningQuizQuestionOptions.Add(new QuizQuestionOptionModel
+                            {
+                                QuestionId = clonedQuestion.QuestionId,
+                                OptionLetter = option.OptionLetter,
+                                OptionText = option.OptionText,
+                                IsCorrect = option.IsCorrect
+                            });
+                        }
                     }
                     await _context.SaveChangesAsync(ct);
                 }

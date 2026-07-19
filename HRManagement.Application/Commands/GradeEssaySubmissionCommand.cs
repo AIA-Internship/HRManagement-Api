@@ -87,7 +87,6 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
                 submission.TotalScore = mcComponentFinalScore + essayComponentFinalScore;
                 submission.IsPassed = submission.TotalScore >= quizConfig.MinimumPassingScore;
-                submission.GradedBy = request.SupervisorId.ToString();
                 submission.GradedUtcDate = DateTime.UtcNow;
 
                 var currentProgress = await _context.ELearningModuleProgress

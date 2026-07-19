@@ -38,7 +38,6 @@ namespace HRManagement.Application.Commands.ELearningCommands
                     ModuleTitle = request.Dto.title,
                     ModuleDescription = request.Dto.description,
                     TargetRole = request.Dto.role,
-                    IsPriority = request.Dto.isPriority,
                     DueDate = request.Dto.dueDate,
                     CreatedBy = request.Dto.currentUserId.ToString(),
                     CreatedUtcDate = DateTime.UtcNow,

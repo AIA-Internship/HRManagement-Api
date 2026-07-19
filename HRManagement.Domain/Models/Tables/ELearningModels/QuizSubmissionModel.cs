@@ -28,9 +28,6 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels
         [Column("is_passed")]
         public bool? IsPassed { get; set; } 
 
-        [Column("graded_by")]
-        public string? GradedBy { get; set; } 
-
         [Column("graded_utc_date")]
         public DateTime? GradedUtcDate { get; set; }
 

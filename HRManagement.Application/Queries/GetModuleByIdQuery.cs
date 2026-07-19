@@ -57,7 +57,6 @@ namespace HRManagement.Application.Queries
                     title = m.ModuleTitle,
                     description = m.ModuleDescription,
                     role = m.TargetRole,
-                    isPriority = m.IsPriority,
                     dueDate = m.DueDate,
                     createdUtcDate = m.CreatedUtcDate,
                     contents = contents.Select(ModuleContentMapping.MapToReadDto).ToList(),

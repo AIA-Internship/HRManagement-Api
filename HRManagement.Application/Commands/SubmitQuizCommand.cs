@@ -110,7 +110,6 @@ namespace HRManagement.Application.Commands.ELearningCommands
                     decimal finalCalculatedScore = calculatedMcPoints * ((decimal)quizConfig.McWeight / 100);
                     executionSubmission.TotalScore = finalCalculatedScore;
                     executionSubmission.IsPassed = finalCalculatedScore >= quizConfig.MinimumPassingScore;
-                    executionSubmission.GradedBy = "System";
                     executionSubmission.GradedUtcDate = DateTime.UtcNow;
 
                     var existingProgress = await _context.Set<ProgressModel>()

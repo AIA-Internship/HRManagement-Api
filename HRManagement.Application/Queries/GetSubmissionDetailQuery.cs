@@ -81,7 +81,6 @@ namespace HRManagement.Application.Queries
                     internName = intern?.FullName ?? "Unknown",
                     totalScore = submission.TotalScore,
                     isPassed = submission.IsPassed,
-                    gradedBy = submission.GradedBy,
                     gradedUtcDate = submission.GradedUtcDate,
                     answers = answerDtos
                 };

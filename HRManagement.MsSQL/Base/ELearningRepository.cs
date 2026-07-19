@@ -37,7 +37,6 @@ namespace HRManagement.MsSQL.Base
             existing.ModuleTitle = entity.ModuleTitle;
             existing.ModuleDescription = entity.ModuleDescription;
             existing.TargetRole = entity.TargetRole;
-            existing.IsPriority = entity.IsPriority;
             existing.DueDate = entity.DueDate;
             existing.ModifiedUtcDate = DateTime.UtcNow;
 
@@ -65,7 +64,6 @@ namespace HRManagement.MsSQL.Base
 
             submission.TotalScore = score;
 
-            submission.GradedBy = graderId.ToString();
             submission.GradedUtcDate = DateTime.UtcNow;
 
             await Context.SaveChangesAsync();
@@ -205,6 +203,20 @@ namespace HRManagement.MsSQL.Base
                 .FirstOrDefaultAsync(c => c.ContentId == contentId && !c.IsDeleted);
         }
 
+        public async Task<bool> DeleteContentAsync(int contentId, string currentUserId)
+        {
+            var content = await Context.ELearningModuleContents
+                .FirstOrDefaultAsync(c => c.ContentId == contentId && !c.IsDeleted);
+
+            if (content == null) return false;
+
+            content.IsDeleted = true;
+            content.ModifiedBy = currentUserId;
+            content.ModifiedUtcDate = DateTime.UtcNow;
+
+            return await Context.SaveChangesAsync() > 0;
+        }
+
         public async Task<QuizModel?> GetQuizByModuleIdAsync(int moduleId)
         {
             return await Context.ELearningQuizzes
@@ -252,8 +264,7 @@ namespace HRManagement.MsSQL.Base
                 query = query.Where(m => m.ModuleTitle.Contains(search));
 
             return await query
-                .OrderByDescending(m => m.IsPriority)
-                .ThenBy(m => m.ModuleTitle)
+                .OrderBy(m => m.ModuleTitle)
                 .ToListAsync();
         }
 
@@ -269,8 +280,7 @@ namespace HRManagement.MsSQL.Base
                 query = query.Where(m => roleList.Contains(m.TargetRole));
 
             return await query
-                .OrderByDescending(m => m.IsPriority)
-                .ThenBy(m => m.ModuleTitle)
+                .OrderBy(m => m.ModuleTitle)
                 .ToListAsync();
         }
 
@@ -347,6 +357,19 @@ namespace HRManagement.MsSQL.Base
                 .FirstOrDefaultAsync(c => c.ContentId == contentId && !c.IsDeleted);
 
             if (content == null) return false;
+
+            var alreadyOpened = await Context.ELearningContentProgress
+                .AnyAsync(cp => cp.EmployeeId == userId && cp.ContentId == contentId);
+
+            if (!alreadyOpened)
+            {
+                Context.ELearningContentProgress.Add(new ContentProgressModel
+                {
+                    EmployeeId = userId,
+                    ContentId = contentId,
+                    OpenedUtcDate = DateTime.UtcNow
+                });
+            }
 
             var progress = await Context.ELearningModuleProgress
                 .FirstOrDefaultAsync(p => p.EmployeeId == userId && p.ModuleId == content.ModuleId);
@@ -529,6 +552,18 @@ namespace HRManagement.MsSQL.Base
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<bool> DeleteQuizAsync(int quizId)
+        {
+            var quiz = await _context.Set<QuizModel>()
+                .FirstOrDefaultAsync(q => q.QuizId == quizId && !q.IsDeleted);
+
+            if (quiz == null) return false;
+
+            quiz.IsDeleted = true;
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public async Task<int> CreateProgramAsync(ProgramModel entity)
         {
             Context.ELearningPrograms.Add(entity);
@@ -570,13 +605,30 @@ namespace HRManagement.MsSQL.Base
                 .ToListAsync();
         }
 
+        public async Task<BatchModel?> GetBatchByIdAsync(int batchId)
+        {
+            return await Context.ELearningBatches
+                .FirstOrDefaultAsync(b => b.BatchId == batchId);
+        }
+
+        public async Task<IEnumerable<int>> GetOpenedContentIdsByEmployeeAsync(int employeeId)
+        {
+            return await Context.ELearningContentProgress
+                .Where(cp => cp.EmployeeId == employeeId)
+                .Select(cp => cp.ContentId)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<ModuleModel>> GetModulesByEmployeeCohortAsync(int employeeId, string search)
         {
             var query = from member in _context.Set<GroupMemberModel>()
                         join prog in _context.Set<ProgramModel>() on member.GroupId equals prog.GroupId
                         join batch in _context.Set<BatchModel>() on prog.ProgramId equals batch.ProgramId
                         join mdle in _context.Set<ModuleModel>() on batch.BatchId equals mdle.BatchId
+                        join emp in _context.EmploymentInformation on member.EmployeeId equals emp.EmployeeId into empJoin
+                        from emp in empJoin.DefaultIfEmpty()
                         where member.EmployeeId == employeeId && mdle.IsDeleted == false
+                              && (mdle.TargetRole == "All" || mdle.TargetRole == emp.PositionName)
                         orderby batch.EndDate ascending, mdle.ModuleTitle ascending
                         select mdle;
 

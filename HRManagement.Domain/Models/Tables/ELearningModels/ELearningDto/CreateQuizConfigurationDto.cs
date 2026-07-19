@@ -8,6 +8,7 @@
         public int mcWeight { get; set; }
         public int essayWeight { get; set; }
         public int minimumPassingScore { get; set; }
+        public int currentUserId { get; set; }
         public List<SaveQuestionDto> questions { get; set; } = new();
     }
     public class SaveQuestionDto
