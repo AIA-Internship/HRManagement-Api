@@ -203,15 +203,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (ext === 'pdf') {
                 iconClass = 'bi-file-earmark-pdf-fill';
                 iconColor = '#dc3545';
-            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
+            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
                 iconClass = 'bi-file-earmark-image-fill';
                 iconColor = '#0d6efd';
-            } else if (ext === 'doc' || ext === 'docx') {
-                iconClass = 'bi-file-earmark-word-fill';
-                iconColor = '#0d6efd';
-            } else if (ext === 'zip' || ext === 'rar') {
-                iconClass = 'bi-file-earmark-zip-fill';
-                iconColor = '#6f42c1';
             }
 
             if (url) {

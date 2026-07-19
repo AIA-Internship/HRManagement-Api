@@ -415,7 +415,7 @@
 
         var newFiles = Array.from(files);
 
-        var allowedExtensions = ['zip', 'pdf', 'jpg', 'jpeg', 'png'];
+        var allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
 
         var invalidFile = newFiles.find(function (file) {
 
@@ -427,7 +427,7 @@
         if (invalidFile) {
 
             showAttachmentError(
-                "Only ZIP, PDF, JPG, JPEG, and PNG files are allowed."
+                "Only PDF, JPG, JPEG, and PNG files are allowed."
             );
 
             return;
@@ -486,7 +486,7 @@
                     </div>
 
                     <div class="drop-sub">
-                        Medical certificate, travel docs, etc. (PDF, JPG, max 5MB)
+                        Medical certificate, travel docs, etc. (PDF, JPG, JPEG, PNG; max 5MB)
                     </div>
                 </div>
                 `

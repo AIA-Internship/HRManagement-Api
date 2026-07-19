@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         var newFiles = Array.from(files);
 
-        var allowedExtensions = ['zip', 'pdf', 'jpg', 'jpeg', 'png'];
+        var allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
 
         var invalidFile = newFiles.find(function (file) {
 
@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (invalidFile) {
 
             showAttachmentError(
-                "Only ZIP, PDF, JPG, JPEG, and PNG files are allowed."
+                "Only PDF, JPG, JPEG, and PNG files are allowed."
             );
 
             return;
@@ -632,7 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <div class="drop-sub">
-                    Medical certificate, travel docs, etc. (PDF, JPG, max 5MB)
+                    Medical certificate, travel docs, etc. (PDF, JPG, JPEG, PNG; max 5MB)
                 </div>
             </div>
             `
@@ -656,15 +656,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (ext === 'pdf') {
                 iconClass = 'bi-file-earmark-pdf-fill';
                 iconColor = '#dc3545';
-            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif') {
+            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
                 iconClass = 'bi-file-earmark-image-fill';
                 iconColor = '#0d6efd';
-            } else if (ext === 'doc' || ext === 'docx') {
-                iconClass = 'bi-file-earmark-word-fill';
-                iconColor = '#0d6efd';
-            } else if (ext === 'zip' || ext === 'rar') {
-                iconClass = 'bi-file-earmark-zip-fill';
-                iconColor = '#6f42c1';
             }
 
             uploadedList.insertAdjacentHTML("beforeend", `

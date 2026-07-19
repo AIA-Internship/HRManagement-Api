@@ -109,11 +109,10 @@
 }
 
 .btn-outline-action {
-    min-width: 100px;
-    height: 48px;
+    height: 43px;
     background-color: #fff !important;
     color: #D31145 !important;
-    border: 1.5px solid #D31145 !important;
+    border: 1px solid #D31145 !important;
     border-radius: 12px;
     font-weight: 600;
     display: flex;
@@ -124,12 +123,19 @@
     transition: all .2s ease;
 }
 
-    .btn-outline-action:hover {
-        background-color: #D31145 !important;
-        border-color: #D31145 !important;
-        color: #fff !important;
-    }
+#cancelBtn{
+    width: 110px;
+}
+#editBtn {
+    width: 95px;
+}
 
-    .btn-outline-action i {
-        color: inherit;
-    }
+.btn-outline-action:hover {
+    background-color: #D31145 !important;
+    border-color: #D31145 !important;
+    color: #fff !important;
+}
+
+.btn-outline-action i {
+    color: inherit;
+}

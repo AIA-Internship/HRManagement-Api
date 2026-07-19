@@ -567,13 +567,15 @@
 
 .flatpickr-calendar {
     pointer-events: none;
-    cursor: default !important;
+    cursor: none !important;
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
 }
 
 .flatpickr-months {
+    pointer-events: auto;
+    cursor: pointer;
     margin-bottom: 8px;
 }
 
