@@ -369,6 +369,24 @@
             transition: background-color 0.25s ease, width 0.25s ease;
         }
 
+            .leave-tab-content.fade-out {
+                opacity: 0;
+            }
+
+            .leave-tab-content.fade-in {
+                animation: tabFadeIn 0.25s ease-in-out;
+            }
+
+        @@keyframes tabFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
         /* ===== Status Filter ===== */
 
         .status-filter {
@@ -411,6 +429,603 @@
                 transform: translateX(0);
             }
         }
+
+        /* =====================================================
+                   Calendar tab — Figma reference styling
+                   ===================================================== */
+
+        /* Custom header row (replaces FullCalendar's built-in toolbar) */
+   /* =========================================
+           Calendar Header - Figma Style
+        ========================================= */
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem 1.25rem;
+        }
+
+        .calendar-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Circular previous / next buttons */
+        .calendar-nav-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid #E4E6EF;
+            background: #fff;
+            color: #5E6278;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: all .2s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            border-color: #E31837;
+            color: #E31837;
+            background: #FFF5F6;
+        }
+
+        .calendar-nav-btn:active {
+            background: #E31837;
+            border-color: #E31837;
+            color: #fff;
+        }
+
+        /* Month picker wrapper */
+        .month-picker-wrapper {
+            position: relative;
+        }
+
+        /* Month + year button */
+        .calendar-month-trigger {
+            min-width: 190px;
+            border: none;
+            background: transparent;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            font-size: 18px;
+            font-weight: 700;
+            color: #181C32;
+
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+
+            transition: all .2s ease;
+        }
+
+        .calendar-month-trigger:hover {
+            background: #F9FAFB;
+        }
+
+        .calendar-month-trigger:active,
+        .calendar-month-trigger.active {
+            color: #E31837;
+            background: #FFF5F6;
+        }
+
+        .calendar-month-trigger i:first-child {
+            color: #E31837;
+            font-size: 16px;
+        }
+
+        .month-chevron {
+            font-size: 12px;
+            color: #7E8299;
+            transition: transform .2s ease;
+        }
+
+        .calendar-month-trigger.active .month-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Today button */
+        .btn-today {
+            border: 1px solid #E4E6EF;
+            background: #fff;
+            color: #344054;
+
+            border-radius: 8px;
+            padding: 8px 18px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            transition: all .2s ease;
+        }
+
+        .btn-today:hover {
+            border-color: #E31837;
+            color: #E31837;
+            background: #FFF5F6;
+        }
+
+        .btn-today:active,
+        .btn-today.active {
+            background: #E31837;
+            border-color: #E31837;
+            color: #fff;
+        }
+
+        /* =========================================
+           Month Picker Dropdown
+        ========================================= */
+
+        .month-picker-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+
+            width: 250px;
+            padding: 14px;
+
+            background: #fff;
+            border: 1px solid #E4E6EF;
+            border-radius: 12px;
+
+            box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+
+            transition: all .2s ease;
+            z-index: 100;
+        }
+
+        .month-picker-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Year header */
+        .month-picker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+
+            border-bottom: 1px solid #EFF2F5;
+        }
+
+        .month-picker-header strong {
+            font-size: 15px;
+            color: #181C32;
+        }
+
+        .year-nav-btn {
+            width: 28px;
+            height: 28px;
+
+            border: none;
+            border-radius: 50%;
+            background: #F9FAFB;
+            color: #5E6278;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+        }
+
+        .year-nav-btn:hover {
+            background: #FFF5F6;
+            color: #E31837;
+        }
+
+        /* Month grid */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .month-option {
+            border: none;
+            background: transparent;
+
+            padding: 9px 4px;
+            border-radius: 7px;
+
+            color: #5E6278;
+            font-size: 13px;
+            font-weight: 500;
+
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .month-option:hover {
+            background: #FFF5F6;
+            color: #E31837;
+        }
+
+        .month-option.active {
+            background: #E31837;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Calendar grid container */
+        #kt_calendar_app {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+            #kt_calendar_app .fc {
+                font-family: inherit;
+            }
+
+            /* Day-of-week header row */
+            #kt_calendar_app .fc-col-header-cell {
+                background: #F9FAFB;
+                border: none;
+                padding: 10px 0;
+            }
+
+            #kt_calendar_app .fc-col-header-cell-cushion {
+                color: #98A2B3;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                text-decoration: none;
+            }
+
+            /* Grid lines */
+            #kt_calendar_app .fc-theme-standard td,
+            #kt_calendar_app .fc-theme-standard th {
+                border-color: #EFF2F5;
+            }
+
+            /* Weekend columns get the soft pink wash from the Figma file */
+            #kt_calendar_app .fc-day-sat,
+            #kt_calendar_app .fc-day-sun {
+                background-color: #FDF2F4;
+            }
+
+                #kt_calendar_app .fc-day-sat .fc-daygrid-day-number,
+                #kt_calendar_app .fc-day-sun .fc-daygrid-day-number {
+                    color: #E31837;
+                }
+
+            /* Day cell */
+            #kt_calendar_app .fc-daygrid-day-frame {
+                min-height: 118px;
+                padding: 4px;
+            }
+
+            #kt_calendar_app .fc-daygrid-day-top {
+                justify-content: flex-start;
+                padding: 4px 2px 0;
+            }
+
+            #kt_calendar_app .fc-daygrid-day-number {
+                color: #667085;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 4px 8px;
+            }
+
+            /* Today gets a filled red circle around the day number, like Figma */
+            #kt_calendar_app .fc-day-today {
+                background-color: #fff !important;
+                border: 1px solid #E31837 !important;
+            }
+
+                #kt_calendar_app .fc-day-today .fc-daygrid-day-number {
+                    background: #E31837;
+                    color: #fff;
+                    border-radius: 50%;
+                    width: 26px;
+                    height: 26px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    margin: 2px;
+                }
+
+            /* Dim leading/trailing days from adjacent months */
+            #kt_calendar_app .fc-day-other .fc-daygrid-day-number {
+                color: #D0D5DD;
+            }
+
+            /* Leave event pills — the stretched bar from start date to end date */
+            #kt_calendar_app .fc-daygrid-event-harness {
+                margin-top: 3px !important;
+            }
+
+            #kt_calendar_app .fc-event.leave-event {
+                border: none;
+                border-radius: 6px;
+                padding: 3px 8px;
+                font-size: 11px;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                cursor: default;
+            }
+
+                #kt_calendar_app .fc-event.leave-event.leave-status-approved {
+                    background-color: #DFF7E6;
+                    color: #027A48;
+                    border: 1px solid #A6E9BD;
+                }
+
+                #kt_calendar_app .fc-event.leave-event.leave-status-pending {
+                    background-color: #FEF6DC;
+                    color: #93700B;
+                    border: 1px solid #F6E08E;
+                }
+
+            /* "+N more" overflow pill — grey box, matches the Figma stacked-leave indicator */
+            #kt_calendar_app .fc-daygrid-more-link {
+                display: block;
+                background-color: #F2F4F7;
+                color: #475467;
+                border-radius: 6px;
+                padding: 3px 8px;
+                font-size: 11px;
+                font-weight: 600;
+                text-align: left;
+                text-decoration: none;
+                margin-top: 2px;
+            }
+
+                #kt_calendar_app .fc-daygrid-more-link:hover {
+                    background-color: #E4E7EC;
+                    color: #344054;
+                }
+
+            #kt_calendar_app .fc-popover {
+                border-radius: 10px;
+                border: 1px solid #EFF2F5;
+                box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+            }
+
+            #kt_calendar_app .fc-popover-header {
+                background: #F9FAFB;
+                padding: 8px 12px;
+                font-weight: 700;
+                color: #181C32;
+            }
+
+        /* Calendar grid container */
+        #kt_calendar_app {
+            width: 100%;
+            padding: 0 1.25rem 1.25rem;
+        }
+
+            #kt_calendar_app .fc {
+                width: 100%;
+                font-family: inherit;
+            }
+
+            /* Make the calendar occupy the full card width */
+            #kt_calendar_app .fc-view-harness {
+                min-height: 700px;
+            }
+
+            /* Larger calendar cells */
+            #kt_calendar_app .fc-daygrid-day-frame {
+                min-height: 150px;
+                padding: 8px;
+            }
+
+            /* More spacious event pills */
+            #kt_calendar_app .fc-event.leave-event {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            /* Larger day numbers */
+            #kt_calendar_app .fc-daygrid-day-number {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+
+        /* Legend row underneath the grid */
+        .calendar-legend {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0.25rem 2rem 1.25rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #667085;
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .legend-dot-approved {
+            background-color: #12B76A;
+        }
+
+        .legend-dot-pending {
+            background-color: #F0B429;
+        }
+
+
+        /* =========================================
+           LEAVE CALENDAR
+        ========================================= */
+
+        .leave-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            width: 100%;
+            border: 1px solid var(--bs-gray-200);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Header MON - SUN */
+        .leave-calendar-header {
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            background: var(--bs-gray-100);
+            border-right: 1px solid var(--bs-gray-200);
+            border-bottom: 1px solid var(--bs-gray-200);
+            color: var(--bs-gray-600);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .05em;
+        }
+
+        /* Calendar day */
+        .leave-calendar-day {
+            min-height: 145px;
+            padding: 12px;
+            background: #fff;
+            border-right: 1px solid var(--bs-gray-200);
+            border-bottom: 1px solid var(--bs-gray-200);
+            transition: background-color .15s ease;
+        }
+
+            .leave-calendar-day:hover {
+                background: var(--bs-gray-100);
+            }
+
+            /* Weekend / hari libur */
+            .leave-calendar-day.weekend {
+                background: #FFF5F6;
+            }
+
+
+
+            /* Previous / next month */
+            .leave-calendar-day.other-month {
+                opacity: .45;
+            }
+
+        /* Date number */
+        .leave-calendar-date {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            color: var(--bs-gray-700);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Today */
+        .leave-calendar-day.today {
+            border: 2px solid #E31837;
+        }
+
+            /* Nomor tanggal hari ini */
+            .leave-calendar-day.today .leave-calendar-date {
+                border-radius: 50%;
+                background: #E31837;
+                color: #fff;
+            }
+
+        /* Event */
+        .leave-calendar-event {
+            display: block;
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+            /* Approved */
+            .leave-calendar-event.approved {
+                background: var(--bs-light-success);
+                color: var(--bs-success);
+            }
+
+            /* Pending */
+            .leave-calendar-event.pending {
+                background: var(--bs-light-warning);
+                color: var(--bs-warning);
+            }
+
+        .leave-calendar-event {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            border: 2px solid;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+            .leave-calendar-event:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            }
+
+            .leave-calendar-event.approved {
+                background: var(--bs-light-success, #DFF7E6);
+                color: var(--bs-success, #027A48);
+                border-color: var(--bs-success, #027A48);
+            }
+
+            .leave-calendar-event.pending {
+                background: var(--bs-light-warning, #FEF6DC);
+                color: var(--bs-warning, #93700B);
+                border-color: var(--bs-warning, #93700B);
+            }
+
+        .leave-event-name {
+            font-weight: 800;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .leave-event-status {
+            font-size: 10px;
+            font-weight: 600;
+            opacity: 0.8;
+        }
     </style>
 
 }
@@ -439,15 +1054,6 @@
     <div class="leave-tabs-nav">
         <button id="tabRequest" class="leave-tab-control active" type="button">Request list</button>
         <button id="tabCalendar" class="leave-tab-control" type="button">Calendar</button>
-    </div>
-
-    <!-- Calendar Card (hidden by default) -->
-    <div class="card mx-10 mb-15 leave-tab-content" id="calendarCard" style="display:none;">
-        <div class="card-body ps-0 pe-0">
-            <div class="p-4">
-                <div id="kt_calendar_app" style="min-height:540px;"></div>
-            </div>
-        </div>
     </div>
 
     <div class="card mx-10 mb-15 leave-tab-content" id="requestCard">
@@ -517,10 +1123,125 @@
             </div>
         </div>
     </div>
+
+    <!-- Calendar Card (hidden by default) -->
+   @*  <div class="card mx-10 mb-15 leave-tab-content" id="calendarCard" style="display:none;">
+        <div class="card-body">
+            <div class="calendar-header-row">
+                <div class="calendar-header-left">
+                    <button class="calendar-nav-btn" id="calPrevBtn" type="button" aria-label="Previous month">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="calendar-title">
+                        <i class="bi bi-calendar-event"></i>
+                        <span id="calendarTitle">&nbsp;</span>
+                    </div>
+                    <button class="calendar-nav-btn" id="calNextBtn" type="button" aria-label="Next month">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-header-right">
+                    <button class="btn-today" id="calTodayBtn" type="button">Today</button>
+                </div>
+            </div>
+
+            <div id="kt_calendar_app"></div>
+
+            <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-dot legend-dot-approved"></span>Approved</span>
+                <span class="legend-item"><span class="legend-dot legend-dot-pending"></span>Pending</span>
+            </div>
+        </div>
+    </div> *@
+
+    <div class="aia-card mt-6 mb-0" id="calendarCard">
+        <div class="card-header border-0 pt-7 pb-4 calendar-header">
+            <div class="calendar-header-left">
+
+                <!-- Previous Month -->
+                <button class="calendar-nav-btn"
+                        id="calPrevBtn"
+                        type="button"
+                        aria-label="Previous month">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <!-- Month Picker Trigger -->
+                <div class="month-picker-wrapper">
+                    <button class="calendar-month-trigger"
+                            id="calendarMonthTrigger"
+                            type="button">
+                        <i class="bi bi-calendar3"></i>
+                        <span id="calendarTitle">July 2026</span>
+                        <i class="bi bi-chevron-down month-chevron"></i>
+                    </button>
+
+                    <!-- Month Picker -->
+                    <div class="month-picker-dropdown"
+                         id="monthPickerDropdown">
+
+                        <div class="month-picker-header">
+                            <button type="button"
+                                    class="year-nav-btn"
+                                    id="prevYearBtn">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <strong id="monthPickerYear">2026</strong>
+
+                            <button type="button"
+                                    class="year-nav-btn"
+                                    id="nextYearBtn">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="month-grid" id="monthGrid">
+                            <!-- Generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Month -->
+                <button class="calendar-nav-btn"
+                        id="calNextBtn"
+                        type="button"
+                        aria-label="Next month">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+            </div>
+
+            <!-- Today -->
+            <button class="btn-today"
+                    id="calTodayBtn"
+                    type="button">
+                Today
+            </button>
+        </div>
+
+        <div class="card-body pt-2">
+            <div id="leaveCalendar" class="leave-calendar-grid"></div>
+        </div>
+
+        <div class="card-footer border-0 pt-0 pb-6">
+            <div class="d-flex gap-5">
+                <span class="text-muted fs-7">
+                    <span class="bullet bullet-dot bg-success me-2"></span>
+                    Approved
+                </span>
+
+                <span class="text-muted fs-7">
+                    <span class="bullet bullet-dot bg-warning me-2"></span>
+                    Pending
+                </span>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="~/apps/modules/leave/js/SupervisorDashboard.js" asp-append-version="true"></script>
     <script src="/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" asp-append-version="true"></script>
-    <script src="/assets/js/custom/apps/calendar/calendar.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/leave/js/SupervisorDashboard.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/leave/js/SupervisorCalendar.js" asp-append-version="true"></script>
 }
