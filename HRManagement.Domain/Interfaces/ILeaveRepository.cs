@@ -30,6 +30,9 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<bool> updateLeaveBalance(LeaveBalanceModel leaveRequest);
         public Task<bool> deleteLeaveBalance(int id);
         public Task AddLeaveAttachmentsAsync(List<LeaveAttachment> entities, CancellationToken ct);
+        public Task<LeaveAttachment?> GetAttachmentByIdAsync(int attachmentId);
+        public Task DeleteLeaveAttachmentByIdAsync(int attachmentId, CancellationToken ct);
+        public Task<List<LeaveAttachment>> getLeaveAttachmentsByLeaveId(int leaveId);
 
     }
 }

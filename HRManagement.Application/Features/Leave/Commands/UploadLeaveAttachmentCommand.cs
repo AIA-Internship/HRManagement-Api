@@ -39,6 +39,7 @@ internal sealed class UploadLeaveAttachmentCommandHandler(
         }
 
         await leaveRepository.AddLeaveAttachmentsAsync(attachments, cancellationToken);
+
         await unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success();

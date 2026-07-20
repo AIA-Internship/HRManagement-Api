@@ -3,6 +3,7 @@ using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
 
 namespace HRManagement.MsSQL.Repositories
 {
@@ -85,12 +86,37 @@ namespace HRManagement.MsSQL.Repositories
             await _sqldbContext.Set<LeaveAttachment>().AddRangeAsync(entities, ct);
         }
 
+        public async Task DeleteLeaveAttachmentByIdAsync(int attachmentId, CancellationToken ct)
+        {
+            var attachment = await _dbContext.LeaveAttachment
+                .FirstOrDefaultAsync(x => x.AttachmentId == attachmentId, ct);
 
+            if (attachment != null)
+            {
+                _dbContext.LeaveAttachment.Remove(attachment);
+            }
+        }
+
+        public async Task<List<LeaveAttachment>> getLeaveAttachmentsByLeaveId(int leaveId)
+        {
+            return await _dbContext.LeaveAttachment
+                .Where(x => x.LeaveId == leaveId && !x.IsDeleted)
+                .OrderBy(x => x.AttachmentId)
+                .ToListAsync();
+        }
+
+        public async Task<LeaveAttachment?> GetAttachmentByIdAsync(int attachmentId)
+        {
+            return await _dbContext.LeaveAttachment
+                .FirstOrDefaultAsync(x =>
+                    x.AttachmentId == attachmentId &&
+                    !x.IsDeleted);
+        }
 
         public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
         {
             return await _dbContext.LeaveRequestHistory
-                .Where(x => x.InitialRequestId == leaveId )
+                .Where(x => x.LeaveId == leaveId )
                 .ToListAsync();
         }
 

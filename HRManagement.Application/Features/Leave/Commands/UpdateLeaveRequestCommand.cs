@@ -33,9 +33,10 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
             try
             {
-                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.InitialRequestId ?? -1, request.LeaveRequestDto.RequestId ?? -1);
-                if (readResult == null) return ApiHelperResponse.Failed("request with {request.LeaveRequestDto.InitialRequestId} initial id not found");
-                
+                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.LeaveId,request.LeaveRequestDto.RequestId ?? -1);
+                if (readResult == null)
+                    return ApiHelperResponse.Failed($"Leave request with id {request.LeaveRequestDto.LeaveId} not found");
+
                 var history = mapToHistory(readResult);
                 var createResult = await _repo.createLeaveRequestHistory(history);
                 if (!createResult ) return ApiHelperResponse.Failed("failed create history");
@@ -46,10 +47,11 @@ namespace HRManagement.Application.Features.Leave.Commands
                 return ApiHelperResponse.Success();
                
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return ApiHelperResponse.Failed("failed to update request");
+                _logger.LogError(ex, ex.ToString());
+
+                return ApiHelperResponse.Failed(ex.ToString());
             }
         }
 
@@ -72,24 +74,8 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
             return new LeaveRequestHistory
             {
-
-                RequesterId = dto.RequesterId,
-                SupervisorId = dto.SupervisorId,
-                LeaveStartDate = dto.LeaveStartDate,
-                LeaveStatus = dto.LeaveStatus ,
-                LeaveDescription = dto.LeaveDescription ,
-                DayAmount = dto.DayAmount ,
-                LeaveType = dto.LeaveType ,
-
-                IsCompleted = dto.LeaveStatus == 2 ? 1 : 0,
-                InitialRequestId = dto.LeaveId,
-
-                CreatedBy = dto.RequesterId,
-                CreatedUtcDate = dto.CreatedUtcDate,
-
-                ModifiedBy = dto.RequesterId,
-                ModifiedUtcDate = DateTime.UtcNow,
-                SupervisorComment = dto.SupervisorComment
+                LeaveId = dto.LeaveId,
+                ModifiedUtcDate = DateTime.UtcNow
             };
         }
     }

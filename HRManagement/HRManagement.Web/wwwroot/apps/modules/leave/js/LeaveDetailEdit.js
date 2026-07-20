@@ -1,4 +1,47 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿const API_BASE = "https://localhost:7089";
+
+async function apiGet(endpoint) {
+    const token = window.aiaAuth && window.aiaAuth.getToken();
+    if (!token) { window.aiaAuth && window.aiaAuth.signOut(); return null; }
+    try {
+        const res = await fetch(`${API_BASE}${endpoint}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401) { window.aiaAuth.signOut(); return null; }
+        const json = await res.json();
+        return json.content || json.data || json;
+    } catch (err) {
+        console.error("API GET failed:", err);
+        return null;
+    }
+}
+
+async function apiDelete(endpoint) {
+    console.log("endpoint =", endpoint);
+    console.log("API_BASE =", API_BASE);
+
+    try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${window.aiaAuth.getToken()}`
+            }
+        });
+
+        console.log("status =", res.status);
+
+        const text = await res.text();
+        console.log(text);
+
+        return text;
+    }
+    catch (err) {
+        console.error(err.name);
+        console.error(err.message);
+        console.error(err);
+        throw err;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.querySelector('.leave-form');
     const submitBtn = document.getElementById('submitBtn');
@@ -65,8 +108,26 @@
         });
 
     document.getElementById("cancelBtn").addEventListener("click", function () {
-        window.location.href = "/Leave/Employee/Dashboard";
+        const params = new URLSearchParams(window.location.search);
+        const leaveId = params.get("id");
+
+        if (leaveId) {
+            window.location.href = `/Leave/Employee/LeaveDetail?id=${leaveId}`;
+        } else {
+            window.location.href = "/Leave/Employee/Dashboard";
+        }
     });
+
+    document
+        .getElementById("backToDetailBtn")
+        .addEventListener("click", function () {
+
+            const params = new URLSearchParams(window.location.search);
+            const leaveId = params.get("id");
+
+            window.location.href =
+                `/Leave/Employee/LeaveDetail?id=${leaveId}`;
+        });
 
     async function getMyProfile() {
         const token = window.aiaAuth && window.aiaAuth.getToken();
@@ -77,7 +138,7 @@
         }
 
         try {
-            const res = await fetch(`${API_PREFIX}/api/employee/me`, {
+            const res = await fetch(`${API_BASE}/api/employee/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -99,12 +160,11 @@
     }
 
 
-    const API_PREFIX = "https://localhost:7089";
 
     async function apiPost(endpoint, payload) {
         const token = window.aiaAuth && window.aiaAuth.getToken();
 
-        const res = await fetch(`${API_PREFIX}${endpoint}`, {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -125,7 +185,7 @@
         const token = window.aiaAuth && window.aiaAuth.getToken();
         if (!token) { window.aiaAuth && window.aiaAuth.signOut(); return null; }
         try {
-            const res = await fetch(`${API_PREFIX}${endpoint}`, {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -238,6 +298,87 @@
     var startDateInput = document.getElementById('startDate');
     var endDateInput = document.getElementById('endDate');
     var daysInput = document.getElementById('daysInput');
+
+    async function loadExistingLeave() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const leaveId = params.get('id');
+            if (!leaveId) return;
+
+            const result = await apiGet(`/api/leave/get-by-leave-id/${leaveId}`);
+            const dto = Array.isArray(result) ? result[0] : result;
+            if (!dto) return;
+
+            const attachments = await apiGet(`/api/leave/${leaveId}/attachments`);
+
+            existingAttachments = attachments || [];
+
+            renderFiles();
+
+            function getField(obj, ...names) {
+                for (const n of names) {
+                    if (!obj) continue;
+                    if (Object.prototype.hasOwnProperty.call(obj, n)) return obj[n];
+                    const lower = n.charAt(0).toLowerCase() + n.slice(1);
+                    if (Object.prototype.hasOwnProperty.call(obj, lower)) return obj[lower];
+                }
+                return null;
+            }
+
+            const lt = getField(dto, 'leaveType', 'LeaveType');
+
+            if (lt != null) {
+
+                let value = "";
+
+                switch (lt) {
+                    case "PaidLeave":
+                        value = "1";
+                        break;
+
+                    case "UnpaidLeave":
+                        value = "2";
+                        break;
+                }
+
+                leaveTs.setValue(value);
+            }
+
+            // Dates and days
+            const startRaw = getField(dto, 'leaveStartDate', 'LeaveStartDate');
+            const dayAmount = getField(dto, 'dayAmount', 'DayAmount', 'Days');
+
+            if (startRaw) {
+                const d = new Date(startRaw);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                startDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            if (dayAmount != null) {
+                daysInput.value = String(dayAmount);
+            }
+
+            // Description
+            const desc = getField(dto, 'leaveDescription', 'LeaveDescription', 'Description');
+            if (desc != null) {
+                const descEl = document.getElementById('description');
+                if (descEl) descEl.value = desc;
+            }
+
+            // recompute end date and calendar
+            updateEndDate();
+            refreshCalendarRange();
+            document.getElementById('businessDaysText').textContent = `${daysInput.value} Business Days`;
+
+        } catch (err) {
+            console.error('Failed to load existing leave:', err);
+        }
+    }
+
+    // attempt to load when page is ready
+    loadExistingLeave();
 
     function updateEndDate() {
 
@@ -355,6 +496,8 @@
     var content = drop.querySelector('.dropzone-content');
 
     var selectedFiles = [];
+    var existingAttachments = [];
+    var deletedAttachmentIds = [];
 
     drop.addEventListener('click', function (e) {
 
@@ -467,6 +610,9 @@
 
         var isLimitReached = totalSize >= 5 * 1024 * 1024;
 
+        const totalFiles =
+            selectedFiles.length + existingAttachments.length;
+
         fileInput.disabled = isLimitReached;
 
         drop.classList.toggle('disabled', isLimitReached);
@@ -476,35 +622,84 @@
 
             ${!isLimitReached
                 ? `
-                <div class="upload-top" style="margin-top:${selectedFiles.length > 0 ? '18px' : '0'}">
-                    <div class="drop-icon">
-                        <i class="bi bi-file-earmark-arrow-up-fill"></i>
-                    </div>
-
-                    <div class="drop-title">
-                        Click or drag file to upload
-                    </div>
-
-                    <div class="drop-sub">
-                        Medical certificate, travel docs, etc. (PDF, JPG, JPEG, PNG; max 5MB)
-                    </div>
+            <div class="upload-top ${totalFiles > 0 ? 'has-files' : ''}">
+                <div class="drop-icon">
+                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
                 </div>
-                `
+
+                <div class="drop-title">
+                    Click or drag file to upload
+                </div>
+
+                <div class="drop-sub">
+                    Medical certificate, travel docs, etc. (PDF, JPG, JPEG, PNG; max 5MB)
+                </div>
+            </div>
+            `
                 :
                 `
-                <div class="drop-sub text-danger" style="margin-top:1.7rem">
-                    Maximum total attachment size reached (5 MB)
-                </div>
-                `
+            <div class="drop-sub text-danger" style="margin-top:1.7rem">
+                Maximum total attachment size reached (5 MB)
+            </div>
+            `
             }
-        `;
+    `;
 
         var uploadedList = content.querySelector('.uploaded-list');
 
-        selectedFiles.forEach(function (file, index) {
+        existingAttachments.forEach((file, index) => {
+            const displayName = file.fileName || file.name || '';
+            const ext = (displayName.split('.').pop() || '').toLowerCase();
+            let iconClass = 'bi-file-earmark-fill';
+            let iconColor = '#6c757d';
 
-            var iconClass = "bi-file-earmark-fill";
-            var iconColor = "#6c757d";
+            if (ext === 'pdf') {
+                iconClass = 'bi-file-earmark-pdf-fill';
+                iconColor = '#dc3545';
+            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+                iconClass = 'bi-file-earmark-image-fill';
+                iconColor = '#0d6efd';
+            }
+
+            uploadedList.insertAdjacentHTML("beforeend", `
+            <div class="uploaded-file existing-file">
+
+                <div class="uploaded-left">
+
+                    <div class="uploaded-icon">
+                        <i class="bi ${iconClass}" style="color:${iconColor}; font-size:2.7rem"></i>
+                    </div>
+
+                    <div class="uploaded-info">
+                        <div class="uploaded-name">
+                            ${displayName}
+                        </div>
+
+                        <div class="uploaded-size">
+                            ${( (file.fileSize || file.size || 0) / 1024).toFixed(1)} KB
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    data-type="new"
+                    class="remove-existing-btn"
+                    data-index="${index}">
+                    <i class="bi bi-trash"></i>
+                </button>
+
+            </div>
+        `);
+        });
+
+
+        selectedFiles.forEach((file, index) => {
+
+            let iconClass = "bi-file-earmark-fill";
+            let iconColor = "#6c757d";
 
             if (file.name.toLowerCase().endsWith(".pdf")) {
                 iconClass = "bi-file-earmark-pdf-fill";
@@ -519,41 +714,77 @@
                 iconColor = "#0d6efd";
             }
 
-            uploadedList.insertAdjacentHTML('beforeend', `
-                <div class="uploaded-file clickable-file" data-index="${index}">
-                    <div class="uploaded-left">
-                        <div class="uploaded-icon">
-                            <i class="bi ${iconClass}" style="color:${iconColor}"></i>
-                        </div>
+            uploadedList.insertAdjacentHTML("beforeend", `
+            <div class="uploaded-file clickable-file"
+                 data-index="${index}">
 
-                        <div class="uploaded-info">
-                            <div class="uploaded-name">${file.name}</div>
-                            <div class="uploaded-size">${(file.size / 1024).toFixed(1)} KB</div>
-                        </div>
+                <div class="uploaded-left">
+
+                    <div class="uploaded-icon">
+                        <i class="bi ${iconClass}"
+                           style="color:${iconColor}"></i>
                     </div>
 
-                    <button type="button"
-                            class="remove-file-btn"
-                            data-index="${index}">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <div class="uploaded-info">
+
+                        <div class="uploaded-name">
+                            ${file.name}
+                        </div>
+
+                        <div class="uploaded-size">
+                            ${(file.size / 1024).toFixed(1)} KB
+                        </div>
+
+                    </div>
+
                 </div>
-            `);
+
+                <button
+                    type="button"
+                    class="remove-file-btn"
+                    data-index="${index}">
+                    <i class="bi bi-trash"></i>
+                </button>
+
+            </div>
+        `);
 
         });
+
 
         bindFileEvents();
     }
 
-    function bindFileEvents() {
-
-        document.querySelectorAll('.remove-file-btn').forEach(function (btn) {
+    document.querySelectorAll(".remove-existing-btn")
+        .forEach(btn => {
 
             btn.onclick = function (e) {
 
                 e.stopPropagation();
 
-                var index = parseInt(btn.dataset.index);
+                const index = parseInt(btn.dataset.index);
+
+                const attachment = existingAttachments[index];
+
+                deletedAttachmentIds.push(attachment.attachmentId);
+
+                existingAttachments.splice(index, 1);
+
+                renderFiles();
+
+            };
+
+        });
+
+    function bindFileEvents() {
+
+        document.querySelectorAll('.remove-file-btn').forEach(btn => {
+
+            btn.onclick = function (e) {
+
+                e.stopPropagation();
+
+                const index = parseInt(this.dataset.index);
 
                 selectedFiles.splice(index, 1);
 
@@ -562,17 +793,21 @@
 
         });
 
-        document.querySelectorAll('.clickable-file').forEach(function (item) {
+        document.querySelectorAll('.remove-existing-btn').forEach(btn => {
 
-            item.onclick = function (e) {
+            btn.onclick = function (e) {
 
                 e.stopPropagation();
 
-                var file = selectedFiles[parseInt(item.dataset.index)];
+                const index = parseInt(this.dataset.index);
 
-                if (!file) return;
+                const attachment = existingAttachments[index];
 
-                window.open(URL.createObjectURL(file), '_blank');
+                deletedAttachmentIds.push(attachment.attachmentId);
+
+                existingAttachments.splice(index, 1);
+
+                renderFiles();
             };
 
         });
@@ -643,47 +878,32 @@
         }
 
         try {
-
-            const profile = await getMyProfile();
-
-            console.log("profile =", profile);
-
-            if (!profile) {
-                alert("Failed to get employee profile");
-                return;
-            }
+            const params = new URLSearchParams(window.location.search);
 
             const leavePayload = {
-                requesterId: profile.id,
-                supervisorId: profile.employmentInformation?.supervisorId?? null,
+                leaveId: parseInt(params.get("id")),
                 leaveDescription: description.value.trim(),
                 leaveStartDate: startDate.value,
                 dayAmount: parseFloat(daysInput.value),
-                leaveType: leaveTs.getValue() === "Paid Leave" ? 1 : 2,
-                attachmentPath: [],
-                requesterDisplayId: profile.employmentInformation?.displayId ?? null
+                leaveType: leaveTs.getValue() === "1" ? 1 : 2
             };
 
             console.log("leavePayload =", leavePayload);
             console.log(JSON.stringify(leavePayload, null, 2));
-            const leaveResult = await apiPost('/api/leave/create', leavePayload);
+            const leaveResult = await apiPost('/api/leave/edit', leavePayload);
 
             if (!leaveResult) {
-                alert('Failed to create leave request AAA');
+                alert('Failed to Update leave request');
                 return;
             }
 
             console.log('leaveResult:', leaveResult);
 
-            // try multiple naming conventions
-            const leaveId = leaveResult?.data?.leaveId || leaveResult?.leaveId || leaveResult?.id;
+            const leaveId = parseInt(params.get("id"));
 
-            if (!leaveId) {
-                alert('Failed to create leave request (no id returned)');
-                console.log('leaveId:', leaveId);
-                return;
+            for (const attachmentId of deletedAttachmentIds) {
+                await apiDelete(`/api/leave/${attachmentId}/attachments`);
             }
-
 
             if (selectedFiles.length > 0) {
 
@@ -712,9 +932,18 @@
                 }
             }
 
-            alert('Leave request submitted successfully');
+            const submitModalEl = document.getElementById("submitModal");
+            const submitModal =
+                bootstrap.Modal.getInstance(submitModalEl);
 
-            window.location.reload();
+            if (submitModal) {
+                submitModal.hide();
+            }
+
+            const successModal =
+                new bootstrap.Modal(document.getElementById("successModal"));
+
+            successModal.show();
 
         }
         catch (error) {

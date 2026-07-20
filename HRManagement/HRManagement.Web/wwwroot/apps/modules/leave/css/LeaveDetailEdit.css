@@ -466,24 +466,6 @@
     gap: 14px;
 }
 
-.uploaded-icon i {
-    font-size: 40px;
-}
-
-.uploaded-info {
-    text-align: left;
-}
-
-.uploaded-name {
-    font-weight: 600;
-    font-size: 15px;
-    color: #5b6475;
-}
-
-.uploaded-size {
-    font-size: 13px;
-    color: #9aa0a6;
-}
 
 .remove-file-btn {
     border: none;
@@ -497,6 +479,18 @@
         color: #dc3545;
     }
 
+
+.remove-existing-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #666;
+    font-size: 18px;
+}
+
+.remove-existing-btn:hover {
+    color: #dc3545;
+}
 
 
 
@@ -551,6 +545,16 @@
         box-shadow: 0 4px 14px rgba(0,0,0,.06);
     }
 
+
+.existing-file {
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+    .existing-file:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(0,0,0,.06);
+    }
 
 
 
@@ -739,11 +743,11 @@
     border: 2px solid #b02a37 !important;
 }
 
-.is-invalid:focus {
-    border: 2px solid #b02a37 !important;
-    box-shadow: 0 0 0 0.15rem rgba(176, 42, 55, 0.2) !important;
-    outline: none;
-}
+    .is-invalid:focus {
+        border: 2px solid #b02a37 !important;
+        box-shadow: 0 0 0 0.15rem rgba(176, 42, 55, 0.2) !important;
+        outline: none;
+    }
 
 #submitBtn:focus,
 #submitBtn:hover,
