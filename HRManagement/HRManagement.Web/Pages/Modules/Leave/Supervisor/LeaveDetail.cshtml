@@ -1,0 +1,203 @@
+﻿@page "/Leave/Supervisor/LeaveDetail"
+@{
+    ViewData["Title"] = "Leave Detail";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/leave/css/LeaveDetail.css" asp-append-version="true" />
+    <style>
+        /* Reuse the same badge/status palette as SupervisorDashboard */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-needs-approval {
+            color: #B54708 !important;
+            background-color: #FFFAEB !important;
+            border: 1px solid #FEDF89 !important;
+        }
+
+        .status-approved {
+            color: #027A48 !important;
+            background-color: #ECFDF3 !important;
+            border: 1px solid #ABEFC6 !important;
+        }
+
+        .status-rejected {
+            color: #B42318 !important;
+            background-color: #FEF3F2 !important;
+            border: 1px solid #FECDCA !important;
+        }
+
+        /* Approve / Reject action row */
+        .action-buttons-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-reject-action {
+            border: 1px solid #FEDF89;
+            background: #FFFAEB;
+            color: #B54708;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .15s ease;
+        }
+
+            .btn-reject-action:hover {
+                background: #FEF3F2;
+                border-color: #FECDCA;
+                color: #B42318;
+            }
+
+        .btn-approve-action {
+            border: 1px solid #E31837;
+            background: #E31837;
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 26px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .15s ease;
+        }
+
+            .btn-approve-action:hover {
+                background: #C10F2F;
+                border-color: #C10F2F;
+                color: #fff;
+            }
+
+            .btn-reject-action:disabled,
+            .btn-approve-action:disabled {
+                opacity: .6;
+                pointer-events: none;
+            }
+    </style>
+}
+
+<div class="mx-11">
+    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
+    {
+        Title = "Request Detail",
+        Subtitle = "Review and take action on this leave request",
+        Breadcrumbs = new List<BreadcrumbItem> {
+        new BreadcrumbItem { Title = "Leave", Url = "/Leave/Supervisor/Dashboard" },
+        new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Supervisor/Dashboard" },
+        new BreadcrumbItem { Title = "Request Detail" },
+        },
+        })
+</div>
+
+<div class="mx-11 mb-6">
+    <div class="row">
+        <div class="col-md-8 d-flex flex-column">
+            <div class="card mb-4 pt-4 pb-4 ps-8 pe-8 request-summary">
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <div class="first_row_info">
+                        <div class="text-muted small">Submitted By</div>
+                        <h4 class="mb-1" id="submittedBy"></h4>
+
+                        <span class="badge status-badge" id="leaveStatus">
+                            <i class="bi me-1" id="leaveStatusIcon"></i>
+                            <span id="leaveStatusText"></span>
+                        </span>
+                    </div>
+
+                    <div class="text-start date_info mt-1">
+                        <div class="text-muted small">Day(s)</div>
+                        <h4 class="mt-2" id="dayAmount"></h4>
+                    </div>
+
+                </div>
+
+                <hr class="my-3" />
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="first_row_info">
+                        <div class="text-muted small">Leave Type</div>
+                        <h4 class="mb-1" id="leaveType"></h4>
+                    </div>
+
+                    <div class="text-start date_info mt-1">
+                        <div class="text-muted small">Start Date</div>
+                        <h4 class="mt-2" id="startDate"></h4>
+                    </div>
+
+                    <div class="text-start date_info me-1 mt-1">
+                        <div class="text-muted small">End Date</div>
+                        <h4 class="mt-2" id="endDate"></h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description card -->
+            <div class="card mb-4 p-4 description-card pt-4 pb-4 ps-8 pe-8">
+                <div class="d-flex align-items-center mb-3 mt-1">
+                    <i class="bi bi-chat-left icon_detail me-2"></i>
+                    <h6 class="mb-0">Description</h6>
+                </div>
+                <p class="small text_desc" id="leaveDescription"></p>
+            </div>
+
+            <!-- Attachment card -->
+            <div class="card mb-5 p-4 attachment-card pt-4 pb-4 ps-8 pe-8">
+                <div class="d-flex align-items-center mb-3 mt-1">
+                    <i class="bi bi-paperclip icon_detail fs-4 me-2 rotate-icon"></i>
+                    <h6 class="mb-0">Attachment</h6>
+                </div>
+
+                <div id="attachmentContainer">
+                    <!-- Attachment rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Approve / Reject - only rendered when the request is still Needs Approval -->
+            <div class="action-buttons-row mb-5 d-none" id="actionButtonsRow">
+                <button id="rejectBtn" class="btn-reject-action" type="button">
+                    <i class="bi bi-x-circle"></i>
+                    Reject
+                </button>
+
+                <button id="approveBtn" class="btn-approve-action" type="button">
+                    <i class="bi bi-check-lg"></i>
+                    Approve
+                </button>
+            </div>
+        </div>
+
+        <!-- Right column: timeline -->
+        <div class="col-md-4 d-flex">
+            <div class="card timeline-card pt-8 pb-4 ps-8 pe-8 w-500px">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-clock-history icon_detail fs-4 me-2"></i>
+                    <h6 class="justify-content-center align-center m-0">Request Timeline</h6>
+                </div>
+                <div class="text-muted small mb-4">Last updated: <span id="lastUpdated">-</span></div>
+
+                <ul class="timeline list-unstyled" id="timelineList">
+                    <!-- Timeline entries will be rendered dynamically by JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/leave/js/SupervisorLeaveDetail.js" asp-append-version="true"></script>
+}

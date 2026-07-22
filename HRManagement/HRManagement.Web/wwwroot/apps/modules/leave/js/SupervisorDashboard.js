@@ -71,7 +71,7 @@ function redirectToLogin() {
     try {
         // clear local session storage keys used by auth
         localStorage.removeItem('aia_user_info');
-    } catch (e) {}
+    } catch (e) { }
     // redirect to login page
     window.location.href = '/Account/Login';
 }
@@ -82,7 +82,7 @@ function isAuthenticated() {
             const t = window.aiaAuth.getToken();
             return !!t;
         }
-    } catch (e) {}
+    } catch (e) { }
     const u = localStorage.getItem('aia_user_info');
     return !!u;
 }
@@ -245,6 +245,13 @@ async function fetchRequests() {
     app.loading.hide();
 }
 
+// Navigate to the detail page for a given leave request.
+// NOTE: assumes each request object has an `id` field identifying the leave request itself.
+function viewLeaveDetail(id) {
+    if (!id) return;
+    window.location.href = `/Leave/Supervisor/LeaveDetail?id=${id}`;
+}
+
 function renderTable() {
     const tbody = document.getElementById("requestTableBody");
     tbody.innerHTML = "";
@@ -270,14 +277,14 @@ function renderTable() {
     }
 
     paginated.forEach(req => {
-        const statusIcon = req.statusClass === 'status-needs-approval' 
-            ? '⊙' 
+        const statusIcon = req.statusClass === 'status-needs-approval'
+            ? '⊙'
             : req.statusClass === 'status-approved'
                 ? '✓'
                 : '✕';
 
         tbody.innerHTML += `
-            <tr>
+            <tr class="clickable-row" style="cursor:pointer;" onclick="viewLeaveDetail('${req.id}')">
                 <td>
                     <div class="employee-cell">
                         <div class="employee-avatar" style="background-color: ${req.avatarColor};">${req.initials}</div>
@@ -390,7 +397,7 @@ function addlistener() {
         }
 
         // load user if needed
-        try { loadUser(); } catch (e) {}
+        try { loadUser(); } catch (e) { }
         fetchRequests();
 
         // initial layout adjustment (no @media usage)
@@ -500,7 +507,7 @@ function addTabLogic() {
             }
         });
     });
-} 
+}
 
 function applyFilters() {
 
