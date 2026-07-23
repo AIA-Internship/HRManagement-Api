@@ -33,6 +33,7 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<LeaveAttachment?> GetAttachmentByIdAsync(int attachmentId);
         public Task DeleteLeaveAttachmentByIdAsync(int attachmentId, CancellationToken ct);
         public Task<List<LeaveAttachment>> getLeaveAttachmentsByLeaveId(int leaveId);
+        public Task<List<LeaveTimelineDto>> GetLeaveTimeline(int leaveId);
 
     }
 }

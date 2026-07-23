@@ -77,6 +77,9 @@ namespace HRManagement.MsSQL.Repositories
 
         public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
         {
+            // Ensure the request is marked as edited when an update occurs
+            data.IsEdited = 1;
+
             _dbContext.LeaveRequest.Update(data);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -116,7 +119,8 @@ namespace HRManagement.MsSQL.Repositories
         public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
         {
             return await _dbContext.LeaveRequestHistory
-                .Where(x => x.LeaveId == leaveId )
+                .Where(x => x.LeaveId == leaveId)
+                .OrderBy(x => x.HistoryId)
                 .ToListAsync();
         }
 
@@ -297,6 +301,62 @@ namespace HRManagement.MsSQL.Repositories
 
 
             return result;
+        }
+
+        public async Task<List<LeaveTimelineDto>> GetLeaveTimeline(int leaveId)
+        {
+            var timeline = new List<LeaveTimelineDto>();
+
+            var leaveRequest = await _dbContext.LeaveRequest
+                .FirstOrDefaultAsync(x => x.LeaveId == leaveId && x.IsDeleted == 0);
+
+            if (leaveRequest == null)
+                return timeline;
+
+            // Request Created
+            timeline.Add(new LeaveTimelineDto
+            {
+                Status = "Created",
+                ModifiedUtcDate = leaveRequest.CreatedUtcDate
+            });
+
+            // Edited History
+            if (leaveRequest.IsEdited == 1)
+            {
+                var histories = await _dbContext.LeaveRequestHistory
+                .Where(x => x.LeaveId == leaveId)
+                .OrderBy(x => x.HistoryId)
+                .ToListAsync();
+
+                foreach (var history in histories)
+                {
+                    timeline.Add(new LeaveTimelineDto
+                    {
+                        Status = "Edited",
+                        ModifiedUtcDate = history.ModifiedUtcDate
+                    });
+                }
+            }
+
+            // Approved / Rejected
+            if (leaveRequest.LeaveStatus == 2)
+            {
+                timeline.Add(new LeaveTimelineDto
+                {
+                    Status = "Approved",
+                    ModifiedUtcDate = leaveRequest.ModifiedUtcDate
+                });
+            }
+            else if (leaveRequest.LeaveStatus == 3)
+            {
+                timeline.Add(new LeaveTimelineDto
+                {
+                    Status = "Rejected",
+                    ModifiedUtcDate = leaveRequest.ModifiedUtcDate
+                });
+            }
+
+            return timeline;
         }
     }
 }
