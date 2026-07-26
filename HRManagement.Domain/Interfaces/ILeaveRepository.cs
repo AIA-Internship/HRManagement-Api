@@ -10,7 +10,7 @@ namespace HRManagement.Api.Application.Interfaces
         public Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max);
         public Task<int> createLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> updateLeaveRequest(LeaveRequestModel leaveRequest);
-        public Task<bool> softDelete(int id);
+        public Task<bool> DeleteLeaveRequest(int leaveId);
         public Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month);
         public Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max);
         //public Task<LeaveDetailDto> getLeaveDetailById(int leaveId);

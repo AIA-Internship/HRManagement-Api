@@ -77,9 +77,7 @@ namespace HRManagement.MsSQL.Repositories
 
         public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
         {
-            // Ensure the request is marked as edited when an update occurs
             data.IsEdited = 1;
-
             _dbContext.LeaveRequest.Update(data);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -133,14 +131,42 @@ namespace HRManagement.MsSQL.Repositories
             return affectedRows > 0;
         }
 
-        public async Task<bool> softDelete(int id)
+        public async Task<bool> DeleteLeaveRequest(int leaveId)
         {
-            var entity = await _dbContext.LeaveRequest.FindAsync(id);
-            if (entity == null) return false;
+            var leaveRequest = await _dbContext.LeaveRequest
+                .FirstOrDefaultAsync(x => x.LeaveId == leaveId);
 
-            entity.IsDeleted = 1;
+            if (leaveRequest == null)
+                return false;
 
-            return await _dbContext.SaveChangesAsync() > 0;
+            // 1. Soft delete LeaveRequest
+            leaveRequest.IsDeleted = 1;
+
+            // 2. Soft delete LeaveAttachment
+            var attachments = await _dbContext.LeaveAttachment
+                .Where(x => x.LeaveId == leaveId)
+                .ToListAsync();
+            Console.WriteLine($"Attachment Count = {attachments.Count}");
+
+            foreach (var attachment in attachments)
+            {
+                Console.WriteLine($"AttachmentId = {attachment.AttachmentId}");
+                attachment.IsDeleted = true;
+            }
+
+            // 3. Hard delete LeaveRequestHistory
+            var histories = await _dbContext.LeaveRequestHistory
+                .Where(x => x.LeaveId == leaveId)
+                .ToListAsync();
+
+            if (histories.Any())
+            {
+                _dbContext.LeaveRequestHistory.RemoveRange(histories);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month)

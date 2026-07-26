@@ -68,6 +68,9 @@
         window.location.href = "/Leave/Employee/Dashboard";
     });
 
+    // Use the same API base constant name as other modules
+    const API_BASE = "https://localhost:7089";
+
     async function getMyProfile() {
         const token = window.aiaAuth && window.aiaAuth.getToken();
 
@@ -77,7 +80,7 @@
         }
 
         try {
-            const res = await fetch(`${API_PREFIX}/api/employee/me`, {
+            const res = await fetch(`${API_BASE}/api/employee/me`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -98,13 +101,10 @@
         }
     }
 
-
-    const API_PREFIX = "https://localhost:7089";
-
     async function apiPost(endpoint, payload) {
         const token = window.aiaAuth && window.aiaAuth.getToken();
 
-        const res = await fetch(`${API_PREFIX}${endpoint}`, {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -125,7 +125,7 @@
         const token = window.aiaAuth && window.aiaAuth.getToken();
         if (!token) { window.aiaAuth && window.aiaAuth.signOut(); return null; }
         try {
-            const res = await fetch(`${API_PREFIX}${endpoint}`, {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

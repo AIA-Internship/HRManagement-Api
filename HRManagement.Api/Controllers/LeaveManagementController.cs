@@ -344,34 +344,6 @@ namespace HRManagement.Api.Controllers
             }
         }
 
-
-
-        [HttpPut]
-        [Route("soft-delete")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(500)]
-
-        public async Task<ActionResult<ApiResponse>> deleteLeaveRequest([FromBody] DeleteLeaveRequestDto content)
-        {
-            string objectName = nameof(editLeaveRequest).ToString();
-            try
-            {
-                _logger.LogInformation("Start {Service}.", objectName);
-                var command = new DeleteLeaveRequestCommand(content);
-                var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
-                _logger.LogInformation("End {Service}.", objectName);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in {Service}.", objectName);
-                return BadRequest(ex.Message);
-            }
-
-        }
-
-
         [Authorize]
         [HttpGet]
         [Route("get-by-leave-id/{id}")]
@@ -625,7 +597,63 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+        [Authorize]
+        [HttpDelete]
+        [Route("{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse>> DeleteLeaveRequest([FromRoute] int id)
+        {
+            string objectName = nameof(DeleteLeaveRequest);
 
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"{claim.Type} = {claim.Value}");
+                }
+
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                Console.WriteLine("NameIdentifier = " + (userIdClaim ?? "NULL"));
+
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                int requesterId = int.Parse(userIdClaim);
+
+                _logger.LogInformation(
+                    "Delete leave request. LeaveId = {LeaveId}, RequesterId = {RequesterId}",
+                    id,
+                    requesterId);
+
+                var dto = new DeleteLeaveRequestDto
+                {
+                    RequestId = id,
+                    RequesterId = requesterId
+                };
+
+                var command = new DeleteLeaveRequestCommand(dto);
+
+                var response = await this
+                    .ValidateAndExecute(command, c => _mediator.Send(command))
+                    .ConfigureAwait(false);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return BadRequest(ex.Message);
+            }
+        }
 
     }
 }

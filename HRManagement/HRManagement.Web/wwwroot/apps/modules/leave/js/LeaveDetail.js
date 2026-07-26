@@ -14,6 +14,35 @@ async function apiGet(endpoint) {
     }
 }
 
+async function apiDelete(endpoint) {
+    const token = window.aiaAuth && window.aiaAuth.getToken();
+
+    if (!token) {
+        window.aiaAuth?.signOut();
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (res.status === 401) {
+            window.aiaAuth.signOut();
+            return false;
+        }
+
+        return await res.json();
+    }
+    catch (err) {
+        console.error("API DELETE failed:", err);
+        return null;
+    }
+}
+
 function escapeHtml(s) {
     if (s === undefined || s === null) return '';
     return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
@@ -269,11 +298,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     renderAttachments(attachments);
 
-    const cancelBtn = document.getElementById('cancelBtn');
-    if (cancelBtn) cancelBtn.addEventListener('click', function () { window.location.href = '/Leave/Employee/Dashboard'; });
-
+    const deleteBtn = document.getElementById('deleteBtn');
     const editBtn = document.getElementById("editBtn");
-    const deleteBtn = document.getElementById("cancelBtn");
+
 
     if (editBtn) {
         editBtn.addEventListener("click", function () {
@@ -285,6 +312,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (deleteBtn) {
         deleteBtn.classList.toggle("d-none", status === 'rejected' || status === '3');
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async function () {
+
+            if (!confirm("Delete this leave request?"))
+                return;
+
+            const result = await apiDelete(`/api/leave/${leaveId}`);
+
+            if (result && !result.isError) {
+                alert("Leave request deleted successfully.");
+                window.location.href = "/Leave/Employee/Dashboard";
+            } else {
+                alert(result?.statusMessage ?? "Delete failed.");
+            }
+        });
     }
 
     function formatDateTimeWib(input) {
