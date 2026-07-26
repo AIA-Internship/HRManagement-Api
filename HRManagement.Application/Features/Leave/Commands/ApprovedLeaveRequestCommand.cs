@@ -50,7 +50,7 @@ namespace HRManagement.Application.Features.Leave.Commands
             ApprovedLeaveRequestCommand request,
             CancellationToken cancellationToken)
         {
-            LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId, request.RequestId);
+            LeaveRequestModel leaveRequest = await _repo.getLeaveRequestById(request.LeaveId);
             Employee requester = await _employeeRepository.GetByIdAsync(leaveRequest.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 

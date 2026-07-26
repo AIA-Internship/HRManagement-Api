@@ -6,7 +6,7 @@ namespace HRManagement.Api.Application.Interfaces
 {
     public interface ILeaveRepository
     {
-        public Task<LeaveRequestModel> getLeaveRequestById(int id, int requesterId);
+        public Task<LeaveRequestModel> getLeaveRequestById(int id);
         public Task<List<LeaveRequestModel>> getLeaveRequestsByRequesterId(int requesterId, int max);
         public Task<int> createLeaveRequest(LeaveRequestModel leaveRequest);
         public Task<bool> updateLeaveRequest(LeaveRequestModel leaveRequest);

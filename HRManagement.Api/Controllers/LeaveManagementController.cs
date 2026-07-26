@@ -372,7 +372,7 @@ namespace HRManagement.Api.Controllers
         }
 
 
-        [Authorize]
+
         [HttpGet]
         [Route("get-by-leave-id/{id}")]
         [ProducesResponseType(200)]
@@ -391,9 +391,8 @@ namespace HRManagement.Api.Controllers
                 if (userIdClaim == null)
                     return Unauthorized("UserId not found in token");
 
-                int requesterId = int.Parse(userIdClaim);
 
-                var query = new GetLeaveRequestByIdQuery(id, requesterId);
+                var query = new GetLeaveRequestByIdQuery(id);
 
                 var response = await this
                     .ValidateAndExecute(query, c => _mediator.Send(query))

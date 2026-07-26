@@ -107,7 +107,7 @@ function mergeData() {
 
             name: emp?.fullName || "-",
 
-            position: emp?.position || "-",
+            position: emp?.employmentInformation.departmentName || "-",
 
             type:
                 req.leaveType === "1"
@@ -249,7 +249,7 @@ async function fetchRequests() {
 // NOTE: assumes each request object has an `id` field identifying the leave request itself.
 function viewLeaveDetail(id) {
     if (!id) return;
-    window.location.href = `/Leave/Supervisor/LeaveDetail?id=${id}`;
+    window.location.href = `/Leave/Supervisor/LeaveDetail?id=${encodeURIComponent(id)}`;
 }
 
 function renderTable() {
@@ -277,6 +277,8 @@ function renderTable() {
     }
 
     paginated.forEach(req => {
+        console.log("REQUEST:", req);
+        console.log("ID:", req.leaveId);
         const statusIcon = req.statusClass === 'status-needs-approval'
             ? '⊙'
             : req.statusClass === 'status-approved'
@@ -284,10 +286,13 @@ function renderTable() {
                 : '✕';
 
         tbody.innerHTML += `
-            <tr class="clickable-row" style="cursor:pointer;" onclick="viewLeaveDetail('${req.id}')">
-                <td>
-                    <div class="employee-cell">
-                        <div class="employee-avatar" style="background-color: ${req.avatarColor};">${req.initials}</div>
+            <tr class="clickable-row" style="cursor:pointer;" onclick="viewLeaveDetail('${req.leaveId}')">
+               <td>
+                    <div class="employee-info">
+                        <div class="employee-avatar" style="background-color: ${req.avatarColor};">
+                            ${req.initials}
+                        </div>
+
                         <div class="employee-details">
                             <p class="employee-name">${req.name}</p>
                             <p class="employee-role">${req.position}</p>

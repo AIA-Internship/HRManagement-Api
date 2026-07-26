@@ -33,7 +33,7 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
             try
             {
-                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.LeaveId,request.LeaveRequestDto.RequestId ?? -1);
+                var readResult = await _repo.getLeaveRequestById(request.LeaveRequestDto.LeaveId);
                 if (readResult == null)
                     return ApiHelperResponse.Failed($"Leave request with id {request.LeaveRequestDto.LeaveId} not found");
 

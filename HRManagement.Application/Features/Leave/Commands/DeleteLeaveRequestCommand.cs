@@ -32,7 +32,7 @@ namespace HRManagement.Application.Features.Leave.Commands
         {
             try
             {
-                var existing = await _repo.getLeaveRequestById(request.LeaveRequestDto.RequestId, request.LeaveRequestDto.RequesterId);
+                var existing = await _repo.getLeaveRequestById(request.LeaveRequestDto.RequestId);
 
                 if (existing == null)
                     return ApiHelperResponse.Failed("Leave request not found");

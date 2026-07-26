@@ -12,12 +12,12 @@ namespace HRManagement.Application.Features.Leave.Queries
     {
         public int RequestId { get; set; }
 
-        public int RequesterId { get; set; }
 
-        public GetLeaveRequestByIdQuery(int requestId, int requesterId)
+
+        public GetLeaveRequestByIdQuery(int requestId)
         {
             RequestId = requestId;
-            RequesterId = requesterId;
+
         }
     }
     internal class GetLeaveRequestByIdQueryHandler : IRequestHandler<GetLeaveRequestByIdQuery, Result<ApiResponse<ReadLeaveRequestDto>>>
@@ -36,7 +36,7 @@ namespace HRManagement.Application.Features.Leave.Queries
         {
             try
             {
-                var result = await _repo.getLeaveRequestById(request.RequestId, request.RequesterId);
+                var result = await _repo.getLeaveRequestById(request.RequestId);
                 if (result == null) return ApiHelperResponse.Failed<ReadLeaveRequestDto>("Leave request not found");
 
 

@@ -86,6 +86,20 @@ function formatDateTimeWib(input) {
     return `${day}/${month}/${year}, ${hours}.${minutes} WIB`;
 }
 
+// Backend has been observed sending leaveStatus as either a numeric code
+// ("1"/"2"/"3") or a string ("Pending"/"Approved"/"Rejected"). Everything
+// downstream (badge, action buttons, timeline, accent border) must agree on
+// the same normalized value, otherwise pieces of UI go out of sync — this is
+// what previously hid the Approve/Reject buttons even when the request was
+// still pending.
+function normalizeStatus(raw) {
+    const s = String(raw ?? '').trim().toLowerCase();
+    if (s === '1' || s === 'pending' || s === 'needsapproval' || s === 'needs approval') return 'Pending';
+    if (s === '2' || s === 'approved') return 'Approved';
+    if (s === '3' || s === 'rejected') return 'Rejected';
+    return 'Unknown';
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
 
     const params = new URLSearchParams(window.location.search);
@@ -105,7 +119,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // Fetch requester (employee) info for the "Submitted By" field
-    const requesterId = getField(dto, 'requesterId');
+    const requesterId = getField(dto, 'requesterDisplayId');
     let employee = null;
     if (requesterId) {
         employee = await apiGet(`/api/employee/${requesterId}`);
@@ -126,24 +140,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     const leaveTypeEl = document.getElementById('leaveType');
     if (leaveTypeEl) leaveTypeEl.textContent = leaveTypeText;
 
-    // Status
+    // Status — single source of truth used everywhere below
     const statusRaw = getField(dto, 'leaveStatus');
-    const status = String(statusRaw ?? '');
+    const statusKey = normalizeStatus(statusRaw);
 
-    const statusText = status === '1' ? 'Needs Approval'
-        : status === '2' ? 'Approved'
-            : status === '3' ? 'Rejected'
-                : '-';
+    const statusText =
+        statusKey === 'Pending' ? 'Needs Approval'
+            : statusKey === 'Approved' ? 'Approved'
+                : statusKey === 'Rejected' ? 'Rejected'
+                    : '-';
 
-    const statusClass = status === '1' ? 'status-needs-approval'
-        : status === '2' ? 'status-approved'
-            : status === '3' ? 'status-rejected'
-                : '';
+    const statusClass =
+        statusKey === 'Pending' ? 'status-needs-approval'
+            : statusKey === 'Approved' ? 'status-approved'
+                : statusKey === 'Rejected' ? 'status-rejected'
+                    : null;
 
-    const statusIconClass = status === '1' ? 'bi-hourglass-split'
-        : status === '2' ? 'bi-check2-circle'
-            : status === '3' ? 'bi-x-circle'
-                : 'bi-question-circle';
+    const statusIconClass =
+        statusKey === 'Pending' ? 'bi-hourglass-split'
+            : statusKey === 'Approved' ? 'bi-check2-circle'
+                : statusKey === 'Rejected' ? 'bi-x-circle'
+                    : 'bi-question-circle';
 
     const statusBadge = document.getElementById('leaveStatus');
     const statusTextEl = document.getElementById('leaveStatusText');
@@ -151,7 +168,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (statusTextEl) statusTextEl.textContent = statusText;
     if (statusIconEl) statusIconEl.className = `bi me-1 ${statusIconClass}`;
-    if (statusBadge) statusBadge.classList.add(statusClass);
+    if (statusBadge && statusClass) statusBadge.classList.add(statusClass);
+
+    // Accent border on the summary card, matched to status
+    const summaryCard = document.getElementById('summaryCard');
+    if (summaryCard) {
+        const accentClass =
+            statusKey === 'Pending' ? 'accent-pending'
+                : statusKey === 'Approved' ? 'accent-approved'
+                    : statusKey === 'Rejected' ? 'accent-rejected'
+                        : null;
+        if (accentClass) summaryCard.classList.add(accentClass);
+    }
 
     // Dates
     const startRaw = getField(dto, 'leaveStartDate');
@@ -308,10 +336,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         </li>
         `;
 
-        if (status === '2' || status === '3') {
+        if (statusKey === 'Approved' || statusKey === 'Rejected') {
             const decisionText = formatDateTimeWib(decisionDate);
-            const label = status === '2' ? 'Approved' : 'Rejected';
-            const icon = status === '2' ? 'bi-check2-circle' : 'bi-x-circle';
+            const label = statusKey === 'Approved' ? 'Approved' : 'Rejected';
+            const icon = statusKey === 'Approved' ? 'bi-check2-circle' : 'bi-x-circle';
 
             html += `
             <li class="mb-4 d-flex">
@@ -334,7 +362,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Approve / Reject actions — only visible while the request is still pending
     const actionRow = document.getElementById('actionButtonsRow');
     if (actionRow) {
-        actionRow.classList.toggle('d-none', status !== '1');
+        actionRow.classList.toggle('d-none', statusKey !== 'Pending');
     }
 
     const approveBtn = document.getElementById('approveBtn');
