@@ -27,29 +27,29 @@ namespace HRManagement.Application.Features.Leave.Commands
             _repo = repo;
             _logger = logger;
         }
-
         public async Task<Result<ApiResponse>> Handle(DeleteLeaveRequestCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                var existing = await _repo.getLeaveRequestById(request.LeaveRequestDto.RequestId);
+                var existing = await _repo.getLeaveRequestById(
+                    request.LeaveRequestDto.RequestId,
+                    request.LeaveRequestDto.RequesterId);
 
                 if (existing == null)
                     return ApiHelperResponse.Failed("Leave request not found");
 
-                existing.IsDeleted = 1;
+                var result = await _repo.DeleteLeaveRequest(existing.LeaveId);
 
-                var result = await _repo.softDelete(existing.LeaveId);
-                if (!result) return ApiHelperResponse.Failed("failed to delete leave request");
+                if (!result)
+                    return ApiHelperResponse.Failed("Failed to delete leave request");
 
                 return ApiHelperResponse.Success();
             }
-            catch (Exception ex) {
-                Console.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete leave request");
                 return ApiHelperResponse.Failed("Failed to delete leave request");
             }
-
-
         }
 
     }

@@ -218,13 +218,20 @@ async function loadAllAndRender({ page = 1, sort = 'newest', statusOrder = '1,2,
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+
+    [...popoverTriggerList].forEach(popoverTriggerEl => {
+        new bootstrap.Popover(popoverTriggerEl);
+    });
+
     // remove old popover element if present
     const popover = document.getElementById('popover_monthly');
     if (popover) popover.remove();
 
     // wire up filter buttons and pagination delegations
     let selectedStatus = null; // default: show all statuses
-    const filterButtons = Array.from(document.querySelectorAll('.btn-group[aria-label="filters"] button'));
+    const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
     if (filterButtons.length) {
         const map = { 0: '1', 1: '2', 2: '3' };
         // clear any server-side "active" so default is "all"

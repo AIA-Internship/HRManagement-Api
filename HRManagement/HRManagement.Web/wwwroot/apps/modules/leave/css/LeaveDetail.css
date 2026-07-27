@@ -95,8 +95,47 @@
 }
 
 .timeline-icon {
-    background-color: #E5E7EB !important;
+    background-color: #E5E7EB;
 }
+
+/* Timeline specific styles */
+.timeline {
+    position: relative;
+}
+.timeline li {
+    display: flex;
+    align-items: flex-start;
+}
+.timeline-marker {
+    width: 44px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0;
+}
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+.timeline-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline-scroll {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 500px;
+    padding-right: 8px;
+}
+
 
 /* ===========================
    Action Buttons
@@ -139,3 +178,57 @@
 .btn-outline-action i {
     color: inherit;
 }
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline .timeline-icon {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+    /* Created */
+    .timeline-icon.created {
+        background-color: #E5E7EB;
+        color: #6B7280;
+    }
+
+    /* Edited */
+    .timeline-icon.edited {
+        background-color: #FEF3C7;
+        color: #D97706;
+    }
+
+    /* Approved */
+    .timeline-icon.approved {
+        background-color: #D1FAE5;
+        color: #059669;
+    }
+
+    /* Rejected */
+    .timeline-icon.rejected {
+        background-color: #FFE4E6;
+        color: #DC2626;
+    }
+
+    .timeline-icon.created i {
+        color: #6B7280 !important;
+    }
+
+    .timeline-icon.edited i {
+        color: #D97706 !important;
+    }
+
+    .timeline-icon.approved i {
+        color: #059669 !important;
+    }
+
+    .timeline-icon.rejected i {
+        color: #DC2626 !important;
+    }

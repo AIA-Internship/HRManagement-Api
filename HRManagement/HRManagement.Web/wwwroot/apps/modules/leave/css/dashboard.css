@@ -1,6 +1,4 @@
-﻿/* Dashboard styles for Leave module */
-
-.leave-quota-card {
+﻿.leave-quota-card {
     background: linear-gradient(180deg, #e73a4a 0%, #d92f44 100%);
     border: none;
     border-radius: 12px;
@@ -43,11 +41,6 @@
 }
 
 
-
-
-
-
-/* Responsive tweaks */
 @media (max-width: 768px) {
     .leave-quota-card .quota-number { font-size: 2.6rem; }
 }
@@ -58,15 +51,96 @@
     max-width: 320px;
 }
 
-    .popover.info-popover .popover-body {
-        color: #333;
-        font-size: 0.9rem;
-        padding-left: 1.2rem;
-        margin-top: 1rem;
-        margin-right: 0.9rem;
-    }
+.popover.info-popover .popover-body {
+    color: #333;
+    font-size: 0.9rem;
+    padding-left: 1.2rem;
+    margin-top: 1rem;
+    margin-right: 0.9rem;
+}
 
 .popover .popover-arrow::before,
 .popover .popover-arrow::after {
     background: transparent;
 }
+
+#paginationList .page-link {
+    background-color: #D1D5DB !important;
+    border-color: #D1D5DB !important;
+    color: #FFFFFF !important;
+}
+
+#paginationList .page-link:hover {
+    background-color: #C5CAD1 !important;
+    border-color: #C5CAD1 !important;
+    color: #FFFFFF !important;
+}
+
+#paginationList .page-item.active .page-link {
+    background-color: #E63946 !important;
+    border-color: #E63946 !important;
+    color: #FFFFFF !important;
+}
+
+#paginationList .page-link:focus {
+    box-shadow: none;
+}
+
+.leave-filter {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    border: none;
+    outline: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #F3F4F6;
+    color: #374151;
+    transition: .2s;
+    cursor: pointer;
+}
+
+    .filter-btn:hover {
+        background: #E5E7EB;
+    }
+
+    .filter-btn.active {
+        background: #E63946;
+        color: #FFFFFF;
+    }
+
+.leave-filter {
+    display: inline-flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    background: #FFFFFF;
+    border: 1px solid #D1D5DB;
+    color: #374151;
+    border-radius: 9999px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+
+    .filter-btn:hover {
+        background: #F9FAFB;
+        border-color: #9CA3AF;
+    }
+
+    .filter-btn.active {
+        background: #E63946;
+        border-color: #E63946;
+        color: #FFFFFF;
+    }
+
+    .filter-btn:focus {
+        outline: none;
+        box-shadow: none;
+    }

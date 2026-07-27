@@ -87,21 +87,58 @@
                             <h6 class="mb-0 mt-2">Leave Distribution</h6>
                         </div>
                     </div>
-
                     <div class="mb-6 mt-5">
 
                         <div class="d-flex justify-content-between mb-1">
-                            <small>Paid Leave</small>
+                            <small>
+                                Paid Leave
+                                <i class="bi bi-info-circle ms-1 text-secondary" style="color:#0f172a !important"
+                                   tabindex="0"
+                                   role="button"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="right"
+                                   data-bs-html="true"
+                                   data-bs-custom-class="info-popover"
+                                   data-bs-content="
+                                    <ul>
+                                    <li><strong>Paid Leave is leave with available quota.</strong></li>
+                                    <li><strong>The amount shown represents used Paid Leave requests.</strong></li>
+                                    </ul>">
+                                </i>
+                            </small>
+
                             <small id="paidCount">0</small>
                         </div>
+
                         <div class="progress" style="height:8px;">
                             <div id="paidBar" class="progress-bar bg-danger" role="progressbar"></div>
                         </div>
 
                     </div>
+
+
                     <div class="mb-1">
+
                         <div class="d-flex justify-content-between mb-1">
-                            <small>Unpaid Leave</small>
+                            <small>
+                                Unpaid Leave
+                                <i class="bi bi-info-circle ms-1 text-secondary" style="color:#0f172a !important"
+                                   tabindex="0"
+                                   role="button"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="right"
+                                   data-bs-html="true"
+                                   data-bs-custom-class="info-popover"
+                                   data-bs-content="
+                                    <ul>
+                                    <li><strong>Unpaid Leave does not reduce leave quota.</strong></li>
+                                    <li><strong>It can be requested even when leave balance is insufficient.</strong></li>
+                                    </ul>">
+                                </i>
+                            </small>
+
                             <small id="unpaidCount">0</small>
                         </div>
 
@@ -121,10 +158,18 @@
         <div class="d-flex align-items-center justify-content-between mb-3 px-4"
              style="overflow-x:auto; gap:1rem;">
             <div>
-                <div class="btn-group ms-7" role="group" aria-label="filters">
-                    <button class="btn btn-outline-secondary active">Needs Approval</button>
-                    <button class="btn btn-outline-secondary">Approved</button>
-                    <button class="btn btn-outline-secondary">Rejected</button>
+                <div class="leave-filter ms-7">
+                    <button class="filter-btn active" data-status="pending">
+                        Needs Approval
+                    </button>
+
+                    <button class="filter-btn" data-status="approved">
+                        Approved
+                    </button>
+
+                    <button class="filter-btn" data-status="rejected">
+                        Rejected
+                    </button>
                 </div>
             </div>
 

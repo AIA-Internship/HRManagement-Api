@@ -14,6 +14,35 @@ async function apiGet(endpoint) {
     }
 }
 
+async function apiDelete(endpoint) {
+    const token = window.aiaAuth && window.aiaAuth.getToken();
+
+    if (!token) {
+        window.aiaAuth?.signOut();
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (res.status === 401) {
+            window.aiaAuth.signOut();
+            return false;
+        }
+
+        return await res.json();
+    }
+    catch (err) {
+        console.error("API DELETE failed:", err);
+        return null;
+    }
+}
+
 function escapeHtml(s) {
     if (s === undefined || s === null) return '';
     return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
@@ -27,6 +56,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     const leaveId = params.get("id");
 
     const result = await apiGet(`/api/leave/get-by-leave-id/${leaveId}`);
+
+    const timelineResult = await apiGet(`/api/leave/${leaveId}/timeline`);
+    const timelineItems = Array.isArray(timelineResult) ? timelineResult : [];
+
+    console.table(timelineItems);
+
+    timelineItems.forEach((x, i) => {
+        console.log(i, x.status, x.modifiedUtcDate);
+    });
 
     const dto = Array.isArray(result) ? result[0] : result;
 
@@ -260,11 +298,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     renderAttachments(attachments);
 
-    const cancelBtn = document.getElementById('cancelBtn');
-    if (cancelBtn) cancelBtn.addEventListener('click', function () { window.location.href = '/Leave/Employee/Dashboard'; });
-
+    const deleteBtn = document.getElementById('deleteBtn');
     const editBtn = document.getElementById("editBtn");
-    const deleteBtn = document.getElementById("cancelBtn");
+
 
     if (editBtn) {
         editBtn.addEventListener("click", function () {
@@ -278,22 +314,53 @@ document.addEventListener("DOMContentLoaded", async function () {
         deleteBtn.classList.toggle("d-none", status === 'rejected' || status === '3');
     }
 
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async function () {
+
+            if (!confirm("Delete this leave request?"))
+                return;
+
+            const result = await apiDelete(`/api/leave/${leaveId}`);
+
+            if (result && !result.isError) {
+                alert("Leave request deleted successfully.");
+                window.location.href = "/Leave/Employee/Dashboard";
+            } else {
+                alert(result?.statusMessage ?? "Delete failed.");
+            }
+        });
+    }
+
     function formatDateTimeWib(input) {
         if (!input) return '-';
 
         let s = input;
         if (typeof s === 'string') {
             s = s.trim();
+
             if (s.indexOf('T') === -1) {
                 s = s.replace(' ', 'T');
             }
-            if (!s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) s = s + 'Z';
+
+            if (!s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s))
+                s = s + 'Z';
         }
 
         const d = new Date(s);
+
+        // ===== DEBUG =====
+        console.log("Original :", input);
+        console.log("After Z  :", s);
+        console.log("Parsed   :", d);
+        // =================
+
         if (isNaN(d)) return '-';
 
         const wib = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+
+        // ===== DEBUG =====
+        console.log("After +7 :", wib);
+        // =================
 
         const day = wib.getUTCDate();
         const month = wib.getUTCMonth() + 1;
@@ -315,18 +382,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!timeline) return;
 
         const user = window.aiaAuth.getUserInfo();
-        console.log(user);
-        const requesterName = user.fullName;
+        const requesterName = user && (user.fullName || user.name) ? (user.fullName || user.name) : 'Unknown';
 
-        const created = getField(dto, 'createdUtcDate');
+        const created = getField(dto, 'createdUtcDate', 'createdDate', 'createdUtc');
         const createdText = formatDateTimeWib(created);
 
         const idPart = leaveId ? `REQ${escapeHtml(leaveId)}` : 'REQ-';
 
-        const html = `
-        <li class="mb-4 d-flex">
-            <div class="timeline-marker mt-2">
-                <div class="timeline-icon">
+        // base created entry (no red line per requirement)
+        let html = `
+        <li class="ms-1 mb-4 d-flex">
+            <div class="timeline-marker mt-3">
+                <div class="timeline-icon created">
                     <i class="bi bi-clock-history fs-2"></i>
                 </div>
             </div>
@@ -339,6 +406,108 @@ document.addEventListener("DOMContentLoaded", async function () {
             </div>
         </li>
     `;
+
+        console.log("timelineResult", timelineResult);
+        console.log("timelineItems", timelineItems);
+
+        // discover timeline-like arrays on DTO
+        const events = timelineItems;
+
+        // if none found, try to infer from simple fields (fallback: approval info)
+        if (events.length === 0) {
+            const approval = getField(dto, 'approvedBy', 'approvedByName', 'approvedByFullName');
+            if (approval) {
+                events.push({ status: 'approved', actor: approval, message: getField(dto, 'approvedNote', 'note'), createdUtcDate: getField(dto, 'approvedUtcDate', 'approvedDate') });
+            }
+            const rejected = getField(dto, 'rejectedBy');
+            if (rejected) {
+                events.push({ status: 'rejected', actor: rejected, message: getField(dto, 'rejectedNote', 'note'), createdUtcDate: getField(dto, 'rejectedUtcDate', 'rejectedDate') });
+            }
+        }
+
+        // render each event with a red vertical line and colored icon depending on status
+        // normalize incoming event fields (server may use PascalCase or camelCase)
+        events.forEach(orig => {
+            const ev = {
+                status: getField(orig, 'status', 'Status'),
+                modifiedUtcDate: getField(orig, 'modifiedUtcDate', 'ModifiedUtcDate', 'modifiedUtc', 'modifiedDate', 'ModifiedDate'),
+                actor: getField(orig, 'actor', 'Actor', 'name', 'fullName'),
+                message: getField(orig, 'message', 'Message', 'note')
+            };
+
+            if (!ev.status) return; // skip unknown items
+
+            const status = String(ev.status).toLowerCase();
+
+            // skip the "created" event because we already render a base created entry above
+            if (status === 'created') return;
+
+            const createdTextEv = formatDateTimeWib(ev.modifiedUtcDate || ev.createdUtcDate || ev.createdDate);
+
+            let icon = "";
+            let iconColor = "";
+            let iconBg = "";
+            let title = "";
+            let message = ev.message || "";
+
+            let iconClass = "";
+
+            switch (status) {
+                case "edited":
+                case "edit":
+                    icon = "bi-pencil";
+                    iconClass = "edited";
+                    title = "Request Edited";
+                    break;
+
+                case "approved":
+                    icon = "bi-check2-circle";
+                    iconClass = "approved";
+                    title = "Request Approved";
+                    break;
+
+                case "rejected":
+                case "declined":
+                    icon = "bi-x-circle";
+                    iconClass = "rejected";
+                    title = "Request Rejected";
+                    break;
+
+                default:
+                    icon = "bi-info-circle";
+                    iconClass = "created";
+            }
+            html += `
+<li class="ms-1 mb-4 d-flex">
+
+    <div class="timeline-marker" style="margin-top:10px;">
+
+        <div class="timeline-icon ${iconClass}">
+    <i class="bi ${icon} fs-4"
+   style="color:${iconColor};"></i>
+</div>
+
+    </div>
+
+    <div style="margin-top:10px;">
+
+        <div class="fw-bold">
+            ${title}
+        </div>
+
+        <div class="small text-muted">
+            ${message}
+        </div>
+
+        <div class="small text-muted">
+            ${createdTextEv}
+        </div>
+
+    </div>
+
+</li>
+`;
+        });
 
         timeline.innerHTML = html;
     })();

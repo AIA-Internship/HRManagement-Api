@@ -76,6 +76,7 @@ namespace HRManagement.MsSQL.Repositories
 
         public async Task<bool> updateLeaveRequest(LeaveRequestModel data)
         {
+            data.IsEdited = 1;
             _dbContext.LeaveRequest.Update(data);
             return await _dbContext.SaveChangesAsync() > 0;
         }
@@ -115,7 +116,8 @@ namespace HRManagement.MsSQL.Repositories
         public async Task<List<LeaveRequestHistory>> getAllEditById(int leaveId)
         {
             return await _dbContext.LeaveRequestHistory
-                .Where(x => x.LeaveId == leaveId )
+                .Where(x => x.LeaveId == leaveId)
+                .OrderBy(x => x.HistoryId)
                 .ToListAsync();
         }
 
@@ -128,14 +130,42 @@ namespace HRManagement.MsSQL.Repositories
             return affectedRows > 0;
         }
 
-        public async Task<bool> softDelete(int id)
+        public async Task<bool> DeleteLeaveRequest(int leaveId)
         {
-            var entity = await _dbContext.LeaveRequest.FindAsync(id);
-            if (entity == null) return false;
+            var leaveRequest = await _dbContext.LeaveRequest
+                .FirstOrDefaultAsync(x => x.LeaveId == leaveId);
 
-            entity.IsDeleted = 1;
+            if (leaveRequest == null)
+                return false;
 
-            return await _dbContext.SaveChangesAsync() > 0;
+            // 1. Soft delete LeaveRequest
+            leaveRequest.IsDeleted = 1;
+
+            // 2. Soft delete LeaveAttachment
+            var attachments = await _dbContext.LeaveAttachment
+                .Where(x => x.LeaveId == leaveId)
+                .ToListAsync();
+            Console.WriteLine($"Attachment Count = {attachments.Count}");
+
+            foreach (var attachment in attachments)
+            {
+                Console.WriteLine($"AttachmentId = {attachment.AttachmentId}");
+                attachment.IsDeleted = true;
+            }
+
+            // 3. Hard delete LeaveRequestHistory
+            var histories = await _dbContext.LeaveRequestHistory
+                .Where(x => x.LeaveId == leaveId)
+                .ToListAsync();
+
+            if (histories.Any())
+            {
+                _dbContext.LeaveRequestHistory.RemoveRange(histories);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<GetLeaveRequestByMonthRangeDto>> getLeaveRequestByMonthRage(int year, int month)
@@ -296,6 +326,62 @@ namespace HRManagement.MsSQL.Repositories
 
 
             return result;
+        }
+
+        public async Task<List<LeaveTimelineDto>> GetLeaveTimeline(int leaveId)
+        {
+            var timeline = new List<LeaveTimelineDto>();
+
+            var leaveRequest = await _dbContext.LeaveRequest
+                .FirstOrDefaultAsync(x => x.LeaveId == leaveId && x.IsDeleted == 0);
+
+            if (leaveRequest == null)
+                return timeline;
+
+            // Request Created
+            timeline.Add(new LeaveTimelineDto
+            {
+                Status = "Created",
+                ModifiedUtcDate = leaveRequest.CreatedUtcDate
+            });
+
+            // Edited History
+            if (leaveRequest.IsEdited == 1)
+            {
+                var histories = await _dbContext.LeaveRequestHistory
+                .Where(x => x.LeaveId == leaveId)
+                .OrderBy(x => x.HistoryId)
+                .ToListAsync();
+
+                foreach (var history in histories)
+                {
+                    timeline.Add(new LeaveTimelineDto
+                    {
+                        Status = "Edited",
+                        ModifiedUtcDate = history.ModifiedUtcDate
+                    });
+                }
+            }
+
+            // Approved / Rejected
+            if (leaveRequest.LeaveStatus == 2)
+            {
+                timeline.Add(new LeaveTimelineDto
+                {
+                    Status = "Approved",
+                    ModifiedUtcDate = leaveRequest.ModifiedUtcDate
+                });
+            }
+            else if (leaveRequest.LeaveStatus == 3)
+            {
+                timeline.Add(new LeaveTimelineDto
+                {
+                    Status = "Rejected",
+                    ModifiedUtcDate = leaveRequest.ModifiedUtcDate
+                });
+            }
+
+            return timeline;
         }
     }
 }
