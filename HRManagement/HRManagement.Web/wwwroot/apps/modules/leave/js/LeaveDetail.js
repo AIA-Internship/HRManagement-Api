@@ -202,23 +202,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Attachments
     const attachmentWrap = document.getElementById('attachmentContainer');
 
-    async function downloadFile(url, fileName) {
-        const response = await fetch(url);
-
-        const blob = await response.blob();
-
-        const objectUrl = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        URL.revokeObjectURL(objectUrl);
-    }
-    window.downloadFile = downloadFile;
 
     function renderAttachments(items) {
         if (!attachmentWrap) return;
@@ -247,19 +230,37 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             if (url) {
-                const href = url.startsWith('http') ? url : (API_BASE + (url.startsWith('/') ? '' : '/') + url);
+                const href = url.startsWith('http')
+                    ? url
+                    : (API_BASE + (url.startsWith('/') ? '' : '/') + url);
+
+                const attachmentId = it.attachmentId || it.AttachmentId;
+
                 return `
                     <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2">
-                        <a class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none text-reset" href="${href}" target="_blank" rel="noopener noreferrer">
+
+                        <a class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none text-reset"
+                           href="${href}"
+                           target="_blank">
+
                             <div class="uploaded-icon">
-                                <i class="bi ${iconClass}" style="color:${iconColor}; font-size:2rem"></i>
+                                <i class="bi ${iconClass}"
+                                   style="color:${iconColor}; font-size:2rem"></i>
                             </div>
+
                             <div class="flex-grow-1">
                                 <div class="fw-bold">${escapeHtml(displayName)}</div>
                                 <div class="text-muted small">${escapeHtml(sizeText)}</div>
                             </div>
+
                         </a>
-                        <a class="btn btn-sm btn-outline-primary" href="${href}" target="_blank" download="${escapeHtml(displayName)}" onclick="event.stopPropagation();">Download</a>
+
+                        <button class="btn btn-sm btn-outline-primary download-btn"
+                                data-attachment-id="${attachmentId}"
+                                data-name="${escapeHtml(displayName)}">
+                            Download
+                        </button>
+
                     </div>
                 `;
             }
@@ -278,6 +279,77 @@ document.addEventListener("DOMContentLoaded", async function () {
         }).join('');
 
         attachmentWrap.innerHTML = html;
+
+        document.querySelectorAll(".download-btn").forEach(btn => {
+
+            btn.addEventListener("click", async function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const attachmentId = this.dataset.attachmentId;
+
+                if (!attachmentId) {
+                    alert("Attachment ID not found.");
+                    return;
+                }
+
+                const token = window.aiaAuth && window.aiaAuth.getToken();
+
+                if (!token) {
+                    window.aiaAuth?.signOut();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${API_BASE}/api/leave/attachment/${attachmentId}/download`,
+                        {
+                            method: "GET",
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        }
+                    );
+
+                    if (response.status === 401) {
+                        window.aiaAuth?.signOut();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        console.error(
+                            "Download failed:",
+                            response.status,
+                            response.statusText
+                        );
+
+                        alert("Failed to download attachment.");
+                        return;
+                    }
+
+                    const blob = await response.blob();
+
+                    const downloadUrl = URL.createObjectURL(blob);
+
+                    const a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = this.dataset.name || "attachment";
+
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    URL.revokeObjectURL(downloadUrl);
+
+                } catch (err) {
+                    console.error("Download error:", err);
+                    alert("Failed to download attachment.");
+                }
+
+            });
+
+        });
     }
 
 

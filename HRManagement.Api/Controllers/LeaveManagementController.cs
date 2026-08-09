@@ -655,5 +655,59 @@ namespace HRManagement.Api.Controllers
             }
         }
 
+
+        [Authorize]
+        [HttpGet]
+        [Route("attachment/{attachmentId}/download")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> DownloadAttachment([FromRoute] int attachmentId, CancellationToken cancellationToken)
+        {
+            string objectName = nameof(DownloadAttachment);
+
+            try
+            {
+                _logger.LogInformation("Start {Service}.", objectName);
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrWhiteSpace(userIdClaim))
+                    return Unauthorized("UserId not found in token");
+
+                if (!int.TryParse(userIdClaim, out int requesterId))
+                    return Unauthorized("Invalid UserId in token");
+
+                var query = new DownloadLeaveAttachmentQuery(
+                    attachmentId,
+                    requesterId);
+
+                var response = await _mediator
+                    .Send(query, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (response.IsFailure)
+                {
+                    return NotFound(response.Error);
+                }
+
+                var file = response.Value;
+
+                _logger.LogInformation("End {Service}.", objectName);
+
+                return File(
+                    file.Content,
+                    file.ContentType,
+                    file.FileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in {Service}.", objectName);
+                return StatusCode(500, "Failed to download attachment.");
+            }
+        }
+
     }
 }

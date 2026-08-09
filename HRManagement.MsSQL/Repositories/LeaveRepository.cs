@@ -335,6 +335,14 @@ namespace HRManagement.MsSQL.Repositories
             }
         }
 
+        public async Task<LeaveAttachment?> GetAttachmentByAttachmentIdAsync(int attachmentId)
+        {
+            return await _dbContext.LeaveAttachment
+                .FirstOrDefaultAsync(x =>
+                    x.AttachmentId == attachmentId &&
+                    x.IsActive);
+        }
+
         public async Task<List<LeaveTimelineDto>> GetLeaveTimeline(int leaveId)
         {
             var timeline = new List<LeaveTimelineDto>();
