@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
     <link rel="stylesheet" href="~/apps/modules/leave/css/dashboard.css" asp-append-version="true" />
     <style>
         #leaveTableBody tr:hover {
@@ -92,7 +93,7 @@
                         <div class="d-flex justify-content-between mb-1">
                             <small>
                                 Paid Leave
-                                <i class="bi bi-info-circle ms-1 text-secondary" style="color:#0f172a !important"
+                                <i class="bi bi-info-circle ms-1 text-secondary" style="font-size: 0.8rem;color:#0f172a !important"
                                    tabindex="0"
                                    role="button"
                                    data-bs-toggle="popover"
@@ -101,10 +102,9 @@
                                    data-bs-html="true"
                                    data-bs-custom-class="info-popover"
                                    data-bs-content="
-                                    <ul>
-                                    <li><strong>Paid Leave is leave with available quota.</strong></li>
-                                    <li><strong>The amount shown represents used Paid Leave requests.</strong></li>
-                                    </ul>">
+                                    <strong>Leave with pay: </strong>
+                                    Your salary remains unchanged during the leave period.
+                                    ">
                                 </i>
                             </small>
 
@@ -123,7 +123,7 @@
                         <div class="d-flex justify-content-between mb-1">
                             <small>
                                 Unpaid Leave
-                                <i class="bi bi-info-circle ms-1 text-secondary" style="color:#0f172a !important"
+                                <i class="bi bi-info-circle ms-1 text-secondary" style="font-size: 0.8rem; color:#0f172a !important"
                                    tabindex="0"
                                    role="button"
                                    data-bs-toggle="popover"
@@ -132,10 +132,9 @@
                                    data-bs-html="true"
                                    data-bs-custom-class="info-popover"
                                    data-bs-content="
-                                    <ul>
-                                    <li><strong>Unpaid Leave does not reduce leave quota.</strong></li>
-                                    <li><strong>It can be requested even when leave balance is insufficient.</strong></li>
-                                    </ul>">
+                                    <strong>Leave without pay: </strong>
+                                    your salary may be reduced for the leave period.
+                                   ">
                                 </i>
                             </small>
 
@@ -155,8 +154,7 @@
 
 <div class="card mx-10 mb-15">
     <div class="card-body ps-0 pe-0">
-        <div class="d-flex align-items-center justify-content-between mb-3 px-4"
-             style="overflow-x:auto; gap:1rem;">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-4" style="overflow-y: hidden; overflow: visible;">
             <div>
                 <div class="leave-filter ms-7">
                     <button class="filter-btn active" data-status="pending">
@@ -176,10 +174,16 @@
             <div class="d-flex align-items-center flex-shrink-0"
                  style="gap:1rem;">
                 <label class="me-2">Sort By:</label>
-                <select id="sortSelect" class="form-select form-select-sm me-3" style="width:160px;">
-                    <option selected>newest</option>
-                    <option>oldest</option>
-                </select>
+                
+                <div class="sort-select">
+                    <select id="sortSelect">
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                    </select>
+
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+
                 <a href="/Leave/Employee/NewRequest"
                        class="btn btn-danger d-flex align-items-center justify-content-center"
                        style="
@@ -224,9 +228,24 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script src="~/apps/modules/leave/js/dashboard.js" asp-append-version="true"></script>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                new TomSelect('#sortSelect', {
+                    create: false,
+                    allowEmptyOption: false,
+                    searchField: [],
+                    controlInput: null,
+                    maxOptions: null,
+                    dropdownParent: 'body'
+                });
+            } catch (e) {
+                console.warn('TomSelect init failed', e);
+            }
+
             const u = window.aiaAuth ? window.aiaAuth.getUserInfo() : null;
             const nameEl = document.querySelector('h2.fw-bold');
             if (u && (u.fullName || u.name) && nameEl) {

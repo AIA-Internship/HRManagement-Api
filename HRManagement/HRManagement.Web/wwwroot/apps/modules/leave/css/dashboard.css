@@ -54,10 +54,10 @@
 .popover.info-popover .popover-body {
     color: #333;
     font-size: 0.9rem;
-    padding-left: 1.2rem;
-    margin-top: 1rem;
+    padding-left: 2rem;
     margin-right: 0.9rem;
 }
+
 
 .popover .popover-arrow::before,
 .popover .popover-arrow::after {
@@ -144,3 +144,158 @@
         outline: none;
         box-shadow: none;
     }
+
+.custom-select-wrapper {
+    position: relative;
+    width: 160px;
+}
+
+    .custom-select-wrapper select {
+        width: 100%;
+        height: 42px;
+        padding: 0 2.5rem 0 0.875rem; 
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: #fff;
+    }
+
+.custom-arrow {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none; 
+    color: #667085;
+    font-size: 14px;
+}
+
+.ts-control > input {
+    display: none !important;
+}
+
+.sort-select {
+    position: relative;
+    width: 140px;
+}
+
+    .sort-select select {
+        width: 100%;
+        height: 42px;
+        padding: 0 32px 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background-color: #ffffff;
+        font-size: 14px;
+        font-weight: 500; 
+        color: #374151;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        outline: none !important;
+    }
+
+        .sort-select select:hover {
+            border-color: #f87171; 
+        }
+
+        .sort-select select:focus,
+        .sort-select select:focus-visible,
+        .sort-select select:active {
+            outline: none !important;
+            outline-offset: 0 !important;
+            border-color: #ef4444 !important; 
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important; 
+            font-weight: 500 !important; 
+        }
+    .sort-select select:focus {
+        outline: none;
+        border-color: #e63946;
+    }
+
+    .sort-select i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+
+.ts-wrapper.single .ts-control {
+    border-radius: 8px !important;
+    border: 1px solid #D1D5DB !important; 
+    background-color: #ffffff !important;
+    padding: 8px 36px 8px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+.ts-wrapper.single.focus .ts-control {
+    border-color: #dc3545 !important;
+}
+
+.ts-dropdown {
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important; 
+    margin-top: 4px !important;
+    z-index: 9999 !important;
+}
+
+    .ts-dropdown .ts-dropdown-content {
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+
+    .ts-dropdown .option {
+        padding: 10px 14px !important;
+        font-size: 14px !important;
+        color: #374151 !important;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .ts-dropdown .option:hover,
+    .ts-dropdown .option.active,
+    .ts-dropdown .option.selected {
+        background-color: #dc3545 !important; 
+        color: #ffffff !important; 
+    }
+
+
+    .ts-dropdown .ts-item,
+    .ts-dropdown .option {
+        background-color: #ffffff; 
+        color: #333333;
+        transition: background-color 0.2s ease; 
+    }
+
+        .ts-dropdown .ts-item:hover,
+        .ts-dropdown .option:hover {
+            background-color: red;
+            color: #ffffff;
+        }
+
+.ts-wrapper.focus .ts-control,
+.ts-wrapper.single.focus .ts-control,
+.ts-wrapper.single .ts-control:focus,
+.ts-control:focus {
+    border-color: #E63946 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.ts-control {
+    outline: none !important;
+    box-shadow: none !important;
+}

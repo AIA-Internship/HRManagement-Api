@@ -1,4 +1,4 @@
-﻿namespace HRManagement.Domain.Interfaces;
+﻿using HRManagement.Domain.Models.Response.Shared;
 
 public interface IFileStorageService
 {
@@ -6,5 +6,9 @@ public interface IFileStorageService
         string fileName,
         Stream content,
         string contentType,
+        CancellationToken cancellationToken = default);
+
+    Task<FileDownloadResult?> DownloadBlobAsync(
+        string fileName,
         CancellationToken cancellationToken = default);
 }
