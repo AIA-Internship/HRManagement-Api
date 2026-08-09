@@ -14,5 +14,6 @@ namespace HRManagement.Domain.Models.Tables
 
         [Column("modified_utc_date")]
         public DateTime ModifiedUtcDate { get; set; }
+
     }
 }

@@ -17,12 +17,13 @@ namespace HRManagement.Application.Features.Leave.Commands
     {
         public int LeaveId { get; set; }
         public int RequestId { get; set; }
+        public string? SupervisorComment { get; set; }
 
-
-        public RejectedLeaveRequestCommand(int id, int requestId)
+        public RejectedLeaveRequestCommand(int id, int requestId, string? supervisorComment = null)
         {
             LeaveId = id;
             RequestId = requestId;
+            SupervisorComment = supervisorComment;
         }
     }
 
@@ -57,7 +58,9 @@ namespace HRManagement.Application.Features.Leave.Commands
                 // change status to rejected
                 leaveRequest.LeaveStatus = 3;
                 leaveRequest.IsCompleted = 0;
+                leaveRequest.SupervisorComment = request.SupervisorComment;
                 await _repo.updateLeaveRequest(leaveRequest);
+                LeaveRequestHistory history = new LeaveRequestHistory { LeaveId = leaveRequest.LeaveId, ModifiedUtcDate = DateTime.Now };
 
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress("Leave Management", config.email));

@@ -317,15 +317,22 @@ namespace HRManagement.MsSQL.Repositories
         }
         public async Task<List<LeaveRequestModel>> getLeaveRequestBySupervisorId(int supervisorId, int max)
         {
-            var result = await _dbContext.LeaveRequest
-                .Where(x => x.SupervisorId == supervisorId && x.IsDeleted == 0)
-                .OrderBy(x => x.LeaveStatus)
-                .ThenBy(x => x.CreatedUtcDate)
-                .Take(max)
-                .ToListAsync();
+            try
+            {
+                var result = await _dbContext.LeaveRequest
+                    .Where(x => x.SupervisorId == supervisorId && x.IsDeleted == 0)
+                    .OrderBy(x => x.LeaveStatus)
+                    .ThenByDescending(x => x.CreatedUtcDate)
+                    .Take(max)
+                    .ToListAsync();
 
-
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return new List<LeaveRequestModel>();
+            }
         }
 
         public async Task<List<LeaveTimelineDto>> GetLeaveTimeline(int leaveId)

@@ -34,20 +34,29 @@ namespace HRManagement.Application.Features.Leave.Queries
             CancellationToken cancellationToken)
         {
             _logger.LogTrace("Executing handler for request : {request}",
-                nameof(GetLeaveRequestByRequesterQueryHandler));
+                nameof(GetLeaveRequestBySupervisorIdHandler));
 
             try
             {
                 var entity = await _repo.getLeaveRequestBySupervisorId(request.SupervisorId, request.Max);
 
-                if (entity == null) return ApiHelperResponse.Failed<List<ReadLeaveRequestDto>>("data not found in system");
+                if (entity == null || entity.Count == 0) return ApiHelperResponse.Success("data retrieved successfully", new List<ReadLeaveRequestDto>());
 
 
                 List<ReadLeaveRequestDto> data = new List<ReadLeaveRequestDto>();
 
                 foreach (var d in entity)
                 {
-                    data.Add(mapToReadDto(d));
+                    try
+                    {
+                        data.Add(mapToReadDto(d));
+                    }
+                    catch (Exception mapEx)
+                    {
+                        _logger.LogError(mapEx, "Error mapping leave request {LeaveId}", d?.LeaveId);
+                        Console.WriteLine($"Error mapping leaveId {d?.LeaveId}: {mapEx}");
+                        // Continue with next record instead of failing completely
+                    }
                 }
 
 
@@ -55,6 +64,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error in GetLeaveRequestBySupervisorIdHandler");
                 Console.WriteLine(ex.ToString());
                 return ApiHelperResponse.Failed<List<ReadLeaveRequestDto>>("Failed to read leave request");
             }

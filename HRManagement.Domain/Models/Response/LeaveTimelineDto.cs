@@ -8,5 +8,6 @@ namespace HRManagement.Domain.Models.Response
     {
         public string? Status { get; set; }
         public DateTime ModifiedUtcDate { get; set; }
+        public string? reason { get; set; }
     }
 }

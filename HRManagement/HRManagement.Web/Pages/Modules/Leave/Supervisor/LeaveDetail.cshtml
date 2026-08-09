@@ -87,6 +87,193 @@
                 opacity: .6;
                 pointer-events: none;
             }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(16, 24, 40, .45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            width: 420px;
+            max-width: 90vw;
+            box-shadow: 0 8px 24px rgba(16, 24, 40, .18);
+            pointer-events: auto; /* overrides whatever global rule is zeroing this out */
+        }
+
+        .modal-title {
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .modal-desc {
+            color: #667085;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #344054;
+            margin-bottom: 6px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            border: 1px solid #D0D5DD;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-modal-cancel {
+            border: 1px solid #D0D5DD;
+            background: #fff;
+            color: #344054;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .btn-modal-confirm {
+            border: 1px solid #E31837;
+            background: #E31837;
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1;
+        }
+
+            .btn-modal-confirm:disabled {
+                opacity: .6;
+                pointer-events: none;
+            }
+
+        .btn-modal-ok {
+            width: 100%;
+            border: none;
+            background: #E31837;
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        /* Status-colored left accent on the summary card, matched to Figma */
+        .request-summary {
+            border-left: 4px solid transparent;
+        }
+
+        .accent-pending {
+            border-left-color: #F79009;
+        }
+
+        .accent-approved {
+            border-left-color: #12B76A;
+        }
+
+        .accent-rejected {
+            border-left-color: #E31837;
+        }
+
+        /* Timeline layout */
+        .timeline {
+            position: relative;
+            padding-left: 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .timeline-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .timeline-icon-default {
+            background: #F2F4F7;
+            color: #667085;
+        }
+
+        .timeline-icon-approved {
+            background: #ECFDF3;
+            color: #12B76A;
+        }
+
+        .timeline-icon-rejected {
+            background: #FEF3F2;
+            color: #E31837;
+        }
+
+        .timeline-line {
+            width: 2px;
+            flex: 1;
+            background: #EAECF0;
+            margin: 4px 0;
+            min-height: 24px;
+        }
+
+        .timeline-content {
+            padding-bottom: 20px;
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #101828;
+        }
+
+        .timeline-desc {
+            font-size: 13px;
+            color: #667085;
+            margin-top: 2px;
+            max-width: 260px;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #98A2B3;
+            margin-top: 4px;
+        }
     </style>
 }
 
@@ -194,6 +381,51 @@
                     <!-- Timeline entries will be rendered dynamically by JS -->
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <!-- Approve confirm -->
+    <div class="modal-overlay d-none" id="approveConfirmModal">
+        <div class="modal-dialog">
+            <h5 class="modal-title">Approve Request</h5>
+            <p class="modal-desc">Are you sure you want to approve this request?</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" type="button" data-close="approveConfirmModal">Cancel</button>
+                <button class="btn-modal-confirm" type="button" id="approveConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve success -->
+    <div class="modal-overlay d-none" id="approveSuccessModal">
+        <div class="modal-dialog">
+            <h5 class="modal-title">Approved</h5>
+            <p class="modal-desc">The request has been approved</p>
+            <button class="btn-modal-ok" type="button" id="approveSuccessOkBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Reject confirm (with reason) -->
+    <div class="modal-overlay d-none" id="rejectConfirmModal">
+        <div class="modal-dialog">
+            <h5 class="modal-title">Reject Request</h5>
+            <p class="modal-desc">Are you sure you want to reject this request? Please provide a reason before confirming.</p>
+            <label class="modal-label" for="rejectReasonInput">REJECT REASON<span class="text-danger">*</span></label>
+            <textarea class="modal-textarea" id="rejectReasonInput" rows="4"></textarea>
+            <div class="text-danger small d-none mt-1" id="rejectReasonError">A reason is required.</div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" type="button" data-close="rejectConfirmModal">Cancel</button>
+                <button class="btn-modal-confirm" type="button" id="rejectConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject success -->
+    <div class="modal-overlay d-none" id="rejectSuccessModal">
+        <div class="modal-dialog">
+            <h5 class="modal-title">Rejected</h5>
+            <p class="modal-desc">The request has been rejected</p>
+            <button class="btn-modal-ok" type="button" id="rejectSuccessOkBtn">OK</button>
         </div>
     </div>
 </div>

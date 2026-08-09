@@ -118,6 +118,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
+
+   
+
+
     // Fetch requester (employee) info for the "Submitted By" field
     const requesterId = getField(dto, 'requesterDisplayId');
     let employee = null;
@@ -312,6 +316,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     const lastEl = document.getElementById('lastUpdated');
     if (lastEl) lastEl.textContent = formatDateTimeWib(decisionDate || created);
 
+    //timeline
+    // Fetch history rows for the timeline (separate from the leave request itself)
+    let historyRows = [];
+    try {
+        const historyResult = await apiGet(`/api/leave/${leaveId}/timeline`);
+        if (Array.isArray(historyResult)) historyRows = historyResult;
+    } catch (err) {
+        console.warn('Failed to fetch leave request history:', err);
+    }
+
+    // "Changed by" always comes from the leave request itself, not from the
+    // history row — per spec.
+    const lastModifiedBy = getField(dto, 'lastModifiedBy', 'lastModifiedByName', 'changedBy') || '-';
+
     (function renderTimeline() {
         const timeline = document.getElementById('timelineList');
         if (!timeline) return;
@@ -319,42 +337,65 @@ document.addEventListener("DOMContentLoaded", async function () {
         const createdText = formatDateTimeWib(created);
         const idPart = leaveId ? `REQ${escapeHtml(leaveId)}` : 'REQ-';
 
+        // First entry: always the original submission
         let html = `
-        <li class="mb-4 d-flex">
-            <div class="timeline-marker mt-2">
-                <div class="timeline-icon">
-                    <i class="bi bi-clock-history fs-2"></i>
-                </div>
+    <li class="timeline-item">
+        <div class="timeline-marker">
+            <div class="timeline-icon timeline-icon-default">
+                <i class="bi bi-clock-history"></i>
             </div>
-            <div>
-                <div class="fw-bold">${idPart} Requested</div>
-                <div class="small text-muted">
-                    Request submitted by ${escapeHtml(employee?.fullName || '-')} for ${escapeHtml(leaveTypeText)}.
+            <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+            <div class="timeline-title">${idPart} Requested</div>
+            <div class="timeline-desc">
+                Request submitted by ${escapeHtml(employee?.fullName || '-')} for '${escapeHtml(leaveTypeText)}'.
+            </div>
+            <div class="timeline-date">${createdText}</div>
+        </div>
+    </li>
+    `;
+
+        // History rows: reason column literally drives the label + icon
+        historyRows.forEach((row, i) => {
+            const reasonRaw = String(getField(row, 'reason') || '').trim();
+            const noteText = getField(row, 'description', 'comment', 'note', 'remarks') || reasonRaw;
+            const rowDate = formatDateTimeWib(getField(row, 'createdUtcDate', 'date', 'changedDate'));
+
+            let label, iconClass, iconVariant;
+            if (reasonRaw.toLowerCase() === 'rejected') {
+                label = `Rejected by ${escapeHtml(lastModifiedBy)}`;
+                iconClass = 'bi-x-circle';
+                iconVariant = 'timeline-icon-rejected';
+            } else if (reasonRaw.toLowerCase() === 'approved') {
+                label = `Approved by ${escapeHtml(lastModifiedBy)}`;
+                iconClass = 'bi-check-lg';
+                iconVariant = 'timeline-icon-approved';
+            } else {
+                // default style — anything that isn't explicitly Approved/Rejected
+                label = escapeHtml(reasonRaw || 'Updated');
+                iconClass = 'bi-arrow-repeat';
+                iconVariant = 'timeline-icon-default';
+            }
+
+            const isLast = i === historyRows.length - 1;
+
+            html += `
+        <li class="timeline-item">
+            <div class="timeline-marker">
+                <div class="timeline-icon ${iconVariant}">
+                    <i class="bi ${iconClass}"></i>
                 </div>
-                <div class="small text-muted">${createdText}</div>
+                ${isLast ? '' : '<div class="timeline-line"></div>'}
+            </div>
+            <div class="timeline-content">
+                <div class="timeline-title">${label}</div>
+                ${noteText ? `<div class="timeline-desc">"${escapeHtml(noteText)}"</div>` : ''}
+                <div class="timeline-date">${rowDate}</div>
             </div>
         </li>
         `;
-
-        if (statusKey === 'Approved' || statusKey === 'Rejected') {
-            const decisionText = formatDateTimeWib(decisionDate);
-            const label = statusKey === 'Approved' ? 'Approved' : 'Rejected';
-            const icon = statusKey === 'Approved' ? 'bi-check2-circle' : 'bi-x-circle';
-
-            html += `
-            <li class="mb-4 d-flex">
-                <div class="timeline-marker mt-2">
-                    <div class="timeline-icon">
-                        <i class="bi ${icon} fs-2"></i>
-                    </div>
-                </div>
-                <div>
-                    <div class="fw-bold">${idPart} ${label}</div>
-                    <div class="small text-muted">${decisionText}</div>
-                </div>
-            </li>
-            `;
-        }
+        });
 
         timeline.innerHTML = html;
     })();
@@ -368,35 +409,75 @@ document.addEventListener("DOMContentLoaded", async function () {
     const approveBtn = document.getElementById('approveBtn');
     const rejectBtn = document.getElementById('rejectBtn');
 
+
+    console.log('Wiring approve/reject buttons', { approveBtn, rejectBtn, actionRow });
+    // --- Modal helpers ---
+    function openModal(id) {
+        document.getElementById(id)?.classList.remove('d-none');
+    }
+    function closeModal(id) {
+        document.getElementById(id)?.classList.add('d-none');
+    }
+    document.querySelectorAll('[data-close]').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(btn.dataset.close));
+    });
+
     if (approveBtn) {
-        approveBtn.addEventListener('click', async function () {
-            if (!confirm('Approve this leave request?')) return;
-            approveBtn.disabled = true;
-            rejectBtn.disabled = true;
+        approveBtn.addEventListener('click', () => openModal('approveConfirmModal'));
+    }
+
+    const approveConfirmBtn = document.getElementById('approveConfirmBtn');
+    if (approveConfirmBtn) {
+        approveConfirmBtn.addEventListener('click', async function () {
+            approveConfirmBtn.disabled = true;
             try {
-                await apiPost(`/api/leave/approve/${leaveId}`);
-                window.location.href = '/Leave/Supervisor/Dashboard';
+                await apiPost(`/api/leave/approve-request/${leaveId}`);
+                closeModal('approveConfirmModal');
+                openModal('approveSuccessModal');
             } catch (err) {
                 alert('Failed to approve the request. Please try again.');
-                approveBtn.disabled = false;
-                rejectBtn.disabled = false;
+            } finally {
+                approveConfirmBtn.disabled = false;
             }
         });
     }
 
+    document.getElementById('approveSuccessOkBtn')?.addEventListener('click', function () {
+        window.location.href = '/Leave/Supervisor/Dashboard';
+    });
+
     if (rejectBtn) {
-        rejectBtn.addEventListener('click', async function () {
-            if (!confirm('Reject this leave request?')) return;
-            approveBtn.disabled = true;
-            rejectBtn.disabled = true;
+        rejectBtn.addEventListener('click', () => openModal('rejectConfirmModal'));
+    }
+
+    const rejectConfirmBtn = document.getElementById('rejectConfirmBtn');
+    if (rejectConfirmBtn) {
+        rejectConfirmBtn.addEventListener('click', async function () {
+            const reasonInput = document.getElementById('rejectReasonInput');
+            const errorEl = document.getElementById('rejectReasonError');
+            const reason = reasonInput.value.trim();
+
+            if (!reason) {
+                errorEl.classList.remove('d-none');
+                reasonInput.focus();
+                return;
+            }
+            errorEl.classList.add('d-none');
+
+            rejectConfirmBtn.disabled = true;
             try {
-                await apiPost(`/api/leave/reject-leave-request/${leaveId}`);
-                window.location.href = '/Leave/Supervisor/Dashboard';
+                await apiPost(`/api/leave/rejected-request/${leaveId}`, { reason });
+                closeModal('rejectConfirmModal');
+                openModal('rejectSuccessModal');
             } catch (err) {
                 alert('Failed to reject the request. Please try again.');
-                approveBtn.disabled = false;
-                rejectBtn.disabled = false;
+            } finally {
+                rejectConfirmBtn.disabled = false;
             }
         });
     }
+
+    document.getElementById('rejectSuccessOkBtn')?.addEventListener('click', function () {
+        window.location.href = '/Leave/Supervisor/Dashboard';
+    });
 });

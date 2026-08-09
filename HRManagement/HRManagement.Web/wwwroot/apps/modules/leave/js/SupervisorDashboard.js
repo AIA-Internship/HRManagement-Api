@@ -87,10 +87,12 @@ function isAuthenticated() {
     return !!u;
 }
 function mergeData() {
-    if (requests.length === 0) {
-        renderTable()
-        return
-    }
+        updateCalendarVisibility();
+
+        if (requests.length === 0) {
+            renderTable();
+            return;
+        }
     requests = requests.map(req => {
 
         const emp = employees.find(e => e.id === req.requesterId);
@@ -550,7 +552,17 @@ function applyFilters() {
     currentPage = 1;
     renderTable();
 }
+function updateCalendarVisibility() {
+    const calendarCard = document.getElementById("calendarCard");
 
+    if (!calendarCard) return;
+
+    if (requests.length === 0) {
+        calendarCard.style.display = "none";
+    } else {
+        calendarCard.style.display = "";
+    }
+}
 function main() {
     addlistener();
     addSearchLogic();

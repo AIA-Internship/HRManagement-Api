@@ -358,14 +358,14 @@ namespace HRManagement.Api.Controllers
             {
                 _logger.LogInformation("Start {Service}.", objectName);
 
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                if (userIdClaim == null)
-                    return Unauthorized("UserId not found in token");
+                //if (userIdClaim == null)
+                //    return Unauthorized("UserId not found in token");
 
-                int requesterId = int.Parse(userIdClaim);
+                //int requesterId = int.Parse(userIdClaim);
 
-                var query = new GetLeaveRequestByIdQuery(id, requesterId);
+                var query = new GetLeaveRequestByIdQuery(id);
 
                 var response = await this
                     .ValidateAndExecute(query, c => _mediator.Send(query))
@@ -533,7 +533,7 @@ namespace HRManagement.Api.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("approve-request")]
+        [Route("approve-request/{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
@@ -550,7 +550,7 @@ namespace HRManagement.Api.Controllers
                     return Unauthorized("UserId not found in token");
 
                 int userId = int.Parse(userIdClaim);
-                var command = new ApprovedLeaveRequestCommand(id, userId);
+                var command = new ApprovedLeaveRequestCommand(id);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
                 _logger.LogInformation("End {Service}.", objectName);
 
@@ -568,7 +568,7 @@ namespace HRManagement.Api.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<ApiResponse>> rejectedEmail([FromRoute] int id)
+        public async Task<ActionResult<ApiResponse>> rejectedEmail([FromRoute] int id, [FromBody] RejectLeaveRequestDto? rejectDto = null)
         {
             string objectName = nameof(rejectedEmail).ToString();
 
@@ -583,7 +583,7 @@ namespace HRManagement.Api.Controllers
                     return Unauthorized("UserId not found in token");
 
                 int userId = int.Parse(userIdClaim);
-                var command = new RejectedLeaveRequestCommand(id, userId);
+                var command = new RejectedLeaveRequestCommand(id, userId, rejectDto?.SupervisorComment);
                 var response = await this.ValidateAndExecute(command, (c) => _mediator.Send(command)).ConfigureAwait(false);
                 _logger.LogInformation("End {Service}.", objectName);
 

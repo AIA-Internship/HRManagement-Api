@@ -80,6 +80,7 @@ namespace HRManagement.Application.Features.Leave.Queries
             {
                 leaveId = model.LeaveId,
                 requesterId = model.RequesterId,
+                requesterDisplayId = model.RequesterDisplayId,
                 supervisorId = model.SupervisorId,
                 leaveDescription = model.LeaveDescription,
                 leaveStatus = model.LeaveStatus.ToString(),
