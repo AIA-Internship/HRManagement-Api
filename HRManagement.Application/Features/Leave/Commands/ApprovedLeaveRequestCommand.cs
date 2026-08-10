@@ -69,7 +69,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                 leaveRequest.LeaveStatus = 2;
                 leaveRequest.IsCompleted = 1;
                 await _repo.updateLeaveRequest(leaveRequest);
-                LeaveRequestHistory history = new LeaveRequestHistory { LeaveId = leaveRequest.LeaveId, ModifiedUtcDate = DateTime.Now, Reason = "Approved" };
+                LeaveRequestHistory history = new LeaveRequestHistory { LeaveId = leaveRequest.LeaveId, ModifiedUtcDate = DateTime.Now};
 
                 //email send
                 var message = new MimeMessage();

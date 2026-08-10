@@ -41,6 +41,24 @@ namespace HRManagement.Application.Features.Leave.Commands
                 if (!result)
                     return ApiHelperResponse.Failed("Failed to delete leave request");
 
+                try
+                {
+                    if (existing.LeaveStatus == 2) 
+                    {
+                        var balance = await _repo.getLeaveBalanceById(existing.RequesterId);
+                        if (balance != null)
+                        {
+                            balance.LeaveBalance += existing.DayAmount;
+                            await _repo.updateLeaveBalance(balance);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log and continue; deletion already succeeded but balance restore failed
+                    _logger.LogError(ex, "Failed to restore leave balance after deleting leave request {LeaveId}", existing.LeaveId);
+                }
+
                 return ApiHelperResponse.Success();
             }
             catch (Exception ex)

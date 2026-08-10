@@ -387,20 +387,42 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     if (deleteBtn) {
-        deleteBtn.addEventListener("click", async function () {
+        const deleteModalEl = document.getElementById('deleteModal');
+        const deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
 
-            if (!confirm("Delete this leave request?"))
-                return;
-
-            const result = await apiDelete(`/api/leave/${leaveId}`);
-
-            if (result && !result.isError) {
-                alert("Leave request deleted successfully.");
-                window.location.href = "/Leave/Employee/Dashboard";
-            } else {
-                alert(result?.statusMessage ?? "Delete failed.");
+        deleteBtn.addEventListener('click', function () {
+            if (deleteModal) {
+                deleteModal.show();
             }
         });
+
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', async function () {
+                try {
+                    const result = await apiDelete(`/api/leave/${leaveId}`);
+
+                    if (result && !result.isError) {
+                        if (deleteModal) deleteModal.hide();
+
+                        const successModal = new bootstrap.Modal(document.getElementById('deleteSuccessModal'));
+                        successModal.show();
+                    } else {
+                        alert(result?.statusMessage ?? 'Delete failed.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Something went wrong');
+                }
+            });
+        }
+
+        const backToDashboardBtn = document.getElementById('backToDashboardBtn');
+        if (backToDashboardBtn) {
+            backToDashboardBtn.addEventListener('click', function () {
+                window.location.href = '/Leave/Employee/Dashboard';
+            });
+        }
     }
 
     function formatDateTimeWib(input) {
