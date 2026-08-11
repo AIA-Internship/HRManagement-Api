@@ -16,6 +16,8 @@
     {
         Title = "New Leave Request",
         Subtitle = "Please fill out the details below to submit your application for approval.",
+        ShowBackButton = true,
+        BackUrl = "/Leave/Employee/Dashboard",
         Breadcrumbs = new List<BreadcrumbItem> {
             new BreadcrumbItem { Title = "Leave", Url = "/Leave/Employee/Dashboard" },
             new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Employee/Dashboard" },
@@ -173,7 +175,8 @@
 
                             <button type="button"
                                     id="confirmSubmitBtn"
-                                    class="btn btn-danger">
+                                    class="btn btn-danger"
+                                    onclick="this.disabled = true;">
                                 Submit
                             </button>
                         </div>

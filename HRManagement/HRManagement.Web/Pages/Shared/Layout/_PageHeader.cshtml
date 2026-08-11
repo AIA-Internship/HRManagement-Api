@@ -30,19 +30,69 @@
     }
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-5">
-        <div class="d-flex flex-column">
-            <h1 id="@(string.IsNullOrEmpty(Model.Id) ? "page_title_header" : Model.Id)" class="aia-page-title">@Model.Title</h1>
+
+        <div style="display: flex; flex-direction: column;">
+
+            <div style="display: flex; flex-direction: row; align-items: center; gap: 1rem;">
+
+                @if (Model.ShowBackButton)
+                {
+                    <a href="@Model.BackUrl"
+                       class="aia-back-button"
+                       aria-label="Back"
+                       style="
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 27.5px;
+                        height: 27.5px;
+                        background-color: white;
+                        border: 1px solid #e31837;
+                        border-radius: 4px;
+                        text-decoration: none;
+                        transition: all 0.2s ease;
+                        "
+                       onmouseover="
+                        this.style.backgroundColor='#e31837';
+                        this.querySelector('i').style.color='white';
+                        "
+                       onmouseout="
+                        this.style.backgroundColor='white';
+                        this.querySelector('i').style.color='#e31837';
+                        ">
+                        <i class="bi bi-arrow-90deg-left"
+                           style="
+                        color: #e31837;
+                        font-size: 1rem;
+                        margin-top: 2px;
+                        margin-right: 2px;
+                        "></i>
+                    </a>
+                }
+
+                <h1 id="@(string.IsNullOrEmpty(Model.Id) ? "page_title_header" : Model.Id)"
+                    class="aia-page-title"
+                    style="margin: 0;">
+                    @Model.Title
+                </h1>
+
+            </div>
+
             @if (!string.IsNullOrEmpty(Model.Subtitle))
             {
-                <div class="aia-page-subtitle">@Html.Raw(Model.Subtitle)</div>
+                <div class="aia-page-subtitle">
+                    @Html.Raw(Model.Subtitle)
+                </div>
             }
+
         </div>
 
-        @if (Model.RenderActions != null)
-        {
-            <div class="d-flex align-items-center gap-3">
-                @Model.RenderActions
-            </div>
-        }
-    </div>
+    @if (Model.RenderActions != null)
+    {
+        <div class="d-flex align-items-center gap-3">
+            @Model.RenderActions
+        </div>
+    }
+
+</div>
 </div>

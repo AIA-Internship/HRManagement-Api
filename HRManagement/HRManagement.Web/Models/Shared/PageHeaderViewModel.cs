@@ -8,12 +8,17 @@ namespace HRManagement.Web.Models.Shared
         public string Title { get; set; } = string.Empty;
         public string? Subtitle { get; set; }
         public string? Id { get; set; }
+
         public List<BreadcrumbItem> Breadcrumbs { get; set; } = new List<BreadcrumbItem>();
-        
+
         /// <summary>
         /// Optional: Render custom HTML into the action slot (right side)
         /// </summary>
         public IHtmlContent? RenderActions { get; set; }
+
+        // Optional back button
+        public bool ShowBackButton { get; set; } = false;
+        public string? BackUrl { get; set; }
     }
 
     public class BreadcrumbItem

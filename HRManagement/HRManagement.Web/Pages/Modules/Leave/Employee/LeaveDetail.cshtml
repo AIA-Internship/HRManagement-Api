@@ -11,16 +11,20 @@
 }
 
 <div class="mx-11">
-    @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
-    {
-        Title = "Request Detail",
-        Subtitle = "View or cancel leave request",
-        Breadcrumbs = new List<BreadcrumbItem> {
+    <div class="me-11">
+        @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
+        {
+            Title = "Request Detail",
+            Subtitle = "View or cancel leave request",
+            ShowBackButton = true,
+            BackUrl = "/Leave/Employee/Dashboard",
+            Breadcrumbs = new List<BreadcrumbItem> {
             new BreadcrumbItem { Title = "Leave", Url = "/Leave/Employee/Dashboard" },
             new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Employee/Dashboard" },
             new BreadcrumbItem { Title = "LeaveDetail", Url = "/Leave/Employee/LeaveDetail" },
         },
-    })
+        })
+    </div>
 </div>
 
 <div class="mx-11 mb-6">

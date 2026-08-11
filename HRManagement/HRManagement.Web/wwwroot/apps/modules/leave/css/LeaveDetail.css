@@ -242,3 +242,22 @@
         border-color: red;
         color: white;
     }
+
+.aia-page-header-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.aia-page-header-title {
+    display: flex;
+    flex-direction: column;
+}
+
+    .aia-page-header-title h1 {
+        margin: 0;
+    }
+
+.aia-page-header-subtitle {
+    margin-top: 4px;
+}

@@ -12,14 +12,23 @@
 }
 
 <div class="mx-11">
+    @{
+        var backId = Request.Query["id"].FirstOrDefault();
+        var backUrl = !string.IsNullOrEmpty(backId)
+            ? $"/Leave/Employee/LeaveDetail?id={backId}"
+            : "/Leave/Employee/Dashboard";
+    }
+
     @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel
     {
         Title = "Edit Leave Request",
         Subtitle = "Please fill out the details below to edit your application for approval.",
+        ShowBackButton = true,
+        BackUrl = backUrl,
         Breadcrumbs = new List<BreadcrumbItem> {
             new BreadcrumbItem { Title = "Leave", Url = "/Leave/Employee/Dashboard" },
             new BreadcrumbItem { Title = "Dashboard", Url = "/Leave/Employee/Dashboard" },
-            new BreadcrumbItem { Title = "LeaveDetailEdit", Url = "/Leave/Employee/LeaveDetailEdit" },
+            new BreadcrumbItem { Title = "Leave Detail", Url = backUrl },
         },
     })
 </div>
@@ -168,7 +177,8 @@
 
                             <button type="button"
                                     id="confirmSubmitBtn"
-                                    class="btn btn-danger">
+                                    class="btn btn-danger"
+                                    onclick="this.disabled = true;">
                                 Submit
                             </button>
                         </div>
