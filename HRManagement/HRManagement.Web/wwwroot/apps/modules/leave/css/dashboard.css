@@ -51,13 +51,6 @@
     max-width: 320px;
 }
 
-.popover.info-popover .popover-body {
-    color: #333;
-    font-size: 0.9rem;
-    padding-left: 2rem;
-    margin-right: 0.9rem;
-}
-
 
 .popover .popover-arrow::before,
 .popover .popover-arrow::after {
@@ -298,4 +291,18 @@
 .ts-control {
     outline: none !important;
     box-shadow: none !important;
+}
+
+.popover.info-popover .popover-body {
+    color: #333;
+    font-size: 0.9rem;
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+
+.popover.info-popover .popover-body ul {
+    margin: 1rem; 
+    padding-left: 1rem; 
 }

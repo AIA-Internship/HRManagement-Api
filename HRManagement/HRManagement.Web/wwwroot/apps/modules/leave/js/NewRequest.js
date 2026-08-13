@@ -68,6 +68,14 @@
         window.location.href = "/Leave/Employee/Dashboard";
     });
 
+    // Back to Home button on success modal
+    var backToHomeBtn = document.getElementById('backToHomeBtn');
+    if (backToHomeBtn) {
+        backToHomeBtn.addEventListener('click', function () {
+            window.location.href = '/Leave/Employee/Dashboard';
+        });
+    }
+
     // Use the same API base constant name as other modules
     const API_BASE = "https://localhost:7089";
 
@@ -675,8 +683,21 @@
 
             console.log('leaveResult:', leaveResult);
 
-            // try multiple naming conventions
-            const leaveId = leaveResult?.data?.leaveId || leaveResult?.leaveId || leaveResult?.id;
+            let leaveId = null;
+
+            if (typeof leaveResult?.data === 'number') {
+                leaveId = leaveResult.data;
+            }
+            else if (typeof leaveResult?.content === 'number') {
+                leaveId = leaveResult.content;
+            }
+            else {
+                leaveId = leaveResult?.data?.leaveId
+                    || leaveResult?.data?.id
+                    || leaveResult?.leaveId
+                    || leaveResult?.id
+                    || null;
+            }
 
             if (!leaveId) {
                 alert('Failed to create leave request (no id returned)');
@@ -712,9 +733,16 @@
                 }
             }
 
-            alert('Leave request submitted successfully');
+            const submitModalEl = document.getElementById("submitModal");
+            const submitModal = bootstrap.Modal.getInstance(submitModalEl);
 
-            window.location.reload();
+            if (submitModal) {
+                submitModal.hide();
+            }
+
+            const successModal = new bootstrap.Modal(document.getElementById("successModal"));
+
+            successModal.show();
 
         }
         catch (error) {

@@ -189,10 +189,10 @@ namespace HRManagement.Api.Controllers
         [Authorize]
         [HttpPost]
         [Route("create")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ApiResponse<int>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<ApiResponse>> createLeaveRequest([FromBody] CreateLeaveRequestDto content)
+        public async Task<ActionResult<ApiResponse<int>>> createLeaveRequest([FromBody] CreateLeaveRequestDto content)
         {
             string objectName = nameof(createLeaveRequest);
 
@@ -209,13 +209,16 @@ namespace HRManagement.Api.Controllers
 
                 var command = new CreateLeaveRequestCommand(content);
 
-                var response = await this
-                    .ValidateAndExecute(command, c => _mediator.Send(command))
-                    .ConfigureAwait(false);
+                var result = await _mediator.Send(command);
 
                 _logger.LogInformation("End {Service}.", objectName);
 
-                return response;
+                if (result.IsFailure)
+                {
+                    return BadRequest(result.Error);
+                }
+
+                return Ok(result.Value);
             }
             catch (Exception ex)
             {

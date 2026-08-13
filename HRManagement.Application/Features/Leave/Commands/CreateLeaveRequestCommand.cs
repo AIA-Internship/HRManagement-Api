@@ -11,7 +11,7 @@ using MimeKit;
 
 namespace HRManagement.Application.Features.Leave.Commands
 {
-    public class CreateLeaveRequestCommand : IRequest<Result<ApiResponse>>
+    public class CreateLeaveRequestCommand : IRequest<Result<ApiResponse<int>>>
     {
         public CreateLeaveRequestDto LeaveRequestDto { get; set; }
 
@@ -20,30 +20,29 @@ namespace HRManagement.Application.Features.Leave.Commands
             LeaveRequestDto = leaveRequestDto;
         }
     }
-    
-    internal class CreateLeaveRequestCommandHandler : IRequestHandler<CreateLeaveRequestCommand, Result<ApiResponse>>
+
+    internal class CreateLeaveRequestCommandHandler : IRequestHandler<CreateLeaveRequestCommand, Result<ApiResponse<int>>>
     {
         private readonly ILogger<CreateLeaveRequestCommandHandler> _logger;
         private readonly ILeaveRepository _repo;
         private readonly IEmployeeRepository _employeeRepository;
 
-
         public CreateLeaveRequestCommandHandler(
-            ILeaveRepository repo
-            , ILogger<CreateLeaveRequestCommandHandler> logger
-            , IEmployeeRepository employeeRepository
+            ILeaveRepository repo,
+            ILogger<CreateLeaveRequestCommandHandler> logger,
+            IEmployeeRepository employeeRepository
         )
         {
             _repo = repo;
             _logger = logger;
             _employeeRepository = employeeRepository;
         }
-        public async Task<Result<ApiResponse>> Handle(CreateLeaveRequestCommand request, CancellationToken cancellationToken)
+
+        public async Task<Result<ApiResponse<int>>> Handle(CreateLeaveRequestCommand request, CancellationToken cancellationToken)
         {
             var req = request.LeaveRequestDto;
 
             Employee spv = await _employeeRepository.GetByIdAsync(req.SupervisorId);
-            // Get employee with EmploymentInformation included so DisplayId is available
             Employee emp = await _employeeRepository.GetByIdWithEmploymentAsync(req.RequesterId);
             LeaveTableConfig config = await _repo.getLeaveTableConfig();
 
@@ -52,29 +51,19 @@ namespace HRManagement.Application.Features.Leave.Commands
             {
                 var leaveModel = mapFromCreateDto(request.LeaveRequestDto);
 
-                // Ensure RequesterDisplayId is populated from employee record when not provided
                 if (string.IsNullOrWhiteSpace(leaveModel.RequesterDisplayId))
                 {
-                    // Prefer EmploymentInformation.DisplayId, fall back to NIK or employee Id to guarantee non-empty value
                     leaveModel.RequesterDisplayId = emp?.EmploymentInformation?.DisplayId
                         ?? emp?.NIK
                         ?? emp?.Id.ToString();
                 }
 
-                // Log values to help debug missing display id
-                _logger.LogDebug("CreateLeaveRequest: requesterId={RequesterId}, emp.DisplayId={DisplayId}, emp.NIK={NIK}, leaveModel.RequesterDisplayId={RequesterDisplayId}",
-                    req.RequesterId,
-                    emp?.EmploymentInformation?.DisplayId,
-                    emp?.NIK,
-                    leaveModel.RequesterDisplayId);
-
                 int createdId = await _repo.createLeaveRequest(leaveModel);
 
                 if (createdId <= 0)
                 {
-                    return ApiHelperResponse.Failed("Failed to create leave request");
+                    return ApiHelperResponse.Failed<int>("Failed to create leave request");
                 }
-
                 else
                 {
                     var message = new MimeMessage();
@@ -82,7 +71,7 @@ namespace HRManagement.Application.Features.Leave.Commands
                     message.To.Add(MailboxAddress.Parse(spv.EmployeeEmail));
 
                     message.Subject = LeaveEmailTemplate.GetRequestApprovalToSpvSubject();
-                    message.Body = LeaveEmailTemplate.GetRequestApprovalToSpv(spv.FullName, emp.FullName, DateTime.Now, req.LeaveType , req.leaveStartDate, req.leaveStartDate.AddDays((double)req.DayAmount), config.redirect_link);
+                    message.Body = LeaveEmailTemplate.GetRequestApprovalToSpv(spv.FullName, emp.FullName, DateTime.Now, req.LeaveType, req.leaveStartDate, req.leaveStartDate.AddDays((double)req.DayAmount), config.redirect_link);
 
                     var smtpClient = new SmtpClient();
                     await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
@@ -90,19 +79,17 @@ namespace HRManagement.Application.Features.Leave.Commands
                     await smtpClient.SendAsync(message);
                 }
 
-                return ApiHelperResponse.Success();
-                
+                return ApiHelperResponse.Success(createdId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Result.Failure<ApiResponse>("Failed to create leave request");
+                return Result.Failure<ApiResponse<int>>("Failed to create leave request");
             }
         }
 
         public static LeaveRequestModel mapFromCreateDto(CreateLeaveRequestDto dto)
         {
-
             return new LeaveRequestModel
             {
                 RequesterId = dto.RequesterId,
@@ -122,7 +109,6 @@ namespace HRManagement.Application.Features.Leave.Commands
                 RequesterDisplayId = dto.RequesterDisplayId,
                 SupervisorComment = null
             };
-
         }
 
         public async void sendEmail(CreateLeaveRequestDto dto)
@@ -140,20 +126,16 @@ namespace HRManagement.Application.Features.Leave.Commands
                 message.From.Add(new MailboxAddress(subject, config.email));
                 message.To.Add(MailboxAddress.Parse(supervisor.EmployeeEmail));
 
-                message.Body = LeaveEmailTemplate.GetRequestApprovalToSpv(supervisor.FullName,requester.FullName, request.CreatedUtcDate, request.LeaveType ?? 0, request.LeaveStartDate, request.LeaveStartDate.AddDays((double)request.DayAmount), config.redirect_link);
-
+                message.Body = LeaveEmailTemplate.GetRequestApprovalToSpv(supervisor.FullName, requester.FullName, request.CreatedUtcDate, request.LeaveType ?? 0, request.LeaveStartDate, request.LeaveStartDate.AddDays((double)request.DayAmount), config.redirect_link);
 
                 var smtpClient = new SmtpClient();
                 await smtpClient.ConnectAsync("smtp.office365.com", 587, SecureSocketOptions.StartTls);
                 await smtpClient.AuthenticateAsync(config.email, config.password);
                 await smtpClient.SendAsync(message);
-
-                //return ApiHelperResponse.Success("yes");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                //return null;
             }
         }
     }
