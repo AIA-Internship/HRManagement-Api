@@ -1,4 +1,4 @@
-﻿@page "/PerformanceReview/Assignments/SelfAssessment/{assignmentId}"
+﻿@page "/PerformanceReview/Employee/Assignments/SelfAssessment/{assignmentId}"
 @model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.SelfAssessmentModel
 @{
     ViewData["Title"] = "Self Assessment Detail";
@@ -79,11 +79,11 @@
 
 <div class="px-10">
     <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
-        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+        <a href="/PerformanceReview/Employee/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
             <i class="ki-duotone ki-left fs-7"></i> Performance Review
         </a>
         <span class="text-gray-300">/</span>
-        <a href="/PerformanceReview/Assignments" class="breadcrumb-link">Assignments</a>
+        <a href="/PerformanceReview/Employee/Assignments" class="breadcrumb-link">Assignments</a>
         <span class="text-gray-300">/</span>
         <span class="text-gray-900 fw-semibold">Self Assessment</span>
     </nav>
@@ -371,7 +371,7 @@
     }
 
     // Existing event mechanics retained...
-    function handleCancel() { window.location.href = "/PerformanceReview/Assignments"; }
+    function handleCancel() { window.location.href = "/PerformanceReview/Employee/Assignments"; }
 
     function handleRatingSelection(btn, questionId, value) {
         document.querySelectorAll(`.btn-rating-node-${questionId}`).forEach(el => {
@@ -456,7 +456,7 @@
             }
 
             alert(payload.isDraft ? "Draft self assessment successfully saved!" : "Self assessment submitted successfully!");
-            window.location.href = "/PerformanceReview/Assignments";
+            window.location.href = "/PerformanceReview/Employee/Assignments";
 
         } catch (error) {
             console.error(error);

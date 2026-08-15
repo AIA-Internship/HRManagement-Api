@@ -1,4 +1,4 @@
-﻿@page "/PerformanceReview/Assignments"
+﻿@page "/PerformanceReview/Employee/Assignments"
 @model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.AssignmentsModel
 
 @{
@@ -70,7 +70,7 @@
 <div class="px-10">
     <!-- Cohesive Breadcrumb Navigation -->
     <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
-        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+        <a href="/PerformanceReview/Employee/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
             <i class="ki-duotone ki-left fs-7"></i> Performance Review
         </a>
         <span class="text-gray-300">/</span>
@@ -138,7 +138,6 @@
             if (response.status === 404) return null;
             if (!response.ok) throw new Error("Failed to fetch ongoing plan");
             const parsed = await response.json()
-            console.log("parsed", parsed)
             return parsed;
         }
 
@@ -243,8 +242,8 @@
                 const selfAsst = item.assignments.find(a => a.assessment && a.assessment.assessmentType === 'self-assessment');
                 const selfAsstId = selfAsst ? selfAsst.assignmentId : 0;
 
-                const selfAssessmentUrl = `/PerformanceReview/Assignments/SelfAssessment/${selfAsstId}`;
-                const peerReviewUrl = `/PerformanceReview/Assignments/PeerReview/${item.intervalId}`;
+                const selfAssessmentUrl = `/PerformanceReview/Employee/Assignments/SelfAssessment/${selfAsstId}`;
+                const peerReviewUrl = `/PerformanceReview/Employee/Assignments/PeerReview/${item.intervalId}`;
 
                 return `
                     <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100 ${rowBackgroundClass}">

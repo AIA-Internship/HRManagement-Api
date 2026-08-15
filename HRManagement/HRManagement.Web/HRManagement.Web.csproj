@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Modules\PerformanceReview\Supervisor\" />
     <Folder Include="wwwroot\apps\modules\performance-review\css\" />
   </ItemGroup>
 

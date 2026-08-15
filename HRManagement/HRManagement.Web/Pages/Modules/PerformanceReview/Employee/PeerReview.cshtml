@@ -1,4 +1,4 @@
-﻿@page "/PerformanceReview/Assignments/PeerReview/{intervalNumber}"
+﻿@page "/PerformanceReview/Employee/Assignments/PeerReview/{intervalNumber}"
 @model HRManagement.Web.Pages.Modules.PerformanceReview.Employee.PeerReviewModel
 
 @{
@@ -200,11 +200,11 @@
 
 <div class="px-10">
     <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
-        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+        <a href="/PerformanceReview/Employee/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
             <i class="ki-duotone ki-left fs-7"></i> Performance Review
         </a>
         <span class="text-gray-300">/</span>
-        <a href="/PerformanceReview/Assignments" class="breadcrumb-link">Assignments</a>
+        <a href="/PerformanceReview/Employee/Assignments" class="breadcrumb-link">Assignments</a>
         <span class="text-gray-300">/</span>
         <span class="text-gray-900 fw-semibold">Peer Review History</span>
     </nav>
@@ -669,7 +669,7 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function handleCancel() { window.location.href = "/PerformanceReview/Assignments"; }
+        function handleCancel() { window.location.href = "/PerformanceReview/Employee/Assignments"; }
 
         function buildPayload(isDraftValue) {
             return {
@@ -735,7 +735,7 @@
                 }
 
                 alert(payload.isDraft ? "Draft successfully saved!" : "Evaluations submitted successfully!");
-                window.location.href = "/PerformanceReview/Assignments";
+                window.location.href = "/PerformanceReview/Employee/Assignments";
 
             } catch (error) {
                 console.error(error);

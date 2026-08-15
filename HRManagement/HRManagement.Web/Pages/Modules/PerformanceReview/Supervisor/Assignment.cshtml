@@ -1,0 +1,488 @@
+﻿@page "/PerformanceReview/Supervisor/Assignments"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.AssignmentModel
+
+@{
+    ViewData["Title"] = "Supervisor Assignments";
+}
+
+<style>
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: #4b5563;
+        transition: color 0.15s ease;
+    }
+
+        .breadcrumb-link:hover {
+            color: #111827;
+        }
+
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .badge-status-done {
+        background-color: #e6f4ea !important;
+        color: #137333 !important;
+        border: 1px solid #ceead6 !important;
+    }
+
+    .badge-status-progress {
+        background-color: #fef7e0 !important;
+        color: #b06000 !important;
+        border: 1px solid #feebc8 !important;
+    }
+
+    .badge-status-started {
+        background-color: #fce8e6 !important;
+        color: #c5221f !important;
+        border: 1px solid #fad2cf !important;
+    }
+
+    .assignment-card {
+        transition: all 0.2s ease-in-out;
+        border: 1px solid #f1f5f9;
+    }
+
+        .assignment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        }
+</style>
+
+<div class="px-6 px-lg-10 py-6">
+    <!-- Breadcrumb Navigation -->
+    <nav class="d-flex align-items-center gap-2 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            Performance Review
+        </a>
+        <i class="ki-duotone ki-right fs-8 text-gray-400"></i>
+        <span class="text-gray-800 fw-semibold">Supervisor Assignments</span>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="mb-5">
+        <h1 class="fw-bold text-gray-900 mb-1" id="pageTitle">
+            Assignments
+        </h1>
+        <p class="text-muted fs-6 mb-0">Evaluate and submit performance scores for assigned team members</p>
+    </div>
+
+    <!-- Horizontally Stacked Filter Controls Bar -->
+    <div class="card bg-white p-4 mb-6 shadow-xs border border-gray-200 rounded-2">
+        <div class="d-flex flex-wrap align-items-center gap-3 w-100">
+
+            <!-- Status Filter -->
+            <div class="flex-grow-1 min-w-130px">
+                <select class="form-select form-select-sm form-select-solid fw-semibold" id="statusSelect" onchange="handleFilterChange()">
+                    <option value="ALL">All Status</option>
+                    <option value="DONE">Done</option>
+                    <option value="IN PROGRESS">In Progress</option>
+                    <option value="NOT STARTED">Not Started</option>
+                </select>
+            </div>
+
+            <!-- Plan Select -->
+            <div class="flex-grow-1 min-w-150px">
+                <select class="form-select form-select-sm form-select-solid fw-semibold" id="planSelect" onchange="onPlanUserChanged()">
+                    <option value="">Select Plan...</option>
+                </select>
+            </div>
+
+            <!-- Interval Select -->
+            <div class="flex-grow-1 min-w-180px">
+                <select class="form-select form-select-sm form-select-solid fw-semibold" id="intervalSelect" onchange="onIntervalUserChanged()" disabled>
+                    <option value="">Select Interval...</option>
+                </select>
+            </div>
+
+            <!-- Position Filter -->
+            <div class="flex-grow-1 min-w-150px">
+                <select class="form-select form-select-sm form-select-solid fw-semibold" id="roleSelect" onchange="handleFilterChange()">
+                    <option value="ALL">All Positions</option>
+                </select>
+            </div>
+
+            <!-- Search Input Box -->
+            <div class="position-relative flex-grow-1 min-w-200px">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-gray-500 fs-6"></i>
+                <input type="text" id="searchInput" class="form-select-solid ps-10 form-control form-control-sm min-w-200px fw-semibold" placeholder="Search by name..." oninput="handleFilterChange()" />
+            </div>
+
+            <!-- Sort Toggle Button -->
+            <div>
+                <button class="btn btn-sm btn-light-primary fw-bold d-flex align-items-center gap-1 px-3" id="sortBtn" onclick="toggleSort()">
+                    <i class="bi bi-sort-alpha-down fs-5"></i>
+                    <span id="sortLabel">ASC</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Content List Container -->
+    <div id="assignmentsContainer" class="d-flex flex-column gap-3">
+        <!-- Skeleton Loading State -->
+        <div class="card card-flush bg-white rounded-lg shadow-sm">
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center justify-content-between py-4 px-6 border-bottom border-gray-100">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="skeleton-placeholder h-18px w-150px"></div>
+                            <div class="skeleton-placeholder h-12px w-100px"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-placeholder h-28px w-80px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE = "https://localhost:7089";
+        let rawAssignmentsData = [];
+        let sortAscending = true;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Step 1: Parallel loading of initial lookups and default active dashboard
+            await Promise.all([
+                loadPlanLookups(),
+                loadPositionLookups(),
+                loadSupervisorDashboard(null) // Omit intervalId to let BE load default/current
+            ]);
+        });
+
+        function getAuthHeaders() {
+            const token = window.aiaAuth && window.aiaAuth.getToken();
+            if (!token) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return null;
+            }
+            return {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+        }
+
+        // --- LOOKUP API CALLS ---
+
+        async function loadPlanLookups() {
+            try {
+                const headers = getAuthHeaders();
+                if (!headers) return;
+
+                const response = await fetch(`${API_BASE}/api/plans/lookup`, { headers });
+                if (response.status === 401) { window.aiaAuth.signOut(); return; }
+                if (!response.ok) throw new Error("Failed to load plans");
+
+                const result = await response.json();
+                const plans = result.content || result;
+
+                const planSelect = document.getElementById("planSelect");
+                planSelect.innerHTML = `<option value="">Select Plan...</option>`;
+
+                plans.forEach(plan => {
+                    const opt = document.createElement("option");
+                    opt.value = plan.planId;
+                    opt.textContent = plan.name;
+                    planSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Error loading plans lookup:", err);
+            }
+        }
+
+        async function populateIntervalsForPlan(planId, targetIntervalId = null) {
+            const intervalSelect = document.getElementById("intervalSelect");
+            if (!planId) {
+                intervalSelect.innerHTML = `<option value="">Select Interval...</option>`;
+                intervalSelect.disabled = true;
+                return;
+            }
+
+            try {
+                const headers = getAuthHeaders();
+                if (!headers) return;
+
+                const response = await fetch(`${API_BASE}/api/plans/${planId}/intervals`, { headers });
+                if (response.status === 401) { window.aiaAuth.signOut(); return; }
+                if (!response.ok) throw new Error("Failed to load intervals");
+
+                const result = await response.json();
+                const intervals = result.content || result;
+
+                intervalSelect.innerHTML = `<option value="">Select Interval...</option>`;
+                intervals.forEach(item => {
+                    const opt = document.createElement("option");
+                    opt.value = item.intervalId;
+                    const start = new Date(item.startDate).toLocaleDateString("en-US", { month: 'short', day: '2-digit' });
+                    const end = new Date(item.endDate).toLocaleDateString("en-US", { month: 'short', day: '2-digit', year: 'numeric' });
+                    opt.textContent = `Interval #${item.intervalNumber} (${start} - ${end})`;
+                    intervalSelect.appendChild(opt);
+                });
+
+                intervalSelect.disabled = false;
+
+                if (targetIntervalId) {
+                    intervalSelect.value = targetIntervalId;
+                }
+            } catch (err) {
+                console.error("Error loading intervals:", err);
+            }
+        }
+
+        async function loadPositionLookups() {
+            try {
+                const headers = getAuthHeaders();
+                if (!headers) return;
+
+                const response = await fetch(`${API_BASE}/api/employee/employment-positions/lookup`, { headers });
+                if (response.status === 401) { window.aiaAuth.signOut(); return; }
+                if (!response.ok) throw new Error("Failed to load positions");
+
+                const result = await response.json();
+                const positions = result.content || result;
+
+                const roleSelect = document.getElementById("roleSelect");
+                roleSelect.innerHTML = `<option value="ALL">All Positions</option>`;
+
+                positions.forEach(pos => {
+                    const opt = document.createElement("option");
+                    opt.value = typeof pos === 'string' ? pos : pos.name || pos.positionName;
+                    opt.textContent = typeof pos === 'string' ? pos : pos.name || pos.positionName;
+                    roleSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Error loading positions lookup:", err);
+            }
+        }
+
+        // --- USER EVENT HANDLERS ---
+
+        async function onPlanUserChanged() {
+            const planId = document.getElementById("planSelect").value;
+            await populateIntervalsForPlan(planId);
+
+            // Auto-select first interval when user changes plan manually
+            const intervalSelect = document.getElementById("intervalSelect");
+            if (intervalSelect.options.length > 1) {
+                intervalSelect.selectedIndex = 1;
+                await onIntervalUserChanged();
+            } else {
+                renderEmptyState("No intervals found for the selected plan.");
+            }
+        }
+
+        async function onIntervalUserChanged() {
+            const intervalId = document.getElementById("intervalSelect").value;
+            if (!intervalId) {
+                renderEmptyState("Please select an interval.");
+                return;
+            }
+
+            await loadSupervisorDashboard(intervalId);
+        }
+
+        // --- DASHBOARD DATA & RENDERING ---
+
+        async function loadSupervisorDashboard(intervalId = null) {
+            renderSkeletonState();
+            try {
+                const headers = getAuthHeaders();
+                if (!headers) return;
+
+                const url = new URL(`${API_BASE}/api/assignment/supervisor/dashboard`);
+                if (intervalId) {
+                    url.searchParams.append("intervalId", intervalId);
+                }
+
+                const response = await fetch(url.toString(), {
+                    method: "GET",
+                    headers: headers
+                });
+
+                if (response.status === 401) { window.aiaAuth.signOut(); return; }
+                if (!response.ok) throw new Error("Failed to fetch dashboard data");
+
+                const apiResult = await response.json();
+
+                if (!apiResult || apiResult.isError || !apiResult.content) {
+                    rawAssignmentsData = [];
+                    renderEmptyState("No evaluation assignments found.");
+                    return;
+                }
+
+                const data = apiResult.content;
+
+                // Handle response if wrapped with metadata or directly an array
+                const currentPlanId = data.currentPlanId || (data.assignments?.[0]?.planId);
+                const currentIntervalId = data.currentIntervalId || intervalId || (data.assignments?.[0]?.intervalId);
+                rawAssignmentsData = Array.isArray(data) ? data : (data.assignments || []);
+
+                // Sync dropdown selections on initial load
+                if (!intervalId && currentPlanId && currentIntervalId) {
+                    document.getElementById("planSelect").value = currentPlanId;
+                    await populateIntervalsForPlan(currentPlanId, currentIntervalId);
+                }
+
+                renderDashboardList();
+
+            } catch (error) {
+                console.error(error);
+                renderEmptyState("An error occurred while loading supervisor assignments.");
+            }
+        }
+
+        function handleFilterChange() {
+            renderDashboardList();
+        }
+
+        function toggleSort() {
+            sortAscending = !sortAscending;
+            document.getElementById("sortLabel").innerText = sortAscending ? "ASC" : "DESC";
+            renderDashboardList();
+        }
+
+        function renderDashboardList() {
+            const container = document.getElementById("assignmentsContainer");
+            const searchTerm = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+            const selectedRole = document.getElementById("roleSelect").value;
+            const selectedStatus = document.getElementById("statusSelect").value;
+
+            let filtered = rawAssignmentsData.filter(item => {
+                const matchesName = !searchTerm || (item.subjectName || "").toLowerCase().includes(searchTerm);
+                const matchesRole = selectedRole === "ALL" || item.jobTitle === selectedRole;
+                const itemStatus = item.supervisorAssessment?.status || 'NOT STARTED';
+                const matchesStatus = selectedStatus === "ALL" || itemStatus.toUpperCase() === selectedStatus.toUpperCase();
+
+                return matchesName && matchesRole && matchesStatus;
+            });
+
+            filtered.sort((a, b) => {
+                const nameA = (a.subjectName || '').toLowerCase();
+                const nameB = (b.subjectName || '').toLowerCase();
+                if (nameA < nameB) return sortAscending ? -1 : 1;
+                if (nameA > nameB) return sortAscending ? 1 : -1;
+                return 0;
+            });
+
+            if (filtered.length === 0) {
+                renderEmptyState("No assignments match the selected filters.");
+                return;
+            }
+
+            const itemsHtml = filtered.map(item => {
+                const initials = getInitials(item.subjectName);
+                const status = (item.supervisorAssessment?.status || 'NOT STARTED').toUpperCase();
+
+                let badgeClass = 'badge-status-started';
+                if (status === 'DONE' || status === 'COMPLETED') badgeClass = 'badge-status-done';
+                if (status === 'IN PROGRESS') badgeClass = 'badge-status-progress';
+
+                const targetAssignmentId = item.supervisorAssessment?.assignmentId || 0;
+                const actionUrl = targetAssignmentId > 0 ? `/PerformanceReview/Supervisor/Assess/${targetAssignmentId}` : '#';
+
+                return `
+                    <div class="card card-flush bg-white rounded-2 shadow-xs mb-2 assignment-card">
+                        <div class="d-flex align-items-center justify-content-between py-4 px-6">
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="avatar-circle">
+                                    ${escapeHtml(initials)}
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <a href="${actionUrl}" class="fs-6 fw-bold text-gray-900 text-hover-primary text-decoration-none">
+                                        ${escapeHtml(item.subjectName)}
+                                    </a>
+                                    <span class="fs-7 text-muted fw-semibold">${escapeHtml(item.jobTitle || 'N/A')}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <a href="${actionUrl}" class="badge ${badgeClass} fw-bold px-4 py-2 rounded-1 fs-8 text-uppercase text-decoration-none">
+                                    ${escapeHtml(status)}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = itemsHtml;
+        }
+
+        function getInitials(name) {
+            if (!name) return "N/A";
+            const parts = name.trim().split(" ");
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        function renderSkeletonState() {
+            document.getElementById("assignmentsContainer").innerHTML = `
+                <div class="card card-flush bg-white rounded-lg shadow-sm">
+                    <div class="d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between py-4 px-6 border-bottom border-gray-100">
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="skeleton-placeholder h-40px w-40px"></div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="skeleton-placeholder h-18px w-150px"></div>
+                                    <div class="skeleton-placeholder h-12px w-100px"></div>
+                                </div>
+                            </div>
+                            <div class="skeleton-placeholder h-28px w-80px"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderEmptyState(message) {
+            document.getElementById("assignmentsContainer").innerHTML = `
+                <div class="card card-flush text-center py-12 px-6 border border-dashed border-gray-300 bg-light rounded-2">
+                    <i class="bi bi-inbox fs-3x text-gray-400 mb-3"></i>
+                    <div class="text-gray-800 fw-bold fs-5 mb-1">No Data Found</div>
+                    <p class="text-muted fs-7 m-0">${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+}
