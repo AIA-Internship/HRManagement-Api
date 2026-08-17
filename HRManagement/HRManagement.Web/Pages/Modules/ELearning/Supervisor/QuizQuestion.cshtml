@@ -1,0 +1,147 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.QuizQuestionModel
+@{
+    ViewData["Title"] = "Quiz Question";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/supervisor/quizquestion.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Step Indicator-->
+            <div class="d-flex align-items-center gap-2 mb-4 el-animate" id="el-sv-qq-step-label">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Step Indicator-->
+
+            <!--begin::Header-->
+            <div class="d-flex align-items-center mb-8 el-animate">
+                <button onclick="history.back()" class="el-back-btn me-3" type="button">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </button>
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Quiz Question</h1>
+            </div>
+            <!--end::Header-->
+
+            <!--begin::Question Card-->
+            <div class="el-sv-create-quiz-card el-animate el-animate-delay-1" id="el-sv-qq-card">
+                <!--begin::Question Text-->
+                <div class="fs-6 fw-bold text-gray-800 mb-3">
+                    <span id="el-sv-qq-type-label" class="text-gray-500 fw-normal fs-7 me-1">MC 1</span>.
+                    Write Your Question Here
+                </div>
+                <textarea class="el-sv-create-quiz-textarea mb-5" id="el-sv-qq-text"
+                          placeholder="Type your question here..."></textarea>
+                <!--end::Question Text-->
+
+                <!--begin::Options Grid (MC only)-->
+                <div id="el-sv-qq-options-section">
+                    <div class="row g-4">
+                        <!--Option A-->
+                        <div class="col-md-6">
+                            <div class="fs-7 fw-semibold text-gray-600 mb-2">Option A</div>
+                            <div class="el-sv-qq-option-row">
+                                <input type="text" class="el-sv-qq-option-input" id="el-sv-qq-opt-a"
+                                       placeholder="Enter option A">
+                                <input type="checkbox" class="el-sv-qq-checkbox" id="el-sv-qq-check-a"
+                                       data-option="A" title="Mark as correct answer">
+                            </div>
+                        </div>
+                        <!--Option B-->
+                        <div class="col-md-6">
+                            <div class="fs-7 fw-semibold text-gray-600 mb-2">Option B</div>
+                            <div class="el-sv-qq-option-row">
+                                <input type="text" class="el-sv-qq-option-input" id="el-sv-qq-opt-b"
+                                       placeholder="Enter option B">
+                                <input type="checkbox" class="el-sv-qq-checkbox" id="el-sv-qq-check-b"
+                                       data-option="B" title="Mark as correct answer">
+                            </div>
+                        </div>
+                        <!--Option C-->
+                        <div class="col-md-6">
+                            <div class="fs-7 fw-semibold text-gray-600 mb-2">Option C</div>
+                            <div class="el-sv-qq-option-row">
+                                <input type="text" class="el-sv-qq-option-input" id="el-sv-qq-opt-c"
+                                       placeholder="Enter option C">
+                                <input type="checkbox" class="el-sv-qq-checkbox" id="el-sv-qq-check-c"
+                                       data-option="C" title="Mark as correct answer">
+                            </div>
+                        </div>
+                        <!--Option D-->
+                        <div class="col-md-6">
+                            <div class="fs-7 fw-semibold text-gray-600 mb-2">Option D</div>
+                            <div class="el-sv-qq-option-row">
+                                <input type="text" class="el-sv-qq-option-input" id="el-sv-qq-opt-d"
+                                       placeholder="Enter option D">
+                                <input type="checkbox" class="el-sv-qq-checkbox" id="el-sv-qq-check-d"
+                                       data-option="D" title="Mark as correct answer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Options Grid-->
+
+                <!--begin::Essay Note (Essay only, hidden for MC)-->
+                <div id="el-sv-qq-essay-note" class="d-none mt-3"
+                     style="background:#f0fffe;border:1px dashed #1bc5bd;border-radius:10px;padding:16px 20px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="ki-duotone ki-information-5 fs-4 text-info">
+                            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                        </i>
+                        <span class="fs-7 fw-semibold text-gray-700">
+                            Essay question — no answer options needed. This question will be <strong>manually graded</strong> by the supervisor.
+                        </span>
+                    </div>
+                </div>
+                <!--end::Essay Note-->
+            </div>
+            <!--end::Question Card-->
+
+            <!--begin::Navigation-->
+            <div class="d-flex justify-content-end mt-8 mb-8 el-animate el-animate-delay-2">
+                <button class="btn-el-primary" id="el-sv-qq-next">
+                    Next <i class="ki-duotone ki-arrow-right fs-5"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <!--end::Navigation-->
+
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/supervisor/quizquestion.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.quizQuestion.init();
+            }
+        });
+    </script>
+}

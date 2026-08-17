@@ -35,9 +35,14 @@ namespace HRManagement.Application.Queries
                 var eligibleInterns = await _repo.GetEligibleInternsForQuizAsync(request.QuizId);
                 var submissions = await _repo.GetSubmissionsByQuizIdAsync(request.QuizId);
 
-                var submittedUserIds = new HashSet<int>(submissions.Select(s => s.UserId));
+                var latestSubmissions = submissions
+                    .GroupBy(s => s.UserId)
+                    .Select(g => g.OrderByDescending(s => s.CreatedUtcDate).First())
+                    .ToList();
 
-                var submitted = submissions
+                var submittedUserIds = new HashSet<int>(latestSubmissions.Select(s => s.UserId));
+
+                var submitted = latestSubmissions
                     .OrderByDescending(s => s.CreatedUtcDate)
                     .Select(s =>
                     {

@@ -1,0 +1,86 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Intern.SlidesViewerModel
+@{
+    ViewData["Title"] = "Slides Viewer";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/intern/viewer.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar is not needed for immersive dark view, we embed it in content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid p-0">
+        
+        <!--begin::Dark Viewer Wrapper-->
+        <div class="el-viewer-dark-bg el-animate">
+            
+            <!--begin::Toolbar-->
+            <div class="el-viewer-dark-toolbar">
+                <a href="/Modules/ELearning/Intern/Modules" class="el-viewer-dark-back">
+                    <i class="ki-duotone ki-arrow-left fs-5 me-2"><span class="path1"></span><span class="path2"></span></i> Back to Modules
+                </a>
+            </div>
+            <!--end::Toolbar-->
+
+            <!--begin::Slide Container-->
+            <div class="el-slide-container">
+                <button class="el-slide-nav-btn prev">
+                    <i class="ki-duotone ki-left fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+
+                <div class="el-slide el-animate el-animate-delay-1">
+                    <div class="el-slide-number">05</div>
+
+                    <div class="el-slide-icon-wrapper">
+                        <i class="ki-duotone ki-shield-tick">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </div>
+
+                    <h1 class="el-slide-title">Understanding Phishing Attacks</h1>
+                    <div class="el-slide-subtitle">Module 3: Common Social Engineering Tactics</div>
+
+                    <div class="el-slide-card-container">
+                        <div class="el-slide-card">
+                            <div class="el-slide-card-title">
+                                <i class="ki-duotone ki-sms fs-3 text-primary"><span class="path1"></span><span class="path2"></span></i> Email Spoofing
+                            </div>
+                            <div class="el-slide-card-desc">
+                                Attackers forge the sender address to make emails appear trustworthy.
+                            </div>
+                        </div>
+
+                        <div class="el-slide-card">
+                            <div class="el-slide-card-title">
+                                <i class="ki-duotone ki-link fs-3 text-primary"><span class="path1"></span><span class="path2"></span></i> Malicious Links
+                            </div>
+                            <div class="el-slide-card-desc">
+                                URLs that direct users to fake websites designed to steal credentials.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="el-slide-nav-btn next">
+                    <i class="ki-duotone ki-right fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <!--end::Slide Container-->
+
+        </div>
+        <!--end::Dark Viewer Wrapper-->
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            $('#kt_app_header').hide();
+            $('#kt_app_sidebar').hide();
+        });
+    </script>
+}

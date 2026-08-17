@@ -1,4 +1,4 @@
-﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.Models.Tables.ELearningModels;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
@@ -33,7 +33,10 @@ namespace HRManagement.MsSQL.Base
             var existing = await Context.ELearningModules.FindAsync(entity.ModuleId);
             if (existing == null) return false;
 
-            existing.BatchId = entity.BatchId;
+            if (entity.BatchId > 0)
+            {
+                existing.BatchId = entity.BatchId;
+            }
             existing.ModuleTitle = entity.ModuleTitle;
             existing.ModuleDescription = entity.ModuleDescription;
             existing.TargetRole = entity.TargetRole;
@@ -74,25 +77,17 @@ namespace HRManagement.MsSQL.Base
         {
             var programModules = await (from batch in _context.ELearningBatches
                                         join mdle in _context.ELearningModules on batch.BatchId equals mdle.BatchId
-                                        where batch.ProgramId == targetProgramId && !mdle.IsDeleted
+                                        where (targetProgramId == 0 || batch.ProgramId == targetProgramId) && 
+                                              !mdle.IsDeleted
                                         select mdle).ToListAsync();
-
-            var programModuleIds = programModules.Select(m => m.ModuleId).ToList();
-            int totalModulesCountDenominator = programModuleIds.Count;
-
-            var programQuizIds = await _context.ELearningQuizzes
-                .Where(q => programModuleIds.Contains(q.ModuleId) && !q.IsDeleted)
-                .Select(q => q.QuizId)
-                .ToListAsync();
-            int totalQuizzesCountDenominator = programQuizIds.Count;
 
             var cohortQuery = from member in _context.ELearningGroupMembers
                               join prog in _context.ELearningPrograms on member.GroupId equals prog.GroupId
-                              join u in _context.Users on member.EmployeeId equals u.Id
-                              join employee in _context.Employee on u.EmployeeId equals employee.Id
-                              join emp in _context.EmploymentInformation on u.Id equals emp.EmployeeId into empJoin
+                              join employee in _context.Employee on member.EmployeeId equals employee.Id
+                              join u in _context.Users on employee.Id equals u.EmployeeId
+                              join emp in _context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
                               from emp in empJoin.DefaultIfEmpty()
-                              where prog.ProgramId == targetProgramId && u.RoleId == 2
+                              where (targetProgramId == 0 || prog.ProgramId == targetProgramId) && u.RoleId == 2
                               select new { User = u, Employee = employee, PositionName = emp.PositionName };
 
             if (!string.IsNullOrEmpty(search))
@@ -111,29 +106,60 @@ namespace HRManagement.MsSQL.Base
 
             var compiledList = new List<dynamic>();
 
+            var allModuleIdsInScope = programModules.Select(m => m.ModuleId).ToList();
+            var allQuizzesInScope = await _context.ELearningQuizzes
+                .Where(q => allModuleIdsInScope.Contains(q.ModuleId) && !q.IsDeleted)
+                .ToListAsync();
+
             foreach (var row in rawInternData)
             {
                 var intern = row.User;
+                var internRole = (row.PositionName ?? "Intern").Trim();
 
-                int itemsCompletedNumerator = await _context.ELearningModuleProgress
-                    .CountAsync(p => p.EmployeeId == intern.Id &&
-                                     programModuleIds.Contains(p.ModuleId) &&
-                                     p.ProgressStatus == "Completed");
+                var internModules = programModules
+                    .Where(m => (m.TargetRole ?? "").Trim() == "All" || (m.TargetRole ?? "").Trim() == internRole)
+                    .ToList();
+                var internModuleIds = internModules.Select(m => m.ModuleId).ToList();
+                int totalModulesCountDenominator = internModuleIds.Count;
 
-                var studentSubmissions = await (from q in _context.ELearningQuizzes
-                                                join s in _context.ELearningQuizSubmissions on q.QuizId equals s.QuizId
-                                                where programModuleIds.Contains(q.ModuleId) && s.UserId == intern.Id && s.TotalScore != null
-                                                select s.TotalScore.Value).ToListAsync();
+                var internQuizIds = allQuizzesInScope
+                    .Where(q => internModuleIds.Contains(q.ModuleId))
+                    .Select(q => q.QuizId)
+                    .ToList();
+                int totalQuizzesCountDenominator = internQuizIds.Count;
 
-                string accumulativeScoreDisplay = studentSubmissions.Any()
-                    ? $"{Math.Round(studentSubmissions.Average(), 0)}/100"
+                int itemsCompletedNumerator = 0;
+                if (internModuleIds.Any())
+                {
+                    itemsCompletedNumerator = await _context.ELearningModuleProgress
+                        .CountAsync(p => p.EmployeeId == intern.Id &&
+                                         internModuleIds.Contains(p.ModuleId) &&
+                                         p.ProgressStatus == "Completed");
+                }
+
+                var latestQuizSubmissions = new List<HRManagement.Domain.Models.Tables.ELearningModels.QuizSubmissionModel>();
+                if (internQuizIds.Any())
+                {
+                    var allQuizSubmissionsForIntern = await _context.ELearningQuizSubmissions
+                        .Where(s => s.UserId == intern.Id && internQuizIds.Contains(s.QuizId))
+                        .ToListAsync();
+
+                    latestQuizSubmissions = allQuizSubmissionsForIntern
+                        .GroupBy(s => s.QuizId)
+                        .Select(g => g.OrderByDescending(x => x.CreatedUtcDate).First())
+                        .ToList();
+                }
+
+                var latestScores = latestQuizSubmissions
+                    .Where(s => s.TotalScore != null)
+                    .Select(s => s.TotalScore.Value)
+                    .ToList();
+
+                string accumulativeScoreDisplay = latestScores.Any()
+                    ? $"{Math.Round(latestScores.Average(), 0)}/100"
                     : "No submissions yet";
 
-                int quizzesPassedNumerator = await _context.ELearningQuizSubmissions
-                    .Where(s => s.UserId == intern.Id && programQuizIds.Contains(s.QuizId) && s.IsPassed == true)
-                    .Select(s => s.QuizId)
-                    .Distinct()
-                    .CountAsync();
+                int quizzesPassedNumerator = latestQuizSubmissions.Count(s => s.IsPassed == true);
 
                 compiledList.Add(new
                 {
@@ -152,9 +178,11 @@ namespace HRManagement.MsSQL.Base
         {
             var cohortModuleIds = await (from member in Context.ELearningGroupMembers
                                          join prog in Context.ELearningPrograms on member.GroupId equals prog.GroupId
+                                         join employee in Context.Employee on member.EmployeeId equals employee.Id
+                                         join u in Context.Users on employee.Id equals u.EmployeeId
                                          join batch in Context.ELearningBatches on prog.ProgramId equals batch.ProgramId
                                          join mdle in Context.ELearningModules on batch.BatchId equals mdle.BatchId
-                                         where member.EmployeeId == userId && !mdle.IsDeleted
+                                         where u.Id == userId && !mdle.IsDeleted
                                          select mdle.ModuleId)
                                          .ToListAsync();
 
@@ -217,10 +245,11 @@ namespace HRManagement.MsSQL.Base
             return await Context.SaveChangesAsync() > 0;
         }
 
-        public async Task<QuizModel?> GetQuizByModuleIdAsync(int moduleId)
+        public async Task<IEnumerable<QuizModel>> GetQuizzesByModuleIdAsync(int moduleId)
         {
             return await Context.ELearningQuizzes
-                .FirstOrDefaultAsync(q => q.ModuleId == moduleId && !q.IsDeleted);
+                .Where(q => q.ModuleId == moduleId && !q.IsDeleted)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<ModuleModel>> GetModulesByProgramIdAsync(int programId)
@@ -275,9 +304,9 @@ namespace HRManagement.MsSQL.Base
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(m => m.ModuleTitle.Contains(search));
 
-            var roleList = roles?.Where(r => !string.IsNullOrWhiteSpace(r)).ToList();
+            var roleList = roles?.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.ToLower()).ToList();
             if (roleList != null && roleList.Any())
-                query = query.Where(m => roleList.Contains(m.TargetRole));
+                query = query.Where(m => roleList.Contains(m.TargetRole.ToLower()) || m.TargetRole.ToLower() == "all");
 
             return await query
                 .OrderBy(m => m.ModuleTitle)
@@ -293,20 +322,45 @@ namespace HRManagement.MsSQL.Base
 
         public async Task<IEnumerable<InternInfoDto>> GetEligibleInternsForQuizAsync(int quizId)
         {
-            var employeeIds = await (from quiz in Context.ELearningQuizzes
-                                      join mdle in Context.ELearningModules on quiz.ModuleId equals mdle.ModuleId
-                                      join batch in Context.ELearningBatches on mdle.BatchId equals batch.BatchId
-                                      join prog in Context.ELearningPrograms on batch.ProgramId equals prog.ProgramId
-                                      join member in Context.ELearningGroupMembers on prog.GroupId equals member.GroupId
-                                      where quiz.QuizId == quizId
-                                      select member.EmployeeId)
-                                      .Distinct()
-                                      .ToListAsync();
+            // Get the module's target role for this quiz
+            var targetRole = await (from quiz in Context.ELearningQuizzes
+                                    join mdle in Context.ELearningModules on quiz.ModuleId equals mdle.ModuleId
+                                    where quiz.QuizId == quizId
+                                    select mdle.TargetRole)
+                                   .FirstOrDefaultAsync();
 
-            return await Context.Employee
-                          .Where(e => employeeIds.Contains(e.Id) && e.IsActive)
-                          .Select(e => new InternInfoDto { UserId = e.Id, FullName = e.FullName })
-                          .ToListAsync();
+            // Get all employee IDs in the program's group
+            var memberEmployeeIds = await (from quiz in Context.ELearningQuizzes
+                                           join mdle in Context.ELearningModules on quiz.ModuleId equals mdle.ModuleId
+                                           join batch in Context.ELearningBatches on mdle.BatchId equals batch.BatchId
+                                           join prog in Context.ELearningPrograms on batch.ProgramId equals prog.ProgramId
+                                           join member in Context.ELearningGroupMembers on prog.GroupId equals member.GroupId
+                                           where quiz.QuizId == quizId
+                                           select member.EmployeeId)
+                                          .Distinct()
+                                          .ToListAsync();
+
+            bool isAllRole = string.IsNullOrWhiteSpace(targetRole) || targetRole.ToLower() == "all";
+
+            if (isAllRole)
+            {
+                // All program members are eligible
+                return await Context.Employee
+                    .Where(e => memberEmployeeIds.Contains(e.Id) && e.IsActive)
+                    .Select(e => new InternInfoDto { UserId = e.Id, FullName = e.FullName })
+                    .ToListAsync();
+            }
+            else
+            {
+                // Only members whose position matches the module's target role
+                return await (from e in Context.Employee
+                              join emp in Context.EmploymentInformation on e.Id equals emp.EmployeeId into empJoin
+                              from emp in empJoin.DefaultIfEmpty()
+                              where memberEmployeeIds.Contains(e.Id) && e.IsActive
+                                    && emp.PositionName == targetRole
+                              select new InternInfoDto { UserId = e.Id, FullName = e.FullName })
+                             .ToListAsync();
+            }
         }
 
         public async Task<QuizSubmissionModel?> GetSubmissionByIdAsync(int submissionId)
@@ -376,21 +430,75 @@ namespace HRManagement.MsSQL.Base
 
             if (progress == null)
             {
-                Context.ELearningModuleProgress.Add(new ProgressModel
+                progress = new ProgressModel
                 {
                     EmployeeId = userId,
                     ModuleId = content.ModuleId,
                     ProgressStatus = "In Progress"
-                });
+                };
+                Context.ELearningModuleProgress.Add(progress);
             }
             else if (progress.ProgressStatus == "Not Started")
             {
                 progress.ProgressStatus = "In Progress";
             }
 
+            // After adding content progress, ensure context has it or just save changes first to query it back
+            await Context.SaveChangesAsync();
+
+            // Re-evaluate module completion
+            var quizzes = await Context.ELearningQuizzes
+                .Where(q => q.ModuleId == content.ModuleId && !q.IsDeleted)
+                .ToListAsync();
+
+            var submissions = await Context.ELearningQuizSubmissions
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+
+            bool allPassed = true;
+            foreach (var q in quizzes)
+            {
+                var latestSub = submissions.Where(s => s.QuizId == q.QuizId).OrderByDescending(s => s.CreatedUtcDate).FirstOrDefault();
+                if (latestSub == null || latestSub.TotalScore < q.MinimumPassingScore)
+                {
+                    allPassed = false;
+                    break;
+                }
+            }
+
+            var allContents = await Context.ELearningModuleContents
+                .Where(c => c.ModuleId == content.ModuleId && !c.IsDeleted)
+                .ToListAsync();
+
+            var openedContents = await Context.ELearningContentProgress
+                .Where(cp => cp.EmployeeId == userId)
+                .Select(cp => cp.ContentId)
+                .ToListAsync();
+
+            bool allContentsOpened = allContents.All(c => openedContents.Contains(c.ContentId));
+
+            if (allPassed && allContentsOpened)
+            {
+                progress.ProgressStatus = "Completed";
+                await Context.SaveChangesAsync();
+            }
+
             await Context.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<int>> GetOpenedContentIdsByUserAndModuleAsync(int userId, int moduleId)
+        {
+            var contentIds = await Context.ELearningModuleContents
+                .Where(c => c.ModuleId == moduleId && !c.IsDeleted)
+                .Select(c => c.ContentId)
+                .ToListAsync();
+
+            return await Context.ELearningContentProgress
+                .Where(cp => cp.EmployeeId == userId && contentIds.Contains(cp.ContentId))
+                .Select(cp => cp.ContentId)
+                .ToListAsync();
+        }
+
         public async Task<bool> SubmitQuizAsync(QuizSubmissionModel entity)
         {
             var strategy = Context.Database.CreateExecutionStrategy();
@@ -447,9 +555,14 @@ namespace HRManagement.MsSQL.Base
         {
             return await (from member in _context.Set<GroupMemberModel>()
                           join prog in _context.Set<ProgramModel>() on member.GroupId equals prog.GroupId
+                          join employee in _context.Employee on member.EmployeeId equals employee.Id
+                          join u in _context.Users on employee.Id equals u.EmployeeId
                           join batch in _context.Set<BatchModel>() on prog.ProgramId equals batch.ProgramId
                           join mdle in _context.Set<ModuleModel>() on batch.BatchId equals mdle.BatchId
-                          where member.EmployeeId == employeeId && mdle.IsDeleted == false
+                          join emp in _context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
+                          from emp in empJoin.DefaultIfEmpty()
+                          where u.Id == employeeId && mdle.IsDeleted == false
+                                && (mdle.TargetRole.ToLower() == "all" || mdle.TargetRole.ToLower() == emp.PositionName.ToLower())
                           select mdle.ModuleId)
                           .CountAsync();
         }
@@ -465,13 +578,18 @@ namespace HRManagement.MsSQL.Base
         {
             var cohortModules = from member in _context.Set<GroupMemberModel>()
                                  join prog in _context.Set<ProgramModel>() on member.GroupId equals prog.GroupId
+                                 join employee in _context.Employee on member.EmployeeId equals employee.Id
+                                 join u in _context.Users on employee.Id equals u.EmployeeId
                                  join batch in _context.Set<BatchModel>() on prog.ProgramId equals batch.ProgramId
                                  join mdle in _context.Set<ModuleModel>() on batch.BatchId equals mdle.BatchId
-                                 where member.EmployeeId == employeeId
+                                 join emp in _context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
+                                 from emp in empJoin.DefaultIfEmpty()
+                                 where u.Id == employeeId
                                        && !mdle.IsDeleted
                                        && mdle.DueDate != null
                                        && mdle.DueDate >= fromDateInclusive
                                        && mdle.DueDate <= toDateInclusive
+                                       && (mdle.TargetRole.ToLower() == "all" || mdle.TargetRole.ToLower() == emp.PositionName.ToLower())
                                  select mdle;
 
             var completedModuleIds = await _context.Set<ProgressModel>()
@@ -601,8 +719,21 @@ namespace HRManagement.MsSQL.Base
         public async Task<IEnumerable<BatchModel>> GetBatchesByProgramIdAsync(int programId)
         {
             return await Context.ELearningBatches
-                .Where(b => b.ProgramId == programId)
+                .Where(b => programId == 0 || b.ProgramId == programId)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<BatchModel>> GetBatchesByEmployeeIdAsync(int employeeId)
+        {
+            return await (from member in _context.Set<GroupMemberModel>()
+                          join prog in _context.Set<ProgramModel>() on member.GroupId equals prog.GroupId
+                          join employee in _context.Employee on member.EmployeeId equals employee.Id
+                          join u in _context.Users on employee.Id equals u.EmployeeId
+                          join batch in _context.Set<BatchModel>() on prog.ProgramId equals batch.ProgramId
+                          where u.Id == employeeId
+                          select batch)
+                          .Distinct()
+                          .ToListAsync();
         }
 
         public async Task<BatchModel?> GetBatchByIdAsync(int batchId)
@@ -623,12 +754,14 @@ namespace HRManagement.MsSQL.Base
         {
             var query = from member in _context.Set<GroupMemberModel>()
                         join prog in _context.Set<ProgramModel>() on member.GroupId equals prog.GroupId
+                        join employee in _context.Employee on member.EmployeeId equals employee.Id
+                        join u in _context.Users on employee.Id equals u.EmployeeId
                         join batch in _context.Set<BatchModel>() on prog.ProgramId equals batch.ProgramId
                         join mdle in _context.Set<ModuleModel>() on batch.BatchId equals mdle.BatchId
-                        join emp in _context.EmploymentInformation on member.EmployeeId equals emp.EmployeeId into empJoin
+                        join emp in _context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
                         from emp in empJoin.DefaultIfEmpty()
-                        where member.EmployeeId == employeeId && mdle.IsDeleted == false
-                              && (mdle.TargetRole == "All" || mdle.TargetRole == emp.PositionName)
+                        where u.Id == employeeId && mdle.IsDeleted == false
+                              && (mdle.TargetRole.ToLower() == "all" || mdle.TargetRole.ToLower() == emp.PositionName.ToLower())
                         orderby batch.EndDate ascending, mdle.ModuleTitle ascending
                         select mdle;
 
@@ -639,7 +772,21 @@ namespace HRManagement.MsSQL.Base
 
             return await query.ToListAsync();
         }
-
+        public async Task<IEnumerable<string>> GetDistinctPositionsByProgramIdAsync(int programId)
+        {
+            return await (from member in Context.ELearningGroupMembers
+                          join prog in Context.ELearningPrograms on member.GroupId equals prog.GroupId
+                          join employee in Context.Employee on member.EmployeeId equals employee.Id
+                          join u in Context.Users on employee.Id equals u.EmployeeId
+                          join emp in Context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
+                          from emp in empJoin.DefaultIfEmpty()
+                          where prog.ProgramId == programId && u.RoleId == 2
+                                && emp.PositionName != null && emp.PositionName != ""
+                          select emp.PositionName)
+                          .Distinct()
+                          .OrderBy(p => p)
+                          .ToListAsync();
+        }
 
     }
 }

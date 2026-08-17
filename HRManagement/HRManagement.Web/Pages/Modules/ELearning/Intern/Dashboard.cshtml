@@ -1,0 +1,184 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Intern.DashboardModel
+@{
+    ViewData["Title"] = "E-Learning Dashboard";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/intern/dashboard.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/intern/modules.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <!--begin::Toolbar container-->
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <!--begin::Page title-->
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <!--begin::Breadcrumb-->
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Intern/Dashboard">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Dashboard</span>
+                </div>
+                <!--end::Breadcrumb-->
+            </div>
+            <!--end::Page title-->
+            <!--begin::Notification-->
+            <div class="d-flex align-items-center">
+                <button class="btn btn-icon btn-custom btn-color-gray-600 btn-active-color-primary" data-bs-toggle="tooltip" title="Notifications">
+                    <i class="ki-duotone ki-notification-on fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                        <span class="path4"></span>
+                        <span class="path5"></span>
+                    </i>
+                </button>
+            </div>
+            <!--end::Notification-->
+        </div>
+        <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <!--begin::Content container-->
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Greeting-->
+            <div class="mb-8 el-animate">
+                <h1 class="fs-2x fw-bold text-gray-900 mb-1" id="el-greeting">Good Morning, James</h1>
+                <p class="fs-6 text-gray-500 fw-semibold">Here's what's happening with your internship today.</p>
+            </div>
+            <!--end::Greeting-->
+
+            <!--begin::Progress & Todo Row-->
+            <div class="row g-5 mb-8">
+                <!--begin::Progress Card-->
+                <div class="col-lg-7">
+                    <div class="card card-flush h-100 el-animate el-animate-delay-1">
+                        <div class="card-body d-flex align-items-center">
+                            <!--begin::Progress Ring-->
+                            <div class="el-progress-ring me-8">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <circle class="el-progress-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle class="el-progress-bar" id="el-progress-circle" cx="60" cy="60" r="50"
+                                            stroke-dasharray="314.16" stroke-dashoffset="314.16"></circle>
+                                </svg>
+                                <div class="el-progress-text" id="el-progress-count">0/0</div>
+                            </div>
+                            <!--end::Progress Ring-->
+                            <div>
+                                <div class="fs-4 fw-bold text-gray-800 mb-1">Total Modules Completed</div>
+                                <div class="fs-6 text-gray-500 mb-3" id="el-progress-desc">0 out of 0 Modules completed</div>
+                                <div>
+                                    <span class="badge badge-light-primary fs-8 fw-bold px-3 py-2 d-flex" style="flex-direction: column; align-items: flex-start; gap: 1px;">
+                                        <span class="text-uppercase fs-9 fw-bolder text-primary">STATUS</span>
+                                        <span class="fs-7 fw-bold text-primary" id="el-progress-status">In Progress</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Progress Card-->
+
+                <!--begin::Todo Card-->
+                <div class="col-lg-5">
+                    <div class="card card-flush h-100 el-animate el-animate-delay-2">
+                        <div class="card-header pt-5 pb-0">
+                            <h3 class="card-title fw-bold text-gray-800 fs-5">To-Do List</h3>
+                        </div>
+                        <div class="card-body pt-4" id="el-todo-list">
+                            <!--Rendered by JS-->
+                        </div>
+                    </div>
+                </div>
+                <!--end::Todo Card-->
+            </div>
+            <!--end::Progress & Todo Row-->
+
+            <!--begin::Batch Info Bar-->
+            <div class="el-batch-bar mb-8 el-animate el-animate-delay-2 d-flex justify-content-between flex-wrap gap-4">
+                <div>
+                    <div class="el-batch-label">SELECT BATCH</div>
+                    <select class="form-select form-select-solid form-select-sm fw-bold text-gray-800 w-125px w-md-150px" data-control="select2" data-hide-search="true" id="el-batch-select">
+                        <!--Populated by JS-->
+                    </select>
+                </div>
+                <div>
+                    <div class="el-batch-label">PERIOD</div>
+                    <div class="fs-5 fw-bold text-gray-800" id="el-batch-period">-</div>
+                </div>
+                <div>
+                    <div class="el-batch-label">ENDS IN</div>
+                    <div class="fs-5 fw-bold text-danger" id="el-batch-ends">-</div>
+                </div>
+                <div>
+                    <div class="el-batch-label">STATUS</div>
+                    <div class="d-flex align-items-center position-relative">
+                        <i class="bi bi-info-circle-fill text-primary" style="cursor:help; font-size:1.1rem; position: absolute; left: -24px; top: 50%; transform: translateY(-50%);"
+                           data-bs-toggle="tooltip" data-bs-html="true" 
+                           title="<ul class='text-start mb-0 ps-3' style='padding-left:15px;'><li class='mb-1'><b>Ongoing</b> means that the batch is currently in progress.</li><li class='mb-1'><b>Completed</b> means that the Intern has finished all the modules.</li><li><b>Failed</b> means that the Intern has not completed more than 50% of the total modules.</li></ul>">
+                        </i>
+                        <div class="el-status-badge in-progress">
+                            <span class="el-status-dot"></span>
+                            <span class="fw-bold text-gray-800" id="el-batch-status-text">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Batch Info Bar-->
+
+            <!--begin::Modules Section-->
+            <div class="el-animate el-animate-delay-3">
+                <!--begin::Header-->
+                <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+                    <h2 class="fs-3 fw-bold text-gray-900 mb-0">Modules</h2>
+                    <input type="text" class="el-search-input" id="el-module-search" placeholder="Search modules...">
+                </div>
+                <!--end::Header-->
+
+                <!--begin::Filter Pills-->
+                <div class="el-filter-pills mb-6">
+                    <span class="el-filter-pill active" data-filter="all">All</span>
+                    <span class="el-filter-pill" data-filter="in-progress">In Progress</span>
+                    <span class="el-filter-pill" data-filter="completed">Completed</span>
+                    <span class="el-filter-pill" data-filter="failed">Failed</span>
+                    <span class="el-filter-pill" data-filter="not-started">Not Started</span>
+                </div>
+                <!--end::Filter Pills-->
+
+                <!--begin::Modules Grid-->
+                <div class="row" id="el-modules-grid">
+                    <!--Rendered by JS-->
+                </div>
+                <!--end::Modules Grid-->
+
+                <!--begin::Load More-->
+                <div class="text-center mt-4 mb-8">
+                    <button class="btn-el-load-more" id="el-load-more" style="display: none;">Load More</button>
+                </div>
+                <!--end::Load More-->
+            </div>
+            <!--end::Modules Section-->
+
+        </div>
+        <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/intern/dashboard.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.dashboard) {
+                app.elearning.dashboard.init();
+            }
+        });
+    </script>
+}

@@ -50,3 +50,158 @@
 .progress-aia .progress-bar { 
     background-color: var(--aia-red) !important; 
 }
+
+/* ============================================
+   E-LEARNING — SHARED LAYOUT COMPONENTS
+   ============================================ */
+
+/* -- Breadcrumb Navigation -- */
+.el-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #99a1b7;
+}
+
+.el-breadcrumb a {
+    color: #d31145;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.el-breadcrumb a:hover { color: #b50e3a; }
+
+.el-breadcrumb-sep {
+    color: #c4cada;
+    font-weight: 400;
+}
+
+.el-breadcrumb-active {
+    color: #4b5675;
+}
+
+/* -- Page Entry Animation -- */
+.el-animate {
+    animation: elFadeUp 0.4s ease both;
+}
+
+.el-animate-delay-1 { animation-delay: 0.08s; }
+.el-animate-delay-2 { animation-delay: 0.16s; }
+.el-animate-delay-3 { animation-delay: 0.24s; }
+
+@keyframes elFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Status Badge (with dot indicator) -- */
+.el-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f1f4;
+    color: #4b5675;
+}
+
+.el-status-badge.in-progress {
+    background: #fff8dd;
+    color: #b98e00;
+}
+
+.el-status-badge.completed {
+    background: #e8fff3;
+    color: #1bc5bd;
+}
+
+.el-status-badge.failed {
+    background: #fff5f8;
+    color: #f1416c;
+}
+
+.el-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* -- Back Button -- */
+.el-back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #e1e3ea;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5675;
+    text-decoration: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.el-back-btn:hover {
+    border-color: #d31145;
+    color: #d31145;
+    background: #fff5f8;
+}
+
+/* -- E-Learning Module Card (Intern) -- */
+.el-module-card {
+    background: #fff;
+    border: 1px solid #f1f1f4;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+
+.el-module-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.el-module-card .el-module-card-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1b2559;
+    line-height: 1.4;
+}
+
+/* -- E-Learning Quiz Card (Intern Modules Page) -- */
+.el-quiz-card {
+    background: #fff;
+    border: 1px solid #f1f1f4;
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: box-shadow 0.2s;
+}
+
+.el-quiz-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode overrides */
+[data-bs-theme="dark"] .el-breadcrumb { color: #7e8299; }
+[data-bs-theme="dark"] .el-breadcrumb-active { color: #cdcde4; }
+[data-bs-theme="dark"] .el-status-badge { background: #2d2d3f; color: #cdcde4; }
+[data-bs-theme="dark"] .el-status-badge.in-progress { background: #2a2414; color: #ffc700; }
+[data-bs-theme="dark"] .el-status-badge.completed { background: #122923; color: #1bc5bd; }
+[data-bs-theme="dark"] .el-status-badge.failed { background: #2a1420; color: #f1416c; }
+[data-bs-theme="dark"] .el-back-btn { background: #1e1e2d; border-color: #3a3a52; color: #cdcde4; }
+[data-bs-theme="dark"] .el-module-card { background: #1e1e2d; border-color: #2d2d3f; }
+[data-bs-theme="dark"] .el-module-card .el-module-card-title { color: #cdcde4; }
+[data-bs-theme="dark"] .el-quiz-card { background: #1e1e2d; border-color: #2d2d3f; }
+

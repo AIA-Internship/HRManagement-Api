@@ -1,5 +1,6 @@
 using HRManagement.Application;
 using HRManagement.Application.Commands.ELearningCommands;
+using HRManagement.Application.Commands.ELearningCommands;
 using HRManagement.Application.Queries;
 using HRManagement.Application.Queries.ELearningQueries;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
@@ -32,9 +33,9 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
     }
 
     [HttpGet("modules/{moduleId}")]
-    public async Task<IActionResult> GetModuleById(int moduleId)
+    public async Task<IActionResult> GetModuleById(int moduleId, [FromQuery] int? userId = null)
     {
-        var result = await Sender.Send(new GetModuleByIdQuery(moduleId));
+        var result = await Sender.Send(new GetModuleByIdQuery(moduleId, userId));
         return HandleResult(result);
     }
 
@@ -59,12 +60,7 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         return success ? Ok(new { message = "Progress updated" }) : BadRequest();
     }
 
-    [HttpPost("submit-quiz")]
-    public async Task<IActionResult> SubmitQuiz([FromBody] SubmitQuizCommand command)
-    {
-        var result = await Sender.Send(command);
-        return HandleResult(result);
-    }
+
 
     [HttpPost("add-module")]
     public async Task<IActionResult> AddModule([FromBody] CreateModuleDto dto)
@@ -110,6 +106,7 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         return HandleResult(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("batches/{batchId}/modules")]
     public async Task<IActionResult> GetModulesByBatch(int batchId, [FromQuery] string search = "", [FromQuery] List<string>? roles = null)
     {
@@ -121,6 +118,13 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
     public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizConfigurationDto dto)
     {
         var result = await Sender.Send(new CreateQuizCommand(dto));
+        return HandleResult(result);
+    }
+
+    [HttpPost("submit-quiz")]
+    public async Task<IActionResult> SubmitQuiz([FromBody] SubmitStudentAnswersDto dto)
+    {
+        var result = await Sender.Send(new SubmitQuizCommand(dto));
         return HandleResult(result);
     }
 
@@ -189,11 +193,12 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         return HandleResult(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("interns")]
     [HttpGet("programs/{programId}/interns")]
-    public async Task<IActionResult> GetInterns(int programId, [FromQuery] int page = 1, [FromQuery] string search = "", [FromQuery] string role = "")
+    public async Task<IActionResult> GetInterns(int programId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = "", [FromQuery] string role = "")
     {
-        var result = await Sender.Send(new GetInternListQuery(programId, page, search, role));
+        var result = await Sender.Send(new GetInternListQuery(programId, pageNumber, search, role));
         return Ok(result);
     }
 
@@ -222,6 +227,13 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
     public async Task<IActionResult> GradeSubmission([FromBody] SubmitQuizReviewCommand command)
     {
         var result = await Sender.Send(command);
+        return HandleResult(result);
+    }
+
+    [HttpGet("programs/{programId}/positions")]
+    public async Task<IActionResult> GetPositionsByProgram(int programId)
+    {
+        var result = await Sender.Send(new GetPositionsByProgramQuery(programId));
         return HandleResult(result);
     }
 }

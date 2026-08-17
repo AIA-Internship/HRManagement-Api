@@ -9,6 +9,16 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public int completedModules { get; set; }
         public string displayString { get; set; } = null!;
         public List<ReadToDoItemDto> toDoList { get; set; } = new();
+        public List<ReadDashboardBatchDto> batches { get; set; } = new();
+    }
+
+    public class ReadDashboardBatchDto
+    {
+        public int id { get; set; }
+        public string name { get; set; } = null!;
+        public string period { get; set; } = null!;
+        public int endsIn { get; set; }
+        public string status { get; set; } = null!;
     }
 
     public class ReadToDoItemDto

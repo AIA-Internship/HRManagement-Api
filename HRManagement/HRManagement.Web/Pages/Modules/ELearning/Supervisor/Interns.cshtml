@@ -1,0 +1,107 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.InternsModel
+@{
+    ViewData["Title"] = "Interns";
+}
+
+@section Styles {
+    <link href="/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" />
+    <link href="/apps/modules/elearning/css/supervisor/interns.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Interns</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Title-->
+            <h1 class="fs-2 fw-bold text-gray-900 mb-6 el-animate">Interns</h1>
+            <!--end::Title-->
+
+            <!--begin::Filters-->
+            <div class="d-flex align-items-center gap-4 mb-6 flex-wrap el-animate el-animate-delay-1" style="position: relative; z-index: 20;">
+                <!--begin::Custom Program Dropdown-->
+                <div class="el-sv-custom-dropdown w-200px" id="el-sv-intern-program-dropdown">
+                    <button class="el-sv-dropdown-toggle w-100" type="button" id="el-sv-intern-program-toggle">
+                        <span class="el-sv-dropdown-text" id="el-sv-intern-program-text">All Programs</span>
+                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                    </button>
+                    <div class="el-sv-dropdown-menu w-100" id="el-sv-intern-program-menu">
+                        <div class="el-sv-dropdown-item active" data-value="">All Programs</div>
+                        <!--Populated by JS-->
+                    </div>
+                </div>
+                <input type="hidden" id="el-sv-intern-program" value="" />
+                <!--end::Custom Program Dropdown-->
+
+                <!--begin::Custom Role Dropdown-->
+                <div class="el-sv-custom-dropdown w-200px" id="el-sv-intern-role-dropdown">
+                    <button class="el-sv-dropdown-toggle w-100" type="button" id="el-sv-intern-role-toggle">
+                        <span class="el-sv-dropdown-text" id="el-sv-intern-role-text">All Roles</span>
+                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                    </button>
+                    <div class="el-sv-dropdown-menu w-100" id="el-sv-intern-role-menu">
+                        <div class="el-sv-dropdown-item active" data-value="">All Roles</div>
+                        <!--Populated by JS-->
+                    </div>
+                </div>
+                <input type="hidden" id="el-sv-intern-role" value="" />
+                <!--end::Custom Role Dropdown-->
+            </div>
+            <!--end::Filters-->
+
+            <!--begin::Table Card-->
+            <div class="card card-flush el-animate el-animate-delay-2">
+                <div class="card-body p-6">
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-200 align-middle gs-7 gy-4 mb-0" id="el-sv-interns-table">
+                            <thead>
+                                <tr class="fw-bold text-gray-500 fs-7 text-uppercase">
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Modules Completed</th>
+                                    <th class="text-end">Accumulative Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--Rendered by DataTables-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--end::Table Card-->
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <script src="/apps/modules/elearning/js/supervisor/interns.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.interns.init();
+            }
+        });
+    </script>
+}

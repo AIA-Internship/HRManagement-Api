@@ -1,0 +1,301 @@
+/* E-Learning Viewer Styles (Document, Slides, Video) */
+
+/* Document Viewer */
+.el-doc-wrapper {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 140px);
+    background-color: #f1f1f4;
+}
+
+.el-doc-sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    border-right: 1px solid #e1e3ea;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.el-doc-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.el-doc-page {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 800px;
+    min-height: 1050px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 3rem;
+    border-radius: 4px;
+}
+
+.el-doc-thumbnail {
+    width: 100%;
+    height: 200px;
+    background-color: #f9f9f9;
+    border: 1px solid #e1e3ea;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.el-doc-thumbnail.active {
+    border-color: #009ef7;
+    box-shadow: 0 0 0 2px rgba(0, 158, 247, 0.2);
+}
+
+.el-doc-thumbnail:hover {
+    border-color: #009ef7;
+}
+
+.el-doc-thumbnail-label {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #4b5675;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.el-doc-toolbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e1e3ea;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.el-doc-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f1f1f4;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+.el-doc-pagination button {
+    border: none;
+    background: transparent;
+    color: #7e8299;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.el-doc-pagination button:hover {
+    background-color: #e1e3ea;
+    color: #181c32;
+}
+
+.el-doc-pagination input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #e1e3ea;
+    border-radius: 4px;
+    padding: 0.15rem;
+    font-size: 0.85rem;
+}
+
+/* Slides and Video Viewer (Dark Theme) */
+.el-viewer-dark-bg {
+    background-color: #0f1014;
+    min-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+}
+
+.el-viewer-dark-toolbar {
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.el-viewer-dark-back {
+    display: inline-flex;
+    align-items: center;
+    color: #ffffff;
+    background-color: #1e1e2d;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.el-viewer-dark-back:hover {
+    background-color: #2b2b40;
+    color: #ffffff;
+}
+
+.el-slide-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.el-slide {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 16/9;
+    border-radius: 24px;
+    padding: 4rem;
+    position: relative;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.el-slide-nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #1e1e2d;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.el-slide-nav-btn:hover {
+    background-color: #2b2b40;
+}
+
+.el-slide-nav-btn.prev {
+    left: 2rem;
+}
+
+.el-slide-nav-btn.next {
+    right: 2rem;
+}
+
+.el-slide-number {
+    position: absolute;
+    bottom: 2rem;
+    right: 3rem;
+    font-size: 5rem;
+    font-weight: 800;
+    color: #f1f1f4;
+    line-height: 1;
+    user-select: none;
+}
+
+.el-slide-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background-color: #e8f3ff;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.el-slide-icon-wrapper i {
+    font-size: 2rem;
+    color: #009ef7;
+}
+
+.el-slide-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #181c32;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.el-slide-subtitle {
+    font-size: 1.25rem;
+    color: #7e8299;
+    margin-bottom: 4rem;
+    text-align: center;
+}
+
+.el-slide-card-container {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+}
+
+.el-slide-card {
+    flex: 1;
+    border: 1px solid #e1e3ea;
+    border-radius: 12px;
+    padding: 1.5rem;
+    background-color: #ffffff;
+}
+
+.el-slide-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #009ef7;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.el-slide-card-desc {
+    color: #5e6278;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Video specific */
+.el-video-wrapper {
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 16/9;
+    background-color: #000000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.el-video-play-btn {
+    width: 80px;
+    height: 80px;
+    background-color: rgba(241, 65, 108, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.el-video-play-btn:hover {
+    transform: scale(1.1);
+    background-color: #d9214e;
+}

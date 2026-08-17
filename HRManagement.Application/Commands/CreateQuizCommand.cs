@@ -71,9 +71,6 @@ namespace HRManagement.Application.Commands.ELearningCommands
                         .FirstOrDefaultAsync(m => m.ModuleId == dto.moduleId && !m.IsDeleted, ct);
                     if (module == null) return Result.Failure<int>("Module not found.");
 
-                    var existingQuiz = await _context.ELearningQuizzes
-                        .FirstOrDefaultAsync(q => q.ModuleId == dto.moduleId && !q.IsDeleted, ct);
-                    if (existingQuiz != null) return Result.Failure<int>("This module already has a quiz.");
 
                     var quiz = new QuizModel
                     {

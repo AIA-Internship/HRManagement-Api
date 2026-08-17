@@ -1,0 +1,86 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Intern.QuizModel
+@{
+    ViewData["Title"] = "Quiz";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/intern/modules.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/intern/quiz.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <!--begin::Toolbar container-->
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <!--begin::Page title-->
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Intern/Dashboard">E-Learning</a>
+                    <span class="el-breadcrumb-sep ms-2 me-2"></span>
+                    <a href="/Modules/ELearning/Intern/Dashboard" class="el-breadcrumb-active">Dashboard</a>
+                </div>
+                <!--end::Breadcrumb-->
+            </div>
+            <!--end::Page title-->
+            <!--begin::Question Badge-->
+            <div>
+                <div class="el-quiz-number-badge" id="el-quiz-badge">1</div>
+            </div>
+            <!--end::Question Badge-->
+        </div>
+        <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <!--begin::Content container-->
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <div class="d-flex align-items-center mb-6 el-animate">
+                <a href="/Modules/ELearning/Intern/Modules" class="el-back-btn me-3">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </a>
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Understanding Phising Attacks</h1>
+            </div>
+            <!--end::Quiz Header-->
+
+            <!--begin::Question Area-->
+            <div class="mb-4" id="el-quiz-question">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Question Area-->
+
+            <!--begin::Answer Area-->
+            <div class="mb-4 px-2" id="el-quiz-answer">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Answer Area-->
+
+            <!--begin::Navigation-->
+            <div class="px-2 pb-8" id="el-quiz-nav">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Navigation-->
+
+        </div>
+        <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/intern/quiz.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.quiz) {
+                app.elearning.quiz.init();
+            }
+        });
+    </script>
+}

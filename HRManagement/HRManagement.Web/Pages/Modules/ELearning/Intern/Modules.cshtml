@@ -1,0 +1,100 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Intern.ModulesModel
+@{
+    ViewData["Title"] = "Learning Modules";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/intern/modules.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <!--begin::Toolbar container-->
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <!--begin::Page title-->
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Intern/Dashboard">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Learning Modules</span>
+                </div>
+                <!--end::Breadcrumb-->
+            </div>
+            <!--end::Page title-->
+            <!--begin::Notification-->
+            <div class="d-flex align-items-center">
+                <button class="btn btn-icon btn-custom btn-color-gray-600 btn-active-color-primary" data-bs-toggle="tooltip" title="Notifications">
+                    <i class="ki-duotone ki-notification-on fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                        <span class="path4"></span>
+                        <span class="path5"></span>
+                    </i>
+                </button>
+            </div>
+            <!--end::Notification-->
+        </div>
+        <!--end::Toolbar container-->
+    </div>
+    <!--end::Toolbar-->
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <!--begin::Content container-->
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <div class="d-flex align-items-center mb-6 el-animate">
+                <a href="/Modules/ELearning/Intern/Dashboard" class="el-back-btn me-3">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </a>
+                <div>
+                    <h1 class="fs-2 fw-bold text-gray-900 mb-0" id="el-module-title">Loading...</h1>
+                    <span class="fs-7 text-gray-500 fw-semibold" id="el-module-due">-</span>
+                </div>
+            </div>
+            <!--end::Module Header-->
+
+            <!--begin::Materials Section-->
+            <h3 class="fs-5 fw-bold text-gray-800 mb-4 el-animate el-animate-delay-1">Materials</h3>
+
+            <div class="row g-5">
+                <!--begin::Materials List-->
+                <div class="col-lg-7">
+                    <div id="el-materials-list">
+                        <!--Rendered by JS-->
+                    </div>
+                </div>
+                <!--end::Materials List-->
+
+                <!--begin::Quiz List-->
+                <div class="col-lg-5">
+                    <div id="el-quizzes-list">
+                        <!--Rendered by JS-->
+                    </div>
+                </div>
+                <!--end::Quiz List-->
+            </div>
+            <!--end::Materials Section-->
+
+        </div>
+        <!--end::Content container-->
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/intern/modules.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.modules) {
+                app.elearning.modules.init();
+            }
+        });
+    </script>
+}

@@ -1,0 +1,74 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Intern.VideoViewerModel
+@{
+    ViewData["Title"] = "Video Viewer";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/intern/viewer.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_content" class="app-content flex-column-fluid p-0">
+        
+        <!--begin::Dark Viewer Wrapper-->
+        <div class="el-viewer-dark-bg el-animate">
+            
+            <!--begin::Toolbar-->
+            <div class="el-viewer-dark-toolbar">
+                <a href="/Modules/ELearning/Intern/Modules" class="el-viewer-dark-back">
+                    <i class="ki-duotone ki-arrow-left fs-5 me-2"><span class="path1"></span><span class="path2"></span></i> Back to Modules
+                </a>
+            </div>
+            <!--end::Toolbar-->
+
+            <!--begin::Video Container-->
+            <div class="el-slide-container">
+                <div class="el-video-wrapper el-animate el-animate-delay-1">
+                    
+                    <!-- Fake Video Thumbnail / Background -->
+                    <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="background: linear-gradient(rgba(15, 16, 20, 0.7), rgba(15, 16, 20, 0.9));">
+                        
+                        <!-- Play Button -->
+                        <div class="el-video-play-btn mb-6">
+                            <i class="ki-duotone ki-right fs-2x ms-2"><span class="path1"></span><span class="path2"></span></i>
+                        </div>
+
+                        <div class="text-white fs-2 fw-bolder mb-2">Corporate Culture & Ethics</div>
+                        <div class="text-gray-500 fs-5">Part 1: Workplace Conduct</div>
+
+                    </div>
+
+                    <!-- Fake Player Controls -->
+                    <div class="position-absolute bottom-0 w-100 p-4" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                        <div class="d-flex align-items-center gap-4">
+                            <i class="ki-duotone ki-right text-white fs-2 cursor-pointer"><span class="path1"></span><span class="path2"></span></i>
+                            <div class="fs-7 text-white fw-semibold">00:00 / 12:34</div>
+                            <div class="flex-grow-1 bg-gray-600 h-4px rounded cursor-pointer position-relative">
+                                <div class="bg-primary h-100 rounded position-absolute top-0 start-0" style="width: 30%;"></div>
+                                <div class="bg-white rounded-circle position-absolute top-50 translate-middle-y" style="width: 12px; height: 12px; left: 30%;"></div>
+                            </div>
+                            <i class="ki-duotone ki-setting-2 text-white fs-3 cursor-pointer"><span class="path1"></span><span class="path2"></span></i>
+                            <i class="ki-duotone ki-arrow-up-right text-white fs-3 cursor-pointer"><span class="path1"></span><span class="path2"></span></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--end::Video Container-->
+
+        </div>
+        <!--end::Dark Viewer Wrapper-->
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            $('#kt_app_header').hide();
+            $('#kt_app_sidebar').hide();
+        });
+    </script>
+}

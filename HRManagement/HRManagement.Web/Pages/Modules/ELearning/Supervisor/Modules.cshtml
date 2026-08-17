@@ -1,0 +1,357 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.ModulesModel
+@{
+    ViewData["Title"] = "Modules";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/supervisor/modules.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Header Row-->
+            <div class="d-flex justify-content-between align-items-center mb-6 flex-wrap gap-3 el-animate">
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Modules</h1>
+                <div class="d-flex align-items-center gap-3">
+                    <input type="text" class="el-search-input" id="el-sv-module-search" placeholder="Search modules...">
+                    <button class="btn-el-primary" id="el-sv-add-module">
+                        <i class="ki-duotone ki-plus fs-5"></i> Add Module
+                    </button>
+                </div>
+            </div>
+            <!--end::Header Row-->
+
+            <!--begin::Filter Bar-->
+            <div class="el-batch-bar mb-6 el-animate el-animate-delay-1">
+                <div>
+                    <div class="el-batch-label">SELECT PROGRAM</div>
+                    <!--begin::Custom Program Dropdown-->
+                    <div class="el-sv-custom-dropdown" id="el-sv-program-dropdown">
+                        <button class="el-sv-dropdown-toggle" type="button" id="el-sv-program-toggle">
+                            <span class="el-sv-dropdown-text" id="el-sv-program-text">Program 1</span>
+                            <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                        </button>
+                        <div class="el-sv-dropdown-menu" id="el-sv-program-menu">
+                            <div class="el-sv-dropdown-item el-sv-dropdown-add" data-action="add-program">Add New Program</div>
+                            <!--Populated by JS-->
+                        </div>
+                    </div>
+                    <!--end::Custom Program Dropdown-->
+                </div>
+                <div>
+                    <div class="el-batch-label">SELECT BATCH</div>
+                    <!--begin::Custom Batch Dropdown-->
+                    <div class="el-sv-custom-dropdown" id="el-sv-batch-dropdown">
+                        <button class="el-sv-dropdown-toggle" type="button" id="el-sv-batch-toggle">
+                            <span class="el-sv-dropdown-text" id="el-sv-batch-text">Batch 1</span>
+                            <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                        </button>
+                        <div class="el-sv-dropdown-menu" id="el-sv-batch-menu">
+                            <div class="el-sv-dropdown-item el-sv-dropdown-add" data-action="add-batch">Add New Batch</div>
+                            <!--Populated by JS-->
+                        </div>
+                    </div>
+                    <!--end::Custom Batch Dropdown-->
+                </div>
+                <div>
+                    <div class="el-batch-label">PERIOD</div>
+                    <div class="fs-5 fw-bold text-gray-800" id="el-sv-period">01 Jan 2026 - 01 Aug 2026</div>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn btn-icon btn-light" id="el-sv-btn-filter" style="border: 1px solid #e1e3ea; background: #f9f9f9;" data-bs-toggle="modal" data-bs-target="#el-modal-filter-list">
+                        <i class="ki-duotone ki-filter fs-2" style="color: #4b5675;"><span class="path1"></span><span class="path2"></span></i>
+                    </button>
+                </div>
+            </div>
+            <!--end::Filter Bar-->
+
+            <!--begin::Modules Grid-->
+            <div class="row el-animate el-animate-delay-2" id="el-sv-modules-grid">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Modules Grid-->
+
+            <!--begin::Load More-->
+            <div class="text-center mt-4 mb-8">
+                <button class="btn-el-load-more" id="el-sv-load-more" style="display: none;">Load More</button>
+            </div>
+            <!--end::Load More-->
+
+            <!--begin::Modals-->
+            <!-- Add New Batch Modal -->
+            <div class="modal fade" id="el-modal-add-batch" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-500px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header d-flex align-items-center justify-content-between">
+                            <h3 class="modal-title">Add New Batch</h3>
+                            <button type="button" class="btn-close-el" data-bs-dismiss="modal">
+                                <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <div class="mb-5">
+                                <label class="el-form-label">Start Date</label>
+                                <div class="el-input-prefix">
+                                    <span class="el-input-icon"><i class="ki-duotone ki-calendar fs-4"><span class="path1"></span><span class="path2"></span></i></span>
+                                    <input type="date" class="el-form-control" id="el-add-batch-start-date" />
+                                </div>
+                                <div class="el-field-error d-none" id="el-add-batch-start-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div>
+                                <label class="el-form-label">End Date</label>
+                                <div class="el-input-prefix">
+                                    <span class="el-input-icon"><i class="ki-duotone ki-calendar fs-4"><span class="path1"></span><span class="path2"></span></i></span>
+                                    <input type="date" class="el-form-control" id="el-add-batch-end-date" />
+                                </div>
+                                <div class="el-field-error d-none" id="el-add-batch-end-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-add-batch-submit">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Program Modal -->
+            <div class="modal fade" id="el-modal-add-program" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-500px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header d-flex align-items-center justify-content-between">
+                            <h3 class="modal-title">Add New Program</h3>
+                            <button type="button" class="btn-close-el" data-bs-dismiss="modal">
+                                <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <div class="mb-4">
+                                <label class="el-form-label">Program Name</label>
+                                <input type="text" class="el-form-control" id="el-add-program-name" />
+                                <div class="el-field-error d-none" id="el-add-program-name-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div>
+                                <label class="el-form-label">Select Interns</label>
+                                <div class="d-flex flex-column gap-2">
+                                    <input type="text" class="el-form-control" value="Intern 2025" style="border-color: #d31145; color: #d31145;" readonly />
+                                    <input type="text" class="el-form-control" value="Intern 2026" readonly />
+                                    <input type="text" class="el-form-control" value="Intern2027" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-add-program-submit">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Module Modal -->
+            <div class="modal fade" id="el-modal-add-module" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-500px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header d-flex align-items-center justify-content-between">
+                            <h3 class="modal-title">Add New Module</h3>
+                            <button type="button" class="btn-close-el" data-bs-dismiss="modal">
+                                <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <div class="mb-4">
+                                <label class="el-form-label">Module Title</label>
+                                <input type="text" class="el-form-control" id="el-add-module-title" />
+                                <div class="el-field-error d-none" id="el-add-module-title-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="el-form-label">Description</label>
+                                <input type="text" class="el-form-control" id="el-add-module-desc" />
+                                <div class="el-field-error d-none" id="el-add-module-desc-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="el-form-label">Role</label>
+                                <div class="el-sv-custom-dropdown" id="el-add-module-role-dropdown">
+                                    <button class="el-sv-dropdown-toggle w-100" type="button" id="el-add-module-role-toggle">
+                                        <span class="el-sv-dropdown-text" id="el-add-module-role-text">-- Select Role --</span>
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </button>
+                                    <div class="el-sv-dropdown-menu w-100" id="el-add-module-role-menu">
+                                        <!--Populated by JS-->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="el-add-module-role" />
+                                <div class="el-field-error d-none" id="el-add-module-role-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div>
+                                <label class="el-form-label">Due Date</label>
+                                <div class="el-input-prefix">
+                                    <span class="el-input-icon"><i class="ki-duotone ki-calendar fs-4"><span class="path1"></span><span class="path2"></span></i></span>
+                                    <input type="date" class="el-form-control" id="el-add-module-due" />
+                                </div>
+                                <div class="el-field-error d-none" id="el-add-module-due-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-add-module-submit">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Module Modal -->
+            <div class="modal fade" id="el-modal-update-module" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-500px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header d-flex align-items-center justify-content-between">
+                            <h3 class="modal-title">Update Module</h3>
+                            <button type="button" class="btn-close-el" data-bs-dismiss="modal">
+                                <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <input type="hidden" id="el-update-module-id" />
+                            <div class="mb-4">
+                                <label class="el-form-label">Module Title</label>
+                                <input type="text" class="el-form-control" id="el-update-module-title" />
+                                <div class="el-field-error d-none" id="el-update-module-title-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="el-form-label">Description</label>
+                                <input type="text" class="el-form-control" id="el-update-module-desc" />
+                                <div class="el-field-error d-none" id="el-update-module-desc-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="el-form-label">Role</label>
+                                <div class="el-sv-custom-dropdown" id="el-update-module-role-dropdown">
+                                    <button class="el-sv-dropdown-toggle w-100" type="button" id="el-update-module-role-toggle">
+                                        <span class="el-sv-dropdown-text" id="el-update-module-role-text">-- Select Role --</span>
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </button>
+                                    <div class="el-sv-dropdown-menu w-100" id="el-update-module-role-menu">
+                                        <!--Populated by JS-->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="el-update-module-role" />
+                                <div class="el-field-error d-none" id="el-update-module-role-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                            <div>
+                                <label class="el-form-label">Due Date</label>
+                                <div class="el-input-prefix">
+                                    <span class="el-input-icon"><i class="ki-duotone ki-calendar fs-4"><span class="path1"></span><span class="path2"></span></i></span>
+                                    <input type="date" class="el-form-control" id="el-update-module-due" />
+                                </div>
+                                <div class="el-field-error d-none" id="el-update-module-due-err"><i class="ki-duotone ki-information fs-7"></i> Field must not be empty.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-update-module-submit">Update Module</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy Module To Modal -->
+            <div class="modal fade" id="el-modal-copy-module" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-500px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header d-flex align-items-center justify-content-between">
+                            <h3 class="modal-title">Copy Module To</h3>
+                            <button type="button" class="btn-close-el" data-bs-dismiss="modal">
+                                <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <div class="mb-4">
+                                <label class="el-form-label">Select Program</label>
+                                <div class="el-sv-custom-dropdown" id="el-copy-program-dropdown">
+                                    <button class="el-sv-dropdown-toggle" type="button" id="el-copy-program-toggle">
+                                        <span class="el-sv-dropdown-text" id="el-copy-program-text">Select Program</span>
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </button>
+                                    <div class="el-sv-dropdown-menu" id="el-copy-program-menu">
+                                        <!--Populated by JS-->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="el-copy-program-val" />
+                            </div>
+                            <div>
+                                <label class="el-form-label">Select Batch</label>
+                                <div class="el-sv-custom-dropdown" id="el-copy-batch-dropdown">
+                                    <button class="el-sv-dropdown-toggle" type="button" id="el-copy-batch-toggle">
+                                        <span class="el-sv-dropdown-text" id="el-copy-batch-text">Select Batch</span>
+                                        <i class="ki-duotone ki-down fs-5 ms-1"></i>
+                                    </button>
+                                    <div class="el-sv-dropdown-menu" id="el-copy-batch-menu">
+                                        <!--Populated by JS-->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="el-copy-batch-val" />
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-copy-module-submit">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter List Modal -->
+            <div class="modal fade" id="el-modal-filter-list" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-400px">
+                    <div class="modal-content el-modal-content">
+                        <div class="modal-header el-modal-header">
+                            <h3 class="modal-title">Filter List</h3>
+                        </div>
+                        <div class="modal-body el-modal-body">
+                            <div class="fw-bold text-gray-800 mb-3 fs-6">Role</div>
+                            <div class="d-flex flex-wrap gap-3" id="el-filter-roles-container">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                        <div class="modal-footer el-modal-footer justify-content-between">
+                            <span class="fw-bold fs-7" style="color: #d31145; cursor: pointer;" id="el-filter-select-all">Select All</span>
+                            <button type="button" class="btn-el-modal-submit px-8" id="el-filter-ok" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--end::Modals-->
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/supervisor/modules.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.modules.init();
+            }
+        });
+    </script>
+}

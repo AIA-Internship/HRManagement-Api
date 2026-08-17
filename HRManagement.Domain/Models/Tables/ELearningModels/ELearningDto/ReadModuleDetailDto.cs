@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
 {
@@ -7,7 +7,7 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public string? description { get; set; }
         public DateTime createdUtcDate { get; set; }
         public List<ReadModuleContentDto> contents { get; set; } = new();
-        public ReadQuizSummaryDto? quiz { get; set; }
+        public List<ReadQuizSummaryDto> quizzes { get; set; } = new();
     }
 
     public class ReadQuizSummaryDto
@@ -19,5 +19,15 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public int mcWeight { get; set; }
         public int essayWeight { get; set; }
         public int minimumPassingScore { get; set; }
+        public decimal? latestScore { get; set; }
+        public List<ReadQuizQuestionDto> questions { get; set; } = new();
+    }
+
+    public class ReadQuizQuestionDto
+    {
+        public int id { get; set; }
+        public string text { get; set; } = null!;
+        public string type { get; set; } = null!;
+        public List<string> options { get; set; } = new();
     }
 }

@@ -1,0 +1,88 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.AnswersModel
+@{
+    ViewData["Title"] = "Answers";
+}
+
+@section Styles {
+    <link href="/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" />
+    <link href="/apps/modules/elearning/css/supervisor/answers.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Header-->
+            <div class="d-flex align-items-center mb-6 el-animate">
+                <button onclick="history.back()" class="el-back-btn me-3" type="button">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </button>
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Answers</h1>
+            </div>
+            <!--end::Header-->
+
+            <!--begin::Tabs-->
+            <div class="d-flex gap-2 mb-6 el-animate el-animate-delay-1">
+                <button class="el-sv-tab" data-tab="submitted" id="el-sv-answers-tab-submitted">Submitted</button>
+                <button class="el-sv-tab active" data-tab="not-submitted" id="el-sv-answers-tab-notsubmitted">Not Submitted</button>
+            </div>
+            <!--end::Tabs-->
+
+            <!--begin::Table Card-->
+            <div class="card card-flush el-animate el-animate-delay-2">
+                <div class="card-body p-6">
+                    <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-200 align-middle gs-7 gy-4 mb-0" id="el-sv-answers-table">
+                            <thead>
+                                <tr class="fw-bold text-gray-500 fs-7 text-uppercase">
+                                    <th>Employee ID</th>
+                                    <th>Name</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--Rendered by DataTables-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!--end::Table Card-->
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <script src="/apps/modules/elearning/js/supervisor/answers.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.answers.init();
+            }
+        });
+    </script>
+}

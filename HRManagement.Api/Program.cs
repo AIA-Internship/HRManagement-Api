@@ -60,6 +60,15 @@ builder.Services.AddAuthentication(options =>
     // DEBUGGING EVENT (PENTING UNTUK MELIHAT ERROR DI SWAGGER)
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        },
         OnAuthenticationFailed = async context =>
         {
             // Jangan kembalikan teks mentah. Kembalikan ApiResponse JSON

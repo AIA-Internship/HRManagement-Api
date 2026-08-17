@@ -1,0 +1,201 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.QuizArchitectureModel
+@{
+    ViewData["Title"] = "Quiz Architecture";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/supervisor/quizarchitecture.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Header-->
+            <div class="d-flex align-items-center mb-8 el-animate">
+                <button onclick="history.back()" class="el-back-btn me-3" type="button">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </button>
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Quiz Architecture</h1>
+            </div>
+            <!--end::Header-->
+
+            <!--begin::Cards Container-->
+            <div class="d-flex flex-column gap-5" style="max-width: 680px;">
+
+                <!--begin::Question Framework Card-->
+                <div class="el-sv-arch-card el-animate el-animate-delay-1">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="fw-bold fs-5 text-gray-900 mb-1">Question Framework</div>
+                            <div class="fs-7 text-gray-500">Select the fundamental format of the quiz.</div>
+                        </div>
+                        <div class="el-sv-arch-icon">
+                            <i class="ki-duotone ki-dots-square fs-2 text-danger">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                                <span class="path4"></span>
+                            </i>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="el-sv-arch-option selected" id="el-sv-arch-mc" data-type="mc">
+                                <div class="el-sv-arch-checkbox checked" id="el-sv-arch-mc-check"></div>
+                                <div>
+                                    <div class="fw-bold fs-6" style="color: #f1416c;">Multiple Choice</div>
+                                    <div class="fs-7 text-gray-500">Standardized testing</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="el-sv-arch-option" id="el-sv-arch-essay" data-type="essay">
+                                <div class="el-sv-arch-checkbox" id="el-sv-arch-essay-check"></div>
+                                <div>
+                                    <div class="fw-bold fs-6 text-gray-700">Essay Format</div>
+                                    <div class="fs-7 text-gray-500">Critical thinking</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Question Framework Card-->
+
+                <!--begin::Quantity & Distribution Card-->
+                <div class="el-sv-arch-card el-animate el-animate-delay-2">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="fw-bold fs-5 text-gray-900 mb-1">Quantity &amp; Distribution</div>
+                            <div class="fs-7 text-gray-500">Define the number of items per category.</div>
+                        </div>
+                        <div class="el-sv-arch-icon">
+                            <i class="ki-duotone ki-hashtag fs-2 text-danger">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </div>
+                    </div>
+                    <!--begin::MC Row-->
+                    <div class="el-sv-arch-qty-row mb-4">
+                        <div>
+                            <div class="fw-bold fs-6 text-gray-800">Multiple Choice Items</div>
+                            <div class="fs-7 text-gray-500">Automatic grading enabled</div>
+                        </div>
+                        <div class="el-sv-arch-stepper">
+                            <button class="el-sv-arch-step-btn" id="el-sv-arch-mc-minus">
+                                <i class="ki-duotone ki-minus fs-5"><span class="path1"></span></i>
+                            </button>
+                            <span class="el-sv-arch-step-val fw-bold" id="el-sv-arch-mc-count">10</span>
+                            <button class="el-sv-arch-step-btn active" id="el-sv-arch-mc-plus">
+                                <i class="ki-duotone ki-plus fs-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!--end::MC Row-->
+                    <!--begin::Essay Row-->
+                    <div class="el-sv-arch-qty-row">
+                        <div>
+                            <div class="fw-bold fs-6 text-gray-800">Essay Questions</div>
+                            <div class="fs-7 text-gray-500">Manual grading required</div>
+                        </div>
+                        <div class="el-sv-arch-stepper el-sv-arch-stepper-disabled">
+                            <button class="el-sv-arch-step-btn" id="el-sv-arch-essay-minus" disabled>
+                                <i class="ki-duotone ki-minus fs-5"><span class="path1"></span></i>
+                            </button>
+                            <span class="el-sv-arch-step-val fw-bold" id="el-sv-arch-essay-count">0</span>
+                            <button class="el-sv-arch-step-btn" id="el-sv-arch-essay-plus" disabled>
+                                <i class="ki-duotone ki-plus fs-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!--end::Essay Row-->
+                </div>
+                <!--end::Quantity & Distribution Card-->
+
+                <!--begin::Precision Weighting Card-->
+                <div class="el-sv-arch-card el-animate el-animate-delay-3">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="fw-bold fs-5 text-gray-900 mb-1">Precision Weighting</div>
+                            <div class="fs-7 text-gray-500">Allocate grade importance across sections.</div>
+                        </div>
+                        <span class="el-sv-arch-balanced-badge" id="el-sv-arch-balance-badge">● Balanced 100%</span>
+                    </div>
+                    <!--begin::MC Slider-->
+                    <div class="mb-5">
+                        <div class="fs-7 fw-semibold text-gray-600 mb-2">Multiple Choice Section</div>
+                        <input type="range" class="el-sv-arch-slider" id="el-sv-arch-mc-weight"
+                               min="0" max="100" value="100">
+                        <div class="text-end fs-7 fw-bold text-gray-700 mt-1">
+                            <span id="el-sv-arch-mc-pct">100</span> %
+                        </div>
+                    </div>
+                    <!--end::MC Slider-->
+                    <!--begin::Essay Slider-->
+                    <div class="mb-5">
+                        <div class="fs-7 fw-semibold text-gray-600 mb-2">Essay Section</div>
+                        <input type="range" class="el-sv-arch-slider" id="el-sv-arch-essay-weight"
+                               min="0" max="100" value="0" disabled>
+                        <div class="text-end fs-7 fw-bold text-gray-700 mt-1">
+                            <span id="el-sv-arch-essay-pct">0</span> %
+                        </div>
+                    </div>
+                    <!--end::Essay Slider-->
+                    <!--begin::Minimum Passing Score-->
+                    <div class="el-sv-arch-pass-row">
+                        <span class="fw-bold fs-6 text-danger">Minimum Passing Score</span>
+                        <input type="number" class="el-sv-arch-pass-input" id="el-sv-arch-pass-score"
+                               min="0" max="100" value="80">
+                    </div>
+                    <!--end::Minimum Passing Score-->
+                </div>
+                <!--end::Precision Weighting Card-->
+
+            </div>
+            <!--end::Cards Container-->
+
+            <!--begin::Next Button-->
+            <div class="d-flex justify-content-end mt-8 mb-8 el-animate el-animate-delay-4">
+                <button class="btn-el-primary" id="el-sv-arch-next">
+                    Next <i class="ki-duotone ki-arrow-right fs-5"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <!--end::Next Button-->
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/supervisor/quizarchitecture.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.quizArchitecture.init();
+            }
+        });
+    </script>
+}

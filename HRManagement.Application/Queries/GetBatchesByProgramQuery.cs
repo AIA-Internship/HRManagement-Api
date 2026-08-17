@@ -32,9 +32,12 @@ namespace HRManagement.Application.Queries
             _logger.LogTrace("Executing handler for request : {request}", nameof(GetBatchesByProgramHandler));
             try
             {
-                var programExists = await _repo.ProgramExistsAsync(request.ProgramId);
-                if (!programExists)
-                    return Result.Failure<List<ReadBatchDto>>("Program not found.");
+                if (request.ProgramId != 0)
+                {
+                    var programExists = await _repo.ProgramExistsAsync(request.ProgramId);
+                    if (!programExists)
+                        return Result.Failure<List<ReadBatchDto>>("Program not found.");
+                }
 
                 var batches = await _repo.GetBatchesByProgramIdAsync(request.ProgramId);
                 var mapped = batches

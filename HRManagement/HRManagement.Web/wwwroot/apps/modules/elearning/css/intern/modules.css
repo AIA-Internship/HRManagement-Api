@@ -1,0 +1,135 @@
+/* -- Filter Pills -- */
+.el-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.el-filter-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #e1e3ea;
+  background: #ffffff;
+  color: #4b5675;
+}
+
+.el-filter-pill:hover {
+  border-color: #f1416c;
+  color: #f1416c;
+}
+
+.el-filter-pill.active {
+  background: #f1416c;
+  color: #ffffff;
+  border-color: #f1416c;
+}
+
+/* -- Batch Info Bar -- */
+.el-batch-bar {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 30px;
+  border: 1px solid #f1f1f4;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  position: relative;
+  z-index: 20;
+}
+
+.el-batch-bar .el-batch-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #99a1b7;
+  margin-bottom: 6px;
+}
+
+/* -- Material Items -- */
+.el-material-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: #ffffff;
+  position: relative;
+}
+
+.el-material-item:hover {
+  border-color: #d8d8e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.el-material-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.el-material-icon.pdf {
+  background: #fff5f8;
+  color: #f1416c;
+}
+
+.el-material-icon.slides {
+  background: #fff8dd;
+  color: #ffc700;
+}
+
+.el-material-icon.video {
+  background: #f1faff;
+  color: #009ef7;
+}
+
+.el-material-icon.quiz {
+  background: #fff8dd;
+  color: #ffc700;
+}
+
+.el-material-check {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1bc5bd;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+[data-bs-theme="dark"] .el-material-item {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-batch-bar {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-filter-pill {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+

@@ -1,4 +1,4 @@
-﻿using HRManagement.Domain.Models.Tables;
+using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.Models.Tables.ELearningModels;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using System;
@@ -18,7 +18,7 @@ namespace HRManagement.Domain.Interfaces
         Task<int> AddContentAsync(ModuleContentModel entity);
         Task<IEnumerable<ModuleContentModel>> GetContentsByModuleIdAsync(int moduleId);
         Task<ModuleContentModel?> GetContentByIdAsync(int contentId);
-        Task<QuizModel?> GetQuizByModuleIdAsync(int moduleId);
+        Task<IEnumerable<QuizModel>> GetQuizzesByModuleIdAsync(int moduleId);
         Task<int> GetQuestionCountByQuizIdAsync(int quizId);
         Task<IEnumerable<QuizSubmissionModel>> GetSubmissionsByQuizIdAsync(int quizId);
         Task<IEnumerable<InternInfoDto>> GetEligibleInternsForQuizAsync(int quizId);
@@ -42,6 +42,7 @@ namespace HRManagement.Domain.Interfaces
         Task<int> GetCompletedModulesCountAsync(int userId);
 
         Task<bool> MarkContentAsOpenedAsync(int userId, int contentId);
+        Task<IEnumerable<int>> GetOpenedContentIdsByUserAndModuleAsync(int userId, int moduleId);
         Task<bool> SubmitQuizAsync(QuizSubmissionModel entity);
 
         Task<IEnumerable<ModuleModel>> GetModulesByEmployeeCohortAsync(int employeeId, string search);
@@ -73,5 +74,7 @@ namespace HRManagement.Domain.Interfaces
         Task<bool> DeleteQuizAsync(int quizId);
 
         Task<bool> DeleteContentAsync(int contentId, string currentUserId);
+        Task<IEnumerable<BatchModel>> GetBatchesByEmployeeIdAsync(int employeeId);
+        Task<IEnumerable<string>> GetDistinctPositionsByProgramIdAsync(int programId);
     }
 }

@@ -1,0 +1,70 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.QuizAnswersModel
+@{
+    ViewData["Title"] = "Quiz Answers";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/supervisor/quizanswers.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Header-->
+            <div class="d-flex align-items-center mb-8 el-animate">
+                <button onclick="history.back()" class="el-back-btn me-3" type="button">
+                    <i class="ki-duotone ki-arrow-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </button>
+                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Answers</h1>
+            </div>
+            <!--end::Header-->
+
+            <!--begin::Questions List-->
+            <div id="el-sv-quiz-answers-list" class="el-animate el-animate-delay-1">
+                <!--Rendered by JS-->
+            </div>
+            <!--end::Questions List-->
+
+            <!--begin::Submit Button-->
+            <div class="d-flex justify-content-end mt-6 mb-8 el-animate el-animate-delay-2">
+                <button class="btn-el-primary" id="el-sv-qa-submit">Submit Result</button>
+            </div>
+            <!--end::Submit Button-->
+
+        </div>
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/supervisor/quizanswers.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.quizAnswers.init();
+            }
+        });
+    </script>
+}

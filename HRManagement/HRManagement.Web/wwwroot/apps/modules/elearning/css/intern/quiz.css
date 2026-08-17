@@ -1,0 +1,109 @@
+/* -- Quiz Card -- */
+.el-quiz-card {
+  background: #faf8f5;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #f1f1f4;
+}
+
+/* -- Quiz Options -- */
+.el-quiz-question-card {
+  background: #faf8f5;
+  border-radius: 12px;
+  padding: 30px 40px;
+  margin-bottom: 30px;
+  border: 1px solid #f1f1f4;
+}
+
+.el-quiz-option {
+  border: 1px solid #e1e3ea;
+  border-radius: 10px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+  font-size: 14px;
+  color: #4b5675;
+}
+
+.el-quiz-option:hover {
+  border-color: #f1416c;
+  background: #fff5f8;
+}
+
+.el-quiz-option.selected {
+  border-color: #f1416c;
+  background: #fff5f8;
+  color: #f1416c;
+  font-weight: 600;
+}
+
+.el-quiz-textarea {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid #e1e3ea;
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: #4b5675;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.el-quiz-textarea:focus {
+  outline: none;
+  border-color: #f1416c;
+}
+
+.el-quiz-number-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f1f4;
+  color: #99a1b7;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -- Dark Mode -- */
+[data-bs-theme="dark"] .el-quiz-question-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-quiz-option {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-quiz-textarea {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-search-input {
+  background-color: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-quiz-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sidebar-footer {
+  border-top-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sidebar-footer .el-user-name {
+  color: #cdcde4;
+}

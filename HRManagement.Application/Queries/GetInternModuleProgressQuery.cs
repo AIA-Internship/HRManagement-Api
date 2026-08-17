@@ -36,20 +36,33 @@ namespace HRManagement.Application.Queries
                 var modules = await _repo.GetModulesByProgramIdAsync(request.ProgramId);
                 var progressRecords = await _repo.GetProgressRecordsByEmployeeAsync(request.EmployeeId);
 
-                var result = modules.Select(m =>
+                var result = new List<ReadInternModuleProgressDto>();
+
+                foreach (var m in modules)
                 {
                     var progress = progressRecords.FirstOrDefault(p => p.ModuleId == m.ModuleId);
-                    return new ReadInternModuleProgressDto
+                    string currentStatus = progress?.ProgressStatus ?? "Not Started";
+
+                    if (currentStatus != "Completed")
+                    {
+                        var batch = await _repo.GetBatchByIdAsync(m.BatchId);
+                        if (batch != null && DateTime.UtcNow.Date > batch.EndDate.Date)
+                        {
+                            currentStatus = "Failed";
+                        }
+                    }
+
+                    result.Add(new ReadInternModuleProgressDto
                     {
                         moduleId = m.ModuleId,
                         title = m.ModuleTitle,
                         role = m.TargetRole,
                         dueDate = m.DueDate,
-                        progressStatus = progress?.ProgressStatus ?? "Not Started"
-                    };
-                })
-                .OrderBy(m => m.title)
-                .ToList();
+                        progressStatus = currentStatus
+                    });
+                }
+
+                result = result.OrderBy(m => m.title).ToList();
 
                 return Result.Success(result);
             }

@@ -1,4 +1,4 @@
-﻿namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
+namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
 {
     public class ReadModuleContentDto
     {
@@ -9,5 +9,6 @@
         public string? fileName { get; set; }
         public string? filePath { get; set; }
         public int sortOrder { get; set; }
+        public bool isCompleted { get; set; }
     }
 }

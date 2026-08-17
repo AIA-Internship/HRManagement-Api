@@ -1,0 +1,19 @@
+@import url('./shared.css');
+
+#el-sv-interns-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#el-sv-interns-table th,
+#el-sv-interns-table td {
+    height: 60px; /* Fixed height for rows */
+    vertical-align: middle;
+}
+
+#el-sv-interns-table .el-truncate-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
+}

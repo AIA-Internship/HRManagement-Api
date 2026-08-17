@@ -1,16 +1,22 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Response.Shared;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningMapping;
 using MediatR;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
 
 namespace HRManagement.Application.Queries
 {
-    public class GetModuleByIdQuery(int moduleId) : IRequest<Result<ReadModuleDetailDto>>
+    public class GetModuleByIdQuery(int moduleId, int? userId = null) : IRequest<Result<ReadModuleDetailDto>>
     {
         public int ModuleId { get; set; } = moduleId;
+        public int? UserId { get; set; } = userId;
     }
 
     internal class GetModuleByIdHandler : IRequestHandler<GetModuleByIdQuery, Result<ReadModuleDetailDto>>
@@ -33,13 +39,31 @@ namespace HRManagement.Application.Queries
                 if (m == null) return Result.Failure<ReadModuleDetailDto>("Module not found");
 
                 var contents = await _repo.GetContentsByModuleIdAsync(request.ModuleId);
-                var quiz = await _repo.GetQuizByModuleIdAsync(request.ModuleId);
+                var quizzes = await _repo.GetQuizzesByModuleIdAsync(request.ModuleId);
+                var quizDtos = new List<ReadQuizSummaryDto>();
 
-                ReadQuizSummaryDto? quizDto = null;
-                if (quiz != null)
+                foreach (var quiz in quizzes)
                 {
                     var questionCount = await _repo.GetQuestionCountByQuizIdAsync(quiz.QuizId);
-                    quizDto = new ReadQuizSummaryDto
+                    var questions = await _repo.GetQuestionsByQuizIdAsync(quiz.QuizId);
+                    var options = await _repo.GetOptionsByQuestionIdsAsync(questions.Select(q => q.QuestionId));
+
+                    decimal? latestScore = null;
+                    if (request.UserId.HasValue)
+                    {
+                        var submissions = await _repo.GetSubmissionsByUserAndQuizIdsAsync(request.UserId.Value, new[] { quiz.QuizId });
+                        latestScore = submissions.OrderByDescending(s => s.CreatedUtcDate).FirstOrDefault()?.TotalScore;
+                    }
+
+                    var questionDtos = questions.OrderBy(q => q.SortOrder).Select(q => new ReadQuizQuestionDto
+                    {
+                        id = q.QuestionId,
+                        text = q.QuestionText,
+                        type = q.QuestionType,
+                        options = options.Where(o => o.QuestionId == q.QuestionId).Select(o => o.OptionText).ToList()
+                    }).ToList();
+
+                    quizDtos.Add(new ReadQuizSummaryDto
                     {
                         quizId = quiz.QuizId,
                         questionCount = questionCount,
@@ -47,8 +71,21 @@ namespace HRManagement.Application.Queries
                         essayCount = quiz.EssayCount,
                         mcWeight = quiz.McWeight,
                         essayWeight = quiz.EssayWeight,
-                        minimumPassingScore = quiz.MinimumPassingScore
-                    };
+                        minimumPassingScore = quiz.MinimumPassingScore,
+                        latestScore = latestScore,
+                        questions = questionDtos
+                    });
+                }
+
+                var contentsList = contents.Select(ModuleContentMapping.MapToReadDto).ToList();
+                
+                if (request.UserId.HasValue)
+                {
+                    var openedContentIds = await _repo.GetOpenedContentIdsByUserAndModuleAsync(request.UserId.Value, request.ModuleId);
+                    foreach (var contentDto in contentsList)
+                    {
+                        contentDto.isCompleted = openedContentIds.Contains(contentDto.contentId);
+                    }
                 }
 
                 var dto = new ReadModuleDetailDto
@@ -59,8 +96,8 @@ namespace HRManagement.Application.Queries
                     role = m.TargetRole,
                     dueDate = m.DueDate,
                     createdUtcDate = m.CreatedUtcDate,
-                    contents = contents.Select(ModuleContentMapping.MapToReadDto).ToList(),
-                    quiz = quizDto
+                    contents = contentsList,
+                    quizzes = quizDtos
                 };
                 return Result.Success(dto);
             }

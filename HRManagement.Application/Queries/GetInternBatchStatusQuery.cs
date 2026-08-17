@@ -36,36 +36,44 @@ namespace HRManagement.Application.Queries
                 var batch = await _repo.GetBatchByIdAsync(request.BatchId);
                 if (batch == null) return Result.Failure<ReadInternBatchStatusDto>("Batch not found.");
 
-                var modules = (await _repo.GetModulesByBatchIdAsync(request.BatchId, "", new List<string>())).ToList();
+                var allEmployeeModules = await _repo.GetModulesByEmployeeCohortAsync(request.EmployeeId, "");
+                var modules = allEmployeeModules.Where(m => m.BatchId == request.BatchId).ToList();
+
                 var progressRecords = (await _repo.GetProgressRecordsByEmployeeAsync(request.EmployeeId)).ToList();
                 var openedContentIds = new HashSet<int>(await _repo.GetOpenedContentIdsByEmployeeAsync(request.EmployeeId));
 
                 int finishedCount = 0;
+                int missedDueDateCount = 0;
 
                 foreach (var module in modules)
                 {
-                    var contents = await _repo.GetContentsByModuleIdAsync(module.ModuleId);
-                    bool allContentsOpened = contents.All(c => openedContentIds.Contains(c.ContentId));
-
-                    var quiz = await _repo.GetQuizByModuleIdAsync(module.ModuleId);
                     var progress = progressRecords.FirstOrDefault(p => p.ModuleId == module.ModuleId);
-                    bool quizPassed = quiz == null || progress?.ProgressStatus == "Completed";
+                    bool isCompleted = progress != null && progress.ProgressStatus == "Completed";
 
-                    if (allContentsOpened && quizPassed)
+                    if (isCompleted)
+                    {
                         finishedCount++;
+                    }
+                    else if (module.DueDate.HasValue && DateTime.UtcNow.Date > module.DueDate.Value.Date)
+                    {
+                        missedDueDateCount++;
+                    }
                 }
 
                 int totalModules = modules.Count;
                 string status;
 
-                if (DateTime.UtcNow < batch.EndDate)
+                if (totalModules > 0 && finishedCount == totalModules)
                 {
-                    status = "In Progress";
+                    status = "Completed";
+                }
+                else if (totalModules > 0 && missedDueDateCount > (totalModules / 2.0))
+                {
+                    status = "Out of Track";
                 }
                 else
                 {
-                    double completionRate = totalModules > 0 ? (double)finishedCount / totalModules : 0;
-                    status = completionRate > 0.5 ? "Completed" : "Failed";
+                    status = "On track";
                 }
 
                 var result = new ReadInternBatchStatusDto

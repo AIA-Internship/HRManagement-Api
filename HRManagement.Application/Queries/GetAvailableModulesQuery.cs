@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Response.Shared;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
@@ -45,6 +45,15 @@ namespace HRManagement.Application.Queries
                 {
                     var userProgress = progressRecords.FirstOrDefault(p => p.ModuleId == m.ModuleId);
                     string currentStatus = userProgress != null ? userProgress.ProgressStatus : "Not Started";
+
+                    if (currentStatus != "Completed")
+                    {
+                        var batch = await _repo.GetBatchByIdAsync(m.BatchId);
+                        if (batch != null && DateTime.UtcNow.Date > batch.EndDate.Date)
+                        {
+                            currentStatus = "Failed";
+                        }
+                    }
 
                     if (!request.StatusFilter.Equals("All", StringComparison.OrdinalIgnoreCase) &&
                         !currentStatus.Equals(request.StatusFilter, StringComparison.OrdinalIgnoreCase))

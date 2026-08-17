@@ -1,0 +1,148 @@
+@page
+@model HRManagement.Web.Pages.Modules.ELearning.Supervisor.ModuleDetailModel
+@{
+    ViewData["Title"] = "Module Detail";
+}
+
+@section Styles {
+    <link href="/apps/modules/elearning/css/supervisor/moduledetail.css" rel="stylesheet" asp-append-version="true" />
+    <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid">
+    <!--begin::Toolbar-->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <div class="el-breadcrumb">
+                    <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
+                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-active">Modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Toolbar-->
+
+    <!--begin::Content-->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+            <!--begin::Module Header-->
+            <div class="d-flex justify-content-between align-items-start mb-6 flex-wrap gap-3 el-animate">
+                <div class="d-flex align-items-center">
+                    <a href="/Modules/ELearning/Supervisor/Modules" class="el-back-btn me-3">
+                        <i class="ki-duotone ki-arrow-left fs-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </a>
+                    <div>
+                        <h1 class="fs-2 fw-bold text-gray-900 mb-0" id="el-sv-detail-title">Understanding Phising Attacks</h1>
+                        <span class="fs-7 text-gray-500 fw-semibold" id="el-sv-detail-due">Due Date  at: 10 May 2026</span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-el-primary" id="el-sv-add-quiz">
+                        <i class="ki-duotone ki-plus fs-5"></i> Add Quiz
+                    </button>
+                    <button class="btn-el-primary" id="el-sv-add-content">
+                        <i class="ki-duotone ki-plus fs-5"></i> Add Content
+                    </button>
+                </div>
+            </div>
+            <!--end::Module Header-->
+
+            <div class="row g-5">
+                <!--begin::Content Section-->
+                <div class="col-lg-7">
+                    <h3 class="fs-5 fw-bold text-gray-800 mb-4 el-animate el-animate-delay-1">Content</h3>
+                    <div id="el-sv-content-list">
+                        <!--Rendered by JS-->
+                    </div>
+                </div>
+                <!--end::Content Section-->
+
+                <!--begin::Quiz Section-->
+                <div class="col-lg-5">
+                    <h3 class="fs-5 fw-bold text-gray-800 mb-4 el-animate el-animate-delay-1">Quiz</h3>
+                    <div id="el-sv-quiz-list">
+                        <!--Rendered by JS-->
+                    </div>
+                </div>
+                <!--end::Quiz Section-->
+            </div>
+
+        </div>
+
+            <!--begin::Modals-->
+
+            <!-- Add Content Modal -->
+            <div class="modal fade" id="el-modal-add-content" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered mw-550px">
+                    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.12);">
+                        <div class="modal-header border-0 pb-0">
+                            <h3 class="modal-title fs-4 fw-bold text-gray-900">Add Content</h3>
+                            <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" id="el-modal-add-content-close">
+                                <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                            </div>
+                        </div>
+                        <div class="modal-body pt-5 pb-5">
+                            <!-- Title Field -->
+                            <div class="mb-5">
+                                <label class="form-label fs-7 fw-semibold text-gray-700 mb-1">Title</label>
+                                <input type="text"
+                                       class="form-control form-control-sm"
+                                       id="el-add-content-title"
+                                       placeholder="e.g., Intro to Project Management"
+                                       style="border: 1px solid #e1e3ea; border-radius: 8px;" />
+                                <div class="text-danger fs-8 mt-1 d-none" id="el-add-content-title-err">
+                                    <i class="ki-duotone ki-information fs-7 text-danger"></i> Field must not be empty.
+                                </div>
+                            </div>
+
+                            <!-- Upload Content Field -->
+                            <div>
+                                <label class="form-label fs-7 fw-semibold text-gray-700 mb-1">Upload Content</label>
+                                <div class="el-sv-upload-zone" id="el-sv-upload-zone">
+                                    <input type="file"
+                                           id="el-add-content-file"
+                                           class="el-sv-upload-input"
+                                           accept=".pdf,.ppt,.pptx,.mp4,.doc,.docx" />
+                                    <div class="el-sv-upload-icon">
+                                        <i class="ki-duotone ki-file-up fs-2x" style="color:#99a1b7;"><span class="path1"></span><span class="path2"></span></i>
+                                    </div>
+                                    <div class="el-sv-upload-text">Click to upload or drag and drop</div>
+                                    <div class="el-sv-upload-hint">PDF, PPT, MP4 and DOCX (max. 150MB)</div>
+                                    <div class="el-sv-upload-filename d-none" id="el-sv-upload-filename"></div>
+                                </div>
+                                <div class="text-danger fs-8 mt-1 d-none" id="el-add-content-file-err">
+                                    <i class="ki-duotone ki-information fs-7 text-danger"></i> Field must not be empty.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 justify-content-end pt-0 pb-6">
+                            <button type="button" class="btn-el-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn-el-modal-submit" id="el-add-content-submit">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--end::Modals-->
+
+    </div>
+    <!--end::Content-->
+</div>
+
+@section Scripts {
+    <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/supervisor/moduledetail.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            if (window.app && window.app.elearning && window.app.elearning.supervisor) {
+                app.elearning.supervisor.moduleDetail.init();
+            }
+        });
+    </script>
+}

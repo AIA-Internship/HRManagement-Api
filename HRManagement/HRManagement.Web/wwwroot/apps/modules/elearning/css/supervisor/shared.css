@@ -1,0 +1,1580 @@
+/* ============================================
+   SUPERVISOR SHARED STYLES
+   ============================================ */
+
+/* -- Outline action button (e.g. Copy Module, Prev) -- */
+.btn-el-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1.5px solid #d31145;
+  background: #ffffff;
+  color: #d31145;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(211, 17, 69, 0.10);
+  transition: all 0.2s;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.btn-el-outline:hover {
+  background: #fff0f4;
+  border-color: #b50e3a;
+  color: #b50e3a;
+  box-shadow: 0 4px 12px rgba(211, 17, 69, 0.18);
+}
+
+/* -- Upload Drop Zone -- */
+.el-sv-upload-zone {
+  position: relative;
+  border: 1.5px dashed #c4cada;
+  border-radius: 10px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafafa;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.el-sv-upload-zone:hover,
+.el-sv-upload-zone--active {
+  border-color: #d31145;
+  background: #fff5f8;
+}
+
+.el-sv-upload-zone--has-file {
+  border-color: #1bc5bd;
+  background: #f0fffe;
+}
+
+.el-sv-upload-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.el-sv-upload-icon {
+  pointer-events: none;
+}
+
+.el-sv-upload-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5675;
+  pointer-events: none;
+}
+
+.el-sv-upload-hint {
+  font-size: 11px;
+  color: #99a1b7;
+  pointer-events: none;
+}
+
+.el-sv-upload-filename {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1bc5bd;
+  margin-top: 4px;
+  pointer-events: none;
+}
+
+/* -- Supervisor Module Card -- */
+.el-sv-module-card {
+  background: #ffffff;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  padding: 20px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+}
+
+.el-sv-module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.el-sv-module-card .el-sv-card-role {
+  font-size: 12px;
+  font-weight: 500;
+  color: #99a1b7;
+  margin-bottom: 6px;
+}
+
+.el-sv-module-card .el-sv-card-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1b2559;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.el-sv-module-card .el-sv-card-title:hover {
+  color: #f1416c;
+}
+
+.el-sv-module-card .el-sv-card-due {
+  font-size: 12px;
+  color: #99a1b7;
+  margin-bottom: 12px;
+}
+
+.el-sv-action-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.el-sv-action-icons .el-sv-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #99a1b7;
+  font-size: 16px;
+}
+
+.el-sv-action-icons .el-sv-action-btn:hover {
+  background: #f1f1f4;
+  color: #4b5675;
+}
+
+.el-sv-action-icons .el-sv-action-btn.delete {
+  color: #f1416c;
+}
+
+.el-sv-action-icons .el-sv-action-btn.delete:hover {
+  background: #fff5f8;
+  color: #d9214e;
+}
+
+/* -- Supervisor Tab Buttons -- */
+.el-sv-tab {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid #e1e3ea;
+  background: #ffffff;
+  color: #4b5675;
+}
+
+.el-sv-tab:hover {
+  border-color: #f1416c;
+  color: #f1416c;
+}
+
+.el-sv-tab.active {
+  background: #d31145;
+  color: #ffffff;
+  border-color: #d31145;
+}
+
+/* -- Supervisor Submitted Badge -- */
+.el-sv-submitted-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1bc5bd;
+  border: 1.5px solid #1bc5bd;
+  background: transparent;
+}
+
+/* -- Supervisor Intern Card (Answers / Results list) -- */
+.el-sv-intern-card {
+  background: #ffffff;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  padding: 16px 24px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+
+.el-sv-intern-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.el-sv-intern-card .el-sv-intern-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1b2559;
+}
+
+.el-sv-intern-card .el-sv-intern-id {
+  font-size: 12px;
+  color: #99a1b7;
+}
+
+.el-sv-intern-card .el-sv-intern-score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1b2559;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* -- Supervisor Score Bar (Interns Table) -- */
+.el-sv-score-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.el-sv-score-bar {
+  width: 140px;
+  height: 8px;
+  border-radius: 4px;
+  background: #f1f1f4;
+  overflow: hidden;
+}
+
+.el-sv-score-bar .el-sv-score-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease-in-out;
+}
+
+.el-sv-score-bar .el-sv-score-fill.blue  { background: #3e97ff; }
+.el-sv-score-bar .el-sv-score-fill.yellow { background: #ffc700; }
+.el-sv-score-bar .el-sv-score-fill.red   { background: #f1416c; }
+.el-sv-score-bar .el-sv-score-fill.green { background: #1bc5bd; }
+
+.el-sv-score-value {
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 48px;
+  text-align: right;
+}
+
+.el-sv-score-value.blue   { color: #3e97ff; }
+.el-sv-score-value.yellow { color: #ffc700; }
+.el-sv-score-value.red    { color: #f1416c; }
+.el-sv-score-value.green  { color: #1bc5bd; }
+
+/* -- Supervisor Content Item (Module Detail) -- */
+.el-sv-content-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.el-sv-content-item:hover {
+  border-color: #d8d8e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.el-sv-content-item .el-sv-content-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.el-sv-content-item .el-sv-content-delete,
+.el-sv-quiz-item .el-sv-quiz-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #a1a5b7;
+  font-size: 16px;
+}
+
+.el-sv-content-item .el-sv-content-delete:hover,
+.el-sv-quiz-item .el-sv-quiz-delete:hover {
+  background: #fff5f8;
+  color: #d9214e;
+}
+
+/* -- Supervisor Quiz Item (Module Detail) -- */
+.el-sv-quiz-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #ffffff;
+  transition: all 0.2s;
+}
+
+.el-sv-quiz-item:hover {
+  border-color: #d8d8e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.el-sv-quiz-item .el-sv-quiz-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.el-sv-quiz-item .el-sv-quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* -- Modules Completed Cell -- */
+.el-sv-modules-completed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5675;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.el-sv-modules-completed i {
+  color: #99a1b7;
+}
+
+/* -- View Answer Button -- */
+.btn-el-view-answer {
+  background: #d31145;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 4px 14px rgba(211, 17, 69, 0.40);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.btn-el-view-answer:hover {
+  background: #b50e3a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(211, 17, 69, 0.50);
+}
+
+/* -- View Result Button -- */
+.btn-el-view-result {
+  background: #d31145;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 4px 14px rgba(211, 17, 69, 0.40);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.btn-el-view-result:hover {
+  background: #b50e3a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(211, 17, 69, 0.50);
+}
+
+/* -- Batch Info Bar -- */
+.el-batch-bar {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 30px;
+  border: 1px solid #f1f1f4;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  position: relative;
+  z-index: 20;
+}
+
+.el-batch-bar .el-batch-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #99a1b7;
+  margin-bottom: 6px;
+}
+
+/* -- Material Icon -- */
+.el-material-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.el-material-icon.pdf    { background: #fff5f8; color: #f1416c; }
+.el-material-icon.slides { background: #fff8dd; color: #ffc700; }
+.el-material-icon.video  { background: #f1faff; color: #009ef7; }
+.el-material-icon.quiz   { background: #fff8dd; color: #ffc700; }
+
+/* -- Supervisor Custom Dropdown (Program / Batch) -- */
+.el-sv-custom-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.el-sv-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f9f9f9;
+  border: 1px solid #e1e3ea;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b2559;
+  cursor: pointer;
+  min-width: 140px;
+  transition: all 0.2s;
+}
+
+.el-sv-dropdown-toggle:hover {
+  border-color: #c4cada;
+}
+
+.el-sv-dropdown-toggle .el-sv-dropdown-text {
+  flex: 1;
+  text-align: left;
+}
+
+.el-sv-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 9999;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #e1e3ea;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 6px 0;
+  margin-top: 4px;
+}
+
+.el-sv-dropdown-menu.show {
+  display: block;
+}
+
+.el-sv-dropdown-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5675;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.el-sv-dropdown-item:hover {
+  background: #f9f9f9;
+  color: #1b2559;
+}
+
+.el-sv-dropdown-item.active {
+  color: #f1416c;
+  font-weight: 600;
+}
+
+.el-sv-dropdown-item.el-sv-dropdown-add {
+  color: #1b2559;
+  font-weight: 600;
+  border-bottom: 1px solid #f1f1f4;
+  margin-bottom: 2px;
+}
+
+.el-sv-dropdown-item.el-sv-dropdown-add:hover {
+  color: #f1416c;
+}
+
+/* ============================================
+   SUPERVISOR — QUIZ ARCHITECTURE STYLES
+   ============================================ */
+
+/* Architecture Card */
+.el-sv-arch-card {
+  background: #ffffff;
+  border: 1px solid #f1f1f4;
+  border-radius: 12px;
+  padding: 28px 32px;
+}
+
+/* Architecture Icon Badge */
+.el-sv-arch-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #fff5f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Framework Option Block */
+.el-sv-arch-option {
+  border: 1.5px solid #e1e3ea;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.el-sv-arch-option:hover {
+  border-color: #f1416c;
+}
+
+.el-sv-arch-option.selected {
+  border-color: #f1416c;
+  background: #fff5f8;
+}
+
+/* Checkbox inside option */
+.el-sv-arch-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #e1e3ea;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.el-sv-arch-checkbox.checked {
+  background: #f1416c;
+  border-color: #f1416c;
+}
+
+.el-sv-arch-checkbox.checked::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+/* Quantity Row */
+.el-sv-arch-qty-row {
+  background: #f9f9f9;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Stepper */
+.el-sv-arch-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.el-sv-arch-stepper-disabled {
+  opacity: 0.4;
+}
+
+.el-sv-arch-step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid #e1e3ea;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4b5675;
+}
+
+.el-sv-arch-step-btn.active {
+  background: #f1416c;
+  border-color: #f1416c;
+  color: #ffffff;
+}
+
+.el-sv-arch-step-btn:hover:not(:disabled) {
+  background: #f1416c;
+  border-color: #f1416c;
+  color: #ffffff;
+}
+
+.el-sv-arch-step-btn:disabled {
+  cursor: not-allowed;
+}
+
+.el-sv-arch-step-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b2559;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Slider */
+.el-sv-arch-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #f1416c 0%, #f1416c var(--val, 100%), #f1f1f4 var(--val, 100%), #f1f1f4 100%);
+  outline: none;
+  cursor: pointer;
+}
+
+.el-sv-arch-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f1416c;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(241, 65, 108, 0.35);
+}
+
+.el-sv-arch-slider:disabled {
+  background: #f1f1f4;
+  cursor: not-allowed;
+}
+
+.el-sv-arch-slider:disabled::-webkit-slider-thumb {
+  background: #c4cada;
+  box-shadow: none;
+}
+
+/* Balanced Badge */
+.el-sv-arch-balanced-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1416c;
+  background: #fff5f8;
+  border: 1.5px solid #f1416c;
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+/* Minimum Passing Score Row */
+.el-sv-arch-pass-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff5f8;
+  border-radius: 10px;
+  padding: 14px 20px;
+}
+
+.el-sv-arch-pass-input {
+  width: 80px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b2559;
+  text-align: center;
+  outline: none;
+}
+
+/* ============================================
+   SUPERVISOR — QUIZ QUESTION STYLES
+   ============================================ */
+
+/* Quiz Question / Create Quiz Card */
+.el-sv-create-quiz-card {
+  background: #ffffff;
+  border: 1px solid #f1f1f4;
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 16px;
+}
+
+/* Textarea for question text */
+.el-sv-create-quiz-textarea {
+  width: 100%;
+  min-height: 180px;
+  border: 1px solid #e1e3ea;
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: #4b5675;
+  resize: vertical;
+  transition: border-color 0.2s;
+  background: #f9f9f9;
+}
+
+.el-sv-create-quiz-textarea:focus {
+  outline: none;
+  border-color: #f1416c;
+  background: #ffffff;
+}
+
+/* Question option input row */
+.el-sv-qq-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9f9f9;
+  border: 1px solid #e1e3ea;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.2s;
+}
+
+.el-sv-qq-option-row:focus-within {
+  border-color: #f1416c;
+}
+
+.el-sv-qq-option-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: #4b5675;
+  outline: none;
+}
+
+/* Custom checkbox */
+.el-sv-qq-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #f1416c;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   SUPERVISOR — QUIZ ANSWERS (REVIEW) STYLES
+   ============================================ */
+
+/* Question Answer Card */
+.el-sv-qa-question-card {
+  background: #ffffff;
+  border: 1px solid #f1f1f4;
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+
+.el-sv-qa-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.el-sv-qa-question-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1b2559;
+  flex: 1;
+  padding-right: 16px;
+  line-height: 1.5;
+}
+
+/* Score box (red bordered number) */
+.el-sv-qa-score-box {
+  min-width: 52px;
+  height: 52px;
+  border: 2px solid #f1416c;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1416c;
+  flex-shrink: 0;
+}
+
+/* Score input for essay */
+.el-sv-qa-score-input {
+  width: 52px;
+  height: 52px;
+  border: 2px solid #f1416c;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1416c;
+  outline: none;
+  background: transparent;
+}
+
+.el-sv-qa-score-input:focus {
+  background: #fff5f8;
+}
+
+.el-sv-qa-score-max {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f1416c;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+/* MC Options container */
+.el-sv-qa-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Option Pill */
+.el-sv-qa-opt-pill {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: #f9f9f9;
+  color: #4b5675;
+  border: 1px solid #e1e3ea;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.el-sv-qa-opt-pill.correct  { background: #1bc5bd; color: #fff; border-color: #1bc5bd; font-weight: 600; }
+.el-sv-qa-opt-pill.wrong    { background: #f1416c; color: #fff; border-color: #f1416c; font-weight: 600; }
+.el-sv-qa-opt-pill.expected { background: #ffc700; color: #fff; border-color: #ffc700; font-weight: 600; }
+
+/* Essay answer text box */
+.el-sv-qa-essay-box {
+  background: #f9f9f9;
+  border: 1px solid #f1f1f4;
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #4b5675;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+/* ============================================
+   DARK MODE — ALL SUPERVISOR STYLES
+   ============================================ */
+
+[data-bs-theme="dark"] .el-sv-module-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-module-card .el-sv-card-title {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-module-card .el-sv-card-role,
+[data-bs-theme="dark"] .el-sv-module-card .el-sv-card-due {
+  color: #7e8299;
+}
+
+[data-bs-theme="dark"] .el-sv-action-icons .el-sv-action-btn {
+  color: #7e8299;
+}
+
+[data-bs-theme="dark"] .el-sv-action-icons .el-sv-action-btn:hover {
+  background: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-tab {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-intern-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-intern-card .el-sv-intern-name {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-intern-card .el-sv-intern-score {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-content-item {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-quiz-item {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-score-bar {
+  background: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-batch-bar {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-toggle {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-menu {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-item {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-item:hover {
+  background: #2d2d3f;
+  color: #ffffff;
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-item.el-sv-dropdown-add {
+  color: #cdcde4;
+  border-bottom-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-dropdown-item.el-sv-dropdown-add:hover {
+  color: #f1416c;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-icon {
+  background: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-option {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-option.selected {
+  background: #2a1a20;
+  border-color: #f1416c;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-qty-row {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-step-btn {
+  background: #1e1e2d;
+  border-color: #3a3a52;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-step-val {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-pass-row {
+  background: #2a1a20;
+}
+
+[data-bs-theme="dark"] .el-sv-arch-pass-input {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-create-quiz-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-create-quiz-textarea {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-create-quiz-textarea:focus {
+  background: #1e1e2d;
+}
+
+[data-bs-theme="dark"] .el-sv-qq-option-row {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+}
+
+[data-bs-theme="dark"] .el-sv-qq-option-input {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-qa-question-card {
+  background: #1e1e2d;
+  border-color: #2d2d3f;
+}
+
+[data-bs-theme="dark"] .el-sv-qa-question-text {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-qa-essay-box {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-qa-opt-pill {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-sv-qa-opt-pill.correct  { background: #1bc5bd; border-color: #1bc5bd; color: #fff; }
+[data-bs-theme="dark"] .el-sv-qa-opt-pill.wrong    { background: #f1416c; border-color: #f1416c; color: #fff; }
+[data-bs-theme="dark"] .el-sv-qa-opt-pill.expected { background: #ffc700; border-color: #ffc700; color: #fff; }
+
+/* ============================================
+   MODAL — FORM POPUP
+   ============================================ */
+
+/* Modal card */
+.el-modal-content {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+  overflow: hidden;
+}
+
+/* Modal header */
+.el-modal-header {
+  border-bottom: none !important;
+  padding: 24px 28px 0 28px !important;
+}
+
+.el-modal-header .modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1b2559;
+  letter-spacing: -0.01em;
+}
+
+/* Close button */
+.el-modal-header .btn-close-el {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #99a1b7;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.el-modal-header .btn-close-el:hover {
+  background: #f1f1f4;
+  color: #4b5675;
+}
+
+/* Modal body */
+.el-modal-body {
+  padding: 20px 28px 16px 28px !important;
+}
+
+/* Form label inside modal */
+.el-modal-body .el-form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5675;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Form control inside modal */
+.el-modal-body .el-form-control {
+  width: 100%;
+  border: 1.5px solid #e1e3ea;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1b2559;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.el-modal-body .el-form-control:focus {
+  border-color: #d31145;
+  background: #ffffff;
+}
+
+.el-modal-body .el-form-control.is-invalid {
+  border-color: #f1416c;
+}
+
+/* Inline input-group (calendar prefix) inside modal */
+.el-modal-body .el-input-prefix {
+  display: flex;
+  align-items: stretch;
+}
+
+.el-modal-body .el-input-prefix .el-input-icon {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1.5px solid #e1e3ea;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: #fafafa;
+  color: #99a1b7;
+  font-size: 16px;
+}
+
+.el-modal-body .el-input-prefix .el-form-control {
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+}
+
+/* Field error message */
+.el-modal-body .el-field-error {
+  font-size: 11.5px;
+  color: #f1416c;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Modal footer */
+.el-modal-footer {
+  border-top: none !important;
+  padding: 8px 28px 24px 28px !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ============================================
+   BUTTONS — MODAL ACTIONS
+   ============================================ */
+
+/* White / outline button (Cancel, secondary action) */
+.btn-el-modal-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1.5px solid #d31145;
+  background: #ffffff;
+  color: #d31145;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(211, 17, 69, 0.10);
+  transition: all 0.2s;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.btn-el-modal-cancel:hover {
+  background: #fff0f4;
+  border-color: #b50e3a;
+  color: #b50e3a;
+  box-shadow: 0 4px 12px rgba(211, 17, 69, 0.18);
+}
+
+/* Red solid button (Submit, confirm, primary action) */
+.btn-el-modal-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  background: #d31145;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(211, 17, 69, 0.40);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.btn-el-modal-submit:hover {
+  background: #b50e3a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(211, 17, 69, 0.50);
+}
+
+.btn-el-modal-submit:active {
+  transform: translateY(0);
+  background: #9a0c32;
+  box-shadow: 0 2px 8px rgba(211, 17, 69, 0.35);
+}
+
+/* ============================================
+   SWEETALERT2 — CONFIRMATION / SUCCESS POPUP
+   ============================================ */
+
+/* Popup card */
+.swal2-popup.el-swal {
+  border-radius: 16px !important;
+  padding: 36px 32px 28px !important;
+  font-family: inherit !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.14) !important;
+}
+
+/* Title */
+.swal2-popup.el-swal .swal2-title {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #1b2559 !important;
+  padding: 0 !important;
+  margin-bottom: 10px !important;
+}
+
+/* Body text */
+.swal2-popup.el-swal .swal2-html-container,
+.swal2-popup.el-swal .swal2-content {
+  font-size: 13.5px !important;
+  color: #4b5675 !important;
+  margin: 0 0 24px !important;
+}
+
+/* Icon area */
+.swal2-popup.el-swal .swal2-icon {
+  margin: 0 auto 16px !important;
+}
+
+/* Action buttons row */
+.swal2-popup.el-swal .swal2-actions {
+  gap: 10px !important;
+  margin-top: 0 !important;
+  width: 100% !important;
+}
+
+/* Confirm button (red solid — OK / Yes, Delete / Yes, Submit) */
+.swal2-popup.el-swal .swal2-confirm.btn-el-swal-confirm {
+  border-radius: 10px !important;
+  padding: 11px 0 !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  background: #d31145 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(211, 17, 69, 0.40) !important;
+  transition: background 0.2s, box-shadow 0.2s !important;
+}
+
+.swal2-popup.el-swal .swal2-confirm.btn-el-swal-confirm:hover {
+  background: #b50e3a !important;
+  box-shadow: 0 6px 20px rgba(211, 17, 69, 0.50) !important;
+}
+
+/* Cancel button (white / outline) */
+.swal2-popup.el-swal .swal2-cancel.btn-el-swal-cancel {
+  border-radius: 10px !important;
+  padding: 10px 0 !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  background: #ffffff !important;
+  color: #d31145 !important;
+  border: 1.5px solid #d31145 !important;
+  box-shadow: 0 2px 8px rgba(211, 17, 69, 0.10) !important;
+  transition: all 0.2s !important;
+}
+
+.swal2-popup.el-swal .swal2-cancel.btn-el-swal-cancel:hover {
+  background: #fff0f4 !important;
+  box-shadow: 0 4px 12px rgba(211, 17, 69, 0.18) !important;
+}
+
+/* Dark mode — modal */
+[data-bs-theme="dark"] .el-modal-content {
+  background: #1e1e2d;
+}
+
+[data-bs-theme="dark"] .el-modal-header .modal-title {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-modal-body .el-form-label {
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-modal-body .el-form-control {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+  color: #cdcde4;
+}
+
+[data-bs-theme="dark"] .el-modal-body .el-form-control:focus {
+  background: #1e1e2d;
+  border-color: #d31145;
+}
+
+[data-bs-theme="dark"] .el-modal-body .el-input-prefix .el-input-icon {
+  background: #2d2d3f;
+  border-color: #3a3a52;
+  color: #7e8299;
+}
+
+/* Dark mode — SweetAlert */
+[data-bs-theme="dark"] .swal2-popup.el-swal {
+  background: #1e1e2d !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup.el-swal .swal2-title {
+  color: #cdcde4 !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup.el-swal .swal2-html-container {
+  color: #99a1b7 !important;
+}
+
+/* ============================================
+   DATATABLES — DESIGN INTEGRATION
+   ============================================ */
+
+/* Wrapper layout helpers */
+.el-dt-top   { }
+.el-dt-bottom { }
+
+/* Override DataTables search wrapper */
+.dataTables_filter {
+  float: none !important;
+  text-align: left !important;
+}
+
+.dataTables_filter label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5675;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.dataTables_filter input[type="search"] {
+  margin-left: 0 !important;
+}
+
+/* Pagination wrapper */
+.dataTables_paginate {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dataTables_paginate .paginate_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid #e1e3ea !important;
+  background: #ffffff !important;
+  color: #4b5675 !important;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: none !important;
+}
+
+.dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+  border-color: #d31145 !important;
+  color: #d31145 !important;
+  background: #fff0f4 !important;
+}
+
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+  background: #d31145 !important;
+  border-color: #d31145 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(211, 17, 69, 0.30) !important;
+}
+
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  background: #ffffff !important;
+  color: #4b5675 !important;
+  border-color: #e1e3ea !important;
+}
+
+/* Info text */
+.dataTables_info {
+  font-size: 13px;
+  font-weight: 500;
+  color: #99a1b7;
+  padding: 0 !important;
+}
+
+/* Row hover effect */
+#el-sv-interns-table tbody tr:hover td,
+#el-sv-results-table tbody tr:hover td,
+#el-sv-answers-table tbody tr:hover td {
+  background: #fafafa;
+}
+
+/* Row animation */
+.el-dt-row-animate {
+  animation: elDtFadeIn 0.25s ease both;
+}
+
+@keyframes elDtFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Remove DataTables default top border */
+table.dataTable thead th,
+table.dataTable thead td {
+  border-bottom: 0 !important;
+}
+
+/* Prevent layout shift on sort icons */
+table.dataTable thead .sorting::before,
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::before,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::before,
+table.dataTable thead .sorting_desc::after {
+  bottom: 0.4em;
+  opacity: 0.4;
+}
+
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::after {
+  opacity: 1;
+  color: #d31145;
+}
+
+/* ---- Filter Role Boxes ---- */
+.el-filter-role-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #d31145;
+  background: #ffffff;
+  color: #4b5675;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.el-filter-role-box .el-filter-role-check {
+  display: none;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.el-filter-role-box.selected {
+  background: #d31145;
+  color: #ffffff;
+}
+
+.el-filter-role-box.selected .el-filter-role-check {
+  display: inline-flex;
+  align-items: center;
+}

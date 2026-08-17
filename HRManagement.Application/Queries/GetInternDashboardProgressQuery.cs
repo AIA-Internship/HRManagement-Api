@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto;
 using MediatR;
@@ -16,11 +16,13 @@ namespace HRManagement.Application.Queries.ELearningQueries
     {
         private readonly IELearningRepository _repo;
         private readonly ILogger<GetInternDashboardProgressHandler> _logger;
+        private readonly ISender _sender;
 
-        public GetInternDashboardProgressHandler(IELearningRepository repo, ILogger<GetInternDashboardProgressHandler> logger)
+        public GetInternDashboardProgressHandler(IELearningRepository repo, ILogger<GetInternDashboardProgressHandler> logger, ISender sender)
         {
             _repo = repo;
             _logger = logger;
+            _sender = sender;
         }
 
         public async Task<Result<ReadDashboardProgressDto>> Handle(GetInternDashboardProgressQuery request, CancellationToken ct)
@@ -43,12 +45,31 @@ namespace HRManagement.Application.Queries.ELearningQueries
                     daysLeft = (m.DueDate!.Value.Date - today).Days
                 }).ToList();
 
+                var batchesList = await _repo.GetBatchesByEmployeeIdAsync(request.EmployeeId);
+                var dashboardBatches = new List<ReadDashboardBatchDto>();
+
+                foreach (var b in batchesList)
+                {
+                    var batchStatusResult = await _sender.Send(new GetInternBatchStatusQuery(request.EmployeeId, b.BatchId), ct);
+                    string status = batchStatusResult.IsSuccess ? batchStatusResult.Value.status : "On track";
+
+                    dashboardBatches.Add(new ReadDashboardBatchDto
+                    {
+                        id = b.BatchId,
+                        name = b.BatchName,
+                        period = $"{b.StartDate:dd MMM yyyy} - {b.EndDate:dd MMM yyyy}",
+                        endsIn = (b.EndDate.Date - today).Days > 0 ? (b.EndDate.Date - today).Days : 0,
+                        status = status
+                    });
+                }
+
                 var dashboardResult = new ReadDashboardProgressDto
                 {
                     totalModules = totalCount,
                     completedModules = completedCount,
                     displayString = $"{completedCount}/{totalCount}",
-                    toDoList = toDoList
+                    toDoList = toDoList,
+                    batches = dashboardBatches
                 };
 
                 return Result.Success(dashboardResult);

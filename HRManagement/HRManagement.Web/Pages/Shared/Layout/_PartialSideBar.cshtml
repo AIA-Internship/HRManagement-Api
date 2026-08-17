@@ -158,6 +158,32 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- E-Learning Submenu (Intern) -->
+                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(currentPath.Contains("/ELearning/Intern") ? "here show" : "")">
+                        <span class="menu-link">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-book fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">E-Learning</span>
+                            <span class="menu-arrow"></span>
+                        </span>
+
+                        <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/ELearning/Intern") ? "show" : "")">
+                            <div class="menu-item">
+                                <a class="menu-link @(currentPath.Equals("/Modules/ELearning/Intern/Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Modules/ELearning/Intern/Dashboard">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
                     </div>
 
                     <div id="supervisor_section" style="display: none;">
@@ -276,6 +302,41 @@
                                     </a>
                                 </div>
         
+                            </div>
+                        </div>
+
+                        <!-- E-Learning Dropdown (Supervisor) -->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(currentPath.Contains("/ELearning/Supervisor") ? "here show" : "")">
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="ki-duotone ki-book fs-2">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </span>
+                                <span class="menu-title">E-Learning</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+
+                            <div class="menu-sub menu-sub-accordion @(currentPath.Contains("/ELearning/Supervisor") ? "show" : "")">
+                                <!-- Modules -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath.Equals("/Modules/ELearning/Supervisor/Modules", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Modules/ELearning/Supervisor/Modules">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Modules</span>
+                                    </a>
+                                </div>
+                                <!-- Interns -->
+                                <div class="menu-item">
+                                    <a class="menu-link @(currentPath.Equals("/Modules/ELearning/Supervisor/Interns", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Modules/ELearning/Supervisor/Interns">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">Interns</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         </div>

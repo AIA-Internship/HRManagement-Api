@@ -1,0 +1,51 @@
+/* -- Progress Ring -- */
+.el-progress-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.el-progress-ring svg {
+  transform: rotate(-90deg);
+}
+
+.el-progress-ring .el-progress-bg {
+  fill: none;
+  stroke: #f1f1f4;
+  stroke-width: 8;
+}
+
+.el-progress-ring .el-progress-bar {
+  fill: none;
+  stroke: #f1416c;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
+.el-progress-ring .el-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b2559;
+}
+
+/* -- To-Do List -- */
+.el-todo-item {
+  margin-bottom: 12px;
+}
+
+.el-todo-item .el-todo-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1b2559;
+}
+
+.el-todo-item .el-todo-days {
+  font-size: 11px;
+  color: #99a1b7;
+}
+
