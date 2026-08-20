@@ -58,7 +58,7 @@
             <div class="row g-5 mb-8">
                 <!--begin::Progress Card-->
                 <div class="col-lg-7">
-                    <div class="card card-flush h-100 el-animate el-animate-delay-1">
+                    <div class="card shadow-sm h-100 el-animate el-animate-delay-1">
                         <div class="card-body d-flex align-items-center">
                             <!--begin::Progress Ring-->
                             <div class="el-progress-ring me-8">
@@ -74,9 +74,9 @@
                                 <div class="fs-4 fw-bold text-gray-800 mb-1">Total Modules Completed</div>
                                 <div class="fs-6 text-gray-500 mb-3" id="el-progress-desc">0 out of 0 Modules completed</div>
                                 <div>
-                                    <span class="badge badge-light-primary fs-8 fw-bold px-3 py-2 d-flex" style="flex-direction: column; align-items: flex-start; gap: 1px;">
-                                        <span class="text-uppercase fs-9 fw-bolder text-primary">STATUS</span>
-                                        <span class="fs-7 fw-bold text-primary" id="el-progress-status">In Progress</span>
+                                    <span id="el-progress-status-container" class="badge fs-8 fw-bold px-4 py-3 d-inline-flex" style="flex-direction: column; align-items: flex-start; gap: 6px; color: #000;">
+                                        <span class="text-uppercase fs-9 fw-bolder" style="color: inherit;">STATUS</span>
+                                        <span class="fs-7 fw-bold" id="el-progress-status" style="color: inherit;">In Progress</span>
                                     </span>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
 
                 <!--begin::Todo Card-->
                 <div class="col-lg-5">
-                    <div class="card card-flush h-100 el-animate el-animate-delay-2">
+                    <div class="card shadow-sm h-100 el-animate el-animate-delay-2">
                         <div class="card-header pt-5 pb-0">
                             <h3 class="card-title fw-bold text-gray-800 fs-5">To-Do List</h3>
                         </div>
@@ -119,13 +119,13 @@
                 <div>
                     <div class="el-batch-label">STATUS</div>
                     <div class="d-flex align-items-center position-relative">
-                        <i class="bi bi-info-circle-fill text-primary" style="cursor:help; font-size:1.1rem; position: absolute; left: -24px; top: 50%; transform: translateY(-50%);"
+                        <i id="el-batch-status-icon" class="bi bi-info-circle-fill" style="cursor:help; font-size:1.1rem; position: absolute; left: -24px; top: 50%; transform: translateY(-50%);"
                            data-bs-toggle="tooltip" data-bs-html="true" 
-                           title="<ul class='text-start mb-0 ps-3' style='padding-left:15px;'><li class='mb-1'><b>Ongoing</b> means that the batch is currently in progress.</li><li class='mb-1'><b>Completed</b> means that the Intern has finished all the modules.</li><li><b>Failed</b> means that the Intern has not completed more than 50% of the total modules.</li></ul>">
+                           title="<ul class='text-start mb-0 ps-3' style='padding-left:15px;'><li class='mb-1'><b>On track</b> means that the batch is currently in progress.</li><li class='mb-1'><b>Completed</b> means that the Intern has finished all the modules.</li><li><b>Failed</b> means that the Intern has not completed more than 50% of the total modules.</li></ul>">
                         </i>
                         <div class="el-status-badge in-progress">
                             <span class="el-status-dot"></span>
-                            <span class="fw-bold text-gray-800" id="el-batch-status-text">-</span>
+                            <span class="fw-bold" id="el-batch-status-text">-</span>
                         </div>
                     </div>
                 </div>

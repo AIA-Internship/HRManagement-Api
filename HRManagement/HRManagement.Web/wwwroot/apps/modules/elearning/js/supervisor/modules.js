@@ -132,12 +132,16 @@
         var html = '';
         visible.forEach(function (mod, idx) {
             var modId = mod.moduleId || mod.id;
+            var displayDate = '-';
+            if (mod.dueDate) {
+                displayDate = new Date(mod.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
             html += '<div class="col-md-6 col-lg-3 mb-4">' +
                 '<div class="el-sv-module-card el-animate el-animate-delay-' + ((idx % 4) + 1) + '" data-module-id="' + modId + '">' +
                 '<div>' +
                 '<div class="el-sv-card-role">' + (mod.role || '') + '</div>' +
                 '<div class="el-sv-card-title">' + (mod.title || '') + '</div>' +
-                '<div class="el-sv-card-due">Due Date: ' + (mod.dueDate || '') + '</div>' +
+                '<div class="el-sv-card-due">Due Date: ' + displayDate + '</div>' +
                 '</div>' +
                 '<div class="el-sv-action-icons">' +
                 '<button class="el-sv-action-btn copy" data-action="copy" data-id="' + modId + '" title="Duplicate"><i class="ki-duotone ki-copy fs-5"><span class="path1"></span><span class="path2"></span></i></button>' +
@@ -448,10 +452,22 @@
                             $('#el-update-module-role-text').text(activeItem.text());
                             $('#el-update-module-role-menu .el-sv-dropdown-item').removeClass('active');
                             activeItem.addClass('active');
+                        } else if (roleVal) {
+                            $('#el-update-module-role-text').text(roleVal);
                         } else {
                             $('#el-update-module-role-text').text('-- Select Role --');
                         }
-                        $('#el-update-module-due').val(mod.dueDateISO || mod.dueDate || '');
+                                                var dueVal = mod.dueDateISO || mod.dueDate || '';
+                        if (dueVal) {
+                            var dDate = new Date(dueVal);
+                            if (!isNaN(dDate.getTime())) {
+                                var y = dDate.getFullYear();
+                                var m = String(dDate.getMonth() + 1).padStart(2, '0');
+                                var dd = String(dDate.getDate()).padStart(2, '0');
+                                dueVal = y + '-' + m + '-' + dd;
+                            }
+                        }
+                        $('#el-update-module-due').val(dueVal);
                     }
                     $('#el-modal-update-module').modal('show');
                 });

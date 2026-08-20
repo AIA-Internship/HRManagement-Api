@@ -15,6 +15,7 @@
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <button onclick="history.back()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center" type="button"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</button>
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
                     <span class="el-breadcrumb-sep">›</span>
@@ -31,12 +32,7 @@
 
             <!--begin::Header-->
             <div class="d-flex align-items-center mb-6 el-animate">
-                <button onclick="history.back()" class="el-back-btn me-3" type="button">
-                    <i class="ki-duotone ki-arrow-left fs-4">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                </button>
+                
                 <h1 class="fs-2 fw-bold text-gray-900 mb-0">Results</h1>
             </div>
             <!--end::Header-->
@@ -48,10 +44,10 @@
             <!--end::Header + Badge-->
 
             <!--begin::Table Card-->
-            <div class="card card-flush el-animate el-animate-delay-2">
+            <div class="card shadow-sm el-animate el-animate-delay-2">
                 <div class="card-body p-6">
                     <div class="table-responsive">
-                        <table class="table table-row-bordered table-row-gray-200 align-middle gs-7 gy-4 mb-0" id="el-sv-results-table">
+                        <table class="table align-middle fs-6 gy-3 mb-0" id="el-sv-results-table">
                             <thead>
                                 <!-- Columns populated by JS per tab -->
                             </thead>

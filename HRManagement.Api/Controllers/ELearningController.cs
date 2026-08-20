@@ -236,4 +236,11 @@ public class ELearningController(ISender sender) : BaseApiController(sender)
         var result = await Sender.Send(new GetPositionsByProgramQuery(programId));
         return HandleResult(result);
     }
+
+    [HttpGet("interns/{employeeId}/module-details")]
+    public async Task<IActionResult> GetInternModuleDetails(int employeeId)
+    {
+        var result = await Sender.Send(new GetInternModuleDetailsQuery(employeeId));
+        return HandleResult(result);
+    }
 }

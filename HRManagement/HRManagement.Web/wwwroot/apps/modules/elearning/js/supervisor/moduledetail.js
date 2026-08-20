@@ -64,7 +64,16 @@
     app.elearning.supervisor.moduleDetail.renderContent = function (mod) {
         mod = mod || this._moduleData || {};
         $('#el-sv-detail-title').text(mod.title || '');
-        $('#el-sv-detail-due').text('Due Date at: ' + (mod.dueDate || mod.deadline || '-'));
+        $('#el-sv-detail-desc').text(mod.description || '');
+        var rawDate = mod.dueDate || mod.deadline || '';
+        var displayDate = '-';
+        if (rawDate) {
+            var d = new Date(rawDate);
+            var dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            var timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+            displayDate = dateStr + ' ' + timeStr;
+        }
+        $('#el-sv-detail-due').text('Due Date at: ' + displayDate);
 
         var contents = mod.contents || mod.materials || [];
         var html = '';

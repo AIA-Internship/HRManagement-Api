@@ -172,7 +172,7 @@
                 }
             ],
             drawCallback: function () {
-                $('#el-sv-interns-table tbody tr').addClass('el-dt-row-animate');
+                $('#el-sv-interns-table tbody tr').addClass('el-dt-row-animate row-clickable');
             }
         });
 
@@ -234,6 +234,17 @@
             self._fetchInterns(programId, '', role).then(function () {
                 app.loading && app.loading.hide();
             });
+        });
+
+        $(document).on('click', '#el-sv-interns-table tbody tr', function () {
+            if (!self._table) return;
+            var data = self._table.row(this).data();
+            if (data) {
+                var empId = data.EmployeeId || data.employeeId || data.id;
+                if (empId) {
+                    window.location.href = '/Modules/ELearning/Supervisor/InternDetail?employeeId=' + empId;
+                }
+            }
         });
     };
 

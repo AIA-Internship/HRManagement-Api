@@ -105,13 +105,37 @@
             circle.style.strokeDashoffset = circumference - (percentage / 100) * circumference;
         }
 
-        var mods = this._modules;
-        var hasInProgress = mods.some(function (m) { return (m.progressStatus || '').toLowerCase() === 'in-progress'; });
+        var mods = this._modules || [];
         var allCompleted = total > 0 && completed === total;
         
-        var batchStatus = data && data.batches && data.batches.length ? data.batches[0].status : null;
-        var statusText = batchStatus || (allCompleted ? 'Completed' : hasInProgress ? 'In Progress' : 'Not Started');
+        var missedCount = 0;
+        var now = new Date();
+        now.setHours(0,0,0,0); // compare dates only, ignoring time
+        mods.forEach(function (m) {
+            var status = (m.progressStatus || '').toLowerCase();
+            var dueDate = m.dueDate || m.deadline;
+            if (status !== 'completed' && dueDate) {
+                var d = new Date(dueDate);
+                d.setHours(0,0,0,0);
+                if (d < now) {
+                    missedCount++;
+                }
+            }
+        });
+        
+        var statusText = 'On track';
+        if (total > 0) {
+            if (allCompleted) {
+                statusText = 'Completed';
+            } else if (missedCount > (total / 2)) {
+                statusText = 'Out of Track';
+            }
+        }
+        
         $('#el-progress-status').text(statusText);
+        
+        var pClass = statusText.toLowerCase() === 'completed' ? 'status-completed-box' : (statusText.toLowerCase() === 'out of track' ? 'status-failed-box' : 'status-on-track-box');
+        $('#el-progress-status-container').removeClass('status-completed-box status-failed-box status-on-track-box').addClass(pClass);
     };
 
     app.elearning.dashboard.renderTodoList = function (todoList) {
@@ -149,7 +173,15 @@
             var b = batches[0];
             $('#el-batch-period').text(b.period || b.batchPeriod || '');
             $('#el-batch-ends').text((b.endsIn || b.daysRemaining || '-') + ' Days');
-            $('#el-batch-status-text').text(b.status || b.batchStatus || '');
+            
+            var batchStat = b.status || b.batchStatus || '';
+            $('#el-batch-status-text').text(batchStat);
+            var tClass = batchStat.toLowerCase() === 'completed' ? 'status-completed-text' : (batchStat.toLowerCase() === 'failed' ? 'status-failed-text' : 'status-on-track-text');
+            
+            // Remove box classes if any, add no-box and text color
+            $('#el-batch-status-text').closest('.el-status-badge').removeClass('status-completed-box status-failed-box status-on-track-box').addClass('el-batch-no-box ' + tClass);
+            $('#el-batch-status-text').closest('.el-status-badge').find('.el-status-dot').hide();
+            $('#el-batch-status-icon').removeClass('text-primary status-completed-text status-failed-text status-on-track-text').addClass(tClass);
         }
         var selectHtml = '';
         batches.forEach(function (b) {
@@ -180,8 +212,7 @@
             var deadlineText = '-';
             if (dueDate) {
                 var d = new Date(dueDate);
-                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                deadlineText = d.getDate() + ' ' + months[d.getMonth()];
+                deadlineText = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
             }
 
             html += '<div class="col-md-6 col-lg-3 mb-4">' +
@@ -225,7 +256,14 @@
             if (batch) {
                 $('#el-batch-period').text(batch.period || batch.batchPeriod || '');
                 $('#el-batch-ends').text((batch.endsIn || batch.daysRemaining || '-') + ' Days');
-                $('#el-batch-status-text').text(batch.status || batch.batchStatus || '');
+                
+                var batchStat = batch.status || batch.batchStatus || '';
+                $('#el-batch-status-text').text(batchStat);
+                var tClass = batchStat.toLowerCase() === 'completed' ? 'status-completed-text' : (batchStat.toLowerCase() === 'failed' ? 'status-failed-text' : 'status-on-track-text');
+                
+                $('#el-batch-status-text').closest('.el-status-badge').removeClass('status-completed-box status-failed-box status-on-track-box').addClass('el-batch-no-box ' + tClass);
+                $('#el-batch-status-text').closest('.el-status-badge').find('.el-status-dot').hide();
+                $('#el-batch-status-icon').removeClass('text-primary status-completed-text status-failed-text status-on-track-text').addClass(tClass);
             }
         });
 
