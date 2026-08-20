@@ -11,7 +11,8 @@ public class ModuleMapping
             title = model.ModuleTitle,
             description = model.ModuleDescription,
             role = model.TargetRole,
-            dueDate = model.DueDate
+            dueDate = model.DueDate,
+            batchId = model.BatchId
         };
     }
 }

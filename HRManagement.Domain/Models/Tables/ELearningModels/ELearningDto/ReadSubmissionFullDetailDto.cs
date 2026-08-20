@@ -9,6 +9,9 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public int quizId { get; set; }
         public int userId { get; set; }
         public string internName { get; set; } = null!;
+        public int minimumPassingScore { get; set; }
+        public int mcWeight { get; set; }
+        public int essayWeight { get; set; }
         public decimal? totalScore { get; set; }
         public bool? isPassed { get; set; }
         public DateTime? gradedUtcDate { get; set; }

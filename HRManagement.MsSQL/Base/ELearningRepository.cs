@@ -81,17 +81,18 @@ namespace HRManagement.MsSQL.Base
                                               !mdle.IsDeleted
                                         select mdle).ToListAsync();
 
-            var cohortQuery = from member in _context.ELearningGroupMembers
-                              join prog in _context.ELearningPrograms on member.GroupId equals prog.GroupId
-                              join employee in _context.Employee on member.EmployeeId equals employee.Id
-                              join u in _context.Users on employee.Id equals u.EmployeeId
-                              join emp in _context.EmploymentInformation on employee.Id equals emp.EmployeeId into empJoin
-                              from emp in empJoin.DefaultIfEmpty()
-                              where (targetProgramId == 0 || prog.ProgramId == targetProgramId) && u.RoleId == 2
-                              select new { User = u, Employee = employee, PositionName = emp.PositionName };
+            var cohortQuery = _context.Employee
+                .Where(e => e.RoleId == 2 && _context.ELearningGroupMembers.Any(member => member.EmployeeId == e.Id && 
+                                _context.ELearningPrograms.Any(prog => prog.GroupId == member.GroupId && (targetProgramId == 0 || prog.ProgramId == targetProgramId))))
+                .Select(e => new 
+                {
+                    User = _context.Users.FirstOrDefault(u => u.EmployeeId == e.Id),
+                    Employee = e,
+                    PositionName = _context.EmploymentInformation.Where(emp => emp.EmployeeId == e.Id).Select(emp => emp.PositionName).FirstOrDefault()
+                });
 
             if (!string.IsNullOrEmpty(search))
-                cohortQuery = cohortQuery.Where(x => x.Employee.FullName.Contains(search));
+                cohortQuery = cohortQuery.Where(x => x.Employee != null && x.Employee.FullName.Contains(search));
 
             if (!string.IsNullOrEmpty(role))
                 cohortQuery = cohortQuery.Where(x => x.PositionName == role);
@@ -114,6 +115,7 @@ namespace HRManagement.MsSQL.Base
             foreach (var row in rawInternData)
             {
                 var intern = row.User;
+                int internUserId = intern != null ? intern.Id : 0;
                 var internRole = (row.PositionName ?? "Intern").Trim();
 
                 var internModules = programModules
@@ -132,16 +134,16 @@ namespace HRManagement.MsSQL.Base
                 if (internModuleIds.Any())
                 {
                     itemsCompletedNumerator = await _context.ELearningModuleProgress
-                        .CountAsync(p => p.EmployeeId == intern.Id &&
+                        .CountAsync(p => p.EmployeeId == row.Employee.Id &&
                                          internModuleIds.Contains(p.ModuleId) &&
                                          p.ProgressStatus == "Completed");
                 }
 
                 var latestQuizSubmissions = new List<HRManagement.Domain.Models.Tables.ELearningModels.QuizSubmissionModel>();
-                if (internQuizIds.Any())
+                if (internQuizIds.Any() && internUserId > 0)
                 {
                     var allQuizSubmissionsForIntern = await _context.ELearningQuizSubmissions
-                        .Where(s => s.UserId == intern.Id && internQuizIds.Contains(s.QuizId))
+                        .Where(s => s.UserId == internUserId && internQuizIds.Contains(s.QuizId))
                         .ToListAsync();
 
                     latestQuizSubmissions = allQuizSubmissionsForIntern
@@ -163,7 +165,7 @@ namespace HRManagement.MsSQL.Base
 
                 compiledList.Add(new
                 {
-                    EmployeeId = intern.Id,
+                    EmployeeId = row.Employee.Id,
                     Name = row.Employee.FullName,
                     Role = row.PositionName ?? "Intern",
                     TotalModulesCompletedText = $"{itemsCompletedNumerator} / {totalModulesCountDenominator}",

@@ -96,7 +96,7 @@
 
         var navHtml = '<div class="d-flex justify-content-between align-items-center mt-4">';
         if (this.currentIndex > 0) {
-            navHtml += '<button class="btn-el-outline" id="el-quiz-prev"><i class="ki-duotone ki-arrow-left fs-5"><span class="path1"></span><span class="path2"></span></i> Prev</button>';
+            navHtml += '<button class="btn-el-modal-cancel" id="el-quiz-prev"><i class="ki-duotone ki-arrow-left fs-5"><span class="path1"></span><span class="path2"></span></i> Prev</button>';
         } else {
             navHtml += '<div></div>';
         }
@@ -156,8 +156,8 @@
                 cancelButtonText: 'Cancel',
                 customClass: {
                     popup: 'el-swal',
-                    confirmButton: 'btn-el-primary mx-2 w-125px',
-                    cancelButton: 'btn-el-modal-cancel mx-2 w-125px'
+                    confirmButton: 'btn btn-sm fw-bold btn-danger mx-2 w-125px',
+                    cancelButton: 'btn btn-sm fw-bold btn-light mx-2 w-125px'
                 },
                 buttonsStyling: false
             }).then(function (result) {
@@ -192,7 +192,7 @@
                 }).then(function (json) {
                     app.loading && app.loading.hide();
                     if (!json) {
-                        Swal.fire({ icon: 'error', title: 'Submission failed', text: 'Please try again.' });
+                        Swal.fire({ icon: 'error', title: 'Submission failed', text: 'Please try again.', customClass: { popup: 'el-swal', confirmButton: 'btn-el-primary' }, buttonsStyling: false });
                         return;
                     }
                     Swal.fire({

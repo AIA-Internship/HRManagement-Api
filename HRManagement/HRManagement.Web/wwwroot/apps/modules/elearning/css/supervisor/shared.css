@@ -1119,7 +1119,7 @@
   border-radius: 16px !important;
   border: none !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 /* Modal header */

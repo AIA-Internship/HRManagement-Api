@@ -181,3 +181,30 @@
     color: #b50e3a;
 }
 
+/* White / outline button (Cancel, Prev, secondary action) */
+.btn-el-modal-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: 1.5px solid #d31145;
+    background: #ffffff;
+    color: #d31145;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(211, 17, 69, 0.10);
+    transition: all 0.2s;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.btn-el-modal-cancel:hover {
+    background: #fff0f4;
+    border-color: #b50e3a;
+    color: #b50e3a;
+    box-shadow: 0 4px 12px rgba(211, 17, 69, 0.18);
+}
+

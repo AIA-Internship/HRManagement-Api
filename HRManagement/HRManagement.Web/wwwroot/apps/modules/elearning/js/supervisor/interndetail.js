@@ -26,7 +26,7 @@
         self._employeeId = urlParams.get('employeeId');
 
         if (!self._employeeId) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'No Employee ID specified.' }).then(function() {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'No Employee ID specified.', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false }).then(function() {
                 window.location.href = '/Modules/ELearning/Supervisor/Interns';
             });
             return;
@@ -38,7 +38,7 @@
         
         Promise.resolve(self._fetchDetails()).catch(function(err) {
             console.error('Failed to fetch intern details:', err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load data.' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load data.', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
         }).finally(function() {
             app.loading && app.loading.hide();
         });

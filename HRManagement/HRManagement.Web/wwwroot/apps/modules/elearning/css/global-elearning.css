@@ -1,0 +1,30 @@
+/* SweetAlert Popups - Global E-Learning Styles */
+.swal2-popup .swal2-actions button {
+    box-shadow: none !important;
+}
+
+/* Submit/Confirm button = Red */
+.swal2-popup .swal2-actions .swal2-confirm {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
+.swal2-popup .swal2-actions .swal2-confirm:hover {
+    background-color: #bb2d3b !important;
+}
+
+/* Cancel button = White (with border so it's visible) */
+.swal2-popup .swal2-actions .swal2-cancel {
+    background-color: #fff !important;
+    color: #333 !important;
+    border: 1px solid #ccc !important;
+}
+.swal2-popup .swal2-actions .swal2-cancel:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Pagination Active Background = Red */
+.pagination .page-item.active .page-link {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}

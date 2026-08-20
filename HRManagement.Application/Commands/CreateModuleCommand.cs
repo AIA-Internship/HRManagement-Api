@@ -32,6 +32,22 @@ namespace HRManagement.Application.Commands.ELearningCommands
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateModuleHandler));
             try
             {
+                var batch = await _repo.GetBatchByIdAsync(request.Dto.batchId);
+                if (batch == null)
+                    return Result.Failure<int>("Batch not found.");
+
+                var today = DateTime.Today;
+                var daysUntilStart = (batch.StartDate.Date - today).TotalDays;
+                if (daysUntilStart < 7)
+                    return Result.Failure<int>("Modules can only be added up to 7 days before the batch starts.");
+
+                if (request.Dto.dueDate.HasValue)
+                {
+                    var due = request.Dto.dueDate.Value.Date;
+                    if (due < batch.StartDate.Date || due > batch.EndDate.Date)
+                        return Result.Failure<int>("Due date must be within the batch start and end date.");
+                }
+
                 var newModule = new ModuleModel
                 {
                     BatchId = request.Dto.batchId,

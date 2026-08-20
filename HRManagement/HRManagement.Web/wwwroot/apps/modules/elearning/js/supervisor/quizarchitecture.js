@@ -78,7 +78,7 @@
             if ($(e.target).closest('.el-sv-arch-stepper').length) return;
             var s = self.state;
             if (s.mcSelected && !s.essaySelected) {
-                Swal.fire({ icon: 'warning', title: 'At least one type required', timer: 1500, showConfirmButton: false });
+                Swal.fire({ icon: 'warning', title: 'At least one type required', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
             s.mcSelected = !s.mcSelected;
@@ -90,7 +90,7 @@
             if ($(e.target).closest('.el-sv-arch-stepper').length) return;
             var s = self.state;
             if (s.essaySelected && !s.mcSelected) {
-                Swal.fire({ icon: 'warning', title: 'At least one type required', timer: 1500, showConfirmButton: false });
+                Swal.fire({ icon: 'warning', title: 'At least one type required', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
             s.essaySelected = !s.essaySelected;
@@ -156,15 +156,15 @@
         $(document).on('click', '#el-sv-arch-next', function () {
             var s = self.state;
             if (!s.mcSelected && !s.essaySelected) {
-                Swal.fire({ icon: 'warning', title: 'Select at least one question type', timer: 1800, showConfirmButton: false });
+                Swal.fire({ icon: 'warning', title: 'Select at least one question type', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
             if (s.mcSelected && s.mcCount < 1) {
-                Swal.fire({ icon: 'warning', title: 'Multiple Choice count must be at least 1', timer: 1800, showConfirmButton: false });
+                Swal.fire({ icon: 'warning', title: 'Multiple Choice count must be at least 1', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
             if (s.essaySelected && s.essayCount < 1) {
-                Swal.fire({ icon: 'warning', title: 'Essay count must be at least 1', timer: 1800, showConfirmButton: false });
+                Swal.fire({ icon: 'warning', title: 'Essay count must be at least 1', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
 

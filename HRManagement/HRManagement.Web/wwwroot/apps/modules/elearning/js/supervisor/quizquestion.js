@@ -155,7 +155,7 @@
                 self._api('/api/ELearning/create-quiz', { method: 'POST', body: JSON.stringify(payload) }).then(function (json) {
                     app.loading && app.loading.hide();
                     if (!json) {
-                        Swal.fire({ icon: 'error', title: 'Failed to create quiz' });
+                        Swal.fire({ icon: 'error', title: 'Failed to create quiz', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                         return;
                     }
                     sessionStorage.removeItem('sv_quiz_config');
@@ -163,7 +163,7 @@
                         icon: 'success',
                         title: 'Quiz Created!',
                         text: 'All ' + self.questions.length + ' question(s) have been saved.',
-                        customClass: { confirmButton: 'btn btn-sm fw-bold btn-primary' },
+                        customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' },
                         buttonsStyling: false
                     }).then(function () {
                         window.location.href = '/Modules/ELearning/Supervisor/ModuleDetail?id=' + (moduleId || '');

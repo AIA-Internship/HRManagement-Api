@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using HRManagement.Domain.Models.Response.Shared;
 using HRManagement.Domain.Models.Tables.ELearningModels;
 using HRManagement.MsSQL.Base;
@@ -54,6 +54,9 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
                 foreach (var inputItem in request.GradedEssays)
                 {
+                    if (inputItem.score < 0 || inputItem.score > 100)
+                        return Result.Failure("Each essay score must be between 0 and 100.");
+
                     var databaseAnswerRow = storedAnswers.FirstOrDefault(a => a.AnswerId == inputItem.answerId);
                     if (databaseAnswerRow == null) continue;
 
@@ -68,8 +71,10 @@ namespace HRManagement.Application.Commands.ELearningCommands
                     var mcQuestions = await _context.ELearningQuizQuestions
                         .Where(q => q.QuizId == submission.QuizId && q.QuestionType == "MC").Select(q => q.QuestionId).ToListAsync(ct);
 
-                    decimal pointsEarned = storedAnswers.Where(a => mcQuestions.Contains(a.QuestionId)).Sum(a => a.AssignedScore);
-                    mcComponentFinalScore = pointsEarned * ((decimal)quizConfig.McWeight / 100);
+                    decimal pointsEarned = storedAnswers.Where(a => mcQuestions.Contains(a.QuestionId)).Sum(a => a.AssignedScore > 0 ? 100 : 0);
+                    decimal maxPotentialMcPoints = mcQuestions.Count * 100;
+                    decimal mcPercentage = maxPotentialMcPoints > 0 ? (pointsEarned / maxPotentialMcPoints) * 100 : 0;
+                    mcComponentFinalScore = mcPercentage * ((decimal)quizConfig.McWeight / 100);
                 }
 
                 decimal essayComponentFinalScore = 0;
@@ -79,7 +84,7 @@ namespace HRManagement.Application.Commands.ELearningCommands
                         .Where(q => q.QuizId == submission.QuizId && q.QuestionType == "Essay").Select(q => q.QuestionId).ToListAsync(ct);
 
                     decimal totalRawAwarded = storedAnswers.Where(a => essayQuestions.Contains(a.QuestionId)).Sum(a => a.AssignedScore);
-                    decimal maxPotentialEssayPoints = essayQuestions.Count * 50;
+                    decimal maxPotentialEssayPoints = essayQuestions.Count * 100;
 
                     decimal essayPercentage = maxPotentialEssayPoints > 0 ? (totalRawAwarded / maxPotentialEssayPoints) * 100 : 0;
                     essayComponentFinalScore = essayPercentage * ((decimal)quizConfig.EssayWeight / 100);

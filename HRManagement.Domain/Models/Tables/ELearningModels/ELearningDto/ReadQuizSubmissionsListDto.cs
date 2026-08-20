@@ -4,6 +4,7 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
 {
     public class ReadQuizSubmissionsListDto
     {
+        public int moduleId { get; set; }
         public int totalEligible { get; set; }
         public int submittedCount { get; set; }
         public List<ReadSubmittedItemDto> submitted { get; set; } = new();

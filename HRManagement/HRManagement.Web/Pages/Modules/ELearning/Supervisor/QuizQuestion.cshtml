@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="/apps/modules/elearning/css/global-elearning.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/quizquestion.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
 }
@@ -17,8 +18,10 @@
                 <button onclick="history.back()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center" type="button"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</button>
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
-                    <span class="el-breadcrumb-sep">›</span>
-                    <span class="el-breadcrumb-active">Modules</span>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
+                    <a href="/Modules/ELearning/Supervisor/Modules">Modules</a>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
+                    <span class="el-breadcrumb-active">Quiz Question</span>
                 </div>
             </div>
         </div>
@@ -108,7 +111,7 @@
                             <span class="path1"></span><span class="path2"></span><span class="path3"></span>
                         </i>
                         <span class="fs-7 fw-semibold text-gray-700">
-                            Essay question — no answer options needed. This question will be <strong>manually graded</strong> by the supervisor.
+                            Essay question &mdash; no answer options needed. This question will be <strong>manually graded</strong> by the supervisor.
                         </span>
                     </div>
                 </div>
@@ -132,6 +135,7 @@
 
 @section Scripts {
     <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/elearning-api.js" asp-append-version="true"></script>
     <script src="/apps/modules/elearning/js/supervisor/quizquestion.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {

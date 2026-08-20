@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="/apps/modules/elearning/css/global-elearning.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/quizanswers.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
 }
@@ -17,7 +18,7 @@
                 <button onclick="history.back()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center" type="button"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</button>
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
-                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
                     <span class="el-breadcrumb-active">Modules</span>
                 </div>
             </div>
@@ -30,9 +31,13 @@
         <div id="kt_app_content_container" class="app-container container-fluid">
 
             <!--begin::Header-->
-            <div class="d-flex align-items-center mb-8 el-animate">
-                
-                <h1 class="fs-2 fw-bold text-gray-900 mb-0">Answers</h1>
+            <div class="mb-8 el-animate">
+                <h1 class="fs-2 fw-bold text-gray-900 mb-2">Answers</h1>
+                <div class="el-sv-qa-meta text-gray-600 fs-6">
+                    <div id="el-sv-qa-intern-name">-</div>
+                    <div class="mt-1">Minimum Passing Score: <span id="el-sv-qa-passing-score">-</span></div>
+                    <div class="mt-1">Bobot Nilai: <span id="el-sv-qa-weight">-</span></div>
+                </div>
             </div>
             <!--end::Header-->
 
@@ -55,6 +60,7 @@
 
 @section Scripts {
     <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/elearning-api.js" asp-append-version="true"></script>
     <script src="/apps/modules/elearning/js/supervisor/quizanswers.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {

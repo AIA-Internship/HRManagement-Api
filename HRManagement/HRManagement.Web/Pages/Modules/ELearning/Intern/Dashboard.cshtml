@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="/apps/modules/elearning/css/global-elearning.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/intern/dashboard.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/intern/modules.css" rel="stylesheet" asp-append-version="true" />
 }
@@ -19,25 +20,12 @@
                 <!--begin::Breadcrumb-->
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Intern/Dashboard">E-Learning</a>
-                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
                     <span class="el-breadcrumb-active">Dashboard</span>
                 </div>
                 <!--end::Breadcrumb-->
             </div>
             <!--end::Page title-->
-            <!--begin::Notification-->
-            <div class="d-flex align-items-center">
-                <button class="btn btn-icon btn-custom btn-color-gray-600 btn-active-color-primary" data-bs-toggle="tooltip" title="Notifications">
-                    <i class="ki-duotone ki-notification-on fs-1">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                        <span class="path4"></span>
-                        <span class="path5"></span>
-                    </i>
-                </button>
-            </div>
-            <!--end::Notification-->
         </div>
         <!--end::Toolbar container-->
     </div>
@@ -173,6 +161,7 @@
 
 @section Scripts {
     <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/elearning-api.js" asp-append-version="true"></script>
     <script src="/apps/modules/elearning/js/intern/dashboard.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {

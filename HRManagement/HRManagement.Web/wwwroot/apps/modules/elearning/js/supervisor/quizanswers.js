@@ -6,6 +6,7 @@
     app.elearning.supervisor.quizAnswers = {};
     app.elearning.supervisor.quizAnswers._reviewData = [];
     app.elearning.supervisor.quizAnswers._submissionId = null;
+    app.elearning.supervisor.quizAnswers._quizId = null;
 
     app.elearning.supervisor.quizAnswers._api = async function (path, opts) {
         var token = window.aiaAuth && window.aiaAuth.getToken();
@@ -40,10 +41,11 @@
         self._api('/api/ELearning/submissions/' + self._submissionId).then(function (json) {
             app.loading && app.loading.hide();
             if (!json) {
-                Swal.fire({ icon: 'error', title: 'Failed to load submission' });
+                Swal.fire({ icon: 'error', title: 'Failed to load submission', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                 return;
             }
             var data = json.content || json.data || json;
+            self._quizId = data.quizId;
             self._reviewData = data.answers || data.questions || [];
             self.renderHeader(data);
             self.renderList();
@@ -53,12 +55,14 @@
 
     app.elearning.supervisor.quizAnswers.renderHeader = function (data) {
         if (!data) return;
-        var internName = data.internName || '';
-        var score = data.totalScore !== null && data.totalScore !== undefined ? data.totalScore : '-';
-        var passed = data.isPassed === true ? 'Passed' : data.isPassed === false ? 'Failed' : '-';
+        var internName = data.internName || '-';
+        var passing = data.minimumPassingScore !== null && data.minimumPassingScore !== undefined ? data.minimumPassingScore : '-';
+        var mcWeight = data.mcWeight !== null && data.mcWeight !== undefined ? data.mcWeight : 0;
+        var essayWeight = data.essayWeight !== null && data.essayWeight !== undefined ? data.essayWeight : 0;
+        var weightLabel = 'MC ' + mcWeight + '% / Essay ' + essayWeight + '%';
         if ($('#el-sv-qa-intern-name').length) $('#el-sv-qa-intern-name').text(internName);
-        if ($('#el-sv-qa-total-score').length) $('#el-sv-qa-total-score').text(score);
-        if ($('#el-sv-qa-status').length) $('#el-sv-qa-status').text(passed);
+        if ($('#el-sv-qa-passing-score').length) $('#el-sv-qa-passing-score').text(passing);
+        if ($('#el-sv-qa-weight').length) $('#el-sv-qa-weight').text(weightLabel);
     };
 
     app.elearning.supervisor.quizAnswers.renderList = function () {
@@ -72,7 +76,17 @@
             var maxScore = q.maxScore || 100;
             var scoreArea = '';
 
+            var options = q.options || [];
+            var internAnswer = (q.selectedOption || q.internAnswer || q.answer || '').toString().toUpperCase();
+            var correctAnswer = '';
+            if (options.length) {
+                var correctOpt = options.find(function (o) { return o.isCorrect; });
+                correctAnswer = (correctOpt ? correctOpt.optionLetter : '').toString().toUpperCase();
+            }
+
             if (isMC) {
+                var isCorrect = internAnswer && internAnswer === correctAnswer;
+                assignedScore = isCorrect ? 100 : 0;
                 scoreArea = '<div class="el-sv-qa-score-box">' + assignedScore + '</div>';
             } else {
                 scoreArea = '<div class="d-flex align-items-center gap-1">' +
@@ -83,24 +97,17 @@
 
             var answerArea = '';
             if (isMC) {
-                var options = q.options || [];
-                var internAnswer = q.selectedOption || q.internAnswer || q.answer || '';
-                var correctAnswer = '';
-                if (options.length) {
-                    var correctOpt = options.find(function (o) { return o.isCorrect; });
-                    correctAnswer = correctOpt ? correctOpt.optionLetter : '';
-                }
                 answerArea = '<div class="el-sv-qa-options-list">';
                 options.forEach(function (opt) {
-                    var letter = opt.optionLetter || '';
+                    var letter = (opt.optionLetter || '').toString().toUpperCase();
                     var text = opt.optionText || '';
                     var pillClass = 'el-sv-qa-opt-pill';
                     if (letter === internAnswer && letter === correctAnswer) {
-                        pillClass += ' correct';
+                        pillClass += ' correct bg-success text-white';
                     } else if (letter === internAnswer && letter !== correctAnswer) {
-                        pillClass += ' wrong';
+                        pillClass += ' wrong bg-danger text-white';
                     } else if (letter === correctAnswer && letter !== internAnswer) {
-                        pillClass += ' expected';
+                        pillClass += ' expected bg-success text-white';
                     }
                     answerArea += '<div class="' + pillClass + '">' + letter + '. ' + text + '</div>';
                 });
@@ -125,6 +132,27 @@
         var self = this;
 
         $(document).on('click', '#el-sv-qa-submit', function () {
+            var invalidScore = false;
+            $('.el-sv-qa-score-input').each(function () {
+                var raw = $(this).val();
+                var score = parseInt(raw, 10);
+                if (raw === '' || raw === null || isNaN(score) || score < 0 || score > 100) {
+                    invalidScore = true;
+                    return false;
+                }
+            });
+            if (invalidScore) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Score',
+                    text: 'Each essay score must be between 0 and 100.',
+                    confirmButtonText: 'OK',
+                    customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
             Swal.fire({
                 title: 'Submit Result?',
                 text: 'Are you sure you want to submit this grading result?',
@@ -137,29 +165,33 @@
             }).then(function (result) {
                 if (!result.isConfirmed) return;
 
-                var scores = [];
+                var gradedEssays = [];
                 $('.el-sv-qa-score-input').each(function () {
                     var idx = parseInt($(this).data('idx'));
                     var q = self._reviewData[idx];
-                    scores.push({ questionId: q.questionId || q.id, score: parseInt($(this).val()) || 0 });
+                    gradedEssays.push({ answerId: q.answerId || 0, score: parseInt($(this).val()) || 0 });
                 });
 
-                var payload = { submissionId: self._submissionId, scores: scores };
+                var payload = { submissionId: self._submissionId, gradedEssays: gradedEssays };
                 app.loading && app.loading.show('Submitting result...');
                 self._api('/api/ELearning/grade-submission', { method: 'PUT', body: JSON.stringify(payload) }).then(function (json) {
                     app.loading && app.loading.hide();
                     if (!json) {
-                        Swal.fire({ icon: 'error', title: 'Failed to submit grading' });
+                        Swal.fire({ icon: 'error', title: 'Failed to submit grading', customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' }, buttonsStyling: false });
                         return;
                     }
                     Swal.fire({
                         icon: 'success',
                         title: 'Result Submitted!',
-                        text: 'The grading result has been recorded.',
-                        customClass: { confirmButton: 'btn btn-sm fw-bold btn-primary' },
+                        text: 'Grading has been recorded successfully.',
+                        customClass: { popup: 'el-swal', confirmButton: 'btn-el-swal-confirm' },
                         buttonsStyling: false
                     }).then(function () {
-                        window.history.back();
+                        if (self._quizId) {
+                            window.location.href = '/Modules/ELearning/Supervisor/Results?quizId=' + self._quizId;
+                        } else {
+                            window.history.back();
+                        }
                     });
                 });
             });

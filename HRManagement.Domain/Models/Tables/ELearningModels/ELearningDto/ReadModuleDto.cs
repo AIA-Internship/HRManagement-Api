@@ -10,5 +10,6 @@ namespace HRManagement.Domain.Models.Tables.ELearningModels.ELearningDto
         public string role { get; set; } = null!;
         public DateTime? dueDate { get; set; }
         public string progressStatus { get; set; } = "Not Started";
+        public int batchId { get; set; }
     }
 }

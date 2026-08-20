@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="/apps/modules/elearning/css/global-elearning.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/modules.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
 }
@@ -16,7 +17,7 @@
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
-                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
                     <span class="el-breadcrumb-active">Modules</span>
                 </div>
             </div>
@@ -151,11 +152,10 @@
                             </div>
                             <div>
                                 <label class="el-form-label">Select Interns</label>
-                                <div class="d-flex flex-column gap-2">
-                                    <input type="text" class="el-form-control" value="Intern 2025" style="border-color: #d31145; color: #d31145;" readonly />
-                                    <input type="text" class="el-form-control" value="Intern 2026" readonly />
-                                    <input type="text" class="el-form-control" value="Intern2027" readonly />
+                                <div class="d-flex flex-column gap-2" id="el-add-program-groups-container">
+                                    <div class="text-muted fs-7">Loading groups...</div>
                                 </div>
+                                <div class="el-field-error d-none mt-2" id="el-add-program-groups-err"><i class="ki-duotone ki-information fs-7"></i> Please select at least one intern group.</div>
                             </div>
                         </div>
                         <div class="modal-footer el-modal-footer">
@@ -346,6 +346,7 @@
 
 @section Scripts {
     <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/elearning-api.js" asp-append-version="true"></script>
     <script src="/apps/modules/elearning/js/supervisor/modules.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {

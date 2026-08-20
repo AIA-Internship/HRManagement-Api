@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link href="/apps/modules/elearning/css/global-elearning.css" rel="stylesheet" asp-append-version="true" />
     <link href="/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" />
     <link href="/apps/modules/elearning/css/supervisor/results.css" rel="stylesheet" asp-append-version="true" />
     <link href="/apps/modules/elearning/css/supervisor/shared.css" rel="stylesheet" asp-append-version="true" />
@@ -15,10 +16,10 @@
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-                <button onclick="history.back()" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center" type="button"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</button>
+                <button type="button" id="el-sv-results-back" class="btn btn-sm btn-light fw-bold align-self-start mb-3 d-inline-flex align-items-center"><i class="bi bi-arrow-left fs-5 me-1"></i>Back</button>
                 <div class="el-breadcrumb">
                     <a href="/Modules/ELearning/Supervisor/Modules">E-Learning</a>
-                    <span class="el-breadcrumb-sep">›</span>
+                    <span class="el-breadcrumb-sep">&rsaquo;</span>
                     <span class="el-breadcrumb-active">Modules</span>
                 </div>
             </div>
@@ -67,6 +68,7 @@
 
 @section Scripts {
     <script src="/apps/modules/elearning/js/elearning-guard.js" asp-append-version="true"></script>
+    <script src="/apps/modules/elearning/js/elearning-api.js" asp-append-version="true"></script>
     <script src="/assets/plugins/custom/datatables/datatables.bundle.js"></script>
     <script src="/apps/modules/elearning/js/supervisor/results.js" asp-append-version="true"></script>
     <script>

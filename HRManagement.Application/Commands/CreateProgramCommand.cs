@@ -32,18 +32,28 @@ namespace HRManagement.Application.Commands.ELearningCommands
             _logger.LogTrace("Executing handler for request : {request}", nameof(CreateProgramHandler));
             try
             {
-                var groupExists = await _repo.GroupExistsAsync(request.Dto.groupId);
-                if (!groupExists)
-                    return Result.Failure<int>("Group not found.");
+                if (request.Dto.groupIds == null || request.Dto.groupIds.Count == 0)
+                    return Result.Failure<int>("At least one group must be selected.");
 
-                var newProgram = new ProgramModel
+                int firstProgramId = 0;
+
+                foreach (var groupId in request.Dto.groupIds)
                 {
-                    ProgramName = request.Dto.programName,
-                    GroupId = request.Dto.groupId
-                };
+                    var groupExists = await _repo.GroupExistsAsync(groupId);
+                    if (!groupExists)
+                        return Result.Failure<int>($"Group with ID {groupId} not found.");
 
-                var programId = await _repo.CreateProgramAsync(newProgram);
-                return Result.Success(programId);
+                    var newProgram = new ProgramModel
+                    {
+                        ProgramName = request.Dto.programName,
+                        GroupId = groupId
+                    };
+
+                    var programId = await _repo.CreateProgramAsync(newProgram);
+                    if (firstProgramId == 0) firstProgramId = programId;
+                }
+
+                return Result.Success(firstProgramId);
             }
             catch (Exception ex)
             {

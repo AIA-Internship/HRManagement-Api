@@ -42,8 +42,8 @@ namespace HRManagement.Application.Queries
                 var answers = (await _repo.GetAnswersBySubmissionIdAsync(request.SubmissionId)).ToList();
                 var options = (await _repo.GetOptionsByQuestionIdsAsync(questions.Select(q => q.QuestionId))).ToList();
 
-                decimal mcMaxScorePerQuestion = quiz.McCount > 0 ? (decimal)100 / quiz.McCount : 0;
-                const decimal essayMaxScorePerQuestion = 50;
+                const decimal mcMaxScorePerQuestion = 100;
+                const decimal essayMaxScorePerQuestion = 100;
 
                 var answerDtos = questions
                     .OrderBy(q => q.SortOrder)
@@ -79,6 +79,9 @@ namespace HRManagement.Application.Queries
                     quizId = submission.QuizId,
                     userId = submission.UserId,
                     internName = intern?.FullName ?? "Unknown",
+                    minimumPassingScore = quiz.MinimumPassingScore,
+                    mcWeight = quiz.McWeight,
+                    essayWeight = quiz.EssayWeight,
                     totalScore = submission.TotalScore,
                     isPassed = submission.IsPassed,
                     gradedUtcDate = submission.GradedUtcDate,

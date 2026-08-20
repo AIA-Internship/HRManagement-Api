@@ -6,6 +6,7 @@
     app.elearning.supervisor.results = {};
     app.elearning.supervisor.results._table = null;
     app.elearning.supervisor.results._allData = [];
+    app.elearning.supervisor.results._moduleId = null;
 
     app.elearning.supervisor.results._api = async function (path, opts) {
         var token = window.aiaAuth && window.aiaAuth.getToken();
@@ -42,7 +43,7 @@
             var dataObj = (json && (json.content || json.data || json)) || {};
             var sub = Array.isArray(dataObj.submitted) ? dataObj.submitted : [];
             var notSub = Array.isArray(dataObj.notSubmitted) ? dataObj.notSubmitted : [];
-            
+            self._moduleId = dataObj.moduleId || parseInt(sessionStorage.getItem('sv_quiz_module_id') || '0') || null;
             self._allData = [];
             sub.forEach(function(item) {
                 item.submissionStatus = 'Submitted';
@@ -167,6 +168,15 @@
 
     app.elearning.supervisor.results._bindEvents = function () {
         var self = this;
+
+        $(document).on('click', '#el-sv-results-back', function () {
+            var moduleId = self._moduleId || parseInt(sessionStorage.getItem('sv_quiz_module_id') || '0') || null;
+            if (moduleId) {
+                window.location.href = '/Modules/ELearning/Supervisor/ModuleDetail?id=' + moduleId;
+            } else {
+                window.location.href = '/Modules/ELearning/Supervisor/Modules';
+            }
+        });
 
         $(document).on('click', '.btn-el-view-answer', function () {
             var submissionId = $(this).data('submission-id');

@@ -34,6 +34,7 @@ namespace HRManagement.Application.Queries
             {
                 var eligibleInterns = await _repo.GetEligibleInternsForQuizAsync(request.QuizId);
                 var submissions = await _repo.GetSubmissionsByQuizIdAsync(request.QuizId);
+                var quiz = await _repo.GetQuizByIdAsync(request.QuizId);
 
                 var latestSubmissions = submissions
                     .GroupBy(s => s.UserId)
@@ -65,6 +66,7 @@ namespace HRManagement.Application.Queries
 
                 var result = new ReadQuizSubmissionsListDto
                 {
+                    moduleId = quiz?.ModuleId ?? 0,
                     totalEligible = eligibleInterns.Count(),
                     submittedCount = submittedUserIds.Count,
                     submitted = submitted,

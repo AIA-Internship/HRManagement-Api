@@ -97,9 +97,8 @@ namespace HRManagement.Application.Commands.ELearningCommands
                             (string.Equals(correctOption.OptionLetter, studentAns.selectedOption, StringComparison.OrdinalIgnoreCase) || 
                              string.Equals(correctOption.OptionText, studentAns.selectedOption, StringComparison.OrdinalIgnoreCase)))
                         {
-                            decimal pointPerMc = actualMcQuestionsCount > 0 ? (decimal)100 / actualMcQuestionsCount : 0;
-                            structuralRecord.AssignedScore = pointPerMc;
-                            calculatedMcPoints += pointPerMc;
+                            structuralRecord.AssignedScore = 100;
+                            calculatedMcPoints += 100;
                         }
                     }
 
@@ -111,7 +110,9 @@ namespace HRManagement.Application.Commands.ELearningCommands
 
                 if (quizConfig.EssayCount == 0)
                 {
-                    decimal finalCalculatedScore = calculatedMcPoints * ((decimal)quizConfig.McWeight / 100);
+                    decimal maxPotentialMcPoints = actualMcQuestionsCount * 100;
+                    decimal mcPercentage = maxPotentialMcPoints > 0 ? (calculatedMcPoints / maxPotentialMcPoints) * 100 : 0;
+                    decimal finalCalculatedScore = mcPercentage * ((decimal)quizConfig.McWeight / 100);
                     executionSubmission.TotalScore = finalCalculatedScore;
                     executionSubmission.IsPassed = finalCalculatedScore >= quizConfig.MinimumPassingScore;
                     executionSubmission.GradedUtcDate = DateTime.UtcNow;
