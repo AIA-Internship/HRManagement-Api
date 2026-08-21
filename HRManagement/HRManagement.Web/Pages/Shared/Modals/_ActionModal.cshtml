@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Routing
+@model dynamic
+@{
+    /*
+     * GLOBAL ACTION MODAL COMPONENT (V1.0)
+     * Supports: Info (OK), Confirm (Cancel/Confirm), Input (Cancel/Confirm + Textarea)
+     */
+    var dict = new RouteValueDictionary(Model);
+
+    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : "modal_generic_action");
+    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : "Confirmation");
+    string message = (dict.ContainsKey("Message") ? dict["Message"]?.ToString() : "Are you sure you want to proceed?");
+    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : "confirm"); // info, confirm, input
+    
+    string confirmText = (dict.ContainsKey("ConfirmText") ? dict["ConfirmText"]?.ToString() : (type == "info" ? "OK" : "Confirm"));
+    string cancelText = (dict.ContainsKey("CancelText") ? dict["CancelText"]?.ToString() : "Cancel");
+    string confirmColor = (dict.ContainsKey("ConfirmColor") ? dict["ConfirmColor"]?.ToString() : "btn-standard-primary");
+    string confirmId = (dict.ContainsKey("ConfirmId") ? dict["ConfirmId"]?.ToString() : id + "_confirm_btn");
+    string onConfirm = (dict.ContainsKey("OnConfirm") ? dict["OnConfirm"]?.ToString() : "");
+    
+    // Input Specific
+    string inputLabel = (dict.ContainsKey("InputLabel") ? dict["InputLabel"]?.ToString() : "Comment");
+    string inputId = (dict.ContainsKey("InputId") ? dict["InputId"]?.ToString() : id + "_input");
+    string inputPlaceholder = (dict.ContainsKey("InputPlaceholder") ? dict["InputPlaceholder"]?.ToString() : "");
+}
+
+<div class="modal fade" id="@id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-450px">
+        <div class="modal-content action-modal shadow-lg border-0">
+            <div class="modal-body p-12 text-center">
+                <!-- Header -->
+                <h2 class="modal-action-title mb-4">@title</h2>
+                <p class="modal-action-message mb-10">@message</p>
+
+                <!-- Optional Input Field -->
+                @if (type == "input")
+                {
+                    <div class="text-start mb-10">
+                        <label class="form-label-custom mb-3" for="@inputId">@inputLabel</label>
+                        <textarea id="@inputId" class="form-control modal-action-textarea" rows="4" placeholder="@inputPlaceholder"></textarea>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-center gap-4 mt-2">
+                    @if (type == "confirm" || type == "input")
+                    {
+                        <button type="button" class="btn btn-neutral-ghost w-100 py-4" data-bs-dismiss="modal" style="height: 52px; border-radius: 12px;">@cancelText</button>
+                    }
+                    <button type="button" class="btn @confirmColor w-100 py-4" id="@confirmId" onclick="@onConfirm" style="height: 52px; border-radius: 12px;">@confirmText</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

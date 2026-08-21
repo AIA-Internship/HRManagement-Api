@@ -1,0 +1,36 @@
+@{
+    /*
+     * DYNAMIC STANDARD BUTTON COMPONENT (V1.4 - Specialized Edition)
+     */
+    var dict = new RouteValueDictionary(Model);
+    
+    string type = (dict.ContainsKey("Type") ? dict["Type"]?.ToString() : "primary");
+    string title = (dict.ContainsKey("Title") ? dict["Title"]?.ToString() : "");
+    string icon = (dict.ContainsKey("Icon") ? dict["Icon"]?.ToString() : "");
+    string id = (dict.ContainsKey("Id") ? dict["Id"]?.ToString() : "");
+    string onClick = (dict.ContainsKey("OnClick") ? dict["OnClick"]?.ToString() : "");
+    string extraClass = (dict.ContainsKey("Class") ? dict["Class"]?.ToString() : "");
+
+    // 1. Get the extra attributes
+    var knownKeys = new[] { "Type", "Title", "Icon", "Id", "OnClick", "Class" };
+    var extraAttrs = dict.Where(kv => !knownKeys.Contains(kv.Key));
+
+    // 2. Build the exact HTML string here in C# land
+    var extraAttrString = string.Join(" ", extraAttrs.Select(attr => $"{attr.Key.Replace("_", "-")}=\"{attr.Value}\""));
+
+    string cssClass = type switch {
+        "primary" => "btn-standard-primary",
+        "ghost" => "btn-standard-ghost",
+        "info" => "btn-standard-info",
+        "nav" => "btn-standard-nav",
+        _ => "btn-standard-primary"
+    } + " " + extraClass;
+}
+
+<button id="@id" class="@cssClass" onclick="@onClick" type="button" title="@title" @Html.Raw(extraAttrString)>
+    @if (!string.IsNullOrEmpty(icon)) {
+        var iconClass = icon.StartsWith("bi-") ? icon : "bi-" + icon;
+        <i class="bi @iconClass @(string.IsNullOrEmpty(title) ? "" : "me-2")"></i>
+    }
+    @title
+</button>
