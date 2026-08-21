@@ -372,4 +372,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="~/apps/modules/profile/js/layout.js" asp-append-version="true"></script>
     <script src="~/apps/modules/profile/js/profile.js" asp-append-version="true"></script>
+    <script src="~/apps/shared/core/auth.js" asp-append-version="true"></script>
+    <script>
+        const session = window.aiaAuth.get();
+        if (!session) {
+            window.location.href = "/Account/Login";
+        }
+    </script>
 }

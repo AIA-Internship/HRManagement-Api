@@ -1,80 +1,77 @@
 (function () {
-    const TOKEN_KEY = 'aia_jwt_token';
-    const USER_KEY = 'aia_user_info';
-    const EXPIRY_KEY = 'aia_auth_expiry';
+    const TOKEN_KEY = "aia_access_token";
+    const USER_KEY = "aia_user_profile";
+    const EXPIRY_KEY = "aia_token_expiry";
 
-    function pickStore() {
-        if (localStorage.getItem(TOKEN_KEY)) return localStorage;
-        if (sessionStorage.getItem(TOKEN_KEY)) return sessionStorage;
-        return null;
-    }
+    let logoutTimer = null;
 
-    function isExpired() {
-        const store = pickStore();
-        if (!store) return true;
-        const exp = parseInt(store.getItem(EXPIRY_KEY) || '0', 10);
-        return !exp || Date.now() > exp;
-    }
+    window.aiaAuth = {
+        set: function (token, payload, rememberMe) {
+            localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(USER_KEY, JSON.stringify(payload));
+            
+            const expiryTimeMs = payload?.exp ? payload.exp * 1000 : Date.now() + 60 * 60 * 1000;
+            localStorage.setItem(EXPIRY_KEY, expiryTimeMs.toString());
 
-    function getToken() {
-        if (isExpired()) { clear(); return null; }
-        const store = pickStore();
-        return store ? store.getItem(TOKEN_KEY) : null;
-    }
+            this.scheduleExpiryRedirect(expiryTimeMs);
+        },
 
-    function getUserInfo() {
-        if (isExpired()) { clear(); return null; }
-        const store = pickStore();
-        if (!store) return null;
-        try { return JSON.parse(store.getItem(USER_KEY) || 'null'); } catch { return null; }
-    }
+        get: function () {
+            const token = localStorage.getItem(TOKEN_KEY);
+            const expiry = localStorage.getItem(EXPIRY_KEY);
 
-    function set(token, payload, rememberMe) {
-        const now = Date.now();
-        const expiry = rememberMe ? now + 7 * 24 * 60 * 60 * 1000 : now + 60 * 60 * 1000;
-        const store = rememberMe ? localStorage : sessionStorage;
-        const other = rememberMe ? sessionStorage : localStorage;
+            if (!token || !expiry) return null;
+            if (Date.now() >= parseInt(expiry, 10)) {
+                this.clear();
+                return null;
+            }
 
-        store.setItem(TOKEN_KEY, token);
-        store.setItem(USER_KEY, JSON.stringify(payload));
-        store.setItem(EXPIRY_KEY, String(expiry));
+            return {
+                token: token,
+                user: JSON.parse(localStorage.getItem(USER_KEY) || "{}"),
+                expiresAt: parseInt(expiry, 10)
+            };
+        },
 
-        other.removeItem(TOKEN_KEY);
-        other.removeItem(USER_KEY);
-        other.removeItem(EXPIRY_KEY);
-    }
+        clear: function () {
+            if (logoutTimer) clearTimeout(logoutTimer);
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            localStorage.removeItem(EXPIRY_KEY);
+        },
 
-    function clear() {
-        [localStorage, sessionStorage].forEach(s => {
-            s.removeItem(TOKEN_KEY);
-            s.removeItem(USER_KEY);
-            s.removeItem(EXPIRY_KEY);
-        });
-    }
+        scheduleExpiryRedirect: function (expiryTimeMs) {
+            if (logoutTimer) clearTimeout(logoutTimer);
 
-    function signOut() {
-        clear();
-        window.location.href = '/Account/Login';
-    }
+            const delay = expiryTimeMs - Date.now();
+            if (delay <= 0) {
+                this.clear();
+                window.location.href = "/Account/Login";
+                return;
+            }
 
-    window.aiaAuth = { getToken, getUserInfo, set, clear, signOut, isExpired };
-})();
+            logoutTimer = setTimeout(() => {
+                this.clear();
+                window.location.href = "/Account/Login?sessionExpired=true";
+            }, delay);
+        },
 
-// Smart back: go to previous in-app page, but never land on the login page.
-window.aiaGoBack = function (fallback) {
-    fallback = fallback || '/Profile';
-    let sameOriginInApp = false;
-    try {
-        const ref = document.referrer;
-        if (ref) {
-            const u = new URL(ref);
-            sameOriginInApp = (u.origin === window.location.origin) && !/\/Account\/Login/i.test(u.pathname);
+        init: function () {
+            const session = this.get();
+            if (session) {
+                this.scheduleExpiryRedirect(session.expiresAt);
+            }
+
+            // Sync auth state across all active tabs in the same browser profile
+            window.addEventListener("storage", (event) => {
+                if (event.key === TOKEN_KEY && event.newValue === null) {
+                    // Logged out in another tab
+                    this.clear();
+                    window.location.href = "/Account/Login";
+                }
+            });
         }
-    } catch (e) { /* ignore */ }
-
-    if (sameOriginInApp && window.history.length > 1) {
-        window.history.back();
-    } else {
-        window.location.href = fallback;
-    }
-};
+    };
+    
+    window.aiaAuth.init();
+})();

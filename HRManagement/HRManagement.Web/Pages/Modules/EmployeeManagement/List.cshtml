@@ -225,4 +225,10 @@
 
 @section Scripts {
     <script src="~/apps/modules/employee/js/employeelist.js" asp-append-version="true"></script>
+    <script>
+        const session = window.aiaAuth.get();
+        if (!session) {
+            window.location.href = "/Account/Login";
+        }
+    </script>
 }
