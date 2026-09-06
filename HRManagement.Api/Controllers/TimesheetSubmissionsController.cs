@@ -4,13 +4,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using HRManagement.Api.Application.Commands.Timesheet;
-using HRManagement.Api.Application.Queries.Timesheet;
-using HRManagement.Api.Application.TimesheetDtos.Commands.Dto;
-using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Application.Commands.Timesheet;
+using HRManagement.Application.Queries.Timesheet;
+using HRManagement.Domain.Models.Payload.TimesheetDtos.Commands.Dto;
+using HRManagement.Domain.Models.Payload.TimesheetDtos.Queries.Dto;
+using HRManagement.Domain.Models.Response.Shared;
 
-namespace HRManagement.Api.Controllers;
+namespace HRManagement.Controllers;
 
 [Authorize]
 [ApiController]
@@ -200,4 +200,29 @@ public class TimesheetSubmissionsController : ValidateController<TimesheetSubmis
             return Result.Success(result);
         });
     }
+
+    // Submit full review evaluation (evaluates per-day checks and remarks)
+    [HttpPost("supervisor/review/submit")]
+    [Authorize(Roles = "Supervisor")]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<string>>> SubmitSupervisorReview(
+        [FromBody] SubmitSupervisorReviewRequestDto requestDto)
+    {
+        var methodName = nameof(SubmitSupervisorReview);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var command = new SubmitSupervisorReviewCommand(requestDto);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) =>
+        {
+            var result = await _mediator.Send((SubmitSupervisorReviewCommand)c);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
 }
+
+
+

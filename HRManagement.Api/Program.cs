@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Domain.Models.Config;
-using HRManagement.Api.Domain.Models.Constants;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Extensions;
-using HRManagement.Api.Repositories.Base;
-using HRManagement.Api.Repositories.Seeder;
+using HRManagement.Application.Interfaces;
+using HRManagement.Domain.Models.Config;
+using HRManagement.Domain.Models.Constants;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Extensions;
+using HRManagement.MsSQL.Base;
+// using HRManagement.MsSQL.Seeder;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore; 
 
@@ -263,9 +263,9 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AppDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
 
-        context.Database.Migrate();
-        await RbacSeeder.SeedAsync(context);
-        await DbSeeder.SeedAsync(context, passwordHasher);
+        // context.Database.Migrate();
+        // await RbacSeeder.SeedAsync(context);
+        // await DbSeeder.SeedAsync(context, passwordHasher);
     }
     catch (Exception ex)
     {
@@ -274,3 +274,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+

@@ -34,8 +34,18 @@ async function loadApprovalData() {
         if (data.approvalHistory) {
             unifiedList = unifiedList.concat(data.approvalHistory.map(h => ({ 
                 ...h, 
-                unifiedStatus: h.status === 'Approved' ? 'Approved' : 'Needs Approval',
+                unifiedStatus: h.status === 'Need Revision' ? 'Need Revision' : (h.status === 'Approved' ? 'Approved' : 'Needs Approval'),
                 originalStatus: h.status,
+                isMissing: false
+            })));
+        }
+
+        // 1b. Process Pending Approvals
+        if (data.pendingApprovals) {
+            unifiedList = unifiedList.concat(data.pendingApprovals.map(p => ({
+                ...p,
+                unifiedStatus: 'Needs Approval',
+                originalStatus: p.status, // "Waiting for Approval"
                 isMissing: false
             })));
         }
@@ -90,9 +100,18 @@ async function loadApprovalData() {
 
         tbody.innerHTML = filtered.map(h => {
             const isApproved = h.unifiedStatus === 'Approved';
-            const hasRevision = h.originalStatus.includes('Revision') || h.originalStatus.includes('Need');
+            const isRevision = h.unifiedStatus === 'Need Revision';
             
-            const statusClass = isApproved ? 'badge-pill-approved' : 'badge-pill-waiting';
+            let statusClass = 'badge-pill-waiting';
+            let statusIcon = '';
+            if (isApproved) {
+                statusClass = 'badge-pill-approved';
+                statusIcon = '<i class="bi bi-check-circle-fill"></i> ';
+            } else if (isRevision) {
+                statusClass = 'badge-pill-revision';
+                statusIcon = ''; // Removed icon as requested
+            }
+            
             const initials = h.employeeName.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase();
             
             // Link logic: if no submissionId, we pass employeeId/month/year
@@ -101,38 +120,31 @@ async function loadApprovalData() {
                 : `/Timesheet/Supervisor/Review?employeeId=${h.employeeId}&month=${h.month}&year=${h.year}`;
 
             return `
-                <tr onclick="window.location.href='${reviewUrl}'">
-                    <td>
-                        <div class="employee-info">
-                            <div class="employee-avatar">${initials}</div>
-                            <div>
-                                <div class="employee-name">${h.employeeName}</div>
-                                <div class="employee-id">ID: ${h.employeeId}</div>
-                            </div>
+            <tr onclick="window.location.href='${reviewUrl}'" style="cursor: pointer;">
+                <td>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="employee-avatar">${initials}</div>
+                        <div>
+                            <div class="employee-name">${h.employeeName}</div>
                         </div>
-                    </td>
-                    <td>
-                        <div class="period-text">${_indonesianMonths[h.month-1]} ${h.year}</div>
-                    </td>
-                    <td>
-                        <span class="badge-pill-status ${statusClass}">${h.unifiedStatus.toUpperCase()}</span>
-                    </td>
-                    <td class="text-center">
-                        ${isApproved ? '<i class="bi bi-check-circle-fill text-success fs-4"></i>' : '<i class="bi bi-dash-circle text-gray-300 fs-4"></i>'}
-                    </td>
-                    <td class="text-center">
-                        ${hasRevision ? '<i class="bi bi-arrow-repeat text-warning fs-4" title="Revision Requested"></i>' : '<i class="bi bi-dash-circle text-gray-300 fs-4"></i>'}
-                    </td>
-                    <td>
-                        <div class="decision-date">${h.reviewedDate || '--'}</div>
-                    </td>
-                    <td class="text-end">
-                        <a href="${reviewUrl}" class="btn-standard-info btn-standard-sm fw-boldest">
-                            Review
-                        </a>
-                    </td>
-
-                </tr>
+                    </div>
+                </td>
+                <td>
+                    <div class="period-text fw-boldest text-dark">${_indonesianMonths[h.month-1]} ${h.year}</div>
+                </td>
+                <td>
+                    <span class="badge ${statusClass} badge-pill-status">
+                        ${statusIcon} ${h.unifiedStatus}
+                    </span>
+                </td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-icon btn-light" 
+                            ${isApproved ? '' : 'disabled style="opacity: 0.4; cursor: not-allowed;"'} 
+                            onclick="event.stopPropagation(); window.alert('Export feature coming soon!');">
+                        <i class="bi bi-download fs-4" style="color: ${isApproved ? '#181C32' : '#A1A5B7'}"></i>
+                    </button>
+                </td>
+            </tr>
             `;
         }).join('');
 

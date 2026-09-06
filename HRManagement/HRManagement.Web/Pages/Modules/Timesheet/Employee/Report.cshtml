@@ -1,523 +1,279 @@
 @page "/Timesheet/Employee/Report"
 @using HRManagement.Web.Pages.Modules.Timesheet
+@using HRManagement.Web.Models.Shared
 @model HRManagement.Web.Pages.Modules.Timesheet.ReportModel
 @{
     ViewData["Title"] = "Timesheet Report";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/shared/forms/common-input-dropdowns.css" asp-append-version="true" />
     <style>
-        :root { --brand-red: #D31145; --border-subtle: #ECEFF4; }
+        :root { --brand-red: #D31145; --border-subtle: #E1E3EA; }
         body { background-color: #F8F9FA !important; font-family: 'Inter', 'Outfit', sans-serif; }
 
-        /* ── ACTIVE SUBMISSION BANNER ── */
-        .featured-submission-banner {
+        .report-card {
             background: #fff;
-            border-radius: 16px;
-            padding: 30px 35px;
+            border-radius: 12px;
             border: 1px solid var(--border-subtle);
-            border-bottom: 4px solid var(--brand-red) !important;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 28px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-        }
-        .banner-left  { display: flex; flex-direction: column; gap: 10px; }
-        .banner-label {
-            font-size: 0.7rem; font-weight: 850; color: #A1A5B7;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .banner-title { font-size: 2.4rem; font-weight: 900; color: #000; margin: 0; line-height: 1; }
-        .banner-sub-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .banner-right { display: flex; align-items: center; }
-
-        .btn-download-draft {
-            border: 1.5px solid var(--brand-red);
-            background: transparent;
-            color: var(--brand-red);
-            border-radius: 10px;
-            padding: 11px 20px;
-            font-weight: 850;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.88rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .btn-download-draft:hover { background: #FFF5F8; transform: translateY(-2px); }
-        .btn-download-draft.disabled {
-            border-color: #D0D3DC; color: #D0D3DC;
-            pointer-events: none; cursor: not-allowed;
-        }
-
-        /* ── HISTORY CARD ── */
-        .history-card {
-            background: #fff;
-            border-radius: 16px;
-            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            margin-bottom: 40px;
         }
-        .history-main-header {
-            background: #EFEFF4;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #E1E3EA;
-        }
-        .header-title-box { display: flex; align-items: center; gap: 14px; }
-        .header-title-box h3 { font-size: 1.1rem; font-weight: 900; color: #181C32; margin: 0; }
 
-        /* Filter Dropdown */
-        .filter-select {
-            border: 1px solid #E1E3EA;
-            border-radius: 8px;
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #181C32;
-            background: #fff;
-            cursor: pointer;
-            outline: none;
-            min-width: 140px;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 32px;
-        }
-        .filter-select:focus { border-color: #D31145; box-shadow: 0 0 0 2px rgba(211,17,69,0.1); }
-
-        /* ── TABLE ── */
-        .history-table { width: 100%; border-collapse: collapse; }
-        .history-table thead tr { background: #F8F9FA; border-bottom: 2px solid #E8EAED; }
-        .history-table th {
-            padding: 14px 24px;
-            text-align: left;
-            font-size: 0.65rem;
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table thead tr { background: #F8F9FA; border-bottom: 2px solid #E1E3EA; border-top: 1px solid #E1E3EA; }
+        .report-table th {
+            padding: 14px 20px;
+            font-size: 0.7rem;
             font-weight: 900;
-            color: #9094A9;
+            color: #7E8299;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            text-align: center;
         }
-        .history-table th.text-center { text-align: center; }
-        .history-table td {
-            padding: 20px 24px;
-            font-size: 0.92rem;
-            font-weight: 700;
-            color: #181C32;
+        .report-table th:first-child { text-align: left; }
+        
+        .report-table td {
+            padding: 18px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3F4254;
             border-bottom: 1px solid #F4F6FA;
             vertical-align: middle;
+            text-align: center;
         }
-        .history-table tr:last-child td { border-bottom: 0; }
-        .history-table .sub-date { color: #A1A5B7; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.3px; }
+        .report-table td:first-child { text-align: left; }
+        .report-table tr:last-child td { border-bottom: none; }
+        
+        .report-table tbody tr {
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .report-table tbody tr:hover {
+            background: #F9FAFB;
+        }
 
-        .export-btn {
-            color: #8492A6; cursor: pointer; font-size: 1.25rem;
-            display: flex; justify-content: center;
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .status-needs-approval { background: #FFF4CC; color: #E4A900; }
+        .status-approved { background: #DCF5E3; color: #2EAA55; }
+        .status-revision { background: #FDE8EE; color: var(--brand-red); }
+        .status-draft { background: #F1F1F4; color: #7E8299; }
+
+        .btn-export-icon {
+            color: #181C32;
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            border-radius: 4px;
             transition: all 0.2s;
         }
-        .export-btn:hover { color: var(--brand-red); transform: translateY(-1px); }
-        .export-btn.disabled { color: #D9DCE3; cursor: not-allowed; pointer-events: none; }
-
-        /* ── EMPTY STATE ── */
-        .empty-state-cell {
-            padding: 120px 40px; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        .btn-export-icon:hover {
+            background: #F1F1F4;
+            color: var(--brand-red);
         }
-        .empty-state-icon  { font-size: 5rem !important; color: #E1E3EA; margin-bottom: 24px; }
-        .empty-state-title { font-size: 1.25rem; font-weight: 850; color: #181C32; margin-bottom: 10px; }
-        .empty-state-desc  { font-size: 1rem; color: #7E8299; font-weight: 600; max-width: 420px; line-height: 1.6; }
-
-        /* ── UNIFIED FILTER BAR ── */
-        .history-filter-toolbar {
-            background: #F9F9F9;
-            padding: 20px 24px;
-            border-bottom: 1px solid #ECEFF4;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .filter-group { display: flex; align-items: center; gap: 12px; }
-        .filter-label {
-            font-size: 0.75rem; font-weight: 850; color: #7E8299;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .filter-input-wrapper { position: relative; width: 140px; }
-        .filter-input-wrapper input {
-            background: #fff !important;
-            border: 1px solid #E1E3EA !important;
-            border-radius: 8px !important;
-            font-size: 0.85rem !important;
-            height: 40px !important;
-            font-weight: 800 !important;
-        }
-        .filter-input-wrapper i { color: #A1A5B7; font-size: 0.9rem; margin-right: 12px; }
-        .btn-filter-search {
-            height: 40px; border-radius: 8px; font-weight: 850; font-size: 0.85rem;
-            background: var(--brand-red); color: #fff; border: none; padding: 0 20px;
-            transition: all 0.2s;
-        }
-        .btn-filter-search:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-filter-reset {
-            height: 40px; border-radius: 8px; font-weight: 800; font-size: 0.85rem;
-            background: #fff; color: #7E8299; border: 1px solid #E1E3EA; padding: 0 15px;
-        }
-        .divider-vertical { width: 1px; height: 24px; background: #E1E3EA; }
     </style>
 }
 
-<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full">
+<div class="d-flex flex-column flex-column-fluid mt-4 app-container-full">
     <div id="kt_app_content" class="app-content flex-column-fluid">
         <div id="kt_app_content_container" class="app-container container-fluid">
 
             @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
-                Title = "Timesheet History",
-                Subtitle = "Monitor your submission timeline and download approved reports",
+                Title = "Report",
+                Subtitle = "Review Your Timesheet Status, History, And Export",
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
                     new BreadcrumbItem { Title = "Report" }
                 }
             })
 
-            <!-- ── ACTIVE SUBMISSION BANNER (always visible) ── -->
-            <div class="featured-submission-banner">
-                <div class="banner-left">
-                    <span class="banner-label">Active Submission</span>
-                    <h2 class="banner-title" id="active_month_label">
-                        <span class="placeholder-glow"><span class="placeholder col-4" style="height:2.4rem;border-radius:8px"></span></span>
-                    </h2>
-                    <div class="banner-sub-row" id="banner_sub_row">
-                        <span class="text-muted fw-bold" style="font-size:0.8rem">Loading...</span>
+            <div class="report-card mt-8">
+                <div class="d-flex justify-content-between align-items-center p-6 border-bottom" style="border-color: var(--border-subtle) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-inbox-fill text-dark fs-2"></i>
+                        <h3 class="mb-0 fw-bolder text-dark" style="font-size: 1.15rem;">Timesheet History</h3>
                     </div>
-                </div>
-                <div class="banner-right" id="banner_right_area"></div>
-            </div>
+                    <div class="d-flex gap-3">
+                        <div class="aia-custom-select-wrap" style="width: 140px;">
+                            <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)">
+                                <span class="trigger-text">All months</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="aia-select-popover">
+                                <div class="aia-select-option selected" data-id="" data-value="All months" onclick="selectAiaOption(this); handleFilterChange();">All months</div>
+                                <div class="aia-select-option" data-id="1" data-value="January" onclick="selectAiaOption(this); handleFilterChange();">January</div>
+                                <div class="aia-select-option" data-id="2" data-value="February" onclick="selectAiaOption(this); handleFilterChange();">February</div>
+                                <div class="aia-select-option" data-id="3" data-value="March" onclick="selectAiaOption(this); handleFilterChange();">March</div>
+                                <div class="aia-select-option" data-id="4" data-value="April" onclick="selectAiaOption(this); handleFilterChange();">April</div>
+                                <div class="aia-select-option" data-id="5" data-value="May" onclick="selectAiaOption(this); handleFilterChange();">May</div>
+                                <div class="aia-select-option" data-id="6" data-value="June" onclick="selectAiaOption(this); handleFilterChange();">June</div>
+                                <div class="aia-select-option" data-id="7" data-value="July" onclick="selectAiaOption(this); handleFilterChange();">July</div>
+                                <div class="aia-select-option" data-id="8" data-value="August" onclick="selectAiaOption(this); handleFilterChange();">August</div>
+                                <div class="aia-select-option" data-id="9" data-value="September" onclick="selectAiaOption(this); handleFilterChange();">September</div>
+                                <div class="aia-select-option" data-id="10" data-value="October" onclick="selectAiaOption(this); handleFilterChange();">October</div>
+                                <div class="aia-select-option" data-id="11" data-value="November" onclick="selectAiaOption(this); handleFilterChange();">November</div>
+                                <div class="aia-select-option" data-id="12" data-value="December" onclick="selectAiaOption(this); handleFilterChange();">December</div>
+                            </div>
+                            <input type="hidden" class="aia-select-value" value="">
+                            <input type="hidden" class="aia-select-id" id="filter_month" value="">
+                        </div>
 
-            <!-- ── HISTORY CARD (always visible) ── -->
-            <div class="history-card shadow-sm">
-                <div class="history-filter-toolbar">
-                    <!-- From Period -->
-                    <div class="filter-group">
-                        <span class="filter-label">From</span>
-                        <div class="filter-input-wrapper">
-                            <input type="text" id="filter_from_label" class="form-control" value="---" readonly onclick="openMonthPicker('from', event)" />
-                            <input type="hidden" id="filter_from" />
-                            <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y"></i>
+                        <div class="aia-custom-select-wrap" style="width: 140px;">
+                            <div class="aia-select-trigger" onclick="toggleAiaSelect(this, event)">
+                                <span class="trigger-text">All years</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div class="aia-select-popover">
+                                <div class="aia-select-option selected" data-id="" data-value="All years" onclick="selectAiaOption(this); handleFilterChange();">All years</div>
+                                <div class="aia-select-option" data-id="2026" data-value="2026" onclick="selectAiaOption(this); handleFilterChange();">2026</div>
+                                <div class="aia-select-option" data-id="2025" data-value="2025" onclick="selectAiaOption(this); handleFilterChange();">2025</div>
+                            </div>
+                            <input type="hidden" class="aia-select-value" value="">
+                            <input type="hidden" class="aia-select-id" id="filter_year" value="">
                         </div>
                     </div>
-
-                    <!-- To Period -->
-                    <div class="filter-group">
-                        <span class="filter-label">To</span>
-                        <div class="filter-input-wrapper">
-                            <input type="text" id="filter_to_label" class="form-control" value="---" readonly onclick="openMonthPicker('to', event)" />
-                            <input type="hidden" id="filter_to" />
-                            <i class="bi bi-calendar3 position-absolute end-0 top-50 translate-middle-y"></i>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button class="btn-filter-search" onclick="applyPeriodFilter()">Search</button>
-                        <button class="btn-filter-reset" onclick="resetReportFilters()"><i class="bi bi-arrow-counterclockwise fs-6"></i></button>
-                    </div>
-
-                    <div class="divider-vertical mx-2"></div>
-
-                    <!-- Status Filter -->
-                    <div class="filter-group ms-auto">
-                        <span class="filter-label">Status</span>
-                        <select class="form-select form-select-solid fw-boldest" style="width:180px; height:40px; border-radius:8px; font-size:0.85rem;" onchange="applyFilter(this.value)">
-                            <option value="All">All Status</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Needs Approval">Needs Approval</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-                    </div>
                 </div>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th style="width:20%">Month/Period</th>
-                            <th style="width:20%">Submission Date</th>
-                            <th style="width:25%">Supervisor</th>
-                            <th style="width:25%">Approval Status</th>
-                            <th style="width:10%" class="text-center">Export</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history_tbody">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
+
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 30px; width: 40%;">MONTH/PERIOD <i class="bi bi-arrow-down ms-1"></i></th>
+                                <th style="width: 30%;">APPROVAL STATUS</th>
+                                <th style="width: 30%;">EXPORT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history_tbody">
+                            <tr>
+                                <td colspan="3" class="text-center py-10 text-muted fw-bold">Loading history...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- FLOATING MONTH PICKER (GLOBAL STYLE) -->
-<div id="datepicker_focal_backdrop" onclick="closeMonthPicker()"></div>
-<div id="report_month_picker" class="datepicker-popover shadow-lg" style="width: 250px; display:none; position:fixed; z-index:2100;">
-    <div class="datepicker-header">
-        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="movePickerYear(-1)"><i class="bi bi-chevron-left"></i></button>
-        <div class="title" id="report_picker_year">2026</div>
-        <button class="btn btn-icon btn-sm btn-light h-30px w-30px rounded-circle" onclick="movePickerYear(1)"><i class="bi bi-chevron-right"></i></button>
-    </div>
-    <div class="datepicker-grid-3">
-        @foreach (var m in new[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
-            <div class="datepicker-month-cell" onclick="selectMonthReport('@m')">@m</div>
-        }
-    </div>
-</div>
-
 @section Scripts {
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
+    <script src="~/apps/modules/timesheet/js/timesheet-export.js" asp-append-version="true"></script>
     <script>
-        const MONTHS = ["January","February","March","April","May","June",
-                        "July","August","September","October","November","December"];
+        const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
         let allHistoryData = [];
 
-        // ── STATUS BADGE HELPER ───────────────────────────────────────────────
-        function getStatusBadge(statusStr) {
-            const s = (statusStr || '').toLowerCase();
-            if (s.includes('waiting') || s.includes('approval'))
-                return { cls: 'badge-pill-needs-approval', icon: 'bi-clock',             label: 'Needs Approval' };
-            if (s.includes('approved'))
-                return { cls: 'badge-pill-approved',       icon: 'bi-check-circle-fill', label: 'Approved'       };
-            if (s.includes('revision') || s.includes('rejected'))
-                return { cls: 'badge-pill-rejected',       icon: 'bi-x-circle-fill',     label: 'Rejected'       };
-            return     { cls: 'badge-pill-draft',          icon: 'bi-file-earmark-text', label: statusStr || 'Not Submitted' };
-        }
+        async function initHistory() {
+            const token = localStorage.getItem('aia_jwt_token');
+            if (!token) {
+                window.location.href = '/Account/Login';
+                return;
+            }
 
-        // ── FETCH API ─────────────────────────────────────────────────────────
-        async function fetchHistory() {
             try {
-                const token = localStorage.getItem('aia_jwt_token');
-                if (!token) { window.location.href = '/Account/Login'; return null; }
-
-                const res = await fetch('https://localhost:7089/api/timesheet/submission/history', {
+                const res = await fetch(`https://localhost:7089/api/timesheet/submission/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (res.status === 401) {
                     localStorage.removeItem('aia_jwt_token');
                     window.location.href = '/Account/Login';
-                    return null;
+                    return;
                 }
 
                 const json = await res.json();
-                return json.isError ? null : (json.content || []);
+                if (json.isError) {
+                    document.getElementById('history_tbody').innerHTML = `<tr><td colspan="3" class="text-center text-danger fw-bold py-10">${json.message}</td></tr>`;
+                    return;
+                }
+
+                allHistoryData = json.content || [];
+                renderHistory(allHistoryData);
+
             } catch (e) {
-                console.error('Report fetch error:', e);
-                return null;
+                console.error(e);
+                document.getElementById('history_tbody').innerHTML = `<tr><td colspan="3" class="text-center text-danger fw-bold py-10">Failed to load history data.</td></tr>`;
             }
         }
 
-        // ── RENDER BANNER ─────────────────────────────────────────────────────
-        function renderBanner(data) {
-            const monthEl    = document.getElementById('active_month_label');
-            const subRowEl   = document.getElementById('banner_sub_row');
-            const rightEl    = document.getElementById('banner_right_area');
-
-            if (!data || data.length === 0) {
-                if (monthEl)  monthEl.innerText  = 'No Submission Yet';
-                if (subRowEl) subRowEl.innerHTML = `
-                    <span class="badge-pill-status badge-pill-draft">
-                        <i class="bi bi-file-earmark-text"></i> Not Submitted
-                    </span>`;
-                if (rightEl)  rightEl.innerHTML  = `
-                    <button class="btn-download-draft disabled">
-                        <i class="bi bi-file-earmark-arrow-down-fill"></i> Download Draft
-                    </button>`;
-                return;
+        function handleFilterChange() {
+            const monthVal = document.getElementById('filter_month').value;
+            const yearVal = document.getElementById('filter_year').value;
+            
+            let filtered = allHistoryData;
+            
+            if (monthVal) {
+                filtered = filtered.filter(x => x.month == monthVal);
             }
-
-            const latest = data[0];
-            const badge  = getStatusBadge(latest.status);
-            const isApproved = badge.cls === 'badge-pill-approved';
-
-            if (monthEl)  monthEl.innerText  = `${MONTHS[latest.month - 1]} ${latest.year}`;
-            if (subRowEl) subRowEl.innerHTML = `
-                <span class="badge-pill-status ${badge.cls}">
-                    <i class="bi ${badge.icon}"></i> ${badge.label}
-                </span>
-                <span class="text-silver text-uppercase" style="font-size:0.65rem;font-weight:850;letter-spacing:0.5px">
-                    Submitted on ${latest.submittedDate || '—'}
-                </span>`;
-            if (rightEl)  rightEl.innerHTML  = `
-                <button class="btn-download-draft${isApproved ? '' : ' disabled'}">
-                    <i class="bi bi-file-earmark-arrow-down-fill"></i> Download Draft
-                </button>`;
+            if (yearVal) {
+                filtered = filtered.filter(x => x.year == yearVal);
+            }
+            
+            renderHistory(filtered);
         }
 
-        // ── RENDER TABLE ──────────────────────────────────────────────────────
-        function renderHistoryTable(data) {
+        function renderHistory(data) {
             const tbody = document.getElementById('history_tbody');
-            if (!tbody) return;
             tbody.innerHTML = '';
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="padding:0;border:0">
-                            <div class="empty-state-cell">
-                                <i class="bi bi-file-earmark-text empty-state-icon"></i>
-                                <h3 class="empty-state-title">No Submissions Found</h3>
-                                <p class="empty-state-desc">You haven't submitted any timesheets yet. Once you submit your first approval, your history will appear here.</p>
-                            </div>
-                        </td>
-                    </tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-10 fw-bold text-muted">No timesheet history found.</td></tr>`;
                 return;
             }
 
+            // Sort data by year descending, month descending
+            data.sort((a, b) => {
+                if (b.year !== a.year) return b.year - a.year;
+                return b.month - a.month;
+            });
+
             data.forEach(item => {
-                const badge      = getStatusBadge(item.status);
-                const isApproved = badge.cls === 'badge-pill-approved';
                 const tr = document.createElement('tr');
+                tr.onclick = (e) => {
+                    // Prevent redirect if clicking on the export button
+                    if(e.target.closest('button')) return;
+                    window.location.href = `/Timesheet/Employee/ReportDetail?year=${item.year}&month=${item.month}`;
+                };
+
+                let statusBadge = '';
+                let exportBtn = '';
+
+                if (item.status === 'Approved') {
+                    statusBadge = '<span class="status-badge status-approved">Approved</span>';
+                    exportBtn = `<button class="btn-export-icon" onclick="exportTimesheet(${item.year}, ${item.month})"><i class="bi bi-download"></i></button>`;
+                } else if (item.status === 'Waiting for Approval' || item.status === 'Waiting' || item.status === 'Pending') {
+                    statusBadge = '<span class="status-badge status-needs-approval">Needs Approval</span>';
+                    exportBtn = `<button class="btn-export-icon" style="color: #D0D3DC; cursor: not-allowed;" disabled><i class="bi bi-download"></i></button>`;
+                } else if (item.status === 'Need Revision' || item.status === 'Revision') {
+                    statusBadge = '<span class="status-badge status-revision">Need Revision</span>';
+                    exportBtn = `<button class="btn-export-icon" style="color: #D0D3DC; cursor: not-allowed;" disabled><i class="bi bi-download"></i></button>`;
+                } else {
+                    statusBadge = `<span class="status-badge status-draft">${item.status || 'Draft'}</span>`;
+                    exportBtn = `<button class="btn-export-icon" style="color: #D0D3DC; cursor: not-allowed;" disabled><i class="bi bi-download"></i></button>`;
+                }
+
                 tr.innerHTML = `
-                    <td><span class="fw-boldest">${MONTHS[item.month - 1]} ${item.year}</span></td>
-                    <td><span class="sub-date">${item.submittedDate || '—'}</span></td>
-                    <td><span class="fw-bold text-gray-700">${item.supervisorName || '—'}</span></td>
-                    <td>
-                        <span class="badge-pill-status ${badge.cls}">
-                            <i class="bi ${badge.icon}"></i> ${badge.label}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <div class="export-btn ${isApproved ? '' : 'disabled'}" onclick="${isApproved ? 'downloadApprovedTimesheet(' + item.id + ')' : ''}"
-                             title="${isApproved ? 'Download Report' : 'Only available for approved reports'}">
-                            <i class="bi bi-file-earmark-arrow-down"></i>
-                        </div>
-                    </td>`;
+                    <td style="padding-left: 30px;">${MONTHS[item.month - 1]} ${item.year}</td>
+                    <td>${statusBadge}</td>
+                    <td>${exportBtn}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }
 
-        // ── NEW PERIOD FILTER FUNCTIONS ──────────────────────────────────────
-        function applyPeriodFilter() {
-            const from = document.getElementById('filter_from').value; // YYYY-MM
-            const to = document.getElementById('filter_to').value; // YYYY-MM
-            
-            if (!from && !to) {
-                renderHistoryTable(allHistoryData);
-                return;
-            }
+        // exportTimesheet(year, month) is defined in timesheet-export.js
 
-            const filtered = allHistoryData.filter(item => {
-                const itemDate = new Date(item.year, item.month - 1);
-                
-                if (from) {
-                    const fromDate = new Date(from);
-                    if (itemDate < fromDate) return false;
-                }
-                
-                if (to) {
-                    const toDate = new Date(to);
-                    if (itemDate > toDate) return false;
-                }
-                
-                return true;
-            });
-            renderHistoryTable(filtered);
-        }
-
-        function resetReportFilters() {
-            document.getElementById('filter_from').value = '';
-            document.getElementById('filter_to').value = '';
-            document.getElementById('filter_from_label').value = '---';
-            document.getElementById('filter_to_label').value = '---';
-            document.querySelector('.form-select-solid').value = 'All';
-            renderHistoryTable(allHistoryData);
-        }
-
-        // ── BRANDED MONTH PICKER LOGIC ───────────────────────────────────────
-        let activePickerSide = 'from';
-        let pickerYear = new Date().getFullYear();
-
-        function openMonthPicker(side, e) {
-            e.stopPropagation();
-            activePickerSide = side;
-            const popover = document.getElementById('report_month_picker');
-            const backdrop = document.getElementById('datepicker_focal_backdrop');
-            const rect = e.target.getBoundingClientRect();
-            
-            // Fixed position means we use viewport coordinates, NOT document coordinates
-            popover.style.top = (rect.bottom + 5) + 'px';
-            popover.style.left = rect.left + 'px';
-            popover.style.display = 'block';
-            backdrop.style.display = 'block';
-
-            // Lock body scroll
-            document.body.style.overflow = 'hidden';
-            
-            updatePickerYearDisplay();
-        }
-
-        function closeMonthPicker() {
-            document.getElementById('report_month_picker').style.display = 'none';
-            document.getElementById('datepicker_focal_backdrop').style.display = 'none';
-            
-            // Unlock body scroll
-            document.body.style.overflow = '';
-        }
-
-        function movePickerYear(offset) {
-            pickerYear += offset;
-            updatePickerYearDisplay();
-        }
-
-        function updatePickerYearDisplay() {
-            document.getElementById('report_picker_year').innerText = pickerYear;
-        }
-
-        function selectMonthReport(mShort) {
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const mIdx = months.indexOf(mShort) + 1;
-            const yyyymm = `${pickerYear}-${mIdx.toString().padStart(2, '0')}`;
-            
-            const targetInput = document.getElementById(`filter_${activePickerSide}`);
-            const targetLabel = document.getElementById(`filter_${activePickerSide}_label`);
-            
-            targetInput.value = yyyymm;
-            targetLabel.value = `${mShort} ${pickerYear}`;
-            
-            closeMonthPicker();
-        }
-        
-        function downloadApprovedTimesheet(id) {
-            showToast("Approved timesheet download started.", "success");
-        }
-
-        // ── FILTER ────────────────────────────────────────────────────────────
-        function applyFilter(value) {
-            if (value === 'All') {
-                renderHistoryTable(allHistoryData);
-                return;
-            }
-            const filtered = allHistoryData.filter(item => {
-                const badge = getStatusBadge(item.status);
-                return badge.label === value;
-            });
-            renderHistoryTable(filtered);
-        }
-
-        // ── INIT ──────────────────────────────────────────────────────────────
-        async function initReportPage() {
-            const data = await fetchHistory();
-            allHistoryData = data || [];
-
-            renderBanner(allHistoryData);
-            renderHistoryTable(allHistoryData);
-        }
-
-        document.addEventListener('DOMContentLoaded', initReportPage);
+        document.addEventListener('DOMContentLoaded', initHistory);
     </script>
 }

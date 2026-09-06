@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HRManagement.Api.Extensions
+namespace HRManagement.Extensions
 {
     public class LoggingPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
@@ -35,3 +35,4 @@ namespace HRManagement.Api.Extensions
         }
     }
 }
+

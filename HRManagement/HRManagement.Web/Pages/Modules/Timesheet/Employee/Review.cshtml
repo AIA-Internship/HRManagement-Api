@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
     <style>
         .review-container { max-width: 1000px; margin: 40px auto; background: #fff; padding: 60px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
@@ -51,7 +52,7 @@
             </div>
             <div class="review-info-box">
                 <span class="info-label">Current Status</span>
-                <span id="review_status_badge" class="badge badge-light-warning fw-boldest px-4 py-2 fs-7">UNSUBMITTED</span>
+                <span id="review_status_badge" class="badge-pill-status badge-pill-draft px-4 py-2 fs-7">UNSUBMITTED</span>
             </div>
         </div>
 

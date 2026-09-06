@@ -17,7 +17,6 @@ async function initSupervisorDashboard() {
         renderTopPendingApprovals(data.pendingApprovals);
         renderPivotTable(data.internHoursBreakdown);
         renderAllocationDonut(data.projectAllocations);
-        renderLiveActivity(data.recentActivity);
         setupDropdownFilter(data.internHoursBreakdown);
 
     } catch (err) {
@@ -44,39 +43,29 @@ function renderTopPendingApprovals(pendingApprovals) {
 
     if (!pendingApprovals || pendingApprovals.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">
-                <i class="bi bi-check-circle-fill text-success fs-2 mb-3 d-block"></i>
+            <tr><td colspan="2" class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">
                 All caught up! No pending approvals.
-            </div>`;
+            </td></tr>`;
         return;
     }
 
-    const top3 = pendingApprovals.slice(0, 3);
     const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-    const html = top3.map(item => {
-        const initials = (item.employeeName || '?').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    const html = pendingApprovals.map(item => {
         const period = `${MONTHS[(item.month || 1) - 1]} ${item.year}`;
         const reviewUrl = item.submissionId > 0
             ? `/Timesheet/Supervisor/Review?id=${item.submissionId}`
             : `/Timesheet/Supervisor/Review?employeeId=${item.employeeId}&month=${item.month}&year=${item.year}`;
+        
         return `
-            <div class="missing-dash-row" style="display:flex; align-items:center; gap:14px; padding: 14px 0; border-bottom: 1px solid #F4F6FA;">
-                <div style="width:40px; height:40px; border-radius:10px; background:#FFF5F8; color:#D31145; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.9rem; flex-shrink:0; border:1px solid #FFD6E3;">
-                    ${initials}
-                </div>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-weight:800; color:#181C32; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.employeeName}</div>
-                    <div style="font-size:0.78rem; color:#9EA5B2; font-weight:600; margin-top:2px;">${period}</div>
-                </div>
-                <a href="${reviewUrl}" class="btn btn-sm btn-light-danger fw-boldest" style="border-radius:8px; white-space:nowrap; font-size:0.8rem;">
-                    Review <i class="bi bi-arrow-right ms-1"></i>
-                </a>
-            </div>
+            <tr style="cursor: pointer;" onclick="window.location.href='${reviewUrl}'" class="table-row-hover">
+                <td class="ps-8 fw-bold text-dark fs-7 py-4">${item.employeeName}</td>
+                <td class="text-end pe-8 fw-bold text-dark fs-7 py-4">${period}</td>
+            </tr>
         `;
     }).join('');
 
-    container.innerHTML = `<div style="padding: 0 4px;">${html}</div>`;
+    container.innerHTML = html;
 }
 
 
@@ -102,19 +91,26 @@ function renderPivotTable(breakdown) {
 
     const projectsArr = Array.from(projectsSet).sort();
 
+    // Calculate dynamic column width so max 3 interns fit in the viewport
+    const wrapper = document.querySelector('.table-responsive-breakdown');
+    const containerWidth = wrapper ? wrapper.clientWidth : 800;
+    // 180px is the sticky column width. Divide remaining by 3.
+    const internColWidth = Math.max(150, Math.floor((containerWidth - 180) / 3));
+
     // PERFORMANCE: Pre-calculate Header HTML
-    let headerHTML = '<th>ONGOING PROJECTS</th>' + 
-                     breakdown.map(i => `<th>${i.employeeName}</th>`).join('');
+    let headerHTML = '<th class="text-start ps-8 py-5 sticky-col-header" style="color: #A1A5B7;">ONGOING PROJECTS</th>' + 
+                     breakdown.map(i => `<th class="text-center py-5" style="min-width: ${internColWidth}px; width: ${internColWidth}px; color:#A1A5B7;">${i.employeeName}</th>`).join('');
     headerRow.innerHTML = headerHTML;
 
     // PERFORMANCE: Pre-calculate Body HTML using joined strings
     const bodyHTML = projectsArr.map(project => {
+        const projectNameHtml = project.toUpperCase();
         const cells = breakdown.map(intern => {
             const mins = (intern.projectMinutes && intern.projectMinutes[project]) ? intern.projectMinutes[project] : 0;
             const hrs = (mins / 60).toFixed(1);
-            return (mins === 0) ? '<td><span class="val-zero">0</span></td>' : `<td><span class="fw-boldest text-dark">${hrs}</span></td>`;
+            return (mins === 0) ? `<td class="text-center py-5"><span style="color: #E1E3EA;">0.0</span></td>` : `<td class="text-center py-5 fw-boldest">${hrs}</td>`;
         }).join('');
-        return `<tr><td>${project}</td>${cells}</tr>`;
+        return `<tr><td class="text-start ps-8 py-5 fw-bolder text-muted fs-8 sticky-col">${projectNameHtml}</td>${cells}</tr>`;
     }).join('');
 
     tbody.innerHTML = bodyHTML;
@@ -158,12 +154,12 @@ function renderAllocationDonut(allocations) {
         allocations.forEach((item, idx) => {
             const color = AIA_COLORS[idx % AIA_COLORS.length];
             legendContainer.innerHTML += `
-                <div class="legend-pill">
-                    <div class="legend-pill-left">
-                        <div class="legend-dot" style="background: ${color};"></div>
+                <div class="d-flex align-items-center justify-content-between bg-light rounded px-4 py-3">
+                    <div class="d-flex align-items-center gap-3 fw-bold text-muted fs-8">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></div>
                         ${item.projectName}
                     </div>
-                    <div class="legend-val">${item.allocationPercentage}%</div>
+                    <div class="fw-boldest text-dark fs-7">${item.allocationPercentage}%</div>
                 </div>
             `;
         });

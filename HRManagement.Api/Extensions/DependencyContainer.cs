@@ -2,19 +2,21 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-using HRManagement.Api.Application.Interfaces;
-using HRManagement.Api.Application.Mappings;
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.SeedWork;
-using HRManagement.Api.Repositories;
-using HRManagement.Api.Repositories.Authentications;
-using HRManagement.Api.Repositories.Base;
-using HRManagement.Api.Repositories.Services;
-using HRManagement.Api.Application.Auth.Permissions;
+using HRManagement.Application.Interfaces;
+using HRManagement.Application.Mappings;
+using HRManagement.Application.Queries;
+using HRManagement.Domain.SeedWork;
+using HRManagement.MsSQL;
+using HRManagement.Domain.Interfaces;
+using HRManagement.MsSQL.Repositories;
+using HRManagement.MsSQL.Authentications;
+using HRManagement.MsSQL.Base;
+using HRManagement.MsSQL.Services;
+using HRManagement.Application.Auth.Permission;
 using Microsoft.AspNetCore.Authorization;
-using HRManagement.Api.Repositories.Timesheet;
+using HRManagement.MsSQL.Timesheet;
 
-namespace HRManagement.Api.Extensions
+namespace HRManagement.Extensions
 {
     public static class DependencyContainer
     {
@@ -38,6 +40,9 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IRequestRepository, RequestRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILookupRepository, LookupRepository>();
+            services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
             
             // Timesheet Module (Modular Repositories)
             services.AddScoped<ITimesheetProjectRepository, TimesheetProjectRepository>();
@@ -56,7 +61,7 @@ namespace HRManagement.Api.Extensions
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 
             // 4. MediatR, AutoMapper & FluentValidation
-            var applicationAssembly = typeof(LoginQuery).Assembly; 
+            var applicationAssembly = typeof(GetMyProfileQuery).Assembly; 
             services.AddValidatorsFromAssembly(applicationAssembly);
             
             services.AddMediatR(cfg =>
@@ -72,3 +77,8 @@ namespace HRManagement.Api.Extensions
         }
     }
 }
+
+
+
+
+

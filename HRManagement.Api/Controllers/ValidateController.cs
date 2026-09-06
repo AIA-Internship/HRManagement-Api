@@ -7,7 +7,7 @@ using ValidationContext = FluentValidation.ValidationContext<object>;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 
-namespace HRManagement.Api.Controllers
+namespace HRManagement.Controllers
 {
     public class ValidateController<TController> : ControllerBase
     {
@@ -142,3 +142,4 @@ namespace HRManagement.Api.Controllers
         }
     }
 }
+

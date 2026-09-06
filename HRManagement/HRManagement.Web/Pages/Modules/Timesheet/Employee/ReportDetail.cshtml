@@ -1,0 +1,282 @@
+@page "/Timesheet/Employee/ReportDetail"
+@using HRManagement.Web.Pages.Modules.Timesheet
+@using HRManagement.Web.Models.Shared
+@model HRManagement.Web.Pages.Modules.Timesheet.ReportModel
+@{
+    ViewData["Title"] = "Complete Monthly Timesheet";
+}
+
+@section Styles {
+    <style>
+        :root { --brand-red: #D31145; --border-subtle: #E1E3EA; }
+        body { background-color: #F8F9FA !important; font-family: 'Inter', 'Outfit', sans-serif; }
+
+        .report-header-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #181C32;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        .report-header-subtitle {
+            font-size: 0.95rem;
+            color: #A1A5B7;
+            font-weight: 600;
+        }
+
+        .report-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .report-supervisor-label {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #A1A5B7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .report-supervisor-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #181C32;
+        }
+
+        .btn-cancel {
+            border: 1px solid var(--brand-red);
+            color: var(--brand-red);
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover { background: #FFF5F8; transform: translateY(-1px); }
+
+        .btn-export {
+            background: var(--brand-red);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-export:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(211,17,69,0.3); }
+        .btn-export:disabled { background: #D0D3DC; color: #fff; cursor: not-allowed; pointer-events: none; }
+
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table thead tr { background: #F8F9FA; border-bottom: 2px solid #E1E3EA; border-top: 1px solid #E1E3EA; }
+        .report-table th {
+            padding: 14px 20px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: #7E8299;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        .report-table td {
+            padding: 18px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3F4254;
+            border-bottom: 1px solid #F4F6FA;
+            vertical-align: top;
+        }
+        .report-table tr:last-child td { border-bottom: none; }
+
+        .item-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .item-list li { line-height: 1.4; }
+
+        .empty-row-text { color: #A1A5B7; font-style: italic; }
+    </style>
+}
+
+<div class="d-flex flex-column flex-column-fluid mt-4 app-container-full">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid">
+
+
+            @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
+                Title = "Loading...",
+                Subtitle = "View Complete Monthly Timesheet",
+                Id = "page_main_title",
+                Breadcrumbs = new List<BreadcrumbItem> {
+                    new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
+                    new BreadcrumbItem { Title = "Report", Url = "/Timesheet/Employee/Report" },
+                    new BreadcrumbItem { Title = "Detail" }
+                }
+            })
+
+            <div class="report-card">
+                <div class="d-flex justify-content-between align-items-center p-6">
+                    <div>
+                        <div class="report-supervisor-label">SUPERVISOR</div>
+                        <div class="report-supervisor-name" id="supervisor_name">-</div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button class="btn-cancel d-flex align-items-center gap-2" onclick="window.location.href='/Timesheet/Employee/Report'">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </button>
+                        <button id="btn_export" class="btn-export d-flex align-items-center gap-2" disabled>
+                            <i class="bi bi-download"></i> EXPORT
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%; padding-left: 30px;">DAY</th>
+                                <th style="width: 10%;">DATE</th>
+                                <th style="width: 10%;">DURATION</th>
+                                <th style="width: 15%;">PROJECT</th>
+                                <th style="width: 15%;">APPS USED</th>
+                                <th style="width: 25%;">TASK DESCRIPTION</th>
+                                <th style="width: 15%;">LOCATION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report_tbody">
+                            <tr>
+                                <td colspan="7" class="text-center py-10 text-muted fw-bold">Loading report data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+        async function initReport() {
+            // Get year and month from URL or use current
+            const urlParams = new URLSearchParams(window.location.search);
+            let year = parseInt(urlParams.get('year'));
+            let month = parseInt(urlParams.get('month'));
+            const targetEmployeeId = urlParams.get('targetEmployeeId');
+
+            const now = new Date();
+            if (!year || isNaN(year)) year = now.getFullYear();
+            if (!month || isNaN(month)) month = now.getMonth() + 1;
+
+            document.getElementById('page_main_title').innerText = `${MONTHS[month-1]} ${year} Timesheet`;
+
+            const token = localStorage.getItem('aia_jwt_token');
+            if (!token) {
+                window.location.href = '/Account/Login';
+                return;
+            }
+
+            try {
+                let url = `https://localhost:7089/api/timesheet/report?year=${year}&month=${month}`;
+                if (targetEmployeeId) url += `&targetEmployeeId=${targetEmployeeId}`;
+
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    localStorage.removeItem('aia_jwt_token');
+                    window.location.href = '/Account/Login';
+                    return;
+                }
+
+                const json = await res.json();
+                if (json.isError) {
+                    document.getElementById('report_tbody').innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-10">${json.message}</td></tr>`;
+                    return;
+                }
+
+                renderReport(json.content);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('report_tbody').innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-10">Failed to load report data.</td></tr>`;
+            }
+        }
+
+        function renderReport(data) {
+            document.getElementById('supervisor_name').innerText = data.supervisorName || '-';
+
+            const tbody = document.getElementById('report_tbody');
+            tbody.innerHTML = '';
+
+            if (!data.days || data.days.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 fw-bold text-muted">No data available for this month.</td></tr>`;
+            } else {
+                data.days.forEach(day => {
+                    const tr = document.createElement('tr');
+                    
+                    // If no projects/tasks and has a remark, it's an OFF/HOLIDAY row.
+                    let projectHtml = '-';
+                    let appsHtml = '-';
+                    let taskHtml = '-';
+                    let locHtml = '-';
+
+                    if (day.projects && day.projects.length > 0) {
+                        projectHtml = `<ul class="item-list">${day.projects.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                    } else if (day.remark) {
+                        projectHtml = `<span class="fw-bold" style="color: #A1A5B7;">${day.remark}</span>`;
+                    }
+
+                    if (day.appsUsed && day.appsUsed.length > 0) {
+                        appsHtml = `<ul class="item-list fw-bold text-dark">${day.appsUsed.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                    } else if (day.remark && day.totalMinutes === 0) {
+                        appsHtml = `<span style="color: #A1A5B7;">-</span>`;
+                    }
+
+                    if (day.tasks && day.tasks.length > 0) {
+                        taskHtml = `<ul class="item-list">${day.tasks.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                    } else if (day.remark && day.totalMinutes === 0) {
+                        taskHtml = `<span class="fw-bold" style="color: #A1A5B7;">${day.remark}</span>`;
+                    }
+
+                    if (day.locations && day.locations.length > 0) {
+                        locHtml = `<ul class="item-list">${day.locations.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                    } else if (day.remark && day.totalMinutes === 0) {
+                        locHtml = `<span style="color: #A1A5B7;">${day.remark}</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td style="padding-left: 30px;">${day.dayOfWeek}</td>
+                        <td>${day.date}</td>
+                        <td>${day.totalFormatted}</td>
+                        <td>${projectHtml}</td>
+                        <td>${appsHtml}</td>
+                        <td>${taskHtml}</td>
+                        <td>${locHtml}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            const exportBtn = document.getElementById('btn_export');
+            // Enable export only if approved and has data
+            if (data.submissionStatus === 'Approved' && data.grandTotalMinutes > 0) {
+                exportBtn.disabled = false;
+                exportBtn.onclick = () => {
+                    // Export logic goes here if implemented
+                    alert("Exporting Timesheet to PDF...");
+                };
+            } else {
+                exportBtn.disabled = true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initReport);
+    </script>
+}

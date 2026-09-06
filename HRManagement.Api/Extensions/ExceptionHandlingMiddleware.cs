@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
-using HRManagement.Api.Domain.Models.Constants;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Domain.Models.Constants;
+using HRManagement.Domain.Models.Response.Shared;
 
-namespace HRManagement.Api.Extensions
+namespace HRManagement.Extensions
 {
     public class ExceptionMiddleware
     {
@@ -138,3 +138,5 @@ namespace HRManagement.Api.Extensions
             };
     }
 }
+
+

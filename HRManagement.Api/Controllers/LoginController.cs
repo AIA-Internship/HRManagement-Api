@@ -1,101 +1,42 @@
+using HRManagement.Application.Features.Identity.Commands;
+using HRManagement.Application.Features.Identity.Queries;
+using HRManagement.Domain.Models.Payload;
+
 using MediatR;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CSharpFunctionalExtensions;
-using FluentValidation;
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Application.Auth.DTOs;
-using HRManagement.Api.Application.Commands;
-using HRManagement.Api.Application.EmployeeDtos.Commands;
-using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Response.Shared;
 
 namespace HRManagement.Api.Controllers;
 
-[ApiController]
 [Route("api/auth")]
-public class LoginController : ValidateController<LoginController>
+[ApiController]
+public class LoginController(ISender sender) : BaseApiController(sender)
 {
-    private readonly ILogger<LoginController> _logger;
-    private readonly IMediator _mediator;
-    
-    public LoginController(
-        ILogger<LoginController> logger,
-        IMediator mediator,
-        IEnumerable<IValidator> validators) : base(validators, logger)
-    {
-        _logger = logger;
-        _mediator = mediator;
-    }
-    
+    [AllowAnonymous]
     [HttpPost("login")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(typeof(ApiResponse<TokenResponseDto>), 200)]
-    public async Task<ActionResult<ApiResponse<TokenResponseDto>>> Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> LoginAsync([FromBody] LoginPayload payload, CancellationToken ct)
     {
-        string methodName = nameof(Login);
-        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
-        
-        var query = new LoginQuery(request.Email, request.Password, request.RememberMe);
-        var response = await ValidateAndExecute<ApiResponse<TokenResponseDto>>(query, async (q) => 
-        {
-            var apiResponse = await _mediator.Send((LoginQuery)q);
-            return Result.Success(apiResponse);
-
-        }).ConfigureAwait(false);
-
-        _logger.LogInformation("End {Service}.", methodName);
-        return response;
+        var command = new LoginCommand(payload.Email, payload.Password, payload.RememberMe);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("verify-forgot")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse>> VerifyForgot([FromBody] VerifyForgotRequestDto request)
+    public async Task<IActionResult> VerifyForgot([FromBody] VerifyForgotPayload payload, CancellationToken ct)
     {
-        string methodName = nameof(VerifyForgot);
-        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
-
-        var query = new VerifyForgotQuery(request);
-        var response = await ValidateAndExecute<ApiResponse>(query, async (q) =>
-        {
-            var apiResponse = await _mediator.Send((VerifyForgotQuery)q);
-            return Result.Success(apiResponse);
-
-        }).ConfigureAwait(false);
-
-        _logger.LogInformation("End {Service}.", methodName);
-        return response;
+        var command = new VerifyForgotQuery(payload);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("reset-password")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(401)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(404)]
-    [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordPayload payload, CancellationToken ct)
     {
-        string methodName = nameof(ResetPassword);
-        _logger.LogInformation("Start {Service} for {Email}.", methodName, request.Email);
-
-        var command = new ResetPasswordCommand(request);
-        var response = await ValidateAndExecute<ApiResponse>(command, async (c) =>
-        {
-            var apiResponse = await _mediator.Send((ResetPasswordCommand)c);
-            return Result.Success(apiResponse);
-
-        }).ConfigureAwait(false);
-
-        _logger.LogInformation("End {Service}.", methodName);
-        return response;
+        var command = new ResetPasswordCommand(payload);
+        var result = await Sender.Send(command, ct);
+        return HandleResult(result);
     }
 }

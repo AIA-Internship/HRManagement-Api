@@ -3,38 +3,39 @@
 /* ── Base Pill (Used for both submission & table statuses) ── */
 .badge-pill-status {
     border-radius: 50px !important;
-    padding: 7px 18px !important;
-    font-weight: 800 !important;
+    padding: 6px 14px !important;
+    font-weight: 600 !important;
     font-size: 0.75rem !important;
     text-transform: none;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     white-space: nowrap;
     gap: 6px;
+    min-width: 110px;
 }
 
 /* ── Needs Approval / Waiting for Approval (Status = 0) ── */
 .badge-pill-needs-approval,
 .badge-pill-waiting { 
-    background-color: #FEF3C7 !important;
-    color: #92400E !important;
+    background-color: #DDB042 !important;
+    color: #FFFFFF !important;
     border: 0 !important;
 }
 
 /* ── Approved (Status = 1) ── */
 .badge-pill-approved { 
-    background-color: #D1FAE5 !important;
-    color: #2B8B15 !important;
+    background-color: #4A8834 !important;
+    color: #FFFFFF !important;
     border: 0 !important;
 }
 
 /* ── Rejected / Need Revision (Status = 2) ── */
 .badge-pill-rejected,
 .badge-pill-revision { 
-    background-color: #FFE4E6 !important;
-    color: #D31145 !important;
+    background-color: #C46227 !important;
+    color: #FFFFFF !important;
     border: 0 !important;
 }
 

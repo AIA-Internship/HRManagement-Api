@@ -91,6 +91,7 @@ async function loadProjectList() {
             <tr>
                 <td class="row-num">${String(i + 1).padStart(2, '0')}</td>
                 <td class="project-name-cell">${escapeHtml(p.name || p.projectName || '—')}</td>
+                <td>${escapeHtml(p.description || '—')}</td>
                 <td>
                     <span class="leader-badge">
                         <span class="leader-avatar">${getInitials(p.projectLeader || '?')}</span>
@@ -144,6 +145,7 @@ function renderProjectListDemo(tbody, tableWrap, emptyState) {
         <tr>
             <td class="row-num">${String(i + 1).padStart(2, '0')}</td>
             <td class="project-name-cell">${escapeHtml(p.name)}</td>
+            <td>${escapeHtml(p.description || '—')}</td>
             <td>
                 <span class="leader-badge">
                     <span class="leader-avatar">${getInitials(p.projectLeader)}</span>
@@ -207,6 +209,7 @@ async function loadProjectsForEdit() {
         _originalProjects.forEach(p => addProjectRow(null, {
             id: p.id,
             projectName: p.name || p.projectName || '',
+            description: p.description || '',
             projectLeader: p.projectLeader || ''
         }));
     } else {
@@ -238,6 +241,17 @@ function addProjectRow(e, data = null) {
                 autocomplete="off"
                 placeholder="Project Name"
                 value="${data ? escapeHtml(data.projectName || '') : ''}"
+            />
+        </td>
+        <td>
+            <input
+                type="text"
+                class="edit-row-input"
+                id="appused_${id}"
+                name="appused_${id}"
+                autocomplete="off"
+                placeholder="App Used (e.g. Jira)"
+                value="${data ? escapeHtml(data.description || '') : ''}"
             />
         </td>
         <td>
@@ -331,11 +345,13 @@ async function submitProjectUpdate() {
         const rowId = row.dataset.rowId;
         const matchedMeta = _projectRows.find(r => r.id === rowId);
         const nameInput = document.getElementById(`name_${rowId}`);
+        const appusedInput = document.getElementById(`appused_${rowId}`);
         const leaderInput = document.getElementById(`leader_${rowId}`);
         if (nameInput && leaderInput) {
             projects.push({
                 id: matchedMeta?.dataId || null,
                 projectName: nameInput.value.trim(),
+                description: appusedInput ? appusedInput.value.trim() : '',
                 projectLeader: leaderInput.value.trim(),
                 sortOrder: i + 1
             });

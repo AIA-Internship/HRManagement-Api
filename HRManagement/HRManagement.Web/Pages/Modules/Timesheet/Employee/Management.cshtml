@@ -18,7 +18,8 @@
                 Breadcrumbs = new List<BreadcrumbItem> {
                     new BreadcrumbItem { Title = "Timesheet", Url = "/Timesheet/Employee/Dashboard" },
                     new BreadcrumbItem { Title = "Daily Log" }
-                }
+                },
+                RenderActions = Html.Raw("<div id=\"header_status_badge\" class=\"d-none\"></div>")
             })
 
 
@@ -27,13 +28,15 @@
                 
                 <!-- UNIFIED TOOLBAR NAV (1-Line Layout Match with Supervisor) -->
                 <!-- UNIFIED TOOLBAR NAV (SLIDER FORMAT) -->
-                <div class="d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
+                <div class="d-flex flex-wrap align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
                     
                     <!-- View Segment Control -->
-                    <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
-                        <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
-                        <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
-                        <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                    <div style="flex: 1; display: flex; justify-content: flex-start;">
+                        <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
+                            <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
+                            <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
+                            <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                        </div>
                     </div>
 
                     <!-- Date Scroller (Keep Intern Font) -->
@@ -52,10 +55,12 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="btn-group-actions d-flex align-items-center gap-3">
-                        <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
-                        <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button class="shadow-sm d-none" id="btn_edit_timesheet" style="border-radius: 8px; font-weight: 700; padding: 10px 16px; background: var(--brand-red); color: white; border: 1px solid var(--brand-red); transition: all 0.2s;" onclick="window.location.href='/Timesheet/Employee/Entry'"><i class="bi bi-pencil-square me-2 text-white"></i> Edit Timesheet</button>
+                    <div style="flex: 1; display: flex; justify-content: flex-end;">
+                        <div class="btn-group-actions d-flex align-items-center gap-3">
+                            <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
+                            <button class="shadow-sm" id="btn_view_timesheet" style="border-radius: 8px; font-weight: 700; padding: 10px 16px; background: white; color: var(--brand-red); border: 1px solid var(--brand-red); transition: all 0.2s;" onclick="window.location.href='/Timesheet/Employee/Report'">View Timesheet</button>
+                            <button class="shadow-sm d-none" id="btn_edit_timesheet" style="border-radius: 8px; font-weight: 700; padding: 10px 16px; background: var(--brand-red); color: white; border: 1px solid var(--brand-red); transition: all 0.2s;" onclick="window.location.href='/Timesheet/Employee/Entry'"><i class="bi bi-pencil-square me-2 text-white"></i> Edit Timesheet</button>
+                        </div>
                     </div>
                 </div>
 
@@ -77,35 +82,22 @@
                     <div id="view_weekly" class="timesheet-view d-none">
                         <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                             <table class="weekly-master-table">
-                                <thead class="bg-light">
-                                    <tr id="weekly_header_row">
-                                        <th style="width: 25%">Project</th>
-                                        <th id="weekly_h_mon"></th>
-                                        <th id="weekly_h_tue"></th>
-                                        <th id="weekly_h_wed"></th>
-                                        <th id="weekly_h_thu"></th>
-                                        <th id="weekly_h_fri"></th>
-                                        <th id="weekly_h_sat" class="weekend-th"></th>
-                                        <th id="weekly_h_sun" class="weekend-th"></th>
-                                        <th style="background: #F1F4F9">Week<br>Hours</th>
+                                <thead class="bg-light text-uppercase fs-8 fw-bold text-gray-600" style="letter-spacing: 0.5px;">
+                                    <tr>
+                                        <th style="width: 10%" class="text-center py-5">STATUS</th>
+                                        <th style="width: 10%" class="py-5">DAY</th>
+                                        <th style="width: 10%" class="py-5">DATE</th>
+                                        <th style="width: 10%" class="text-center py-5">DURATION</th>
+                                        <th style="width: 15%" class="py-5">PROJECT</th>
+                                        <th style="width: 10%" class="py-5">APPS USED</th>
+                                        <th style="width: 15%" class="py-5">TASK DESCRIPTION</th>
+                                        <th style="width: 10%" class="py-5">LOCATION</th>
+                                        <th style="width: 10%" class="text-center py-5">REMARK</th>
                                     </tr>
                                 </thead>
                                 <tbody id="weekly_log_tbody">
-                                    <!-- Populated dynamically by JS ONLY to prevent flickering -->
+                                    <!-- Populated dynamically by JS -->
                                 </tbody>
-                                <tfoot style="background: #F9FAFB">
-                                    <tr>
-                                        <td class="p-8 fw-boldest fs-5 text-end">TOTAL</td>
-                                        <td id="weekly_total_mon" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_tue" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_wed" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_thu" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_fri" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_sat" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_sun" class="fw-boldest text-center">00h : 00m</td>
-                                        <td id="weekly_total_all" class="fw-boldest text-center text-brand fs-4">00h : 00m</td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -139,6 +131,14 @@
         </div>
     </div>
 </div>
+
+<!-- FLOATING ACTION BUTTON (FAB) -->
+<a href="javascript:void(0)" onclick="window.location.href='/Timesheet/Employee/Entry?date=' + (new Date().toISOString().split('T')[0])" 
+   class="btn btn-icon btn-danger shadow-lg rounded-circle" 
+   style="position: fixed; bottom: 40px; right: 40px; width: 65px; height: 65px; z-index: 1000; transition: all 0.2s; box-shadow: 0 10px 20px rgba(211,17,69,0.3) !important; background-color: #B21B38 !important; border: none;"
+   onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    <i class="bi bi-plus" style="font-size: 2.5rem; color: white;"></i>
+</a>
 
 <!-- DATE PICKER MODALS (ANCHORED NEAR DATE) -->
 <div class="modal fade modal-anchored-date" id="modal_monthly_picker" tabindex="-1" aria-hidden="true">

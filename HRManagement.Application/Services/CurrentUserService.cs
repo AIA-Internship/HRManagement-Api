@@ -1,0 +1,36 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using HRManagement.Application.Interfaces;
+
+namespace HRManagement.MsSQL.Services;
+
+public class CurrentUserService : ICurrentUserService
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+    
+    public string? Email => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value;
+    
+    public string? Role => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+    public int UserId
+    {
+        get
+        {
+            var idClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(idClaim, out var userId))
+            {
+                return userId;
+            }
+
+            return 0;
+        }
+    }
+}
+

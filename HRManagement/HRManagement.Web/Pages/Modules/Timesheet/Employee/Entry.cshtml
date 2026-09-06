@@ -5,6 +5,7 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/apps/shared/badges/status-badges.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/timesheet-management.css" asp-append-version="true" />
 }
 
@@ -22,18 +23,21 @@
                 RenderActions = Html.Raw(@"
                     <div class='d-flex align-items-center gap-3'>
                         <span class='text-muted fw-bold fs-8 text-uppercase' style='letter-spacing:0.5px;'>Day Type</span>
-                        <select id='day_type_select' class='form-select fw-boldest shadow-sm'
-                                style='width:160px; border-radius:10px; border:1.5px solid #E1E3EA; height:42px; font-size:0.9rem; color:#181C32; cursor:pointer;'
-                                onchange='toggleDayTypeDropdown(this)'>
-                            <option value='working' selected>🗂️ Working</option>
-                            <option value='half_day'>🌓 Half Day</option>
-                            <option value='off'>🔴 Off</option>
-                        </select>
+                        <div class='d-flex align-items-center p-1 bg-white shadow-sm' style='border-radius:12px; border:1.5px solid #E1E3EA;'>
+                            <div id='pill_working' class='day-type-pill active' onclick='window.selectDayTypeToggle(""working"")' data-value='working' style='user-select:none; cursor:pointer; padding:8px 16px; border-radius:10px; font-weight:800; font-size:0.95rem; color:#181C32; background-color:#F1F4F9; transition:0.2s;'>
+                                <i class='bi bi-briefcase-fill me-2'></i>Workday
+                            </div>
+                            <div id='pill_off' class='day-type-pill' onclick='window.selectDayTypeToggle(""off"")' data-value='off' style='user-select:none; cursor:pointer; padding:8px 20px; border-radius:10px; font-weight:800; font-size:0.95rem; color:#A1A5B7; background-color:transparent; transition:0.2s;'>
+                                <i class='bi bi-calendar-x-fill me-2'></i>Off
+                            </div>
+                            <input type='hidden' id='day_type_select' value='working'>
+                        </div>
                     </div>
                 ")
             })
 
             <!-- THE MAIN LOG ENTRY TABLE -->
+            <div id="entry_supervisor_remark_container" class="mb-4" style="display:none;"></div>
 
             <div class="entry-table-wrap mb-10">
                 <table class="daily-master-table w-100 mb-0">
@@ -160,26 +164,111 @@
 @section Scripts {
     <script src="~/apps/modules/timesheet/js/timesheet-management.js" asp-append-version="true"></script>
     <script>
-        // Bridge: dropdown → shared toggleDayType logic
-        function toggleDayTypeDropdown(sel) {
-            const value = sel.value;
-            // Show/hide entry table based on selection
-            const entryWrap = document.querySelector('.entry-table-wrap');
-            const addRowBtn = document.querySelector('.btn-add-row');
-            
-            if (value === 'working') {
-                if (entryWrap) entryWrap.style.display = '';
-                if (addRowBtn) addRowBtn.style.display = '';
-            } else {
-                // Half Day or Off – hide entry rows, show notice
-                if (entryWrap) entryWrap.style.display = 'none';
-                if (addRowBtn) addRowBtn.style.display = 'none';
-            }
+        // Variable to hold working rows so they aren't lost when toggling
+        let stashedWorkingRows = "";
 
-            // Also call the shared function if it exists
-            if (typeof toggleDayType === 'function') {
-                toggleDayType({ value: value });
+        // Function to handle the custom dropdown selection
+        window.selectDayTypeToggle = function(val) {
+            try {
+                const hiddenInput = document.getElementById('day_type_select');
+                if (hiddenInput) hiddenInput.value = val;
+
+                const pillWorking = document.getElementById('pill_working');
+                const pillOff = document.getElementById('pill_off');
+
+                if (val === 'working') {
+                    if (pillWorking) {
+                        pillWorking.classList.add('active');
+                        pillWorking.style.backgroundColor = '#F1F4F9';
+                        pillWorking.style.color = '#181C32';
+                    }
+                    if (pillOff) {
+                        pillOff.classList.remove('active');
+                        pillOff.style.backgroundColor = 'transparent';
+                        pillOff.style.color = '#A1A5B7';
+                    }
+                } else {
+                    if (pillOff) {
+                        pillOff.classList.add('active');
+                        pillOff.style.backgroundColor = '#F1F4F9';
+                        pillOff.style.color = '#181C32';
+                    }
+                    if (pillWorking) {
+                        pillWorking.classList.remove('active');
+                        pillWorking.style.backgroundColor = 'transparent';
+                        pillWorking.style.color = '#A1A5B7';
+                    }
+                }
+
+                const tbody = document.getElementById('log_entry_tbody');
+                const tfoot = document.querySelector('.daily-master-table tfoot');
+                
+                if (!tbody) return;
+
+                if (val === 'working') {
+                    if (tfoot) tfoot.style.display = '';
+
+                    if (stashedWorkingRows) {
+                        tbody.innerHTML = stashedWorkingRows;
+                    } else {
+                        const offRows = tbody.querySelectorAll('.mock-off-row');
+                        offRows.forEach(r => r.remove());
+
+                        if (tbody.children.length === 0 && typeof window.addNewLogEntry === 'function') {
+                            window.addNewLogEntry();
+                        } else if (tbody.children.length === 0 && typeof addNewLogEntry === 'function') {
+                            addNewLogEntry();
+                        }
+                    }
+                } else if (val === 'off') {
+                    if (tfoot) tfoot.style.display = 'none';
+
+                    const currentRows = tbody.querySelectorAll('tr:not(.mock-off-row)');
+                    if (currentRows.length > 0) {
+                        stashedWorkingRows = tbody.innerHTML;
+                    }
+
+                    tbody.innerHTML = `
+                        <tr class="align-middle mock-off-row">
+                            <td colspan="7" class="p-0 position-relative" style="background-color: #f9f9f9;">
+                                <!-- Text overlay -->
+                                <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top:0; left:0; z-index:10; background: rgba(249,249,249,0.7); backdrop-filter: blur(1px);">
+                                    <span class="fs-2 fw-bolder text-gray-600" style="letter-spacing: -0.5px;">Day Off : No Activities required today</span>
+                                </div>
+                                <!-- Fake disabled row -->
+                                <table class="w-100 m-0" style="opacity: 0.35; pointer-events: none; border: none; table-layout: fixed;">
+                                    <tr>
+                                        <td class="p-4 text-center" style="width: 110px; border-bottom: none;"><div class="entry-input text-center text-gray-400 mx-auto" style="width: 70px;">00 <span class="ms-1">h</span></div></td>
+                                        <td class="p-4" style="width: 180px; border-bottom: none;"><div class="entry-input d-flex justify-content-between align-items-center px-3"><span class="text-gray-400">Select Project</span><i class="bi bi-chevron-down text-gray-400"></i></div></td>
+                                        <td class="p-4" style="width: 120px; border-bottom: none;"><input type="text" class="entry-input bg-transparent" disabled></td>
+                                        <td class="p-4" style="border-bottom: none;"><input type="text" class="entry-input bg-transparent px-3" placeholder="Describe what you do...." disabled></td>
+                                        <td class="p-4" style="width: 150px; border-bottom: none;"><input type="text" class="entry-input bg-transparent" disabled></td>
+                                        <td class="p-4" style="width: 140px; border-bottom: none;"><div class="entry-input d-flex justify-content-between align-items-center px-3"><span class="text-gray-400">Location</span><i class="bi bi-chevron-down text-gray-400"></i></div></td>
+                                        <td class="p-4 text-center" style="width: 60px; border-bottom: none;"><i class="bi bi-trash text-danger" style="font-size:1.2rem;"></i></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (e) {
+                console.error('Error toggling day type:', e);
             }
+        };
+
+        // Pill click handlers — run immediately (scripts load after DOM is parsed in this layout)
+        function bindPills() {
+            document.querySelectorAll('.day-type-pill').forEach(pill => {
+                pill.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.selectDayTypeToggle(this.getAttribute('data-value'));
+                });
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindPills);
+        } else {
+            bindPills();
         }
     </script>
 }

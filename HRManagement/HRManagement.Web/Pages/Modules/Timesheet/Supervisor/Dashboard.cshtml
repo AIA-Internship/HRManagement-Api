@@ -7,9 +7,74 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/apps/modules/timesheet/css/supervisor-review.css" asp-append-version="true" />
+    <style>
+        .dashboard-clean-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid #F0F2F5;
+            margin-bottom: 24px;
+        }
+        .dashboard-clean-header {
+            background-color: #F9FAFB;
+            border-bottom: 1px solid #F0F2F5;
+            padding: 16px 28px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dashboard-clean-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #181C32;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dashboard-clean-title i {
+            color: #D31145;
+            font-size: 1.2rem;
+        }
+        .table-responsive-breakdown {
+            max-height: 450px; 
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .table-responsive-breakdown thead th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background-color: #F9FAFB !important;
+        }
+        .table-responsive-breakdown th.sticky-col-header {
+            position: sticky;
+            left: 0;
+            z-index: 4 !important;
+            min-width: 200px;
+            background-color: #F9FAFB !important;
+            border-right: 1px solid #F0F2F5;
+        }
+        .table-responsive-breakdown td.sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background-color: #ffffff;
+            border-right: 1px solid #F0F2F5;
+        }
+        .table-responsive-breakdown tr:hover td.sticky-col {
+            background-color: #F4F6FA;
+        }
+        .supervisor-dashboard-container {
+            padding: 28px 32px;
+        }
+    </style>
 }
 
-<div class="supervisor-dashboard-container">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
 
     <!-- BREADCRUMB -->
     <nav class="mb-5" aria-label="breadcrumb">
@@ -22,109 +87,87 @@
     </nav>
 
     <!-- 1. GREETING CARD -->
-    <div class="greeting-card">
+    <div class="greeting-card mb-8">
         <h1 id="welcome_text">Good Morning, Supervisor</h1>
         <p id="active_intern_count_label">0 active members</p>
     </div>
 
     <!-- 2. TOP 3 NEEDS APPROVAL -->
-    <div class="dashboard-card mb-5" style="margin-bottom: 24px;">
-        <div class="card-header-clean d-flex justify-content-between align-items-center">
-            <div class="card-title-clean">
-                <i class="bi bi-clock-history text-warning"></i> Needs Approval
-                <span id="pending_count_badge" class="badge badge-light-warning fw-boldest ms-2 px-3 py-1 fs-9">0</span>
-            </div>
-            <a href="/Timesheet/Supervisor/Report" class="btn btn-sm btn-light fw-boldest" style="border-radius:8px; font-size:0.8rem;">
-                View All <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+    <div class="dashboard-clean-card">
+        <div class="dashboard-clean-header">
+            <h3 class="dashboard-clean-title">
+                <i class="bi bi-person-lines-fill"></i> Need Approval
+            </h3>
         </div>
-        <div class="card-body-clean" id="top_pending_container">
-            <div class="text-center py-8" style="color: #C4CAD4; font-size: 0.85rem; font-weight: 600;">Loading...</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle gs-0 gy-5 mb-0">
+                    <thead style="background-color: #F9FAFB; border-bottom: 1px solid #F0F2F5;">
+                        <tr class="fw-boldest text-muted text-uppercase fs-8" style="letter-spacing: 0.5px;">
+                            <th class="ps-8 w-50">INTERN</th>
+                            <th class="text-end pe-8 w-50">MONTH/PERIOD</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top_pending_container">
+                        <tr><td colspan="2" class="text-center py-8 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-
     <!-- 3. HOURS BREAKDOWN TABLE -->
-    <div class="breakdown-card">
-        <div class="breakdown-header">
-            <div class="breakdown-title">
+    <div class="dashboard-clean-card">
+        <div class="dashboard-clean-header">
+            <h3 class="dashboard-clean-title">
                 <i class="bi bi-clock-history"></i> Intern Hours Breakdown
-            </div>
-            <select id="intern_filter_dropdown" class="form-select form-select-sm fw-bold"
-                    style="width: 160px; border-radius: 8px; font-size: 0.82rem; border-color: #EAECF0; color: #4B5563;">
+            </h3>
+            <select id="intern_filter_dropdown" class="form-select form-select-sm fw-bold bg-white"
+                    style="width: 150px; border-radius: 8px; font-size: 0.85rem; border-color: #E1E3EA;">
                 <option value="">All Intern</option>
             </select>
         </div>
-        <div style="overflow-x: auto;">
-            <table class="breakdown-table">
-                <thead>
-                    <tr id="breakdown_header_row"></tr>
-                </thead>
-                <tbody id="breakdown_body"></tbody>
-            </table>
+        <div class="card-body p-0">
+            <div class="table-responsive-breakdown">
+                <table class="table align-middle gs-0 gy-0 mb-0 table-hover">
+                    <thead>
+                        <tr id="breakdown_header_row" class="fw-boldest text-muted text-uppercase fs-8 text-center" style="letter-spacing: 0.5px; border-bottom: 1px solid #F0F2F5;"></tr>
+                    </thead>
+                    <tbody id="breakdown_body" class="text-center fw-bold text-dark fs-7"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!-- 4. MONTHLY ALLOCATION CHART -->
-    <div class="dashboard-card" style="margin-bottom: 0;">
-        <div class="chart-container">
-            <div class="chart-title">Intern Monthly Application Allocation</div>
+    <div class="dashboard-clean-card">
+        <div class="dashboard-clean-header">
+            <h3 class="dashboard-clean-title">
+                <i class="bi bi-pie-chart-fill"></i> Intern Monthly Application Allocation
+            </h3>
+        </div>
+        <div class="card-body p-8">
             <div class="row align-items-center">
-                <div class="col-lg-5 d-flex justify-content-center">
-                    <div class="donut-wrapper">
+                <div class="col-lg-5 d-flex justify-content-center mb-6 mb-lg-0">
+                    <div class="position-relative" style="width: 250px; height: 250px;">
                         <canvas id="allocation_donut_chart"></canvas>
-                        <div class="donut-text-center">
-                            <div class="donut-val" id="donut_total_value">0%</div>
-                            <div class="donut-lbl">Total Usage</div>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                            <div class="fs-1 fw-boldest text-dark" id="donut_total_value" style="line-height: 1;">0%</div>
+                            <div class="fs-8 fw-bold text-muted text-uppercase mt-1" style="letter-spacing: 0.5px;">Total Usage</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-7 mt-5 mt-lg-0 ps-lg-6">
-                    <div id="donut_legends"></div>
+                <div class="col-lg-7">
+                    <div id="donut_legends" class="d-flex flex-column gap-3">
+                        <!-- Loaded via JS -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- LIVE ACTIVITY FEED -->
-    <div class="row mt-8">
-        <div class="col-12">
-            <div class="dashboard-card">
-                <div class="card-header-clean">
-                    <h3 class="card-title-clean">
-                        <i class="bi bi-broadcast text-danger pulse-effect"></i> Live Employee Activity
-                    </h3>
-                    <div class="d-flex align-items-center gap-4">
-                        <span class="badge badge-light-danger fw-boldest px-3 py-1 fs-9">LIVE MONITORING</span>
-                        <button class="btn btn-icon btn-sm btn-light-primary rounded-circle" onclick="initSupervisorDashboard()">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body-clean">
-                    <div class="table-responsive">
-                        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-                            <thead>
-                                <tr class="fw-boldest text-muted fs-8 text-uppercase">
-                                    <th class="min-w-150px">Employee</th>
-                                    <th class="min-w-140px">Project</th>
-                                    <th class="min-w-200px">Latest Task Description</th>
-                                    <th class="min-w-100px text-center">Duration</th>
-                                    <th class="min-w-100px text-end">Log Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="live_activity_tbody">
-                                <!-- Loaded via JS -->
-                                <tr><td colspan="5" class="text-center py-10 text-muted">Listening for activities...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js" asp-append-version="true"></script>

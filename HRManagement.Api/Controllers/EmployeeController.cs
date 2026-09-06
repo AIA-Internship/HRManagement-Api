@@ -1,4 +1,4 @@
-using HRManagement.Api.Domain.Models.Constants;
+using HRManagement.Domain.Models.Constants;
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using CSharpFunctionalExtensions;
 using FluentValidation;
 
-using HRManagement.Api.Application.Commands;
-using HRManagement.Api.Application.EmployeeDtos.Commands.Dto;
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Models.Response.Shared;
-using HRManagement.Api.Application.Auth.Permissions;
+using HRManagement.Application.Commands;
+using HRManagement.Domain.Models.Payload.EmployeeDtos.Commands.Dto;
+using HRManagement.Domain.Models.Payload.EmployeeDtos.Queries.Dto;
+using HRManagement.Domain.Models.Response;
+using HRManagement.Application.Queries;
+using HRManagement.Domain.Models.Response.Shared;
+using HRManagement.Application.Auth.Permission;
 
-namespace HRManagement.Api.Controllers;
+namespace HRManagement.Controllers;
 
 [Authorize]
 [ApiController]
@@ -61,13 +62,13 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
+    public async Task<ActionResult<ApiResponse<string>>> UpdateEmployee([FromBody] UpdateEmployeeRequestDto commandDto)
     {
         string methodName = nameof(UpdateEmployee);
         _logger.LogInformation("Start {Service}.", methodName);
         
-        var command = new UpdateEmployeeCommand(commandDto);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(command, async (c) => 
+        long userId = 0; var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value; if (long.TryParse(userIdClaim, out long parsedId)) userId = parsedId; var command = new UpdateEmployeeCommand((int)userId, commandDto);
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
         {
             var result = await _mediator.Send((UpdateEmployeeCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
@@ -104,13 +105,13 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetMyProfile()
+    public async Task<ActionResult<ApiResponse<HRManagement.Domain.Models.Response.EmployeeProfileResponseDto>>> GetMyProfile()
     {
         string methodName = nameof(GetMyProfile);
         _logger.LogInformation("Start {Service}.", methodName);
         
         var query = new GetMyProfileQuery();
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
+        return await this.ValidateAndExecute<ApiResponse<HRManagement.Domain.Models.Response.EmployeeProfileResponseDto>>(query, async (q) => 
         {
             var result = await _mediator.Send((GetMyProfileQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
@@ -126,13 +127,13 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<List<EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
+    public async Task<ActionResult<ApiResponse<List<HRManagement.Domain.Models.Response.EmployeeRequestResponseDto>>>> GetEmployeeRequests([FromQuery] int? status)
     {
         string methodName = nameof(GetEmployeeRequests);
         _logger.LogInformation("Start {Service}.", methodName);
         
         var query = new GetUpdateRequestQuery(status);
-        return await this.ValidateAndExecute<ApiResponse<List<EmployeeRequestResponseDto>>>(query, async (q) => 
+        return await this.ValidateAndExecute<ApiResponse<List<HRManagement.Domain.Models.Response.EmployeeRequestResponseDto>>>(query, async (q) => 
         {
             var result = await _mediator.Send((GetUpdateRequestQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
@@ -141,20 +142,20 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
 
     [HttpGet("{displayId}")]
-    [HasPermission(Permissions.Employees.View)]
+    [HasPermission("ViewEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse<EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
+    public async Task<ActionResult<ApiResponse<HRManagement.Domain.Models.Response.EmployeeProfileResponseDto>>> GetEmployeeProfileByDisplayId(string displayId)
     {
         string methodName = nameof(GetEmployeeProfileByDisplayId);
         _logger.LogInformation("Start {Service}.", methodName);
         
-        var query = new GetEmployeeProfileByDisplayIdQuery(displayId);
-        return await this.ValidateAndExecute<ApiResponse<EmployeeProfileResponseDto>>(query, async (q) => 
+        var query = new HRManagement.Application.Queries.GetEmployeeProfileByDisplayIdQuery(displayId);
+        return await this.ValidateAndExecute<ApiResponse<HRManagement.Domain.Models.Response.EmployeeProfileResponseDto>>(query, async (q) => 
         {
             var result = await _mediator.Send((GetEmployeeProfileByDisplayIdQuery)q);
             _logger.LogInformation("End {Service}.", methodName);
@@ -163,7 +164,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpGet("supervisors-lookup")]
-    [HasPermission(Permissions.Employees.View)]
+    [HasPermission("ViewEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -183,7 +184,7 @@ public class EmployeeController : ValidateController<EmployeeController>
     }
     
     [HttpPost("review-update")]
-    [HasPermission(Permissions.Employees.Edit)]
+    [HasPermission("ManageEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -195,17 +196,17 @@ public class EmployeeController : ValidateController<EmployeeController>
         string methodName = nameof(ReviewUpdate);
         _logger.LogInformation("Start {Service}.", methodName);
         
-        var command = new ReviewUpdateCommand(decision);
+        var command = new HRManagement.Application.Commands.ReviewUpdateCommand(decision);
         return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) => 
         {
-            var result = await _mediator.Send((ReviewUpdateCommand)c);
+            var result = await _mediator.Send((HRManagement.Application.Commands.ReviewUpdateCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
             return Result.Success(result);
         });
     }
     
     [HttpPost("create")]
-    [HasPermission(Permissions.Employees.Create)]
+    [HasPermission("ManageEmployees")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(401)]
@@ -235,13 +236,13 @@ public class EmployeeController : ValidateController<EmployeeController>
     [ProducesResponseType(403)]
     [ProducesResponseType(404)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<ApiResponse>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
+    public async Task<ActionResult<ApiResponse<string>>> UploadAttachments(int id, [FromForm] UploadAttachmentDto request)
     {
         string methodName = nameof(UploadAttachments);
         _logger.LogInformation("Start {Service}.", methodName);
     
         var command = new UploadAttachmentCommand(id, request.DocumentType, request.Files);
-        return await this.ValidateAndExecute<ApiResponse>(command, async (c) =>
+        return await this.ValidateAndExecute<ApiResponse<string>>(command, async (c) =>
         {
             var result = await _mediator.Send((UploadAttachmentCommand)c);
             _logger.LogInformation("End {Service}.", methodName);
@@ -249,3 +250,12 @@ public class EmployeeController : ValidateController<EmployeeController>
         });
     }
 }
+
+
+
+
+
+
+
+
+

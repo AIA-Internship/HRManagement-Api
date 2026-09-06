@@ -4,13 +4,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using HRManagement.Api.Application.Commands.Timesheet;
-using HRManagement.Api.Application.Queries.Timesheet;
-using HRManagement.Api.Application.TimesheetDtos.Commands.Dto;
-using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Application.Commands.Timesheet;
+using HRManagement.Application.Queries.Timesheet;
+using HRManagement.Domain.Models.Payload.TimesheetDtos.Commands.Dto;
+using HRManagement.Domain.Models.Payload.TimesheetDtos.Queries.Dto;
+using HRManagement.Domain.Models.Response.Shared;
 
-namespace HRManagement.Api.Controllers;
+namespace HRManagement.Controllers;
 
 [Authorize]
 [ApiController]
@@ -96,6 +96,29 @@ public class TimesheetEntriesController : ValidateController<TimesheetEntriesCon
         });
     }
 
+    // Get timesheet view for an entire month report list
+    [HttpGet("report")]
+    [ProducesResponseType(typeof(ApiResponse<ReportTimesheetResponseDto>), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(500)]
+    public async Task<ActionResult<ApiResponse<ReportTimesheetResponseDto>>> GetReportTimesheet(
+        [FromQuery] int year,
+        [FromQuery] int month,
+        [FromQuery] int? targetEmployeeId)
+    {
+        var methodName = nameof(GetReportTimesheet);
+        _logger.LogInformation("Start {Service}.", methodName);
+
+        var query = new GetReportTimesheetQuery(year, month, targetEmployeeId);
+        return await this.ValidateAndExecute<ApiResponse<ReportTimesheetResponseDto>>(query, async (q) =>
+        {
+            var result = await _mediator.Send((GetReportTimesheetQuery)q);
+            _logger.LogInformation("End {Service}.", methodName);
+            return Result.Success(result);
+        });
+    }
+
     // Save or update all timesheet entries for a single day
     [HttpPost("entry")]
     [Authorize(Roles = "Employee")]
@@ -118,3 +141,6 @@ public class TimesheetEntriesController : ValidateController<TimesheetEntriesCon
         });
     }
 }
+
+
+

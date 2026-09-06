@@ -1,11 +1,11 @@
-using HRManagement.Api.Application.EmployeeDtos.Queries.Dto;
+using HRManagement.Domain.Models.Payload.EmployeeDtos.Queries.Dto;
 using MediatR;
 
-using HRManagement.Api.Application.Queries;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Application.Queries;
+using HRManagement.Domain.Models.Response.Shared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HRManagement.Api.Controllers;
+namespace HRManagement.Controllers;
 
 [ApiController]
 [Route("api/lookups")]
@@ -40,3 +40,5 @@ public class LookupController : ControllerBase
         return Ok(response);
     }
 }
+
+

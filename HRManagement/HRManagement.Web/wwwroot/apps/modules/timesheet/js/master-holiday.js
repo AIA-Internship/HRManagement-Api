@@ -49,7 +49,8 @@ async function initHolidayList() {
     const tableWrap = document.getElementById('holiday_table_wrap');
 
     try {
-        const res = await fetch('https://localhost:7089/api/timesheet/holidays', { headers: getAuthHeaders() });
+        const year = new Date().getFullYear();
+        const res = await fetch(`https://localhost:7089/api/timesheet/holidays?year=${year}&month=0`, { headers: getAuthHeaders() });
         const data = await res.json();
         const holidays = data?.content || data?.Content || data?.data || data || [];
 
@@ -76,7 +77,6 @@ async function initHolidayList() {
                 <td class="row-num">${String(i + 1).padStart(2, '0')}</td>
                 <td class="project-name-cell">${formatDate(h.holidayDate)}</td>
                 <td class="fw-boldest" style="color: #101828;">${escapeHtml(h.holidayName)}</td>
-                <td class="text-muted">${escapeHtml(h.description || '—')}</td>
             </tr>
         `).join('');
 
@@ -130,16 +130,12 @@ async function initHolidayEdit() {
         window.location.href = '/Timesheet/Supervisor/Holiday';
     });
 
-    // Excel Import Logic
-    const excelBtn = document.getElementById('btn_import_excel');
-    const excelInput = document.getElementById('excel_input');
-    excelBtn?.addEventListener('click', () => excelInput.click());
-    excelInput?.addEventListener('change', handleExcelImport);
 }
 
 async function loadHolidaysForEdit() {
     try {
-        const res = await fetch('https://localhost:7089/api/timesheet/holidays', { headers: getAuthHeaders() });
+        const year = new Date().getFullYear();
+        const res = await fetch(`https://localhost:7089/api/timesheet/holidays?year=${year}&month=0`, { headers: getAuthHeaders() });
         const data = await res.json();
         _originalHolidays = data?.content || data?.Content || data?.data || data || [];
     } catch (err) {
@@ -156,8 +152,7 @@ async function loadHolidaysForEdit() {
         _originalHolidays.forEach(h => addHolidayRow({
             id: h.id,
             holidayDate: h.holidayDate ? h.holidayDate.split('T')[0] : '',
-            holidayName: h.holidayName,
-            description: h.description
+            holidayName: h.holidayName
         }));
     } else {
         addHolidayRow(); // Add one empty row by default
@@ -183,9 +178,6 @@ function addHolidayRow(data = null) {
         <td>
             <input type="text" class="form-control holiday-name" placeholder="E.g. Independence Day" value="${data ? escapeHtml(data.holidayName) : ''}" />
         </td>
-        <td>
-            <input type="text" class="form-control holiday-desc" placeholder="Notes..." value="${data ? escapeHtml(data.description || '') : ''}" />
-        </td>
         <td class="text-center">
             <button class="btn btn-icon btn-light-danger btn-sm rounded-circle h-35px w-35px" onclick="removeHolidayRow('${id}')" title="Delete">
                 <i class="bi bi-trash-fill"></i>
@@ -197,13 +189,23 @@ function addHolidayRow(data = null) {
     container.appendChild(tr);
     _holidayRows.push({ rowId: id, dbId: data?.id || null });
     updateRowNumbers();
+
+    // Auto-scroll to the new row smoothly (only when adding manually, i.e., without data)
+    if (!data) {
+        setTimeout(() => {
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tr.querySelector('.holiday-date')?.focus();
+        }, 50);
+    }
 }
 
 function removeHolidayRow(rowId) {
-    const row = document.getElementById(rowId);
-    if (row) row.remove();
-    _holidayRows = _holidayRows.filter(r => r.rowId !== rowId);
-    updateRowNumbers();
+    showConfirmModal('Are you sure you want to delete this row?', () => {
+        const row = document.getElementById(rowId);
+        if (row) row.remove();
+        _holidayRows = _holidayRows.filter(r => r.rowId !== rowId);
+        updateRowNumbers();
+    });
 }
 
 function updateRowNumbers() {
@@ -241,7 +243,7 @@ async function submitHolidayUpdate() {
             id: r.dbId,
             holidayDate: row.querySelector('.holiday-date').value,
             holidayName: row.querySelector('.holiday-name').value,
-            description: row.querySelector('.holiday-desc').value
+            description: ""
         };
     });
 
@@ -269,60 +271,54 @@ async function submitHolidayUpdate() {
     }
 }
 
-// ── EXCEL IMPORT LOGIC ───────────────────────────────────────
+// ── EXCEL IMPORT LOGIC (REMOVED) ─────────────────────────────
+// Excel logic has been replaced entirely by API Import.
 
-function handleExcelImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+// ── API IMPORT LOGIC ─────────────────────────────────────────
 
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const data = evt.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet);
+async function handleApiImport() {
+    const btn = document.getElementById('btn_import_api');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Fetching...'; }
 
-        processImportedData(json);
-        e.target.value = ''; // Reset input
-    };
-    reader.readAsBinaryString(file);
-}
-
-function processImportedData(data) {
-    if (!data || data.length === 0) {
-        showMasterToast('No data found in the Excel file.', 'error');
-        return;
-    }
-
-
-    // Attempt to map columns (case-insensitive)
-    data.forEach(row => {
-        const dateKey = Object.keys(row).find(k => k.toLowerCase().includes('date'));
-        const nameKey = Object.keys(row).find(k => k.toLowerCase().includes('name') || k.toLowerCase().includes('holiday'));
-        const descKey = Object.keys(row).find(k => k.toLowerCase().includes('desc') || k.toLowerCase().includes('note'));
-
-        if (dateKey && nameKey) {
-            let rawDate = row[dateKey];
-            let parsedDate = '';
-            
-            // Handle Excel serial date or string
-            if (typeof rawDate === 'number') {
-                const d = new Date((rawDate - 25569) * 86400 * 1000);
-                parsedDate = d.toISOString().split('T')[0];
-            } else {
-                const d = new Date(rawDate);
-                if (!isNaN(d)) parsedDate = d.toISOString().split('T')[0];
-            }
-
-            addHolidayRow({
-                id: null,
-                holidayDate: parsedDate,
-                holidayName: row[nameKey],
-                description: row[descKey] || ''
-            });
+    try {
+        const year = new Date().getFullYear();
+        // Fetching directly from public Nager.Date API so we don't depend on backend restart
+        const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/ID`);
+        
+        if (!res.ok) throw new Error(`API returned an error (Status: ${res.status})`);
+        
+        const data = await res.json();
+        
+        // Ensure data is valid
+        const holidays = data?.data || data || [];
+        if (!Array.isArray(holidays) || holidays.length === 0) {
+            showMasterToast('No holidays found from API.', 'error');
+            return;
         }
-    });
+
+        // Add fetched holidays to the bottom of the table
+        holidays.forEach(h => {
+            // Check common Indonesian and English property names
+            const hDate = h.tanggal || h.date || h.holiday_date || h.holidayDate || h.waktu;
+            const hName = h.localName || h.keterangan || h.name || h.holiday_name || h.holidayName || h.deskripsi || h.title;
+            if (hDate && hName) {
+                addHolidayRow({
+                    id: null,
+                    holidayDate: hDate,
+                    holidayName: hName,
+                    description: 'Imported from API'
+                });
+            }
+        });
+        
+        showMasterToast(`Successfully imported ${holidays.length} holidays from API.`, 'success');
+        
+    } catch (err) {
+        console.error('Failed to import from API:', err);
+        showMasterToast('Failed to connect to the API or Invalid API Key.', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-cloud-arrow-down me-2"></i> Import from API'; }
+    }
 }
 
 // ── DATEPICKER LOGIC ─────────────────────────────────────────
@@ -346,13 +342,28 @@ function toggleRowDatepicker(input, event) {
     if (popover && backdrop) {
         renderRowDatePicker();
         
-        // Position below input
-        const rect = input.getBoundingClientRect();
-        popover.style.top = (rect.bottom + 5) + 'px';
-        popover.style.left = rect.left + 'px';
-        
+        // Position smartly: if it goes off-screen at the bottom, place it ABOVE the input
         popover.classList.add('active');
         backdrop.classList.add('active');
+        
+        const rect = input.getBoundingClientRect();
+        const popoverHeight = popover.offsetHeight || 320; // Fallback height if offsetHeight fails
+        
+        if (rect.bottom + popoverHeight + 10 > window.innerHeight) {
+            // Place above
+            popover.style.top = (rect.top - popoverHeight - 5) + 'px';
+        } else {
+            // Place below
+            popover.style.top = (rect.bottom + 5) + 'px';
+        }
+        
+        // Also ensure it doesn't go off-screen to the right
+        const popoverWidth = popover.offsetWidth || 290;
+        if (rect.left + popoverWidth > window.innerWidth) {
+            popover.style.left = (window.innerWidth - popoverWidth - 10) + 'px';
+        } else {
+            popover.style.left = rect.left + 'px';
+        }
     }
 }
 
@@ -399,7 +410,11 @@ function movePickerTime(offset) {
 
 function executeRowDateSelection(day) {
     const d = new Date(_pickerDate.getFullYear(), _pickerDate.getMonth(), day);
-    const dateStr = d.toISOString().split('T')[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${dayStr}`;
+    
     if (_activeDateInput) {
         _activeDateInput.value = dateStr;
         // Trigger change event if needed
@@ -417,7 +432,6 @@ function closeDatePopup() {
 if (!window.movePickerTime) window.movePickerTime = movePickerTime;
 if (!window.closeDatePopup) window.closeDatePopup = closeDatePopup;
 if (!window.selectMonth) window.selectMonth = (m) => { /* Monthly not used here */ };
-
 
 // ── MODAL UTILITIES ──────────────────────────────────────────
 

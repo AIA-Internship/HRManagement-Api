@@ -119,8 +119,20 @@ function switchView(viewName, btn) {
     if (editBtn) {
         if (viewName === 'daily' && !window.selectedInternId) {
             editBtn.classList.remove('d-none');
+            const dateStr = currentDate.toISOString().split('T')[0];
+            editBtn.onclick = () => window.location.href = `/Timesheet/Employee/Entry?date=${dateStr}`;
         } else {
             editBtn.classList.add('d-none');
+        }
+    }
+
+    const viewTsBtn = document.getElementById('btn_view_timesheet');
+    if (viewTsBtn) {
+        if (viewName === 'monthly' && !window.selectedInternId) {
+            viewTsBtn.classList.remove('d-none');
+            viewTsBtn.onclick = () => window.location.href = `/Timesheet/Employee/Report?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`;
+        } else {
+            viewTsBtn.classList.add('d-none');
         }
     }
 
@@ -194,12 +206,36 @@ function updateDateLabel(direction = 'right') {
     if (activeView === 'monthly') {
         label.innerText = `${englishMonths[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
     } else if (activeView === 'weekly') {
+        // Snap currentDate to Monday
+        const day = currentDate.getDay();
+        const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1);
+        currentDate.setDate(diff);
+
         const start = new Date(currentDate);
         const end = new Date(currentDate);
         end.setDate(start.getDate() + 6);
         label.innerText = `${start.getDate()} ${englishMonths[start.getMonth()].substr(0, 3)} - ${end.getDate()} ${englishMonths[end.getMonth()].substr(0, 3)} ${end.getFullYear()}`;
     } else {
         label.innerText = `${englishMonths[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+    }
+}
+
+function updateHeaderStatusBadge(status) {
+    const badge = document.getElementById('header_status_badge');
+    if (!badge) return;
+    if (!status || status === 'Not Submitted') {
+        badge.classList.add('d-none');
+        return;
+    }
+    badge.classList.remove('d-none');
+    
+    const headerBadgeStyle = 'padding: 8px 18px !important; font-size: 0.9rem !important; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); letter-spacing: 0.5px;';
+    if (status === 'Waiting for Approval' || status === 'Needs Approval') {
+        badge.innerHTML = `<span style="background: #DDB042; color: #FFFFFF; ${headerBadgeStyle}">Needs Approval</span>`;
+    } else if (status === 'Approved') {
+        badge.innerHTML = `<span style="background: #4A8834; color: #FFFFFF; ${headerBadgeStyle}">Approved</span>`;
+    } else if (status === 'Need Revision' || status === 'Needs Revision') {
+        badge.innerHTML = `<span style="background: #C46227; color: #FFFFFF; ${headerBadgeStyle}">Needs Revision</span>`;
     }
 }
 
@@ -231,6 +267,10 @@ async function renderMonthlyGrid() {
 
     for (let i = 0; i < offset; i++) container.innerHTML += '<div class="grid-cell outside"><span class="cell-date-num">-</span></div>';
 
+    const submissionStatus = data?.submissionStatus || 'Not Submitted';
+    updateHeaderStatusBadge(null); // Do not show header status in monthly view
+    const calendarBadgeStyle = 'style="padding: 4px 10px !important; font-size: 0.65rem !important; min-width: auto !important; width: fit-content;"';
+
     for (let d = 1; d <= totalDays; d++) {
         const dObj = new Date(y, m, d);
         const isToday = (dObj.toDateString() === new Date().toDateString());
@@ -244,122 +284,262 @@ async function renderMonthlyGrid() {
         });
         const hasWork = dayData && dayData.totalMinutes > 0;
         
+        let dayBadgeHtml = '';
+        if (hasWork) {
+            if (submissionStatus === 'Waiting for Approval' || submissionStatus === 'Not Submitted') {
+                dayBadgeHtml = `<span class="badge-pill-status badge-pill-needs-approval" ${calendarBadgeStyle}>Needs Approval</span>`;
+            } else if (submissionStatus === 'Approved') {
+                dayBadgeHtml = `<span class="badge-pill-status badge-pill-approved" ${calendarBadgeStyle}>Approved</span>`;
+            } else if (submissionStatus === 'Need Revision') {
+                if (dayData && dayData.supervisorRemark && dayData.supervisorRemark !== '[APPROVED]') {
+                    dayBadgeHtml = `<span class="badge-pill-status badge-pill-revision" ${calendarBadgeStyle}>Needs Revision</span>`;
+                } else {
+                    dayBadgeHtml = `<span class="badge-pill-status badge-pill-approved" ${calendarBadgeStyle}>Approved</span>`;
+                }
+            }
+        }
+        
         let workSummary = '';
-        if (hasWork && dayData.projectMinutes) {
+        if (dayData && dayData.remark) {
+            if (dayData.remark === 'HOLIDAY') {
+                workSummary = `<div style="background: #D31145; border-radius: 6px; padding: 6px 10px; margin-top: 10px;">
+                    <span style="color: white; font-weight: 700; font-size: 0.75rem;">Holiday</span>
+                </div>`;
+            } else if (dayData.remark === 'PERSONAL LEAVE') {
+                workSummary = `<div style="background: #8A97A8; border-radius: 6px; padding: 6px 10px; margin-top: 10px;">
+                    <span style="color: white; font-weight: 700; font-size: 0.75rem;">Personal Leave</span>
+                </div>`;
+            } else if (dayData.remark === 'OFF') {
+                workSummary = `<div style="background: #8A97A8; border-radius: 6px; padding: 6px 10px; margin-top: 10px;">
+                    <span style="color: white; font-weight: 700; font-size: 0.75rem;">OFF</span>
+                </div>`;
+            }
+        } else if (hasWork && dayData.projectMinutes) {
             const projectEntries = Object.entries(dayData.projectMinutes);
+            const extraCount = projectEntries.length - 2;
+            let extraHtml = '';
+            if (extraCount > 0) {
+                const popoverContent = projectEntries.slice(2).map(([p, m]) => `<div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;"><span class="fw-bold me-4">${p}</span><span class="text-muted">${(m/60).toFixed(1)} hrs</span></div>`).join('');
+                extraHtml = `<div class="work-more-label text-center" 
+                                  data-bs-toggle="popover" 
+                                  data-bs-trigger="hover focus" 
+                                  data-bs-placement="right" 
+                                  data-bs-html="true"
+                                  title="Other Projects"
+                                  data-bs-content='${popoverContent.replace(/'/g, "&apos;")}'
+                                  onclick="event.stopPropagation();"
+                                  style="background: #EAEAEA; border-radius: 6px; padding: 2px 0; font-size: 0.65rem; color: #7A7A7A; font-weight: 700; cursor: pointer; width: 100%; margin-top: 2px; transition: background 0.2s;"
+                                  onmouseover="this.style.background='#DCDCDC'" onmouseout="this.style.background='#EAEAEA'">
+                                +${extraCount} More
+                             </div>`;
+            }
+
             workSummary = `<div class="cell-work-summary">
                 ${projectEntries.slice(0, 2).map(([pName, mins]) => `
-                    <div class="work-item-small">
-                        <span class="work-pname text-truncate">${pName || 'Unknown'}</span>
-                        <span class="work-pdur ms-auto">${Math.floor(mins/60)}h ${mins%60}m</span>
+                    <div class="work-item-small" style="background: #F4F5F7; border: none; border-radius: 8px; padding: 4px 8px; margin-bottom: 3px;">
+                        <span class="work-pname text-truncate" style="font-weight: 600; font-size: 0.7rem; color: #4A4A4A; display: inline-block; max-width: 65%;">${pName || 'Unknown'}</span>
+                        <span class="work-pdur ms-auto float-end" style="font-weight: 600; font-size: 0.7rem; color: #8A8A8A;">${(mins/60).toFixed(1)} hrs</span>
                     </div>
                 `).join('')}
-                ${projectEntries.length > 2 ? `<div class="work-more-label">+ ${projectEntries.length - 2} more</div>` : ''}
+                ${extraHtml}
             </div>`;
         }
 
         container.innerHTML += `
             <div class="grid-cell ${isToday ? 'is-today' : ''} ${hasWork ? 'has-data' : ''}" 
-                 onclick="${hasWork ? `jumpToDaily('${dateParam}')` : `window.location.href='/Timesheet/Employee/Entry?date=${dateParam}'`}">
-                <div class="d-flex justify-content-between">
-                    <span class="cell-date-num ${isWeekend ? 'text-danger' : ''}">${d}</span>
+                 onclick="${hasWork ? `jumpToDaily('${dateParam}')` : `window.location.href='/Timesheet/Employee/Entry?date=${dateParam}'`}"
+                 style="position: relative; cursor: pointer; padding: 12px; height: 160px; border-right: 1px solid #E1E3EA; border-bottom: 1px solid #E1E3EA;">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="cell-date-num ${isWeekend && !isToday ? 'text-danger' : ''}" style="${isToday ? 'background: #3F4254; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;' : 'font-size: 0.95rem; font-weight: 700;'}">${d}</span>
+                    ${dayBadgeHtml}
                 </div>
                 ${workSummary}
             </div>`;
     }
+
+    // Initialize Bootstrap Popovers
+    if (typeof bootstrap !== 'undefined' && bootstrap.Popover) {
+        const popoverTriggerList = [].slice.call(container.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, { 
+                container: 'body',
+                template: '<div class="popover shadow-sm border-0" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header bg-white border-bottom fw-bold" style="font-size: 0.8rem; padding: 8px 12px; color: #3F4254;"></h3><div class="popover-body" style="padding: 8px 12px;"></div></div>'
+            });
+        });
+    }
 }
 
 async function renderWeeklyGrid() {
-    const headerRow = document.getElementById('weekly_header_row');
     const tableBody = document.querySelector('.weekly-master-table tbody');
-    if (!headerRow || !tableBody) return;
+    if (!tableBody) return;
+
+    // Loading State
+    tableBody.innerHTML = '<tr><td colspan="9" class="text-center p-10"><div class="spinner-border text-danger" role="status"></div></td></tr>';
 
     const dateStr = currentDate.toISOString().split('T')[0];
     const targetParam = window.selectedInternId ? `&targetEmployeeId=${window.selectedInternId}` : '';
     const data = await fetchAPI(`timesheet/weekly?weekStartDate=${dateStr}${targetParam}`);
 
-    const middleHeaders = Array.from(headerRow.children).slice(1, -1);
-    middleHeaders.forEach((col, idx) => {
-        const d = new Date(currentDate);
-        d.setDate(currentDate.getDate() + idx);
-        const dayLabel = englishDaysShort[d.getDay()];
-        const dateString = `${englishMonths[d.getMonth()].substr(0, 3)} ${d.getDate()}`;
-        const isToday = (d.toDateString() === new Date().toDateString());
-        const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-        
-        let headerCls = "";
-        if (isToday) {
-            headerCls = isWeekend ? "today-col-highlight-red" : "today-col-highlight-gray";
-        } else if (isWeekend) {
-            headerCls = "weekend-th";
-        }
-        
-        const dateStrParam = d.toISOString().split('T')[0];
-        
-        col.className = headerCls;
-        col.style.cursor = "pointer";
-        col.onclick = () => jumpToDaily(dateStrParam);
-        col.innerHTML = `<div class="day-title-wrap"><span class="day-short-label ${isWeekend ? 'text-brand' : ''}">${dayLabel}</span><span class="day-full-date ${isWeekend ? 'text-brand' : ''}">${dateString}</span></div>`;
-    });
+    updateHeaderStatusBadge(data?.submissionStatus);
 
-    if (!data || !data.projects || data.projects.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="9" class="text-center p-10 text-muted">No projects found for this week.</td></tr>';
+    if (!data || !data.days || data.days.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="9" class="text-center p-10 text-muted">No data found for this week.</td></tr>';
         return;
     }
 
-    tableBody.innerHTML = data.projects.map(proj => `
-        <tr>
-            <td class="p-4"><span class="project-title-large">${proj.projectName}</span></td>
-            ${Array.from({ length: 7 }).map((_, idx) => {
+    tableBody.innerHTML = data.days.map((day, i) => {
         const d = new Date(currentDate);
-        d.setDate(currentDate.getDate() + idx);
+        d.setDate(currentDate.getDate() + i);
         const dKey = d.toISOString().split('T')[0];
-        const mins = proj.dailyMinutes[dKey] || 0;
-        const isToday = (d.toDateString() === new Date().toDateString());
-        const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
         
-        let cls = "";
-        if (isToday) {
-            cls = isWeekend ? 'today-cell-highlight-red' : 'today-cell-highlight-gray';
-        } else if (isWeekend) {
-            cls = 'weekend-td text-danger opacity-50';
+        const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+        const hasActualRemark = day.hasComment === true || (day.remark && day.remark !== '' && day.remark !== 'OFF' && day.remark !== 'HOLIDAY' && day.remark !== 'PERSONAL LEAVE');
+        
+        let bgClass = '';
+        if (hasActualRemark) {
+            bgClass = 'bg-light';
         }
 
-        return `<td class="p-4 text-center ${cls}" style="cursor:pointer" onclick="jumpToDaily('${dKey}')">
-                            <span class="duration-text-large">${mins > 0 ? (Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm') : '-'}</span>
-                        </td>`;
-    }).join('')}
-            <td class="p-4 text-center weekly-total-cell">${proj.weeklyTotalFormatted}</td>
-        </tr>
-    `).join('');
+        // Status badge
+        let statusBadge = '';
+        if (day.status) {
+            let bgCol = '#B5B5C3';
+            let textCol = '#FFFFFF';
+            
+            if (day.status === 'Waiting for Approval' || day.status === 'Needs Approval') {
+                bgCol = '#DDB042';
+            } else if (day.status === 'Approved') {
+                bgCol = '#4A8834';
+            } else if (day.status === 'Need Revision' || day.status === 'Needs Revision') {
+                bgCol = '#C46227';
+            }
+            
+            statusBadge = `<span class="badge rounded-pill" style="background-color: ${bgCol}; color: ${textCol}; font-weight: 600; padding: 6px 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); letter-spacing: 0.4px;">${day.status}</span>`;
+        }
+
+        // Projects
+        const projectsHtml = day.projects && day.projects.length > 0 ? day.projects.join('<br>') : (day.remark === 'OFF' || day.remark === 'HOLIDAY' || day.remark === 'PERSONAL LEAVE' ? `<span class="text-gray-500 fw-bolder" style="letter-spacing: 0.5px">${day.remark}</span>` : '-');
+        const appsHtml = day.appsUsed && day.appsUsed.length > 0 ? day.appsUsed.join('<br>') : '-';
+        const tasksHtml = day.tasks && day.tasks.length > 0 ? day.tasks.join('<br>') : (day.remark === 'OFF' || day.remark === 'HOLIDAY' || day.remark === 'PERSONAL LEAVE' ? `<span class="text-gray-500 fw-bolder" style="letter-spacing: 0.5px">${day.remark}</span>` : '-');
+        const locationsHtml = day.locations && day.locations.length > 0 ? day.locations.join('<br>') : (day.remark === 'OFF' || day.remark === 'HOLIDAY' || day.remark === 'PERSONAL LEAVE' ? `<span class="text-gray-500 fw-bolder" style="letter-spacing: 0.5px">${day.remark}</span>` : '-');
+
+        // Remark Icon Logic
+        let remarkHtml = '';
+        if (day.remark === 'OFF' || day.remark === 'HOLIDAY' || day.remark === 'PERSONAL LEAVE') {
+            remarkHtml = `<span class="text-gray-500 fw-boldest" style="font-size: 0.8rem; letter-spacing: 1px;">${day.remark}</span>`;
+        } else {
+            const iconColor = hasActualRemark ? '#D31145' : '#B5B5C3';
+            const iconClass = hasActualRemark ? 'bi-chat-left-text-fill' : 'bi-chat-left-text';
+            remarkHtml = `<i class="bi ${iconClass}" style="color: ${iconColor}; font-size: 1.25rem; cursor: pointer; padding: 4px; transition: color 0.2s;" onclick="event.stopPropagation(); alert('Remark comment logic goes here');"></i>`;
+        }
+
+        // Handle Empty State Row
+        if (day.totalMinutes === 0 && !hasActualRemark && day.remark !== 'OFF' && day.remark !== 'HOLIDAY' && day.remark !== 'PERSONAL LEAVE') {
+            return `
+            <tr class="align-middle" style="border-bottom: 1px solid #F1F4F9; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#FDFDFD'" onmouseout="this.style.backgroundColor='transparent'" onclick="jumpToDaily('${dKey}')">
+                <td class="text-center py-5">${statusBadge}</td>
+                <td class="py-5"><span class="text-dark fw-bold">${day.dayOfWeek}</span></td>
+                <td class="py-5"><span class="text-gray-600 fw-bold">${day.date}</span></td>
+                <td colspan="6" class="text-center py-5">
+                    <span class="text-muted fw-bold d-inline-flex align-items-center justify-content-center" style="font-style: italic; background: #F9F9F9; padding: 8px 18px; border-radius: 50px; border: 1px dashed #E1E3EA; transition: all 0.2s;" onmouseover="this.style.background='#F1F3F8'; this.style.color='#181C32'" onmouseout="this.style.background='#F9F9F9'; this.style.color='#6C757D'">
+                        <i class="bi bi-plus-circle me-2"></i>No entry. Click to fill timesheet
+                    </span>
+                </td>
+            </tr>`;
+        }
+
+        return `
+        <tr class="align-middle ${bgClass}" style="border-bottom: 1px solid #F1F4F9; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#FDFDFD'" onmouseout="this.style.backgroundColor='transparent'" onclick="jumpToDaily('${dKey}')">
+            <td class="text-center py-5">${statusBadge}</td>
+            <td class="py-5"><span class="text-dark fw-bold">${day.dayOfWeek}</span></td>
+            <td class="py-5"><span class="text-gray-600 fw-bold">${day.date}</span></td>
+            <td class="text-center py-5"><span class="fs-6 text-dark fw-bolder">${day.totalFormatted}</span></td>
+            <td class="text-start py-5"><span class="text-dark fw-bold d-block" style="line-height: 1.6;">${projectsHtml}</span></td>
+            <td class="text-start py-5"><span class="text-dark fw-bold d-block" style="line-height: 1.6;">${appsHtml}</span></td>
+            <td class="text-start py-5"><span class="text-dark fw-bold d-block" style="line-height: 1.6; max-width: 250px;">${tasksHtml}</span></td>
+            <td class="text-start py-5"><span class="text-dark fw-bold d-block" style="line-height: 1.6;">${locationsHtml}</span></td>
+            <td class="text-center py-5">${remarkHtml}</td>
+        </tr>`;
+    }).join('');
 }
 
 async function renderDailyGrid() {
     const tableBody = document.getElementById('view_daily_tbody');
     if (!tableBody) return;
 
-    // UI Loading state (without changing design)
-    tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10">Loading entries...</td></tr>';
+    const thead = tableBody.closest('table').querySelector('thead');
+
+    // UI Loading state
+    if (thead) {
+        thead.style.display = '';
+    }
+    tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10"><div class="spinner-border text-danger" role="status"></div></td></tr>';
 
     const dateStr = currentDate.toISOString().split('T')[0];
     const targetParam = window.selectedInternId ? `&targetEmployeeId=${window.selectedInternId}` : '';
     const data = await fetchAPI(`timesheet/daily?date=${dateStr}${targetParam}`);
 
+    updateHeaderStatusBadge(data?.submissionStatus);
+
+    const editBtn = document.getElementById('btn_edit_timesheet');
+    if (editBtn) {
+        if (data && (data.submissionStatus === 'Approved' || data.submissionStatus === 'Waiting for Approval')) {
+            editBtn.classList.add('disabled');
+            editBtn.style.opacity = '0.5';
+            editBtn.style.pointerEvents = 'none';
+        } else {
+            editBtn.classList.remove('disabled');
+            editBtn.style.opacity = '1';
+            editBtn.style.pointerEvents = 'auto';
+        }
+    }
+
     if (!data || !data.entries || data.entries.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-10 text-muted">No entries found for this date.</td></tr>';
+        if (thead) {
+            thead.style.display = 'none';
+        }
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="p-4 border-0">
+                    <div style="background-color: #FDF8F8; padding: 60px 20px; border-radius: 12px; text-align: center; border: 1px solid #F5E6E6;">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 2.8rem; color: #B8474E;"></i>
+                        <h4 class="mt-4 fw-bolder" style="color: #3F4254; font-size: 1.15rem;">Daily Activities Not Found</h4>
+                        <p class="text-muted mt-2 mb-0" style="font-size: 0.95rem; font-weight: 500;">No activities recorded for this date. Please log your tasks to<br>proceed.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
-    tableBody.innerHTML = data.entries.map(entry => `
-        <tr class="align-middle">
-            <td class="p-4 text-center"><span class="duration-text-large">${entry.durationFormatted}</span></td>
-            <td class="p-4"><span class="project-title-large">${entry.projectName}</span></td>
+    if (thead) {
+        thead.style.display = '';
+    }
+    let rowsHtml = data.entries.map(entry => `
+        <tr class="align-middle" style="border-bottom: 1px solid #F1F4F9;">
+            <td class="p-4 text-center"><span class="fs-6 fw-bolder text-gray-800">${entry.durationFormatted}</span></td>
+            <td class="p-4"><span class="fw-bold text-gray-700">${entry.projectName}</span></td>
             <td class="p-4"><span class="text-gray-600">${entry.applicationUsed || '-'}</span></td>
             <td class="p-4"><div style="max-width:300px" class="text-gray-600">${entry.taskDescription}</div></td>
             <td class="p-4"><span class="text-gray-600">${entry.projectLeadName}</span></td>
             <td class="p-4"><span class="text-gray-600">${entry.location}</span></td>
         </tr>
     `).join('');
+
+    if (data.supervisorRemark && data.supervisorRemark !== '[APPROVED]') {
+        rowsHtml += `
+            <tr>
+                <td colspan="6" class="p-4 border-0">
+                    <div style="background-color: #FFF5F8; border-left: 4px solid #D31145; padding: 16px; border-radius: 0 8px 8px 0;">
+                        <h6 class="fw-bolder mb-1" style="color: #D31145;"><i class="bi bi-chat-left-text-fill me-2"></i>Supervisor's Remark</h6>
+                        <p class="mb-0 text-dark" style="font-size: 0.9rem;">${data.supervisorRemark}</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    tableBody.innerHTML = rowsHtml;
 }
 
 async function syncProfileInfo() {
@@ -683,6 +863,21 @@ async function initEntryPage() {
         }
     }
 
+    const remarkContainer = document.getElementById('entry_supervisor_remark_container');
+    if (remarkContainer) {
+        if (dailyData && dailyData.supervisorRemark && dailyData.supervisorRemark !== '[APPROVED]') {
+            remarkContainer.innerHTML = `
+                <div style="background-color: #FFF5F8; border-left: 4px solid #D31145; padding: 16px; border-radius: 0 8px 8px 0;">
+                    <h6 class="fw-bolder mb-1" style="color: #D31145;"><i class="bi bi-chat-left-text-fill me-2"></i>Supervisor's Remark</h6>
+                    <p class="mb-0 text-dark" style="font-size: 0.95rem;">${dailyData.supervisorRemark}</p>
+                </div>
+            `;
+            remarkContainer.style.display = 'block';
+        } else {
+            remarkContainer.style.display = 'none';
+        }
+    }
+
     syncProfileInfo();
     calculateTotalLogHours();
 }
@@ -749,6 +944,7 @@ async function fetchAPI(endpoint, options = {}) {
             ...options,
             signal: controller.signal,
             credentials: 'include',
+            cache: 'no-store', // Prevent aggressive browser caching of GET requests
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': token ? `Bearer ${token}` : '',
@@ -827,8 +1023,20 @@ async function saveDailyTimesheet() {
                 showToast("Please select a project for all entries.", 'error');
                 return;
             }
+            if (!appUsed.trim()) {
+                showToast("Application used cannot be empty.", 'error');
+                return;
+            }
             if (!taskDescription.trim()) {
                 showToast("Task description cannot be empty.", 'error');
+                return;
+            }
+            if (!projectLeadIdRaw || projectLeadIdRaw === "0") {
+                showToast("Please ensure a project lead is assigned.", 'error');
+                return;
+            }
+            if (locationIdRaw === "") {
+                showToast("Please select a location for all entries.", 'error');
                 return;
             }
 
@@ -870,14 +1078,7 @@ async function saveDailyTimesheet() {
     });
 
     if (result) {
-        Swal.fire({
-            title: 'Success!',
-            text: 'Daily timesheet has been successfully saved.',
-            icon: 'success',
-            confirmButtonColor: '#D31145'
-        }).then(() => {
-            window.location.href = '/Timesheet/Employee/Management?view=daily';
-        });
+        window.location.href = '/Timesheet/Employee/Dashboard';
     }
 }
 

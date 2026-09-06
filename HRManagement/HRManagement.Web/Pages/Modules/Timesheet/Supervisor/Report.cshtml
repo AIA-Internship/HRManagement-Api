@@ -11,9 +11,7 @@
     <style>
         .approval-management-container {
             padding: 28px 32px;
-            background-color: #F4F6F9;
             font-family: 'Inter', sans-serif;
-            min-height: calc(100vh - 130px);
         }
 
         /* ── Filter Card ── */
@@ -38,8 +36,8 @@
         }
 
         .filter-label {
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: #4B5563;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -201,7 +199,9 @@
     </style>
 }
 
-<div class="approval-management-container">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
     
     @await Html.PartialAsync("Layout/_PageHeader", new PageHeaderViewModel {
         Title = "Employee Approval Center",
@@ -246,10 +246,10 @@
 
     <!-- FILTERS -->
     <div class="filter-card">
-        <div class="d-flex gap-6 flex-wrap">
+        <div class="d-flex gap-6 flex-wrap align-items-center">
             <div class="filter-group">
                 <span class="filter-label">Month</span>
-                <select id="filter_month" class="form-select form-select-solid fw-boldest border-0" style="background: #F8F9FA; width: 140px; border-radius: 8px;">
+                <select id="filter_month" class="form-select form-select-solid form-select-sm fw-bold" style="width: 140px; border-radius: 8px;">
                     <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option>
                     <option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option>
                     <option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
@@ -257,14 +257,14 @@
             </div>
             <div class="filter-group">
                 <span class="filter-label">Year</span>
-                <select id="filter_year" class="form-select form-select-solid fw-boldest border-0" style="background: #F8F9FA; width: 110px; border-radius: 8px;">
+                <select id="filter_year" class="form-select form-select-solid form-select-sm fw-bold" style="width: 110px; border-radius: 8px;">
                     <option value="2026">2026</option>
                     <option value="2025">2025</option>
                 </select>
             </div>
             <div class="filter-group">
                 <span class="filter-label">Status</span>
-                <select id="filter_status" class="form-select form-select-solid fw-boldest border-0" style="background: #F8F9FA; width: 160px; border-radius: 8px;">
+                <select id="filter_status" class="form-select form-select-solid form-select-sm fw-bold" style="width: 160px; border-radius: 8px;">
                     <option value="">All Status</option>
                     <option value="Waiting">Waiting</option>
                     <option value="Approved">Approved</option>
@@ -284,13 +284,10 @@
             <table class="approval-table">
                 <thead>
                     <tr>
-                        <th style="width: 22%">Employee Name</th>
-                        <th style="width: 15%">Period</th>
-                        <th style="width: 15%">Status</th>
-                        <th style="width: 12%; text-align: center;">Is Approved</th>
-                        <th style="width: 12%; text-align: center;">Revision</th>
-                        <th style="width: 12%">Last Decision</th>
-                        <th style="width: 12%" class="text-end">Action</th>
+                        <th style="width: 35%">INTERN</th>
+                        <th style="width: 25%">MONTH/PERIOD</th>
+                        <th style="width: 25%">APPROVAL STATUS</th>
+                        <th style="width: 15%" class="text-end">EXPORT</th>
                     </tr>
 
                 </thead>
@@ -309,6 +306,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
 @section Scripts {

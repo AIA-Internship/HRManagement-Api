@@ -10,8 +10,6 @@
         /* MAIN LAYOUT WRAPPER */
         .intern-dashboard-container { 
             padding: 30px; 
-            background-color: #F8F9FA; 
-            min-height: calc(100vh - 70px); 
         }
 
         /* FLEX STRETCH FIX (FORCE EQUAL HEIGHT) */
@@ -172,7 +170,9 @@
     </style>
 }
 
-<div class="intern-dashboard-container">
+<div class="d-flex flex-column flex-column-fluid mt-3 app-container-full page-wrapper-stretch">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid d-flex flex-column flex-column-fluid">
     <div class="row g-8 equal-height-row">
         
         <!-- LEFT PANEL: TO DO LIST -->
@@ -214,28 +214,7 @@
                 RenderActions = Html.Raw("<a href='/Timesheet/Employee/Entry' class='btn-brand fw-boldest px-6 py-3 shadow-sm'><i class='bi bi-plus-lg me-2'></i> New Entry</a>")
             })
 
-            <!-- SUBMISSION STATUS -->
-            <div class="aia-glass-card submission-status-card">
-                <div class="status-header">
-                    <h3><i class="bi bi-journal-text text-danger fs-3"></i> Monthly Submission Status</h3>
-                    <span class="status-pill-lite" id="active_status_label">Draft Submission</span>
-                </div>
-                <div class="status-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <span class="data-label-small">Reporting Month</span>
-                            <span class="data-value-main" id="active_period">...</span>
-                        </div>
-                        <div class="col-md-3 border-start ps-10">
-                            <span class="data-label-small">Deadline</span>
-                            <span class="data-value-main text-brand-red" id="active_deadline">...</span>
-                        </div>
-                        <div class="col-md-6 d-flex justify-content-end gap-3 px-0">
-                            @await Html.PartialAsync("Shared/Buttons/_StandardButton", new { Type = "ghost", Title = "View Timesheet", Class = "btn-brand-sm", OnClick = "window.location.href='/Timesheet/Employee/Management'" })
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- ALLOCATION HUB -->
             <div class="aia-glass-card allocation-hub-card">
@@ -258,6 +237,8 @@
                 </div>
             </div>
 
+        </div>
+    </div>
         </div>
     </div>
 </div>

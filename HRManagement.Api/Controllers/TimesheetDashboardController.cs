@@ -4,11 +4,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using HRManagement.Api.Application.Queries.Timesheet;
-using HRManagement.Api.Application.TimesheetDtos.Queries.Dto;
-using HRManagement.Api.Domain.Models.Response.Shared;
+using HRManagement.Application.Queries.Timesheet;
+using HRManagement.Domain.Models.Payload.TimesheetDtos.Queries.Dto;
+using HRManagement.Domain.Models.Response.Shared;
 
-namespace HRManagement.Api.Controllers;
+namespace HRManagement.Controllers;
 
 [Authorize]
 [ApiController]
@@ -68,3 +68,6 @@ public class TimesheetDashboardController : ValidateController<TimesheetDashboar
         });
     }
 }
+
+
+

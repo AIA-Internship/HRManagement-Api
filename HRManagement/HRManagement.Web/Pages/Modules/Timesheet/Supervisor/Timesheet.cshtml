@@ -45,13 +45,15 @@
             <div class="px-4 py-5">
                 
                 <!-- UNIFIED TOOLBAR NAV (MIRRORING EMPLOYEE) -->
-                <div class="d-flex flex-wrap justify-content-between align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
+                <div class="d-flex flex-wrap align-items-center bg-white shadow-sm p-4 mb-8" style="border-radius: 14px; border: 1px solid #F1F4F9;">
                     
                     <!-- View Segment Control -->
-                    <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
-                        <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
-                        <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
-                        <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                    <div style="flex: 1; display: flex; justify-content: flex-start;">
+                        <div class="timesheet-tabs-nav bg-light p-1" style="border-radius: 8px; display: flex; gap: 4px;">
+                            <button class="nav-link active btn-sm" onclick="switchView('monthly', this)" style="border-radius: 6px; padding: 6px 16px;">Monthly</button>
+                            <button class="nav-link btn-sm" onclick="switchView('weekly', this)" style="border-radius: 6px; padding: 6px 16px;">Weekly</button>
+                            <button class="nav-link btn-sm" onclick="switchView('daily', this)" style="border-radius: 6px; padding: 6px 16px;">Daily</button>
+                        </div>
                     </div>
 
                     <!-- Date Scroller -->
@@ -87,10 +89,11 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="btn-group-actions d-flex align-items-center gap-3">
-                        <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
-                        <button class="btn-project-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;"><i class="bi bi-briefcase-fill text-gray-400 me-2"></i> Project</button>
-                        <button id="main_action_btn" class="btn btn-brand d-none shadow-sm fw-boldest px-6 py-3" style="border-radius: 8px;"></button>
+                    <div style="flex: 1; display: flex; justify-content: flex-end;">
+                        <div class="btn-group-actions d-flex align-items-center gap-3">
+                            <button class="btn-today-white shadow-sm" style="border-radius: 8px; font-weight: 700; padding: 10px 16px;" onclick="currentDate = new Date(); renderCurrentState();">Today</button>
+                            <button id="main_action_btn" class="btn btn-brand d-none shadow-sm fw-boldest px-6 py-3" style="border-radius: 8px;"></button>
+                        </div>
                     </div>
                 </div>
 
@@ -112,20 +115,22 @@
                     <div id="view_weekly" class="timesheet-view d-none">
                         <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                             <table class="weekly-master-table">
-                                <thead class="bg-light">
-                                    <tr id="weekly_header_row">
-                                        <th style="width: 25%">Project</th>
-                                        <th id="weekly_h_mon"></th>
-                                        <th id="weekly_h_tue"></th>
-                                        <th id="weekly_h_wed"></th>
-                                        <th id="weekly_h_thu"></th>
-                                        <th id="weekly_h_fri"></th>
-                                        <th id="weekly_h_sat" class="weekend-th"></th>
-                                        <th id="weekly_h_sun" class="weekend-th"></th>
-                                        <th style="background: #F1F4F9">Week Hours</th>
+                                <thead class="bg-light text-uppercase fs-8 fw-bold text-gray-600" style="letter-spacing: 0.5px;">
+                                    <tr>
+                                        <th style="width: 10%" class="p-4">Status</th>
+                                        <th style="width: 10%">Day</th>
+                                        <th style="width: 10%">Date</th>
+                                        <th style="width: 10%" class="text-center">Duration</th>
+                                        <th style="width: 15%">Project</th>
+                                        <th style="width: 10%">Apps Used</th>
+                                        <th style="width: 15%">Task Description</th>
+                                        <th style="width: 10%">Location</th>
+                                        <th style="width: 10%">Remark</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody id="weekly_log_tbody">
+                                    <!-- Populated dynamically by JS -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
