@@ -11,4 +11,26 @@ public interface IPerformanceReviewPlanRepository
     Task<EmployeeOngoingPerformanceReviewPlanResponseDto?> GetEmployeeOngoingPerformanceReviewPlanAsync(int fillerId, CancellationToken cancellationToken);
 
     Task AddPerformanceReviewPlan(CreatePerformanceReviewPlanPayload payload, int actionerId, CancellationToken cancellationToken);
+    Task UpdatePerformanceReviewPlan(int planId, UpdatePerformanceReviewPlanPayload payload, int actionerId, CancellationToken cancellationToken);
+
+    Task CopyPerformanceReviewPlan(
+    int planId,
+    CopyPerformanceReviewPlanPayload payload,
+    int actionerId,
+    CancellationToken cancellationToken);
+
+    Task DeletePerformanceReviewPlan(
+    int planId,
+    int actionerId,
+    CancellationToken cancellationToken);
+
+    Task<bool> ActivatePerformanceReviewPlan(
+    int planId,
+    int actionerId,
+    CancellationToken cancellationToken);
+
+
+    Task<List<string>> GetPlanRolesAsync(
+    int planId,
+    CancellationToken cancellationToken = default);
 }

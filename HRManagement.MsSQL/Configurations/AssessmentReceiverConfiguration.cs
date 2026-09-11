@@ -1,4 +1,5 @@
-﻿using HRManagement.Domain.Models.Tables;
+using HRManagement.Domain.Models.Tables;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,7 +14,6 @@ public class AssessmentReceiverConfiguration : IEntityTypeConfiguration<Assessme
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.ReceiverType)
-            .HasMaxLength(50)
             .IsRequired();
 
         builder.HasOne(x => x.Assessment)
@@ -26,11 +26,11 @@ public class AssessmentReceiverConfiguration : IEntityTypeConfiguration<Assessme
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(x => !x.IsDeleted);
-
         builder.HasOne(x => x.User)
             .WithMany()
             .HasForeignKey(x => x.ModifiedBy)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

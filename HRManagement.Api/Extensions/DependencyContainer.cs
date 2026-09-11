@@ -49,6 +49,7 @@ namespace HRManagement.Api.Extensions
             services.AddScoped<IAssessmentRepository, AssessmentRepository>();
             services.AddScoped<IFillAssignmentRepository, FillAssignmentRepository>();
             services.AddScoped<IPerformanceReviewPlanRepository, PerformanceReviewPlanRepository>();
+            services.AddScoped<IInternPerformanceRepository, InternPerformanceRepository>();
 
             // 3. Authorization
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

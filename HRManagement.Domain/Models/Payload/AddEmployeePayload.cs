@@ -11,7 +11,7 @@ public record AddEmployeePayload
     string Nik,
     string PlaceOfBirth,
     DateTime DateOfBirth,
-    int MaritalStatus,
+    int MaritalStatus, 
     
     string CurrentAddress,
     string CurrentCity,

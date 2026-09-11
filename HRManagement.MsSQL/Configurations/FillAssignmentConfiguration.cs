@@ -21,11 +21,6 @@ public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignme
             .HasForeignKey(x => x.PlanId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.Interval)
-            .WithMany()
-            .HasForeignKey(x => x.IntervalId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(x => x.Filler)
             .WithMany()
             .HasForeignKey(x => x.FillerId)

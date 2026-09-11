@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace HRManagement.Domain.Interfaces
 {
-    public interface IFillAssignmentRepository : IBaseRepository<FillAssignment>
+    public interface   IFillAssignmentRepository : IBaseRepository<FillAssignment>
     {
         Task<FillAssignmentDetailResponseDto?> GetAssignmentDetailByIdAsync(int assignmentId, CancellationToken cancellationToken);
         Task<List<FillAssignmentDetailResponseDto>> GetPeerAssignmentDetailsByIntervalAsync(int fillerId, int intervalId, CancellationToken cancellationToken);
