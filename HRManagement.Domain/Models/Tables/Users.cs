@@ -7,7 +7,7 @@ public class Users
     public string EmployeeEmail { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
     public int RoleId { get; private set; }
-    public DateTime LastLoginTime { get; private set; }
+    public DateTime? LastLoginTime { get; private set; }
 
 
     public bool IsDeleted { get; private set; }

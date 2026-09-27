@@ -3,9 +3,6 @@ using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System.Net.NetworkInformation;
-using System.Numerics;
 
 namespace HRManagement.MsSQL.Repositories;
 
@@ -62,7 +59,8 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                         e.DisplayId ?? "",
                         "",
                         e.DepartmentName ?? "",
-                        e.PositionName ?? ""
+                        e.PositionName ?? "",
+                        null
                     ))
                     .ToList()
             ))
@@ -138,7 +136,8 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                         e.DisplayId ?? "",
                         "",
                         e.DepartmentName ?? "",
-                        e.PositionName ?? ""
+                        e.PositionName ?? "",
+                        null
                     ))
                     .ToList()
             ))
@@ -276,5 +275,61 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .FirstOrDefaultAsync(cancellationToken);
 
         return planDetail;
+    }
+
+    public async Task<List<PerformanceReviewPlanLookupDto>> GetPerformanceReviewPlanLookupsAsync(CancellationToken cancellationToken)
+    {
+        return await _sqldbContext.PerformanceReviewPlans
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted)
+            .OrderByDescending(p => p.StartDate)
+            .Select(p => new PerformanceReviewPlanLookupDto
+            {
+                PlanId = p.Id,
+                Name = p.Name
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<PerformanceReviewIntervalLookupDto>> GetIntervalsByPlanIdAsync(int planId, CancellationToken cancellationToken)
+    {
+        return await _sqldbContext.PerformanceReviewPlanIntervals
+            .AsNoTracking()
+            .Where(i => i.PlanId == planId && !i.IsDeleted)
+            .OrderBy(i => i.IntervalNumber)
+            .Select(i => new PerformanceReviewIntervalLookupDto
+            {
+                IntervalId = i.Id,
+                IntervalNumber = i.IntervalNumber,
+                StartDate = i.StartDate,
+                EndDate = i.EndDate,
+                Status = i.Status
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<ReviewerLookupDto>> GetSupervisorAssessmentFillerByEmployeeAndIntervalAsync(
+    int intervalId,
+    int employeeId,
+    string assessmentType,
+    CancellationToken cancellationToken = default)
+    {
+        var result = await _sqldbContext.FillAssignments
+            .AsNoTracking()
+            .Where(fa => fa.IntervalId == intervalId
+                     && fa.SubjectId == employeeId
+                     && fa.Assessment.AssessmentType == assessmentType
+                     && !fa.IsDeleted)
+            .Select(fa => fa.Filler)
+            .Where(e => e != null)
+            .Distinct()
+            .Select(e => new ReviewerLookupDto
+            {
+                Id = e.Id,
+                FullName = e.FullName,
+                PositionName = e.EmploymentInformation.PositionName
+            })
+            .ToListAsync(cancellationToken);
+        return result;
     }
 }

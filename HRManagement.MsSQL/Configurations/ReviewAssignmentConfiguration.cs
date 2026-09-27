@@ -2,8 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace HRManagement.MsSQL.Configurations;
-
 public class ReviewAssignmentConfiguration : IEntityTypeConfiguration<ReviewAssignment>
 {
     public void Configure(EntityTypeBuilder<ReviewAssignment> builder)
@@ -16,31 +14,33 @@ public class ReviewAssignmentConfiguration : IEntityTypeConfiguration<ReviewAssi
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasOne<PerformanceReviewPlan>()
-            .WithMany()
-            .HasForeignKey(x => x.PlanId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(x => x.ReviewerJobTitle)
+            .HasMaxLength(255)
+            .IsRequired(false);
 
-        builder.HasOne<PerformanceReviewPlanInterval>()
+        builder.HasOne(x => x.Interval)
             .WithMany()
             .HasForeignKey(x => x.IntervalId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Point .WithMany to the ReviewAssignments property on FillAssignment
         builder.HasOne(x => x.Assignment)
-            .WithMany()
+            .WithMany(fa => fa.ReviewAssignments)
             .HasForeignKey(x => x.AssignmentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Employee>()
+        builder.HasOne(x => x.ReviewerRole)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewerRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Reviewer)
             .WithMany()
             .HasForeignKey(x => x.ReviewerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(x => !x.IsDeleted);
+        builder.Ignore(x => x.User); // Ignore BaseTable's User property if not linked
 
-        builder.HasOne(x => x.User)
-            .WithMany()
-            .HasForeignKey(x => x.ModifiedBy)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

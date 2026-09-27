@@ -120,9 +120,9 @@
 
         async function getOngoingPlanData() {
             const API_BASE = "https://localhost:7089";
-            const token = window.aiaAuth && window.aiaAuth.getToken();
+            const token = window.xxxAuth && window.xxxAuth.getToken();
             if (!token) { 
-                window.aiaAuth && window.aiaAuth.signOut(); 
+                window.xxxAuth && window.xxxAuth.signOut(); 
                 return null; 
             }
 
@@ -134,7 +134,7 @@
                 }
             });
 
-            if (response.status === 401) { window.aiaAuth.signOut(); return null; }
+            if (response.status === 401) { window.xxxAuth.signOut(); return null; }
             if (response.status === 404) return null;
             if (!response.ok) throw new Error("Failed to fetch ongoing plan");
             const parsed = await response.json()

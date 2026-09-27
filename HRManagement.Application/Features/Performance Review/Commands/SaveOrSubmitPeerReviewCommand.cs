@@ -15,7 +15,7 @@ public record SaveOrSubmitPeerReviewCommand(
 ) : IRequest<Result>;
 
 internal sealed class SaveOrSubmitPeerReviewCommandHandler(
-    IFillAssignmentRepository assignmentRepository,
+    IAssignmentRepository assignmentRepository,
     ILogger<SaveOrSubmitPeerReviewCommandHandler> logger,
     IUnitOfWork unitOfWork) : IRequestHandler<SaveOrSubmitPeerReviewCommand, Result>
 {
@@ -44,7 +44,7 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
         foreach (var assignment in assignmentsToProcess)
         {
             string status = assignment.Status?.ToLower() ?? "not started";
-            if (status == "done" || status == "on review")
+            if (status == "done" || status == "on review" || status == "submitted")
             {
                 return Result.Failure($"Penilaian untuk beberapa rekan kerja sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
             }
@@ -55,13 +55,14 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
         foreach (var peerReviewDto in payload.PeerReviews)
         {
             var matchedAssignment = validAssignments.First(a => a.Id == peerReviewDto.AssignmentId);
-            if (matchedAssignment.Status == "Submitted")
+            if (matchedAssignment.Status?.Equals("Submitted", StringComparison.OrdinalIgnoreCase) == true)
             {
                 return Result.Failure($"Penugasan ID {matchedAssignment.Id} sudah dikirim dan tidak dapat diubah.");
             }
 
-            string trueAnswerType = matchedAssignment.AnswerType.ToLower();
-            var allowedQuestionIds = matchedAssignment.ValidQuestionIds;
+            // CHANGED: Use ValidQuestions dictionary
+            var validQuestions = matchedAssignment.ValidQuestions;
+            var allowedQuestionIds = validQuestions.Keys.ToHashSet();
 
             if (!payload.IsDraft)
             {
@@ -79,33 +80,44 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
 
             foreach (var answerDto in peerReviewDto.Answers)
             {
-                if (!allowedQuestionIds.Contains(answerDto.AssessmentQuestionId))
+                if (!validQuestions.TryGetValue(answerDto.AssessmentQuestionId, out var qType))
                 {
                     return Result.Failure($"Pertanyaan ID {answerDto.AssessmentQuestionId} tidak valid untuk penugasan ini.");
                 }
 
+                // Resolve question type (fallback to assessment-level type)
+                string questionType = !string.IsNullOrWhiteSpace(qType)
+                    ? qType.ToLower()
+                    : (matchedAssignment.AnswerType?.ToLower() ?? "text");
+
                 if (!payload.IsDraft)
                 {
-                    if (trueAnswerType == "rating" && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
+                    // CHANGED: Flexible per-question type checks
+                    bool requiresRating = questionType.Contains("rating");
+                    bool requiresText = questionType.Contains("text");
+
+                    if (requiresRating && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
                     {
                         return Result.Failure($"Pertanyaan ID {answerDto.AssessmentQuestionId} memerlukan penilaian angka antara 1 sampai 5.");
                     }
 
-                    if (trueAnswerType == "text" && string.IsNullOrWhiteSpace(answerDto.TextValue))
+                    if (requiresText && string.IsNullOrWhiteSpace(answerDto.TextValue))
                     {
-                        return Result.Failure($"Feedback naratif wajib diisi untuk semua pertanyaan sebelum dikirim.");
+                        return Result.Failure($"Feedback naratif wajib diisi untuk pertanyaan ID {answerDto.AssessmentQuestionId} sebelum dikirim.");
                     }
                 }
 
+                // CHANGED: Pass raw values directly. UpsertAnswersAsync handles value sanitization.
                 answersToPersist.Add(new AssessmentAnswer(
                     peerReviewDto.AssignmentId,
                     answerDto.AssessmentQuestionId,
-                    trueAnswerType == "text" ? answerDto.TextValue : null,
-                    trueAnswerType == "rating" ? answerDto.RatingValue : null,
+                    answerDto.TextValue,
+                    answerDto.RatingValue,
                     currentUserId
                 ));
             }
         }
+
         var assignmentAnswerTypes = validAssignments.ToDictionary(a => a.Id, a => a.AnswerType);
         await assignmentRepository.UpsertAnswersAsync(answersToPersist, assignmentAnswerTypes, cancellationToken);
 

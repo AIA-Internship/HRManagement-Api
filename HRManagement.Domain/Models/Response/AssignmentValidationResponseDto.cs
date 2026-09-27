@@ -2,12 +2,11 @@
 
 namespace HRManagement.Domain.Models.Response
 {
-    public record AssignmentValidationResponseDto
-        (
+    public record AssignmentValidationResponseDto(
         int Id,
         string Status,
         int FillerId,
         string AnswerType,
-        HashSet<int> ValidQuestionIds
+        Dictionary<int, string> ValidQuestions // Key: QuestionId, Value: QuestionType
     );
 }

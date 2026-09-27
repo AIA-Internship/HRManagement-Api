@@ -15,7 +15,7 @@ public record GetMyPeerAssignmentsByIntervalQuery(
 ) : IRequest<Result<List<FillAssignmentDetailResponseDto>>>;
 
 internal sealed class GetMyPeerAssignmentsByIntervalQueryHandler(
-    IFillAssignmentRepository assignmentRepository,
+    IAssignmentRepository assignmentRepository,
     ILogger<GetMyPeerAssignmentsByIntervalQueryHandler> logger)
     : IRequestHandler<GetMyPeerAssignmentsByIntervalQuery, Result<List<FillAssignmentDetailResponseDto>>>
 {

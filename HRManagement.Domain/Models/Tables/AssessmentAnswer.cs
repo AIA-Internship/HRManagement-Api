@@ -40,6 +40,12 @@ public class AssessmentAnswer : BaseTable
             RatingValue = ratingValue;
             TextValue = null;
         }
+        else
+        {
+            // Handles null, empty string "", "mixed", or any other type by retaining both values
+            TextValue = textValue;
+            RatingValue = ratingValue;
+        }
         MarkAsModified(actionerId);
     }
 }

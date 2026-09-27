@@ -13,7 +13,6 @@ public class AppDbContext : DbContext
     public virtual DbSet<Permission> Permission { get; set; }
     public virtual DbSet<RolePermission> RolePermission { get; set; }
     public virtual DbSet<Lookup> Lookup { get; set; }
-
     public virtual DbSet<Employee> Employee { get; set; }
     public virtual DbSet<EmergencyContact> EmergencyContact { get; set; }
     public virtual DbSet<EmployeeUpdateRequest> EmployeeUpdateRequest { get; set; }

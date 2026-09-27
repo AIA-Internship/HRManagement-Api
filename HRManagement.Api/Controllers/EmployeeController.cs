@@ -29,6 +29,24 @@ public class EmployeeController(ISender sender) : BaseApiController(sender)
         return HandleResult(result);
     }
 
+    [HttpGet("regulars")]
+    [HasPermission(Permissions.Users.View)]
+    public async Task<IActionResult> GetAllRegularEmployeesAsync(CancellationToken ct)
+    {
+        var query = new GetRegularEmployeeListQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("supervisors")]
+    [HasPermission(Permissions.Users.View)]
+    public async Task<IActionResult> GetAllSupervisorEmployeesAsync(CancellationToken ct)
+    {
+        var query = new GetSupervisorEmployeeListQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
     [HttpGet("me")]
     public async Task<IActionResult> GetMyProfileAsync(CancellationToken ct)
     {
@@ -134,6 +152,14 @@ public class EmployeeController(ISender sender) : BaseApiController(sender)
 
         var command = new UploadAttachmentCommand(id, payload.DocumentType, uploadTasks, CurrentUserId);
         var result = await Sender.Send(command, ct);
+        return HandleResult(result);
+    }
+
+    [HttpGet("employment-positions/lookup")]
+    public async Task<IActionResult> GetPositionNamesLookupAsync(CancellationToken ct)
+    {
+        var query = new GetPositionNamesLookupQuery();
+        var result = await Sender.Send(query, ct);
         return HandleResult(result);
     }
 }

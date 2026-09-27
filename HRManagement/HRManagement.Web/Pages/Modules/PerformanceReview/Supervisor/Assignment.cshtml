@@ -68,11 +68,17 @@
     .assignment-card {
         transition: all 0.2s ease-in-out;
         border: 1px solid #f1f5f9;
+        cursor: pointer;
     }
 
         .assignment-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .assignment-card.disabled-card {
+            cursor: not-allowed;
+            opacity: 0.65;
         }
 </style>
 
@@ -171,13 +177,13 @@
         const API_BASE = "https://localhost:7089";
         let rawAssignmentsData = [];
         let sortAscending = true;
+        let activeIntervalId = null;
 
         document.addEventListener("DOMContentLoaded", async function () {
-            // Step 1: Parallel loading of initial lookups and default active dashboard
             await Promise.all([
                 loadPlanLookups(),
                 loadPositionLookups(),
-                loadSupervisorDashboard(null) // Omit intervalId to let BE load default/current
+                loadSupervisorDashboard(null)
             ]);
         });
 
@@ -292,7 +298,6 @@
             const planId = document.getElementById("planSelect").value;
             await populateIntervalsForPlan(planId);
 
-            // Auto-select first interval when user changes plan manually
             const intervalSelect = document.getElementById("intervalSelect");
             if (intervalSelect.options.length > 1) {
                 intervalSelect.selectedIndex = 1;
@@ -337,21 +342,20 @@
 
                 if (!apiResult || apiResult.isError || !apiResult.content) {
                     rawAssignmentsData = [];
+                    activeIntervalId = null;
                     renderEmptyState("No evaluation assignments found.");
                     return;
                 }
 
                 const data = apiResult.content;
 
-                // Handle response if wrapped with metadata or directly an array
+                activeIntervalId = data.currentIntervalId || intervalId || (data.assignments?.[0]?.intervalId) || null;
                 const currentPlanId = data.currentPlanId || (data.assignments?.[0]?.planId);
-                const currentIntervalId = data.currentIntervalId || intervalId || (data.assignments?.[0]?.intervalId);
                 rawAssignmentsData = Array.isArray(data) ? data : (data.assignments || []);
 
-                // Sync dropdown selections on initial load
-                if (!intervalId && currentPlanId && currentIntervalId) {
+                if (!intervalId && currentPlanId && activeIntervalId) {
                     document.getElementById("planSelect").value = currentPlanId;
-                    await populateIntervalsForPlan(currentPlanId, currentIntervalId);
+                    await populateIntervalsForPlan(currentPlanId, activeIntervalId);
                 }
 
                 renderDashboardList();
@@ -370,6 +374,12 @@
             sortAscending = !sortAscending;
             document.getElementById("sortLabel").innerText = sortAscending ? "ASC" : "DESC";
             renderDashboardList();
+        }
+
+        function handleCardClick(url) {
+            if (url && url !== '#') {
+                window.location.href = url;
+            }
         }
 
         function renderDashboardList() {
@@ -402,34 +412,43 @@
 
             const itemsHtml = filtered.map(item => {
                 const initials = getInitials(item.subjectName);
+                const hasAssessment = Boolean(item.supervisorAssessment);
                 const status = (item.supervisorAssessment?.status || 'NOT STARTED').toUpperCase();
 
                 let badgeClass = 'badge-status-started';
                 if (status === 'DONE' || status === 'COMPLETED') badgeClass = 'badge-status-done';
                 if (status === 'IN PROGRESS') badgeClass = 'badge-status-progress';
 
-                const targetAssignmentId = item.supervisorAssessment?.assignmentId || 0;
-                const actionUrl = targetAssignmentId > 0 ? `/PerformanceReview/Supervisor/Assess/${targetAssignmentId}` : '#';
+                const subjectId = item.subjectId;
+                const intervalId = activeIntervalId;
+
+                const actionUrl = (intervalId && subjectId)
+                    ? `/PerformanceReview/Supervisor/AssignmentDetails/${intervalId}/${subjectId}`
+                    : '#';
+
+                const disabledClass = (!intervalId || !subjectId) ? 'disabled-card' : '';
+                const statusLabel = hasAssessment ? status : 'NOT STARTED';
 
                 return `
-                    <div class="card card-flush bg-white rounded-2 shadow-xs mb-2 assignment-card">
+                    <div class="card card-flush bg-white rounded-2 shadow-xs mb-2 assignment-card ${disabledClass}"
+                         onclick="handleCardClick('${actionUrl}')">
                         <div class="d-flex align-items-center justify-content-between py-4 px-6">
                             <div class="d-flex align-items-center gap-4">
                                 <div class="avatar-circle">
                                     ${escapeHtml(initials)}
                                 </div>
                                 <div class="d-flex flex-column">
-                                    <a href="${actionUrl}" class="fs-6 fw-bold text-gray-900 text-hover-primary text-decoration-none">
+                                    <span class="fs-6 fw-bold text-gray-900 text-hover-primary">
                                         ${escapeHtml(item.subjectName)}
-                                    </a>
+                                    </span>
                                     <span class="fs-7 text-muted fw-semibold">${escapeHtml(item.jobTitle || 'N/A')}</span>
                                 </div>
                             </div>
 
                             <div class="d-flex align-items-center gap-3">
-                                <a href="${actionUrl}" class="badge ${badgeClass} fw-bold px-4 py-2 rounded-1 fs-8 text-uppercase text-decoration-none">
-                                    ${escapeHtml(status)}
-                                </a>
+                                <span class="badge ${badgeClass} fw-bold px-4 py-2 rounded-1 fs-8 text-uppercase">
+                                    ${escapeHtml(statusLabel)}
+                                </span>
                             </div>
                         </div>
                     </div>

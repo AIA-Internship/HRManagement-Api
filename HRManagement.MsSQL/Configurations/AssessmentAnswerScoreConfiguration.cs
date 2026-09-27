@@ -1,9 +1,6 @@
 ﻿using HRManagement.Domain.Models.Tables;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace HRManagement.MsSQL.Configurations;
 
 public class AssessmentAnswerScoreConfiguration : IEntityTypeConfiguration<AssessmentAnswerScore>
 {
@@ -16,7 +13,8 @@ public class AssessmentAnswerScoreConfiguration : IEntityTypeConfiguration<Asses
         builder.Property(x => x.Score)
             .HasPrecision(5, 2);
 
-        builder.HasOne<AssessmentAnswer>()
+        // FIX: Map the explicitly named navigation property 'AssessmentAnswer'
+        builder.HasOne(x => x.AssessmentAnswer)
             .WithMany()
             .HasForeignKey(x => x.AssessmentAnswerId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -25,6 +23,9 @@ public class AssessmentAnswerScoreConfiguration : IEntityTypeConfiguration<Asses
             .WithMany()
             .HasForeignKey(x => x.ReviewerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // FIX: Ignore BaseTable's User navigation property so EF Core won't create a shadow 'UserId' column
+        builder.Ignore(x => x.User);
 
         builder.HasQueryFilter(x => !x.IsDeleted);
     }

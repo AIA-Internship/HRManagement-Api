@@ -6,5 +6,6 @@ public record EmployeeListResponseDto
     string EmployeeDisplayId,
     string TypeName,
     string Department,
-    string Position
+    string Position,
+    int? Id = null
 );

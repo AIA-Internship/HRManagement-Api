@@ -16,6 +16,8 @@ public class FillAssignment : BaseTable
     public Assessment Assessment { get; set; } = null!;
     public Employee? Modifier { get; set; }
 
+    public ICollection<ReviewAssignment> ReviewAssignments { get; set; } = new List<ReviewAssignment>();
+
     protected FillAssignment() { }
 
     public FillAssignment(

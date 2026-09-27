@@ -341,9 +341,9 @@
         }
 
         async function fetchPeerReviewDetails(intervalId) {
-            const token = window.aiaAuth && window.aiaAuth.getToken();
+            const token = window.xxxAuth && window.xxxAuth.getToken();
             if (!token) {
-                window.aiaAuth && window.aiaAuth.signOut();
+                window.xxxAuth && window.xxxAuth.signOut();
                 return null;
             }
 
@@ -356,7 +356,7 @@
             });
 
             if (response.status === 401) {
-                window.aiaAuth && window.aiaAuth.signOut();
+                window.xxxAuth && window.xxxAuth.signOut();
                 return null;
             }
             if (response.status === 404) return null;
@@ -703,10 +703,10 @@
         }
 
         async function sendPeerReviews(payload) {
-            const token = window.aiaAuth && window.aiaAuth.getToken();
+            const token = window.xxxAuth && window.xxxAuth.getToken();
             if (!token) {
                 alert("Session expired. Please log in again.");
-                window.aiaAuth && window.aiaAuth.signOut();
+                window.xxxAuth && window.xxxAuth.signOut();
                 return;
             }
 
@@ -725,7 +725,7 @@
                 });
 
                 if (response.status === 401) {
-                    window.aiaAuth && window.aiaAuth.signOut();
+                    window.xxxAuth && window.xxxAuth.signOut();
                     return;
                 }
 

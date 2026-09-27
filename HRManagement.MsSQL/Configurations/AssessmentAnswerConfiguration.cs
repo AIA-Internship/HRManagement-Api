@@ -1,9 +1,6 @@
 ﻿using HRManagement.Domain.Models.Tables;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace HRManagement.MsSQL.Configurations;
 
 public class AssessmentAnswerConfiguration : IEntityTypeConfiguration<AssessmentAnswer>
 {
@@ -23,18 +20,11 @@ public class AssessmentAnswerConfiguration : IEntityTypeConfiguration<Assessment
             .HasForeignKey(x => x.AssessmentQuestionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(x => !x.IsDeleted);
-
         builder.HasIndex(x => new { x.AssignmentId, x.AssessmentQuestionId }).IsUnique();
 
-        builder.HasOne(x => x.User)
-            .WithMany()
-            .HasForeignKey(x => x.ModifiedBy)
-            .OnDelete(DeleteBehavior.Restrict);
+        // FIX: Unbind User navigation from duplicate foreign keys, or ignore User on AssessmentAnswer
+        builder.Ignore(x => x.User);
 
-        builder.HasOne(x => x.User)
-            .WithMany()
-            .HasForeignKey(x => x.CreatedBy)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

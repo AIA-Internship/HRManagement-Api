@@ -1,0 +1,20 @@
+﻿<!-- Reviewer Display Selector Badge Container -->
+<div id="reviewersHeaderCard" class="card p-6 bg-white shadow-sm border border-gray-100 mb-6 d-none">
+    <div class="fs-7 fw-bold text-gray-400 text-uppercase mb-3 tracking-wider">
+        Reviewer Display Checklist <span id="limitWarningLabel" class="limit-text-label">(Only <span id="dynamicLimitText">1-3</span> reviewers visible at once)</span>
+    </div>
+    <div id="reviewersBadgeContainer" class="d-flex flex-wrap gap-3"></div>
+</div>
+
+<!-- Skeleton Loader Placeholder -->
+<div id="matrixSkeleton" class="card p-8 bg-white shadow-sm border border-gray-100">
+    <div class="skeleton-placeholder h-20px w-30 mb-4"></div>
+    <div class="skeleton-placeholder h-40px w-100"></div>
+</div>
+
+<!-- Dynamic Matrix Container -->
+<div id="questionsWrapper" class="card bg-white border border-gray-100 shadow-sm rounded-lg d-none overflow-hidden">
+    <div class="overflow-auto">
+        <div id="matrixGrid" class="matrix-grid-container"></div>
+    </div>
+</div>

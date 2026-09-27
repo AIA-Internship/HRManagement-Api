@@ -13,6 +13,20 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
 {
     public EmployeeRepository(AppDbContext dbContext) : base(dbContext) { }
 
+    public async Task<List<string>> GetDistinctEmployeePositionNamesAsync(CancellationToken cancellationToken)
+    {
+        return await _sqldbContext.EmploymentInformation
+            .AsNoTracking()
+            .Where(e => !e.IsDeleted
+                     && e.Employee.RoleId == 2
+                     && !e.Employee.IsDeleted
+                     && !string.IsNullOrEmpty(e.PositionName))
+            .Select(e => e.PositionName!)
+            .Distinct()
+            .OrderBy(p => p)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> IsUniqueAsync<TProperty>(
         Expression<Func<Employee, TProperty>> propertySelector, 
         TProperty value, 
@@ -77,6 +91,34 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
         var finalQuery = await query.ToListAsync(cancellationToken);
 
         return finalQuery;
+    }
+
+    public async Task<List<EmployeeListResponseDto>> GetEmployeesByRoleAsync(
+    string roleName,
+    CancellationToken cancellationToken = default)
+    {
+        var query = from e in _dbContext.AsNoTracking()
+                    where e.IsActive && e.Role.Name == roleName
+
+                    let activeEmployment = e.EmploymentInformation
+
+                    let employmentType = _sqldbContext.Set<Lookup>()
+                        .Where(l => l.Category == "EMPLOYMENT_TYPE" &&
+                                    l.Value == activeEmployment.TypeCode &&
+                                    l.IsActive)
+                        .Select(l => l.DisplayName)
+                        .FirstOrDefault()
+
+                    select new EmployeeListResponseDto(
+                        e.FullName,
+                        (activeEmployment != null ? activeEmployment.DisplayId : "") ?? "",
+                        employmentType ?? "",
+                        (activeEmployment != null ? activeEmployment.DepartmentName : "") ?? "",
+                        (activeEmployment != null ? activeEmployment.PositionName : "") ?? "",
+                        e.Id
+                    );
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<EmployeeProfileResponseDto?> GetProfileByEmailAsync(string email, CancellationToken cancellationToken = default)
@@ -271,6 +313,4 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
             ))
             .ToListAsync(cancellationToken);
     }
-
-
 }

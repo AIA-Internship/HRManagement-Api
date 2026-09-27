@@ -15,7 +15,7 @@ public record SaveOrSubmitSelfAssessmentCommand(
 ) : IRequest<Result>;
 
 internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
-    IFillAssignmentRepository assignmentRepository,
+    IAssignmentRepository assignmentRepository,
     ILogger<SaveOrSubmitSelfAssessmentCommandHandler> logger,
     IUnitOfWork unitOfWork) : IRequestHandler<SaveOrSubmitSelfAssessmentCommand, Result>
 {
@@ -39,13 +39,14 @@ internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
         }
 
         string status = assignmentDetail.Status?.ToLower() ?? "not started";
-        if (status == "done" || status == "on review" || assignmentDetail.Status == "Submitted")
+        if (status == "done" || status == "on review" || status == "submitted")
         {
             return Result.Failure("Penilaian mandiri ini sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
         }
 
-        string trueAnswerType = assignmentDetail.AnswerType.ToLower();
-        var allowedQuestionIds = assignmentDetail.ValidQuestionIds;
+        // 1. Extract valid questions map
+        var validQuestions = assignmentDetail.ValidQuestions;
+        var allowedQuestionIds = validQuestions.Keys.ToHashSet();
 
         if (!payload.IsDraft)
         {
@@ -65,29 +66,39 @@ internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
 
         foreach (var answerDto in payload.Answers)
         {
-            if (!allowedQuestionIds.Contains(answerDto.AssessmentQuestionId))
+            if (!validQuestions.TryGetValue(answerDto.AssessmentQuestionId, out var qType))
             {
                 return Result.Failure($"Pertanyaan ID {answerDto.AssessmentQuestionId} tidak valid untuk penugasan ini.");
             }
 
+            // Resolve question type with fallback to assignment answer type
+            string questionType = !string.IsNullOrWhiteSpace(qType)
+                ? qType.ToLower()
+                : (assignmentDetail.AnswerType?.ToLower() ?? "text");
+
             if (!payload.IsDraft)
             {
-                if (trueAnswerType == "rating" && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
+                // Flexible per-question validation
+                bool requiresRating = questionType.Contains("rating");
+                bool requiresText = questionType.Contains("text");
+
+                if (requiresRating && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
                 {
                     return Result.Failure($"Pertanyaan ID {answerDto.AssessmentQuestionId} memerlukan penilaian angka antara 1 sampai 5.");
                 }
 
-                if (trueAnswerType == "text" && string.IsNullOrWhiteSpace(answerDto.TextValue))
+                if (requiresText && string.IsNullOrWhiteSpace(answerDto.TextValue))
                 {
-                    return Result.Failure($"Feedback naratif wajib diisi untuk semua pertanyaan sebelum dikirim.");
+                    return Result.Failure($"Feedback naratif wajib diisi untuk pertanyaan ID {answerDto.AssessmentQuestionId} sebelum dikirim.");
                 }
             }
 
+            // Pass raw values directly; UpsertAnswersAsync handles value sanitization via ApplyUpdate
             answersToPersist.Add(new AssessmentAnswer(
                 assignmentId,
                 answerDto.AssessmentQuestionId,
-                trueAnswerType == "text" ? answerDto.TextValue : null,
-                trueAnswerType == "rating" ? answerDto.RatingValue : null,
+                answerDto.TextValue,
+                answerDto.RatingValue,
                 currentUserId
             ));
         }

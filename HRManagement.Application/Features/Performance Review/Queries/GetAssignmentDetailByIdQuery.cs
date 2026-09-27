@@ -14,7 +14,7 @@ public record GetAssignmentDetailByIdQuery(
 ) : IRequest<Result<FillAssignmentDetailResponseDto>>;
 
 internal sealed class GetAssignmentDetailByIdQueryHandler(
-    IFillAssignmentRepository assignmentRepository,
+    IAssignmentRepository assignmentRepository,
     ILogger<GetAssignmentDetailByIdQueryHandler> logger)
     : IRequestHandler<GetAssignmentDetailByIdQuery, Result<FillAssignmentDetailResponseDto>>
 {

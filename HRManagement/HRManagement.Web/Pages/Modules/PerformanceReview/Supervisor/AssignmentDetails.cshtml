@@ -1,0 +1,777 @@
+﻿@page "/PerformanceReview/Supervisor/AssignmentDetails/{intervalId:int}/{subjectId:int}"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.AssignmentDetailsModel
+@{
+    ViewData["Title"] = "Supervisor Assessment";
+}
+
+<style>
+    :root {
+        --background: #f9fafb;
+        --card: #ffffff;
+        --border: #e5e7eb;
+        --foreground: #111827;
+        --muted-foreground: #4b5563;
+        --destructive: #dc2626;
+        --destructive-hover: #b91c1c;
+        --transparent-hover: #f1f5f9;
+        --border-gray: #cbd5e1;
+    }
+
+    .btn-rating-active {
+        background-color: var(--destructive) !important;
+        color: white !important;
+        border-color: var(--destructive) !important;
+    }
+
+    .btn-action-primary {
+        background-color: var(--destructive) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-primary:hover {
+            background-color: var(--destructive-hover) !important;
+        }
+
+    .btn-action-secondary {
+        background-color: transparent !important;
+        color: var(--muted-foreground) !important;
+        border: 1px solid var(--border-gray) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-secondary:hover {
+            background-color: var(--transparent-hover) !important;
+            color: var(--foreground) !important;
+        }
+
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: var(--muted-foreground);
+        transition: color 0.15s ease;
+    }
+
+        .breadcrumb-link:hover {
+            color: var(--foreground);
+        }
+
+    .avatar-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .nav-tab-btn {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+        .nav-tab-btn.active-tab {
+            background-color: #fce8e6;
+            color: var(--destructive);
+            border-color: #f5c6cb;
+        }
+
+        .nav-tab-btn.inactive-tab {
+            background-color: var(--destructive);
+            color: #ffffff;
+        }
+
+            .nav-tab-btn.inactive-tab:hover {
+                background-color: var(--destructive-hover);
+            }
+
+    .score-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--destructive);
+        text-transform: uppercase;
+    }
+
+    .category-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    .auto-grow {
+        resize: none;
+        overflow-y: hidden;
+        min-height: 48px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .dropdown-container {
+        min-width: 240px;
+    }
+</style>
+
+<div class="px-10">
+    <!-- Breadcrumb Navigation -->
+    <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Supervisor/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            <i class="ki-duotone ki-left fs-7"></i> Performance Review
+        </a>
+        <span class="text-gray-300">/</span>
+        <a href="/PerformanceReview/Supervisor/Assignments" class="breadcrumb-link">Assignments</a>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-900 fw-semibold" id="breadcrumbSubject">Supervisor Assessment</span>
+    </nav>
+
+    <!-- Header Block -->
+    <div class="mb-6">
+        <h1 class="fw-bold text-gray-900 mb-2" id="assessmentTitle">Supervisor Assessment</h1>
+        <p class="text-muted fs-6 d-flex flex-wrap align-items-center gap-2" id="assessmentMeta">Evaluate employee performance and provide structured feedback.</p>
+    </div>
+
+    <!-- Top Info & Navigation Cards Bar -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-4 mb-6" id="topHeaderBar">
+        <!-- Dynamic Dropdowns for Employee & Supervisor Selection -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Employee Dropdown Card -->
+            <div class="bg-white border border-gray-200 rounded-3 px-3 py-2 d-flex align-items-center gap-3 shadow-xs dropdown-container">
+                <div class="avatar-circle" id="subjectInitials">--</div>
+                <div class="d-flex flex-column w-100">
+                    <label for="employeeSelect" class="text-muted fs-8 fw-semibold mb-1">EMPLOYEE</label>
+                    <select id="employeeSelect" class="form-select form-select-sm border-0 p-0 fw-bold text-gray-900 fs-7 shadow-none" style="background-position: right 0 center;" onchange="onEmployeeChanged(this.value)">
+                        <option value="">Loading employees...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Supervisor Dropdown Card -->
+            <div class="bg-white border border-gray-200 rounded-3 px-3 py-2 d-flex align-items-center gap-3 shadow-xs dropdown-container">
+                <div class="avatar-circle" id="supervisorInitials">--</div>
+                <div class="d-flex flex-column w-100">
+                    <label for="supervisorSelect" class="text-muted fs-8 fw-semibold mb-1">SUPERVISOR</label>
+                    <select id="supervisorSelect" class="form-select form-select-sm border-0 p-0 fw-bold text-gray-900 fs-7 shadow-none" style="background-position: right 0 center;" onchange="onSupervisorChanged(this.value)">
+                        <option value="">Select Supervisor...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="nav-tab-btn active-tab">
+                <i class="bi bi-clipboard-check fs-6"></i>
+                <span>Supervisor Assignment</span>
+            </button>
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="alert('Navigating to Peer Review...')">
+                <i class="bi bi-people fs-6"></i>
+                <span>Peer Review</span>
+            </button>
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="alert('Navigating to Self Assessment...')">
+                <i class="bi bi-person-badge fs-6"></i>
+                <span>Self Assessment</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Questions Wrapper & Cards -->
+    <div id="questionsWrapper" class="d-flex flex-column gap-4">
+        <!-- Skeleton Loading Container -->
+        <div id="skeletonContainer" class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="skeleton-placeholder h-25px w-75 rounded-1"></div>
+                        <div class="skeleton-placeholder h-15px w-50 rounded-1"></div>
+                    </div>
+                    <div class="d-flex gap-2 ms-4">
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                        <div class="skeleton-placeholder h-40px w-40px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons Bar -->
+    <div id="actionButtonsContainer" class="d-none justify-content-end gap-3 mt-6 mb-10">
+        <button type="button" class="btn btn-action-secondary fw-bold" onclick="handleCancel()">Kembali</button>
+        <button type="button" id="btnSave" class="btn btn-action-secondary fw-bold d-none" onclick="saveDraft()">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn btn-action-primary fw-bold d-none" onclick="handleFormSubmit()">Kirim Penilaian</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "https://localhost:7089";
+    let assessmentData = null;
+    let formAnswers = {};
+    let currentIntervalId = null;
+    let currentSubjectId = null;
+    let currentSupervisorId = null;
+    let currentAssessmentType = "supervisor-assessment";
+
+    let employeeList = [];
+    let reviewerList = [];
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        const urlPath = window.location.pathname.split('/');
+        currentSubjectId = urlPath.pop();
+        currentIntervalId = urlPath.pop();
+
+        const wrapper = document.getElementById("questionsWrapper");
+        if (wrapper) {
+            wrapper.addEventListener("input", function (event) {
+                if (event.target.classList.contains("auto-grow")) {
+                    adjustTextareaHeight(event.target);
+                }
+            });
+        }
+
+        let resizeTimeout;
+        window.addEventListener("resize", function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(autoGrowAllTextareas, 150);
+        });
+
+        if (currentIntervalId && currentSubjectId) {
+            await fetchEmployeeList();
+            await fetchReviewerList(currentIntervalId, currentSubjectId, currentAssessmentType);
+
+            // Initial load passes null for reviewerId (backend defaults to CurrentEmployeeId)
+            await loadAssessmentData(currentIntervalId, currentSubjectId, null);
+        } else {
+            renderEmptyState("Parameter rute tidak valid atau tidak lengkap.");
+        }
+    });
+
+    function getAuthHeaders() {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) {
+            window.aiaAuth && window.aiaAuth.signOut();
+            return null;
+        }
+        return {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        };
+    }
+
+    function getLoggedInEmployeeId() {
+        const userInfo = window.aiaAuth && window.aiaAuth.getUserInfo();
+        return userInfo?.EmployeeId ? parseInt(userInfo.EmployeeId) : null;
+    }
+
+    // --- API Calls for Dropdowns ---
+
+    async function fetchEmployeeList() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const response = await fetch(`${API_BASE}/api/employee/regulars`, { method: "GET", headers });
+            if (!response.ok) throw new Error("Gagal mengambil data karyawan.");
+
+            const result = await response.json();
+            if (result && !result.isError && Array.isArray(result.content)) {
+                employeeList = result.content;
+                renderEmployeeDropdown(employeeList);
+            }
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+        }
+    }
+
+    async function fetchReviewerList(intervalId, employeeId, assessmentType) {
+        const select = document.getElementById("supervisorSelect");
+        select.innerHTML = `<option value="">Loading...</option>`;
+
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const url = `${API_BASE}/api/plan/intervals/${intervalId}/employees/${employeeId}/reviewers/${assessmentType}`;
+            const response = await fetch(url, { method: "GET", headers });
+            if (!response.ok) throw new Error("Gagal mengambil data supervisor.");
+
+            const result = await response.json();
+            if (result && !result.isError && Array.isArray(result.content)) {
+                reviewerList = result.content;
+                renderReviewerDropdown(reviewerList);
+            } else {
+                renderReviewerDropdown([]);
+            }
+        } catch (err) {
+            console.error("Error fetching reviewers:", err);
+            renderReviewerDropdown([]);
+        }
+    }
+
+    // --- Render Functions for Dropdowns ---
+
+    function renderEmployeeDropdown(employees) {
+        const select = document.getElementById("employeeSelect");
+        if (!employees.length) {
+            select.innerHTML = `<option value="">Data kosong</option>`;
+            return;
+        }
+
+        select.innerHTML = employees.map(e => `
+            <option value="${e.id}" ${e.id == currentSubjectId ? 'selected' : ''}>
+                ${escapeHtml(e.fullName)}
+            </option>
+        `).join('');
+
+        updateEmployeeAvatar();
+    }
+
+    function renderReviewerDropdown(reviewers) {
+        const select = document.getElementById("supervisorSelect");
+        if (!reviewers.length) {
+            select.innerHTML = `<option value="">Tidak ada supervisor</option>`;
+            document.getElementById("supervisorInitials").innerText = "--";
+            currentSupervisorId = null;
+            return;
+        }
+
+        select.innerHTML = reviewers.map(r => `
+            <option value="${r.id}">
+                ${escapeHtml(r.fullName)} ${r.positionName ? `(${r.positionName})` : ''}
+            </option>
+        `).join('');
+
+        updateSupervisorAvatar();
+    }
+
+    // --- Dynamic Handlers ---
+
+    async function onEmployeeChanged(newSubjectId) {
+        if (!newSubjectId || newSubjectId === currentSubjectId) return;
+
+        currentSubjectId = newSubjectId;
+        updateEmployeeAvatar();
+
+        window.history.pushState({}, '', `/PerformanceReview/Supervisor/AssignmentDetails/${currentIntervalId}/${currentSubjectId}`);
+
+        renderSkeletonLoading();
+        await fetchReviewerList(currentIntervalId, currentSubjectId, currentAssessmentType);
+
+        // When changing employee, fetch initial data without reviewerId first
+        await loadAssessmentData(currentIntervalId, currentSubjectId, null);
+    }
+
+    async function onSupervisorChanged(supervisorId) {
+        if (!supervisorId) return;
+        currentSupervisorId = supervisorId;
+
+        updateSupervisorAvatar();
+        renderSkeletonLoading();
+
+        // Pass selected supervisorId to GET request
+        await loadAssessmentData(currentIntervalId, currentSubjectId, currentSupervisorId);
+    }
+
+    function updateEmployeeAvatar() {
+        const select = document.getElementById("employeeSelect");
+        const selectedText = select.options[select.selectedIndex]?.text || "--";
+        const cleanName = selectedText.split('(')[0].trim();
+        document.getElementById("subjectInitials").innerText = getInitials(cleanName);
+        document.getElementById("breadcrumbSubject").innerText = `Assessment: ${cleanName}`;
+    }
+
+    function updateSupervisorAvatar() {
+        const select = document.getElementById("supervisorSelect");
+        const selectedText = select.options[select.selectedIndex]?.text || "--";
+        const cleanName = selectedText.split('(')[0].trim();
+        document.getElementById("supervisorInitials").innerText = getInitials(cleanName);
+    }
+
+    // --- Core Assessment Data Loader ---
+
+    async function loadAssessmentData(intervalId, subjectId, reviewerId = null) {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            let url = `${API_BASE}/api/assignment/intervals/${intervalId}/supervisor-assignments/subjects/${subjectId}`;
+
+            if (reviewerId) {
+                url += `?reviewerId=${reviewerId}`;
+            }
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: headers
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+            if (!response.ok) throw new Error("Gagal mengambil data penilaian supervisor.");
+
+            const result = await response.json();
+
+            if (!result || result.isError || !result.content) {
+                renderEmptyState("Data penugasan tidak ditemukan untuk subjek dan supervisor ini.");
+                return;
+            }
+
+            assessmentData = result.content;
+
+            // Sync supervisor dropdown with returned fillerId on initial load
+            if (!reviewerId && assessmentData.fillerId) {
+                currentSupervisorId = assessmentData.fillerId;
+                const select = document.getElementById("supervisorSelect");
+                if (select) {
+                    select.value = currentSupervisorId;
+                    updateSupervisorAvatar();
+                }
+            }
+
+            renderAssessmentDetails(assessmentData);
+        } catch (err) {
+            console.error("Error fetching assessment:", err);
+            renderEmptyState("Terjadi kesalahan saat mengambil detail penilaian.");
+        }
+    }
+
+    function renderAssessmentDetails(content) {
+        const statusLabel = (content.status || "Not Started").toLowerCase();
+        const typeLabel = (content.assessment?.assessmentType || "SUPERVISOR ASSESSMENT").replace(/-/g, ' ').toUpperCase();
+
+        let auditHtml = "";
+        if (statusLabel !== "not started") {
+            const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
+            let formattedDate = "N/A";
+
+            if (content.modifiedUtcDate) {
+                const dateObj = new Date(content.modifiedUtcDate.endsWith('Z') ? content.modifiedUtcDate : content.modifiedUtcDate + 'Z');
+                formattedDate = dateObj.toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            }
+
+            const modifierName = content.modifiedBy || "System";
+            auditHtml = `
+                <span class="badge badge-light-dark border border-gray-300 px-3 py-1.5 fs-7 ms-md-2 text-muted fw-normal">
+                    Last ${verb}&nbsp;at&nbsp;<strong>${escapeHtml(formattedDate)}</strong>&nbsp;by&nbsp;<strong>${escapeHtml(modifierName)}</strong>
+                </span>`;
+        }
+
+        document.getElementById("assessmentTitle").innerText = typeLabel;
+        document.getElementById("assessmentMeta").innerHTML = `
+            <span>Evaluate performance and provide constructive feedback. Status: ${statusLabel.toUpperCase()}</span>
+            ${auditHtml}
+        `;
+
+        const wrapper = document.getElementById("questionsWrapper");
+        const questions = content.assessment?.questions || [];
+        if (questions.length === 0) {
+            renderEmptyState("Tidak ada pertanyaan yang ditugaskan dalam evaluasi ini.");
+            return;
+        }
+
+        // Check ownership: logged in user must match fillerId being displayed
+        const loggedInEmpId = getLoggedInEmployeeId();
+        const activeSupervisorId = currentSupervisorId ? parseInt(currentSupervisorId) : content.fillerId;
+        const isOwner = loggedInEmpId !== null && loggedInEmpId === activeSupervisorId;
+
+        // Editable only if the record belongs to the logged in user AND status is editable
+        const isEditable = isOwner && (statusLabel === "not started" || statusLabel === "drafted");
+
+        wrapper.innerHTML = `
+            <div id="activeCardContainer" class="card card-flush bg-white rounded-lg shadow-sm d-flex flex-column gap-2 px-6 py-4"></div>
+        `;
+        const cardContainer = document.getElementById("activeCardContainer");
+
+        renderQuestions(questions, cardContainer, isEditable);
+        setTimeout(autoGrowAllTextareas, 50);
+
+        // --- Handle Action Bar and Button Visibilities Dynamically ---
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        const saveBtn = document.getElementById("btnSave");
+        const submitBtn = document.getElementById("btnSubmit");
+
+        actionContainer.classList.replace("d-none", "d-flex");
+
+        if (isEditable) {
+            saveBtn?.classList.remove("d-none");
+            submitBtn?.classList.remove("d-none");
+        } else {
+            saveBtn?.classList.add("d-none");
+            submitBtn?.classList.add("d-none");
+        }
+    }
+
+    function renderQuestions(questions, container, isEditable) {
+        formAnswers = {};
+
+        const html = questions.map((q, idx) => {
+            const indexStr = String(q.questionOrder || idx + 1).padStart(2, '0');
+            const existingText = q.answer?.textValue || "";
+            const existingScore = q.answer?.ratingValue || null;
+
+            formAnswers[q.id] = { text: existingText, score: existingScore };
+
+            const buttonsHtml = [1, 2, 3, 4, 5].map(score => {
+                const isActive = existingScore === score;
+                const disabledAttr = isEditable ? "" : "disabled";
+
+                return `
+                    <button type="button"
+                            class="btn border fw-bold d-flex align-items-center justify-content-center rounded-3 score-btn-${q.id} ${isActive ? 'btn-rating-active' : 'bg-white'}"
+                            style="width: 40px; height: 40px;"
+                            data-value="${score}"
+                            ${disabledAttr}
+                            onclick="toggleQuestionScore(${q.id}, ${score})">
+                        ${score}
+                    </button>
+                `;
+            }).join('');
+
+            const disabledAttr = isEditable ? "" : "disabled";
+
+            return `
+                <div class="py-4 border-bottom border-gray-100 last-border-0">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="category-tag">QUESTION ${escapeHtml(indexStr)}</span>
+                    </div>
+                    <h6 class="fw-bold text-gray-900 fs-6 mb-3">${escapeHtml(q.questionText)}</h6>
+
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-8">
+                            <textarea class="form-control form-control-solid border-gray-200 bg-light-subtle fs-7 auto-grow"
+                                      rows="1"
+                                      ${disabledAttr}
+                                      placeholder="ex. It's good and well deserved ..."
+                                      oninput="updateTextAnswer(${q.id}, this.value)">${escapeHtml(existingText)}</textarea>
+                        </div>
+
+                        <div class="col-lg-4 d-flex flex-column align-items-lg-end align-items-start gap-1">
+                            <span class="score-label">SUPERVISOR SCORE</span>
+                            <div class="d-flex align-items-center gap-2">
+                                ${buttonsHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function adjustTextareaHeight(textarea) {
+        if (!textarea) return;
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    function autoGrowAllTextareas() {
+        setTimeout(() => {
+            const textareas = document.querySelectorAll("#questionsWrapper .auto-grow");
+            textareas.forEach(t => adjustTextareaHeight(t));
+        }, 100);
+    }
+
+    function toggleQuestionScore(questionId, score) {
+        if (!formAnswers[questionId]) {
+            formAnswers[questionId] = { text: "", score: null };
+        }
+
+        const currentScore = formAnswers[questionId].score;
+        const newScore = (currentScore === score) ? null : score;
+        formAnswers[questionId].score = newScore;
+
+        const buttons = document.querySelectorAll(`.score-btn-${questionId}`);
+        buttons.forEach(btn => {
+            const btnVal = parseInt(btn.getAttribute("data-value"));
+            if (btnVal === newScore) {
+                btn.classList.add("btn-rating-active");
+                btn.classList.remove("bg-white");
+            } else {
+                btn.classList.remove("btn-rating-active");
+                btn.classList.add("bg-white");
+            }
+        });
+    }
+
+    function updateTextAnswer(questionId, val) {
+        if (!formAnswers[questionId]) {
+            formAnswers[questionId] = { text: "", score: null };
+        }
+        formAnswers[questionId].text = val;
+    }
+
+    async function handleFormSubmit() {
+        await submitAssessmentPayload(false);
+    }
+
+    async function saveDraft() {
+        await submitAssessmentPayload(true);
+    }
+
+    async function submitAssessmentPayload(isDraft) {
+        try {
+            const loggedInEmpId = getLoggedInEmployeeId();
+            const activeSupervisorId = currentSupervisorId ? parseInt(currentSupervisorId) : assessmentData?.fillerId;
+
+            if (loggedInEmpId !== null && loggedInEmpId !== activeSupervisorId) {
+                alert("Anda tidak memiliki izin untuk mengubah penilaian ini.");
+                return;
+            }
+
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const payload = {
+                assignmentId: assessmentData?.assignmentId || null,
+                planId: assessmentData?.planId || 0,
+                intervalId: parseInt(currentIntervalId),
+                subjectId: parseInt(currentSubjectId),
+                reviewerId: currentSupervisorId ? parseInt(currentSupervisorId) : null,
+                assessmentId: assessmentData?.assessment?.id || 0,
+                isDraft: isDraft,
+                answers: Object.keys(formAnswers).map(qId => ({
+                    assessmentQuestionId: parseInt(qId),
+                    textValue: formAnswers[qId].text || null,
+                    ratingValue: formAnswers[qId].score || null
+                }))
+            };
+
+            const endpoint = `${API_BASE}/api/assignment/supervisor-assessment`;
+
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+
+            const result = await response.json();
+
+            if (!response.ok || (result && result.isFailure)) {
+                const errorMessage = result?.error || "Gagal menyimpan evaluasi.";
+                throw new Error(errorMessage);
+            }
+
+            if (result && result.value) {
+                assessmentData.assignmentId = result.value;
+            } else if (result && result.content && result.content.assignmentId) {
+                assessmentData.assignmentId = result.content.assignmentId;
+            }
+
+            alert(isDraft ? "Draft berhasil disimpan!" : "Penilaian berhasil dikirim!");
+            if (!isDraft) {
+                window.location.href = "/PerformanceReview/Supervisor/Assignments";
+            }
+        } catch (err) {
+            console.error("Error submitting response:", err);
+            alert(err.message || "Terjadi kesalahan saat menyimpan evaluasi. Silakan coba lagi.");
+        }
+    }
+
+    function handleCancel() {
+        window.location.href = "/PerformanceReview/Supervisor/Assignments";
+    }
+
+    function getInitials(name) {
+        if (!name) return "--";
+        const parts = name.trim().split(" ");
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function renderSkeletonLoading() {
+        // Hide action bar while loading new data
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        if (actionContainer) {
+            actionContainer.classList.replace("d-flex", "d-none");
+        }
+
+        document.getElementById("questionsWrapper").innerHTML = `
+            <div id="skeletonContainer" class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
+                <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
+                        <div class="d-flex flex-column gap-2 flex-grow-1">
+                            <div class="skeleton-placeholder h-25px w-75 rounded-1"></div>
+                            <div class="skeleton-placeholder h-15px w-50 rounded-1"></div>
+                        </div>
+                        <div class="d-flex gap-2 ms-4">
+                            <div class="skeleton-placeholder h-40px w-40px"></div>
+                            <div class="skeleton-placeholder h-40px w-40px"></div>
+                            <div class="skeleton-placeholder h-40px w-40px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderEmptyState(message) {
+        // Hide action bar on empty state
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        if (actionContainer) {
+            actionContainer.classList.replace("d-flex", "d-none");
+        }
+
+        document.getElementById("questionsWrapper").innerHTML = `
+            <div class="card card-flush text-center py-12 px-6 border border-dashed border-gray-300 bg-light rounded-2">
+                <i class="bi bi-exclamation-circle fs-3x text-gray-400 mb-3"></i>
+                <div class="text-gray-800 fw-bold fs-5 mb-1">Data Penilaian Tidak Ada</div>
+                <p class="text-muted fs-7 m-0">${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>

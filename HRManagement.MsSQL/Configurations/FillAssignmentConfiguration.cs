@@ -2,8 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace HRManagement.MsSQL.Configurations;
-
 public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignment>
 {
     public void Configure(EntityTypeBuilder<FillAssignment> builder)
@@ -50,6 +48,8 @@ public class FillAssignmentConfiguration : IEntityTypeConfiguration<FillAssignme
            .WithMany()
            .HasForeignKey(x => x.ModifiedBy)
            .OnDelete(DeleteBehavior.Restrict);
+
+        // REMOVED ReviewAssignments mapping here to avoid duplicate/conflicting relationship configurations.
 
         builder.HasQueryFilter(x => !x.IsDeleted);
     }
