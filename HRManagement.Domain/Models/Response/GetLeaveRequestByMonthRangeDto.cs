@@ -27,7 +27,7 @@ namespace HRManagement.Domain.Models.Response
             this.leaveStatus = leaveStatus.HasValue ? MappingHelper.leaveStatusFromInt(leaveStatus.Value).ToString() : null;
             this.leaveStartDate = leaveStartDate;
             this.dayAmount = dayAmount;
-            this.leaveType = leaveType.HasValue ? MappingHelper.leaveTypeFromInt(leaveType.Value).ToString() : null;
+            this.leaveType = leaveType.HasValue ? MappingHelper.LeaveTypeToDisplay(MappingHelper.leaveTypeFromInt(leaveType.Value)) : null;
             this.isCompleted = isCompleted == 1;
             this.createdUtcDate = createdUtcDate;
             this.requesterName = requesterName;

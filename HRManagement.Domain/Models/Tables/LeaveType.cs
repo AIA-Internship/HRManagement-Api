@@ -2,8 +2,8 @@
 {
     public enum LeaveType
     {
-        PaidLeave = 1,
-        UnpaidLeave = 2
+        Paid_Leave = 1,
+        Unpaid_Leave = 2
 
     }
 

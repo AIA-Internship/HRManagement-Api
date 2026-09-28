@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const leaveTypeText = (function (v) {
         if (v == null) return '-';
         if (String(v) === '1' || v === 1) return 'Paid Leave';
-        if (String(v) === '2' || v === 2) return 'Sick Leave';
+        if (String(v) === '2' || v === 2) return 'Unpaid Leave';
         return String(v);
     })(leaveTypeRaw);
 

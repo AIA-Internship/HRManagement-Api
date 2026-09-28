@@ -70,7 +70,7 @@ namespace HRManagement.Application.Features.Leave.Queries
                 leaveStatus = MappingHelper.leaveStatusFromInt(model.LeaveStatus).ToString(),
                 leaveStartDate = model.LeaveStartDate,
                 dayAmount = model.DayAmount,
-                leaveType = MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0).ToString(),
+                leaveType = MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0) != default ? MappingHelper.LeaveTypeToDisplay(MappingHelper.leaveTypeFromInt(model.LeaveType ?? 0)) : null,
                 isCompleted = model.IsCompleted == 0 ? false : true,
                 createdUtcDate = model.CreatedUtcDate,
                 SupervisorComment = model.SupervisorComment
