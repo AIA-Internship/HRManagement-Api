@@ -8,6 +8,10 @@ namespace HRManagement.Domain.Models.Response
         long InternId,
         string FullName,
         string InternRole,
+        decimal TechScore,
+        decimal SoftSkillScore,
+        decimal SelfAssessmentScore,
+        decimal PeerReviewScore,
         decimal AverageOverallScore,
         int Rank
     );

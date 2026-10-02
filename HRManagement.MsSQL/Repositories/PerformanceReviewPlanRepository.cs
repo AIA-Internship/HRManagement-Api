@@ -63,6 +63,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                     !r.IsDeleted &&
                                     r.ReceiverType == "self-assessment")
                                     .Select(r => new EmployeeListResponseDto(
+                                     
                                         r.Employee.FullName,
                                         r.Employee.EmploymentInformation != null
                                             ? r.Employee.EmploymentInformation.DisplayId
@@ -154,6 +155,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                     !r.IsDeleted &&
                                     r.ReceiverType == "supervisor-assessment")
                                     .Select(r => new EmployeeListResponseDto(
+                                
                                         r.Employee.FullName,
                                         r.Employee.EmploymentInformation != null
                                             ? r.Employee.EmploymentInformation.DisplayId
@@ -208,9 +210,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<PerformanceReviewPlanScoreWeightResponseDto>> GetScoreWeightConfigurationsAsync(
-        int planId,
-        CancellationToken cancellationToken)
+    public async Task<List<PerformanceReviewPlanScoreWeightResponseDto>> GetScoreWeightConfigurationsAsync(int planId,CancellationToken cancellationToken)
     {
         return await _sqldbContext.PerformanceReviewPlanScoreWeights
             .AsNoTracking()
@@ -561,11 +561,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
         }
     }
 
-    public async Task CopyPerformanceReviewPlan(
-    int planId,
-    CopyPerformanceReviewPlanPayload payload,
-    int actionerId,
-    CancellationToken cancellationToken)
+    public async Task CopyPerformanceReviewPlan(int planId,CopyPerformanceReviewPlanPayload payload,int actionerId,CancellationToken cancellationToken)
     {
         var existingPlan = await _sqldbContext.PerformanceReviewPlans
             .AsNoTracking()
@@ -685,10 +681,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             cancellationToken);
     }
 
-    public async Task DeletePerformanceReviewPlan(
-    int planId,
-    int actionerId,
-    CancellationToken cancellationToken)
+    public async Task DeletePerformanceReviewPlan(int planId,int actionerId,CancellationToken cancellationToken)
     {
         var plan = await _sqldbContext.PerformanceReviewPlans
             .Include(p => p.Assessments)
@@ -739,29 +732,43 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
         plan.SetDelete(actionerId);
     }
 
-    public async Task<bool> ActivatePerformanceReviewPlan(
-    int planId,
-    int actionerId,
-    CancellationToken cancellationToken)
+    public async Task<bool> ActivatePerformanceReviewPlan(int planId,int actionerId,CancellationToken cancellationToken)
     {
+        // =========================================================
+        // 1. Load plan and all required relationships
+        // =========================================================
+
         var plan = await _sqldbContext.PerformanceReviewPlans
             .Include(p => p.Assessments)
                 .ThenInclude(a => a.Receivers)
                     .ThenInclude(r => r.Employee)
                         .ThenInclude(e => e.EmploymentInformation)
+
+            .Include(p => p.Assessments)
+                .ThenInclude(a => a.Groups)
+                    .ThenInclude(g => g.Members)
+
             .Include(p => p.Intervals)
+
             .FirstOrDefaultAsync(
                 p => p.Id == planId && !p.IsDeleted,
                 cancellationToken);
 
-        if (plan == null) { 
-             _logger.LogWarning(
-            "Activation failed. Plan {PlanId} not found.",
-            planId);
+        if (plan == null)
+        {
+            _logger.LogWarning(
+                "Activation failed. Plan {PlanId} not found.",
+                planId);
 
             return false;
         }
-        // Only drafted plans can be activated
+
+
+        // =========================================================
+        // 2. Validate plan status
+        // =========================================================
+
+        // Only drafted plans can be activated.
         if (!string.Equals(
                 plan.Status,
                 "drafted",
@@ -775,6 +782,11 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
+
+        // =========================================================
+        // 3. Validate plan dates
+        // =========================================================
+
         if (plan.StartDate.Date >= plan.EndDate.Date)
         {
             _logger.LogWarning(
@@ -786,7 +798,11 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
-        // Validate duration
+
+        // =========================================================
+        // 4. Validate duration
+        // =========================================================
+
         if (plan.DurationInMonth <= 0)
         {
             _logger.LogWarning(
@@ -797,7 +813,13 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
-        var monthsPerInterval = GetMonthsPerInterval(plan.PeriodType);
+
+        // =========================================================
+        // 5. Determine months per interval
+        // =========================================================
+
+        var monthsPerInterval =
+            GetMonthsPerInterval(plan.PeriodType);
 
         if (monthsPerInterval == 0)
         {
@@ -809,7 +831,11 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
-        // Duration must be divisible by the selected period
+
+        // =========================================================
+        // 6. Validate duration against period
+        // =========================================================
+
         if (plan.DurationInMonth % monthsPerInterval != 0)
         {
             _logger.LogWarning(
@@ -821,7 +847,11 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
-        // Make sure StartDate + Duration matches EndDate
+
+        // =========================================================
+        // 7. Validate EndDate
+        // =========================================================
+
         var expectedEndDate = plan.StartDate.Date
             .AddMonths(plan.DurationInMonth)
             .AddDays(-1);
@@ -837,9 +867,11 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
-        // A drafted plan should not already have active intervals.
-        // Otherwise activating it again would duplicate intervals
-        // and therefore duplicate FillAssignments.
+
+        // =========================================================
+        // 8. Prevent duplicate intervals
+        // =========================================================
+
         var activeIntervals = plan.Intervals
             .Where(i => !i.IsDeleted)
             .ToList();
@@ -854,49 +886,151 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             return false;
         }
 
+
+        // =========================================================
+        // 9. Get active assessments
+        // =========================================================
+
         var activeAssessments = plan.Assessments
             .Where(a => !a.IsDeleted)
             .ToList();
 
-        var receiverAssignments =
-            new List<(Assessment Assessment, int FillerId, int SubjectId)>();
+        if (!activeAssessments.Any())
+        {
+            _logger.LogWarning(
+                "Activation failed. Plan {PlanId} has no active assessments.",
+                planId);
 
-        /*
-         * Convert AssessmentReceivers into runtime assignment definitions.
-         *
-         * self-assessment:
-         *     FillerId  = employee
-         *     SubjectId = employee
-         *
-         * supervisor-assessment:
-         *     FillerId  = employee's supervisor
-         *     SubjectId = employee
-         *
-         * peer-review:
-         *     NOT generated from AssessmentReceivers.
-         *     Peer review uses AssessmentGroup / AssessmentGroupMember.
-         */
+            return false;
+        }
+
+
+        // =========================================================
+        // 10. Prepare assignment definitions
+        //
+        // receiverAssignments:
+        //     self-assessment
+        //     supervisor-assessment
+        //
+        // peerReviewAssignments:
+        //     peer-review
+        // =========================================================
+
+        var receiverAssignments =
+            new List<(
+                Assessment Assessment,
+                int FillerId,
+                int SubjectId
+            )>();
+
+        var peerReviewAssignments =
+            new List<(
+                Assessment Assessment,
+                int FillerId,
+                int SubjectId
+            )>();
+
+
+        // =========================================================
+        // 11. Build assignments from assessments
+        // =========================================================
+
         foreach (var assessment in activeAssessments)
         {
+            // =====================================================
+            // PEER REVIEW
+            // =====================================================
+
             if (string.Equals(
                     assessment.AssessmentType,
                     "peer-review",
                     StringComparison.OrdinalIgnoreCase))
             {
+                var activeGroups = assessment.Groups
+                    .Where(g => !g.IsDeleted)
+                    .ToList();
+
+                if (!activeGroups.Any())
+                {
+                    _logger.LogWarning(
+                        "Activation failed. Peer-review assessment {AssessmentId} has no active groups.",
+                        assessment.Id);
+
+                    return false;
+                }
+
+
+                foreach (var group in activeGroups)
+                {
+                    var members = group.Members
+                        .Where(m => !m.IsDeleted)
+                        .ToList();
+
+                    // A peer-review group must have at least 2 members.
+                    if (members.Count < 2)
+                    {
+                        _logger.LogWarning(
+                            "Activation failed. Peer-review group {GroupId} has only {MemberCount} active members.",
+                            group.Id,
+                            members.Count);
+
+                        return false;
+                    }
+
+
+                    // Every member reviews every OTHER member
+                    // inside the same group.
+                    foreach (var filler in members)
+                    {
+                        foreach (var subject in members)
+                        {
+                            // An employee cannot review themselves.
+                            if (filler.EmployeeId == subject.EmployeeId)
+                                continue;
+
+                            peerReviewAssignments.Add(
+                                (
+                                    assessment,
+                                    filler.EmployeeId,
+                                    subject.EmployeeId
+                                ));
+                        }
+                    }
+                }
+
                 continue;
             }
+
+
+            // =====================================================
+            // SELF / SUPERVISOR ASSESSMENT
+            // =====================================================
 
             var receivers = assessment.Receivers
                 .Where(r => !r.IsDeleted)
                 .ToList();
 
             if (!receivers.Any())
+            {
+                _logger.LogWarning(
+                    "Activation failed. Assessment {AssessmentId} ({AssessmentType}) has no active receivers.",
+                    assessment.Id,
+                    assessment.AssessmentType);
+
                 return false;
+            }
+
 
             foreach (var receiver in receivers)
             {
                 var subjectId = receiver.EmployeeId;
+
                 int fillerId;
+
+
+                // =================================================
+                // SELF-ASSESSMENT
+                // =================================================
 
                 if (string.Equals(
                         assessment.AssessmentType,
@@ -905,28 +1039,79 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                 {
                     fillerId = subjectId;
                 }
+
+
+                // =================================================
+                // SUPERVISOR-ASSESSMENT
+                // =================================================
+
                 else if (string.Equals(
                              assessment.AssessmentType,
                              "supervisor-assessment",
                              StringComparison.OrdinalIgnoreCase))
                 {
                     var supervisorId =
-                        receiver.Employee?.EmploymentInformation?.SupervisorId;
+                        receiver.Employee?
+                            .EmploymentInformation?
+                            .SupervisorId;
 
                     if (!supervisorId.HasValue)
+                    {
+                        _logger.LogWarning(
+                            "Activation failed. Employee {EmployeeId} has no SupervisorId for assessment {AssessmentId}.",
+                            subjectId,
+                            assessment.Id);
+
                         return false;
+                    }
 
                     fillerId = supervisorId.Value;
                 }
+
+
+                // =================================================
+                // UNKNOWN ASSESSMENT TYPE
+                // =================================================
+
                 else
                 {
+                    _logger.LogWarning(
+                        "Activation skipped unsupported assessment type {AssessmentType} for AssessmentId {AssessmentId}.",
+                        assessment.AssessmentType,
+                        assessment.Id);
+
                     continue;
                 }
 
+
                 receiverAssignments.Add(
-                    (assessment, fillerId, subjectId));
+                    (
+                        assessment,
+                        fillerId,
+                        subjectId
+                    ));
             }
         }
+
+
+        // =========================================================
+        // 12. Validate that we actually have assignments
+        // =========================================================
+
+        if (!receiverAssignments.Any() &&
+            !peerReviewAssignments.Any())
+        {
+            _logger.LogWarning(
+                "Activation failed. Plan {PlanId} generated no assignments.",
+                planId);
+
+            return false;
+        }
+
+
+        // =========================================================
+        // 13. Generate interval definitions
+        // =========================================================
 
         var today = DateTime.UtcNow.Date;
 
@@ -939,25 +1124,29 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                 DateTime StartDate,
                 DateTime DueDate,
                 DateTime EndDate,
-                string Status)>();
+                string Status
+            )>();
 
-        var intervalStartDate = plan.StartDate.Date;
 
-        /*
-         * Generate intervals first.
-         *
-         * Example:
-         *
-         * Quarterly + 12 months
-         *
-         * Interval 1 = Mar 1 - May 31
-         * Interval 2 = Jun 1 - Aug 31
-         * Interval 3 = Sep 1 - Nov 30
-         * Interval 4 = Dec 1 - Feb 28
-         */
-        for (var intervalNumber = 1;
-             intervalNumber <= intervalCount;
-             intervalNumber++)
+        var intervalStartDate =
+            plan.StartDate.Date;
+
+
+        // =========================================================
+        // Example:
+        //
+        // Quarterly + 12 months
+        //
+        // Q1 = 2026-01-01 -> 2026-03-31
+        // Q2 = 2026-04-01 -> 2026-06-30
+        // Q3 = 2026-07-01 -> 2026-09-30
+        // Q4 = 2026-10-01 -> 2026-12-31
+        // =========================================================
+
+        for (
+            var intervalNumber = 1;
+            intervalNumber <= intervalCount;
+            intervalNumber++)
         {
             var nextIntervalStartDate =
                 intervalStartDate.AddMonths(monthsPerInterval);
@@ -965,24 +1154,36 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             var intervalEndDate =
                 nextIntervalStartDate.AddDays(-1);
 
-            // Never exceed the plan's EndDate
+
+            // Never exceed the plan's EndDate.
             if (intervalEndDate > plan.EndDate.Date)
             {
-                intervalEndDate = plan.EndDate.Date;
+                intervalEndDate =
+                    plan.EndDate.Date;
             }
 
-            /*
-             * Submission deadline:
-             *
-             * DueDate =
-             * Interval.EndDate - MinReviewDurationInDays
-             */
+
+            // =====================================================
+            // DueDate
+            //
+            // EndDate - MinReviewDurationInDays
+            // =====================================================
+
             var dueDate =
                 intervalEndDate.AddDays(
                     -plan.MinReviewDurationInDays);
 
+
             if (dueDate < intervalStartDate)
+            {
+                _logger.LogWarning(
+                    "Activation failed. Plan {PlanId}: invalid DueDate for interval {IntervalNumber}.",
+                    planId,
+                    intervalNumber);
+
                 return false;
+            }
+
 
             intervalDefinitions.Add(
                 (
@@ -996,56 +1197,114 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                         intervalEndDate)
                 ));
 
-            intervalStartDate = nextIntervalStartDate;
+
+            intervalStartDate =
+                nextIntervalStartDate;
         }
 
-        /*
-         * Now create:
-         *
-         * Plan
-         *   └── Interval
-         *         └── FillAssignment
-         *
-         * We use navigation properties so EF can insert
-         * the interval and its assignments in the same
-         * CommitAsync().
-         */
+
+        // =========================================================
+        // 14. Create intervals + FillAssignments
+        // =========================================================
+
         foreach (var definition in intervalDefinitions)
         {
-            var interval = new PerformanceReviewPlanInterval(
-                plan.Id,
-                definition.Number,
-                definition.StartDate,
-                definition.DueDate,
-                definition.EndDate,
-                definition.Status,
-                actionerId);
+            var interval =
+                new PerformanceReviewPlanInterval(
+                    plan.Id,
+                    definition.Number,
+                    definition.StartDate,
+                    definition.DueDate,
+                    definition.EndDate,
+                    definition.Status,
+                    actionerId);
+
 
             plan.Intervals.Add(interval);
 
-            /*
-             * Every AssessmentReceiver becomes one FillAssignment
-             * for EVERY generated interval.
-             */
-            foreach (var receiverAssignment in receiverAssignments)
-            {
-                var assignment = new FillAssignment(
-                    plan.Id,
-                    0,
-                    receiverAssignment.FillerId,
-                    receiverAssignment.SubjectId,
-                    receiverAssignment.Assessment.Id,
-                    "not started",
-                    actionerId)
-                {
-                    Interval = interval
-                };
 
-                interval.FillAssignments.Add(assignment);
+            // =====================================================
+            // SELF + SUPERVISOR ASSIGNMENTS
+            // =====================================================
+
+            foreach (var receiverAssignment
+                     in receiverAssignments)
+            {
+                var assignment =
+                    new FillAssignment(
+                        plan.Id,
+                        0,
+                        receiverAssignment.FillerId,
+                        receiverAssignment.SubjectId,
+                        receiverAssignment.Assessment.Id,
+                        "not started",
+                        actionerId)
+                    {
+                        Interval = interval
+                    };
+
+
+                interval.FillAssignments.Add(
+                    assignment);
+            }
+
+
+            // =====================================================
+            // PEER REVIEW ASSIGNMENTS
+            // =====================================================
+
+            foreach (var peerReviewAssignment
+                     in peerReviewAssignments)
+            {
+                var assignment =
+                    new FillAssignment(
+                        plan.Id,
+                        0,
+                        peerReviewAssignment.FillerId,
+                        peerReviewAssignment.SubjectId,
+                        peerReviewAssignment.Assessment.Id,
+                        "not started",
+                        actionerId)
+                    {
+                        Interval = interval
+                    };
+
+
+                interval.FillAssignments.Add(
+                    assignment);
             }
         }
 
-        // Finally activate the plan
+
+        // =========================================================
+        // 15. Deactivate existing ongoing plans
+        // =========================================================
+
+        var existingOngoingPlans = await _sqldbContext.PerformanceReviewPlans
+            .Where(p =>
+                p.Id != plan.Id &&
+                !p.IsDeleted &&
+                p.Status.ToLower() == "ongoing")
+            .ToListAsync(cancellationToken);
+
+        foreach (var existingPlan in existingOngoingPlans)
+        {
+            existingPlan.ApplyUpdate(
+                existingPlan.Name,
+                existingPlan.PeriodType,
+                existingPlan.DurationInMonth,
+                existingPlan.MinReviewDurationInDays,
+                existingPlan.StartDate,
+                existingPlan.EndDate,
+                "done",
+                actionerId);
+        }
+
+
+        // =========================================================
+        // 16. Finally activate the selected plan
+        // =========================================================
+
         plan.ApplyUpdate(
             plan.Name,
             plan.PeriodType,
@@ -1069,10 +1328,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
         };
     }
 
-    private static string GetIntervalStatus(
-    DateTime today,
-    DateTime startDate,
-    DateTime endDate)
+    private static string GetIntervalStatus(DateTime today,DateTime startDate,DateTime endDate)
     {
         if (today > endDate)
             return "done";

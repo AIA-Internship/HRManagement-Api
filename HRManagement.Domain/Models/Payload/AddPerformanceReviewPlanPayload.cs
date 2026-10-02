@@ -59,7 +59,7 @@ public record CreateAssessmentGroupPayload
 
 public record CreateScoreWeightPayload
 (
-    int SubjectRoleId,
+    int? SubjectRoleId,
     string SubjectJobTitle,
     string ScoreType, 
     decimal Weight

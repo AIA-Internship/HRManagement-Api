@@ -1,0 +1,469 @@
+﻿@page "/PerformanceReview/Supervisor/InternPerformance/Detail"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.InternPerformanceDetailModel
+
+@{
+    ViewData["Title"] = "Intern Performance History";
+}
+
+<style>
+    .performance-chart {
+        width: 100%;
+        height: 280px;
+    }
+
+        .performance-chart svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+    .chart-line {
+        fill: none;
+        stroke: #D31145;
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .chart-point {
+        fill: #D31145;
+    }
+
+    .summary-icon {
+        width: 42px;
+        height: 42px;
+    }
+</style>
+
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid px-5 px-lg-10">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="pt-4 pt-lg-6 mb-4">
+                <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                    <li class="breadcrumb-item">
+                            Performance Review
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/PerformanceReview/Supervisor/InternPerformance" class="text-muted text-hover-primary">
+                            Intern Performance
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active text-brand" aria-current="page">
+                        Intern Performance History
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Header -->
+            <div class="mb-6 mb-lg-8">
+                <h1 id="internName" class="fw-bold text-gray-900 fs-3 mb-2">Loading...</h1>
+                <p id="internRole" class="text-muted fs-6 mb-0">Loading performance history...</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row g-5 g-xl-7 mb-6 mb-lg-8">
+
+                <!-- Peak -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Peak Performance
+                                    </div>
+                                    <div id="peakScore" class="fw-bold text-brand fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div id="peakPeriod" class="text-success fs-8 fw-semibold">
+                                        -
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light-danger d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-award fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lowest -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Lowest Period
+                                    </div>
+                                    <div id="lowestScore" class="fw-bold text-gray-500 fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div id="lowestPeriod" class="text-muted fs-8 fw-semibold">
+                                        -
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-bar-chart fs-2 text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Annual Average -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Annual Average
+                                    </div>
+                                    <div id="annualAverage" class="fw-bold text-brand fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div class="text-danger fs-8 fw-semibold">
+                                        Overall Performance
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light-danger d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-graph-up-arrow fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Performance Trend -->
+            <div class="card card-flush shadow-sm mb-6 mb-lg-8">
+                <div class="card-header border-0 pt-6 px-6 px-lg-8">
+                    <div class="card-title d-block">
+                        <h2 class="fw-bold text-gray-900 fs-5 mb-1">
+                            Total Average Trend
+                        </h2>
+                        <span id="trendDescription" class="text-muted fs-7">
+                            Performance trajectory
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2 px-6 px-lg-8 pb-8">
+                    <div id="chartLoading" class="text-center py-15">
+                        <span class="spinner-border spinner-border-sm text-secondary me-2"></span>
+                        <span class="text-muted fs-7">Loading performance trend...</span>
+                    </div>
+
+                    <div id="performanceChart" class="performance-chart d-none">
+                        <svg id="trendSvg" viewBox="0 0 1000 280" preserveAspectRatio="none"></svg>
+                    </div>
+
+                    <div id="chartEmpty" class="text-center py-15 d-none">
+                        <i class="bi bi-bar-chart-line fs-2x text-gray-400 d-block mb-3"></i>
+                        <div class="fw-bold text-gray-700 fs-6 mb-1">
+                            No Performance Data
+                        </div>
+                        <div class="text-muted fs-7">
+                            No period performance data is available.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period Breakdown -->
+            <div class="card card-flush shadow-sm">
+                <div class="card-header border-0 pt-6 px-6 px-lg-8">
+                    <div class="card-title">
+                        <h2 id="breakdownTitle" class="fw-bold text-gray-900 fs-5 mb-0">
+                            Performance Breakdown
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2 px-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 mb-0">
+                            <thead>
+                                <tr class="fw-bold text-muted text-uppercase fs-8">
+                                    <th class="ps-6 ps-lg-8 min-w-125px">Period</th>
+                                    <th class="text-center min-w-125px">Technical Score</th>
+                                    <th class="text-center min-w-125px">Soft Skill</th>
+                                    <th class="text-center min-w-150px">Self Assessment</th>
+                                    <th class="text-center min-w-125px">Peer Review</th>
+                                    <th class="text-center min-w-125px pe-6 pe-lg-8">Total Average</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="periodTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-15">
+                                        <span class="spinner-border spinner-border-sm text-secondary me-2"></span>
+                                        <span class="text-muted fs-7">Loading performance data...</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back -->
+            <div class="d-flex justify-content-end mt-6 mb-6">
+                <a href="/PerformanceReview/Supervisor/InternPerformance" class="btn btn-light btn-sm fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE = "https://localhost:7089";
+
+        let planId = null;
+        let internId = null;
+        let performanceData = null;
+
+        document.addEventListener("DOMContentLoaded", initializePage);
+
+        async function initializePage() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+
+                planId = Number(params.get("planId"));
+                internId = Number(params.get("internId"));
+
+                if (!planId || !internId) {
+                    renderError("Invalid performance detail parameters.");
+                    return;
+                }
+
+                await loadPerformanceDetail();
+            } catch (error) {
+                console.error("Failed to initialize performance detail page:", error);
+                renderError("Failed to load intern performance details.");
+            }
+        }
+
+        function getToken() {
+            return window.aiaAuth ? window.aiaAuth.getToken() : null;
+        }
+
+        async function apiGet(url) {
+            const token = getToken();
+
+            if (!token) {
+                if (window.aiaAuth) window.aiaAuth.signOut();
+                throw new Error("Authentication token not found.");
+            }
+
+            const response = await fetch(`${API_BASE}${url}`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) {
+                if (window.aiaAuth) window.aiaAuth.signOut();
+                throw new Error("Unauthorized.");
+            }
+
+            if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+
+            return await response.json();
+        }
+
+        async function loadPerformanceDetail() {
+            const result = await apiGet(`/api/intern-performance/${planId}/${internId}/detail`);
+            performanceData = result.content ?? result;
+
+            if (!performanceData) {
+                renderError("No performance details are available.");
+                return;
+            }
+
+            renderHeader();
+            renderSummary();
+            renderTrend();
+            renderPeriodBreakdown();
+        }
+
+        function renderHeader() {
+            document.getElementById("internName").textContent = performanceData.fullName ?? "-";
+            document.getElementById("internRole").textContent = performanceData.internRole ?? "-";
+        }
+
+        function renderSummary() {
+            const peak = performanceData.peakPerformanceScore;
+            const lowest = performanceData.lowestPerformanceScore;
+            const annualAverage = performanceData.annualAverageScore;
+
+            document.getElementById("peakScore").textContent = formatScoreValue(peak?.overallScore);
+            document.getElementById("peakPeriod").textContent = peak?.periodLabel ?? "-";
+
+            document.getElementById("lowestScore").textContent = formatScoreValue(lowest?.overallScore);
+            document.getElementById("lowestPeriod").textContent = lowest?.periodLabel ?? "-";
+
+            document.getElementById("annualAverage").textContent = formatScoreValue(annualAverage);
+        }
+
+        function renderTrend() {
+            const periods = performanceData.periods ?? [];
+
+            document.getElementById("chartLoading").classList.add("d-none");
+
+            if (!periods.length) {
+                document.getElementById("chartEmpty").classList.remove("d-none");
+                return;
+            }
+
+            document.getElementById("performanceChart").classList.remove("d-none");
+
+            const periodType = performanceData.periodType ?? "Period";
+            document.getElementById("trendDescription").textContent = `${periodType} performance trajectory`;
+
+            const svg = document.getElementById("trendSvg");
+
+            const width = 1000;
+            const height = 280;
+            const paddingX = 35;
+            const paddingTop = 25;
+            const paddingBottom = 45;
+
+            const values = periods.map(period => Number(period.overallScore ?? 0));
+            const minValue = Math.min(...values);
+            const maxValue = Math.max(...values);
+            const range = maxValue - minValue || 1;
+
+            const chartWidth = width - paddingX * 2;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            const points = periods.map((period, index) => {
+                const x = periods.length === 1
+                    ? width / 2
+                    : paddingX + (index / (periods.length - 1)) * chartWidth;
+
+                const y = paddingTop + ((maxValue - Number(period.overallScore ?? 0)) / range) * chartHeight;
+
+                return { x, y, label: period.periodLabel, value: period.overallScore };
+            });
+
+            const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+
+            let svgContent = `
+                <line x1="${paddingX}" y1="${height - paddingBottom}" x2="${width - paddingX}" y2="${height - paddingBottom}" stroke="#E4E6EF" stroke-width="1" />
+                <path d="${path}" class="chart-line" />
+            `;
+
+            points.forEach(point => {
+                svgContent += `
+                    <circle cx="${point.x}" cy="${point.y}" r="5" class="chart-point" />
+                    <text x="${point.x}" y="${point.y - 12}" text-anchor="middle" fill="#5E6278" font-size="14" font-weight="600">${formatScoreValue(point.value)}</text>
+                    <text x="${point.x}" y="${height - 12}" text-anchor="middle" fill="#7E8299" font-size="12">${escapeHtml(point.label)}</text>
+                `;
+            });
+
+            svg.innerHTML = svgContent;
+        }
+
+        function renderPeriodBreakdown() {
+            const periods = performanceData.periods ?? [];
+            const tbody = document.getElementById("periodTableBody");
+            const title = document.getElementById("breakdownTitle");
+
+            const periodType = performanceData.periodType ?? "Period";
+
+            title.textContent = `${periodType} Performance Breakdown`;
+
+            if (!periods.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-15">
+                            <i class="bi bi-bar-chart-line fs-2x text-gray-400 d-block mb-3"></i>
+                            <div class="fw-bold text-gray-700 fs-6 mb-1">No Performance Data</div>
+                            <div class="text-muted fs-7">No period performance data is available.</div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = periods.map(period => `
+                <tr>
+                    <td class="ps-6 ps-lg-8">
+                        <span class="fw-semibold text-gray-800 fs-7">${escapeHtml(period.periodLabel)}</span>
+                    </td>
+
+                    <td class="text-center text-gray-600 fs-7">
+                        ${formatScore(period.techScore)}
+                    </td>
+
+                    <td class="text-center text-gray-600 fs-7">
+                        ${formatScore(period.softSkillScore)}
+                    </td>
+
+                    <td class="text-center text-gray-600 fs-7">
+                        ${formatScore(period.selfAssessmentScore)}
+                    </td>
+
+                    <td class="text-center text-gray-600 fs-7">
+                        ${formatScore(period.peerReviewScore)}
+                    </td>
+
+                    <td class="text-center pe-6 pe-lg-8">
+                        <span class="fw-bold text-gray-800 fs-7">
+                            ${formatScore(period.overallScore)}
+                        </span>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function formatScore(value) {
+            return value === null || value === undefined || value === "" ? "-" : formatScoreValue(value);
+        }
+
+        function formatScoreValue(value) {
+            return value === null || value === undefined || value === "" ? "-" : Number(value).toFixed(2);
+        }
+
+        function renderError(message) {
+            document.getElementById("internName").textContent = "Unable to Load Performance";
+            document.getElementById("internRole").textContent = message;
+
+            document.getElementById("chartLoading").classList.add("d-none");
+            document.getElementById("chartEmpty").classList.remove("d-none");
+
+            document.getElementById("periodTableBody").innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-15">
+                        <i class="bi bi-exclamation-circle fs-2x text-danger d-block mb-3"></i>
+                        <div class="fw-bold text-gray-700 fs-6 mb-1">Something went wrong</div>
+                        <div class="text-muted fs-7">${escapeHtml(message)}</div>
+                    </td>
+                </tr>`;
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return "";
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+}

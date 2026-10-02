@@ -52,7 +52,7 @@ internal sealed class UpdatePerformanceReviewPlanCommandHandler(
             }
         }
 
-        foreach (var group in payload.ScoreWeights.GroupBy(x => x.SubjectRoleId))
+        foreach (var group in payload.ScoreWeights.GroupBy(x => x.SubjectJobTitle))
         {
             if (group.Sum(x => x.Weight) != 100)
                 return Result.Failure(

@@ -273,4 +273,48 @@ public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
     }
 
 
+    public async Task<List<PerformanceReviewEmployeeDto>> GetPerformanceReviewEmployeesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _sqldbContext.Employees
+            .AsNoTracking()
+            .Where(x => x.IsActive && !x.IsDeleted)
+            .OrderBy(x => x.FullName)
+            .Select(x => new PerformanceReviewEmployeeDto(
+                x.Id,
+                x.EmploymentInformation != null
+                    ? x.EmploymentInformation.DisplayId ?? ""
+                    : "",
+                x.FullName,
+                x.EmploymentInformation != null
+                    ? x.EmploymentInformation.DepartmentName ?? ""
+                    : "",
+                x.EmploymentInformation != null
+                    ? x.EmploymentInformation.PositionName ?? ""
+                    : ""
+            ))
+            .ToListAsync(cancellationToken);
+    }
+
+
+    public async Task<List<PositionLookupDto>> GetPositionLookupAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var positions = await _sqldbContext.Employees
+            .AsNoTracking()
+            .Where(x =>
+                x.IsActive &&
+                !x.IsDeleted &&
+                x.RoleId == 2 &&
+                x.EmploymentInformation != null &&
+                !string.IsNullOrWhiteSpace(
+                    x.EmploymentInformation.PositionName))
+            .Select(x => x.EmploymentInformation!.PositionName!)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync(cancellationToken);
+
+        return positions
+            .Select(x => new PositionLookupDto(x))
+            .ToList();
+    }
 }
