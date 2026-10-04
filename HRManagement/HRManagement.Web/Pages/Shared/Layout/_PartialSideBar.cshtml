@@ -29,7 +29,7 @@
     // Execute synchronously before the DOM to paint the correct menu instantly
     (function() {
         try {
-            const u = window.xxxAuth ? window.xxxAuth.getUserInfo() : null;
+            const u = window.aiaAuth ? window.aiaAuth.getUserInfo() : null;
             if (u) {
                 const role = u.role || u["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "";
                 const roleId = u.role_id || "";
@@ -367,7 +367,7 @@
             </div>
             <div class="separator my-2"></div>
             <div class="menu-item px-3">
-                <a href="#" onclick="event.preventDefault(); window.xxxAuth && window.xxxAuth.signOut();" class="menu-link px-5 text-hover-danger">
+                <a href="#" onclick="event.preventDefault(); window.aiaAuth && window.aiaAuth.signOut();" class="menu-link px-5 text-hover-danger">
                     <i class="bi bi-box-arrow-right fs-5 me-2"></i> Sign Out
                 </a>
             </div>
@@ -380,7 +380,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const userInfo = window.xxxAuth ? window.xxxAuth.getUserInfo() : null;
+        const userInfo = window.aiaAuth ? window.aiaAuth.getUserInfo() : null;
         if (userInfo) {
             const fullName = userInfo.fullname || userInfo.fullName || userInfo.unique_name
                 || userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]

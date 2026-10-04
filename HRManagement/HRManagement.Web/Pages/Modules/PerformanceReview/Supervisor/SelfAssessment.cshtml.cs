@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor
 {
-    public class SelfAssessmentModel : PageModel
+    public class SelfAssessmentReviewModel : PageModel
     {
         public void OnGet()
         {

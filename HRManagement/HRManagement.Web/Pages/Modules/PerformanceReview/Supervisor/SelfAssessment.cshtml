@@ -1,4 +1,585 @@
-﻿@page
-@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.SelfAssessmentModel
+﻿@page "/PerformanceReview/Supervisor/SelfAssessmentReview/{intervalId:int}/{subjectId:int}"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.SelfAssessmentReviewModel
 @{
+    ViewData["Title"] = "Self Assessment Review";
 }
+
+<style>
+    :root {
+        --background: #f9fafb;
+        --card: #ffffff;
+        --border: #e5e7eb;
+        --foreground: #111827;
+        --muted-foreground: #4b5563;
+        --destructive: #dc2626;
+        --destructive-hover: #b91c1c;
+        --transparent-hover: #f1f5f9;
+        --border-gray: #cbd5e1;
+    }
+
+    .btn-rating-active {
+        background-color: var(--destructive) !important;
+        color: white !important;
+        border-color: var(--destructive) !important;
+    }
+
+    .btn-action-primary {
+        background-color: var(--destructive) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-primary:hover {
+            background-color: var(--destructive-hover) !important;
+        }
+
+    .btn-action-secondary {
+        background-color: transparent !important;
+        color: var(--muted-foreground) !important;
+        border: 1px solid var(--border-gray) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+        .btn-action-secondary:hover {
+            background-color: var(--transparent-hover) !important;
+            color: var(--foreground) !important;
+        }
+
+    .skeleton-placeholder {
+        background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 50%, #f2f2f2 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s infinite linear;
+        border-radius: 0.475rem;
+    }
+
+    @@keyframes skeleton-pulse {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .breadcrumb-link {
+        text-decoration: none;
+        color: var(--muted-foreground);
+        transition: color 0.15s ease;
+    }
+
+        .breadcrumb-link:hover {
+            color: var(--foreground);
+        }
+
+    .avatar-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .nav-tab-btn {
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+        .nav-tab-btn.active-tab {
+            background-color: #fce8e6;
+            color: var(--destructive);
+            border-color: #f5c6cb;
+        }
+
+        .nav-tab-btn.inactive-tab {
+            background-color: var(--destructive);
+            color: #ffffff;
+        }
+
+            .nav-tab-btn.inactive-tab:hover {
+                background-color: var(--destructive-hover);
+            }
+
+    .score-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--destructive);
+        text-transform: uppercase;
+    }
+
+    .category-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    .dropdown-container {
+        min-width: 240px;
+    }
+
+    .employee-answer-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.475rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+</style>
+
+<div class="px-10">
+    <!-- Breadcrumb Navigation -->
+    <nav class="d-flex align-items-center gap-2 pt-6 mb-4 text-muted fs-7">
+        <a href="/PerformanceReview/Supervisor/Assignments" class="breadcrumb-link d-flex align-items-center gap-1">
+            <i class="ki-duotone ki-left fs-7"></i> Performance Review
+        </a>
+        <span class="text-gray-300">/</span>
+        <a href="/PerformanceReview/Supervisor/Assignments" class="breadcrumb-link">Assignments</a>
+        <span class="text-gray-300">/</span>
+        <span class="text-gray-900 fw-semibold" id="breadcrumbSubject">Self Assessment Review</span>
+    </nav>
+
+    <!-- Header Block -->
+    <div class="mb-6">
+        <h1 class="fw-bold text-gray-900 mb-2" id="assessmentTitle">Self Assessment Review</h1>
+        <p class="text-muted fs-6 d-flex flex-wrap align-items-center gap-2" id="assessmentMeta">Review employee self-assessment and evaluate text responses.</p>
+    </div>
+
+    <!-- Top Info & Navigation Cards Bar -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-4 mb-6" id="topHeaderBar">
+        <div class="d-flex align-items-center gap-3">
+            <!-- Employee Dropdown Card -->
+            <div class="bg-white border border-gray-200 rounded-3 px-3 py-2 d-flex align-items-center gap-3 shadow-xs dropdown-container">
+                <div class="avatar-circle" id="subjectInitials">--</div>
+                <div class="d-flex flex-column w-100">
+                    <label for="employeeSelect" class="text-muted fs-8 fw-semibold mb-1">EMPLOYEE</label>
+                    <select id="employeeSelect" class="form-select form-select-sm border-0 p-0 fw-bold text-gray-900 fs-7 shadow-none" style="background-position: right 0 center;" onchange="onEmployeeChanged(this.value)">
+                        <option value="">Loading employees...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="navigateToSupervisorAssessment()">
+                <i class="bi bi-clipboard-check fs-6"></i>
+                <span>Supervisor Assignment</span>
+            </button>
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="navigateToPeerReview()">
+                <i class="bi bi-people fs-6"></i>
+                <span>Peer Review</span>
+            </button>
+            <button type="button" class="nav-tab-btn active-tab">
+                <i class="bi bi-person-badge fs-6"></i>
+                <span>Self Assessment</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Questions Wrapper & Cards -->
+    <div id="questionsWrapper" class="d-flex flex-column gap-4">
+        <!-- Skeleton Loading Container -->
+        <div id="skeletonContainer" class="card card-flush bg-white rounded-lg mb-8 shadow-sm">
+            <div class="d-flex flex-column">
+                <div class="d-flex align-items-center justify-content-between py-6 px-6 border-bottom border-gray-100">
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <div class="skeleton-placeholder h-25px w-75 rounded-1"></div>
+                        <div class="skeleton-placeholder h-15px w-50 rounded-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons Bar -->
+    <div id="actionButtonsContainer" class="d-none justify-content-end gap-3 mt-6 mb-10">
+        <button type="button" class="btn btn-action-secondary fw-bold" onclick="handleCancel()">Kembali</button>
+        <button type="button" id="btnSave" class="btn btn-action-secondary fw-bold d-none" onclick="saveDraft()">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn btn-action-primary fw-bold d-none" onclick="handleFormSubmit()">Kirim Penilaian</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "https://localhost:7089";
+    let assessmentData = null;
+    let formAnswers = {};
+    let currentIntervalId = null;
+    let currentSubjectId = null;
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        const urlPath = window.location.pathname.split('/');
+        currentSubjectId = urlPath.pop();
+        currentIntervalId = urlPath.pop();
+
+        if (currentIntervalId && currentSubjectId) {
+            await fetchEmployeeList();
+            await loadSelfAssessmentData(currentIntervalId, currentSubjectId);
+        } else {
+            renderEmptyState("Parameter rute tidak valid atau tidak lengkap.");
+        }
+    });
+
+    function getAuthHeaders() {
+        const token = window.aiaAuth && window.aiaAuth.getToken();
+        if (!token) {
+            window.aiaAuth && window.aiaAuth.signOut();
+            return null;
+        }
+        return {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        };
+    }
+
+    async function fetchEmployeeList() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const response = await fetch(`${API_BASE}/api/employee/regulars`, { method: "GET", headers });
+            if (!response.ok) throw new Error("Gagal mengambil data karyawan.");
+
+            const result = await response.json();
+            if (result && !result.isError && Array.isArray(result.content)) {
+                renderEmployeeDropdown(result.content);
+            }
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+        }
+    }
+
+    function renderEmployeeDropdown(employees) {
+        const select = document.getElementById("employeeSelect");
+        if (!employees.length) {
+            select.innerHTML = `<option value="">Data kosong</option>`;
+            return;
+        }
+
+        select.innerHTML = employees.map(e => `
+            <option value="${e.id}" ${e.id == currentSubjectId ? 'selected' : ''}>
+                ${escapeHtml(e.fullName)}
+            </option>
+        `).join('');
+
+        updateEmployeeAvatar();
+    }
+
+    async function onEmployeeChanged(newSubjectId) {
+        if (!newSubjectId || newSubjectId === currentSubjectId) return;
+
+        currentSubjectId = newSubjectId;
+        updateEmployeeAvatar();
+
+        window.history.pushState({}, '', `/PerformanceReview/Supervisor/SelfAssessmentReview/${currentIntervalId}/${currentSubjectId}`);
+
+        renderSkeletonLoading();
+        await loadSelfAssessmentData(currentIntervalId, currentSubjectId);
+    }
+
+    function updateEmployeeAvatar() {
+        const select = document.getElementById("employeeSelect");
+        const selectedText = select.options[select.selectedIndex]?.text || "--";
+        const cleanName = selectedText.split('(')[0].trim();
+        document.getElementById("subjectInitials").innerText = getInitials(cleanName);
+        document.getElementById("breadcrumbSubject").innerText = `Self Assessment: ${cleanName}`;
+    }
+
+    async function loadSelfAssessmentData(intervalId, subjectId) {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const url = `${API_BASE}/api/assignment/intervals/${intervalId}/self-assessment-review/subject/${subjectId}`;
+            const response = await fetch(url, { method: "GET", headers });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+            if (!response.ok) throw new Error("Gagal mengambil data self assessment.");
+
+            const result = await response.json();
+
+            if (!result || result.isError || !result.content) {
+                renderEmptyState("Data self assessment tidak ditemukan untuk subjek ini.");
+                return;
+            }
+
+            assessmentData = result.content;
+            renderAssessmentDetails(assessmentData);
+        } catch (err) {
+            console.error("Error fetching self assessment:", err);
+            renderEmptyState("Terjadi kesalahan saat mengambil detail self assessment.");
+        }
+    }
+
+    function renderAssessmentDetails(content) {
+        const statusLabel = (content.status || "Not Started").toLowerCase();
+        
+        document.getElementById("assessmentTitle").innerText = "SELF ASSESSMENT REVIEW";
+        document.getElementById("assessmentMeta").innerHTML = `
+            <span>Review employee answers. Status: ${statusLabel.toUpperCase()}</span>
+        `;
+
+        const wrapper = document.getElementById("questionsWrapper");
+        const questions = content.questions || content.assessment?.questions || [];
+        if (questions.length === 0) {
+            renderEmptyState("Tidak ada pertanyaan dalam evaluasi ini.");
+            return;
+        }
+
+        const isEditable = (statusLabel === "not started" || statusLabel === "drafted" || statusLabel === "in progress");
+
+        wrapper.innerHTML = `
+            <div id="activeCardContainer" class="card card-flush bg-white rounded-lg shadow-sm d-flex flex-column gap-2 px-6 py-4"></div>
+        `;
+        const cardContainer = document.getElementById("activeCardContainer");
+
+        renderQuestions(questions, cardContainer, isEditable);
+
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        const saveBtn = document.getElementById("btnSave");
+        const submitBtn = document.getElementById("btnSubmit");
+
+        actionContainer.classList.replace("d-none", "d-flex");
+
+        if (isEditable) {
+            saveBtn?.classList.remove("d-none");
+            submitBtn?.classList.remove("d-none");
+        } else {
+            saveBtn?.classList.add("d-none");
+            submitBtn?.classList.add("d-none");
+        }
+    }
+
+    function renderQuestions(questions, container, isEditable) {
+        formAnswers = {};
+
+        const html = questions.map((q, idx) => {
+            const indexStr = String(q.questionOrder || idx + 1).padStart(2, '0');
+            
+            const employeeText = q.answer?.textValue || q.employeeTextValue || "";
+            const employeeRating = q.answer?.ratingValue || q.employeeRatingValue || null;
+            
+            // Existing supervisor score from review data bindings
+            const existingSupervisorScore = q.answer?.supervisorRating ?? q.supervisorScore ?? null;
+            formAnswers[q.id] = { score: existingSupervisorScore };
+
+            const isTextType = q.questionType === "text" || employeeText.length > 0;
+            let supervisorControlHtml = "";
+
+            if (isTextType) {
+                const buttonsHtml = [1, 2, 3, 4, 5].map(score => {
+                    const isActive = existingSupervisorScore === score;
+                    const disabledAttr = isEditable ? "" : "disabled";
+
+                    return `
+                        <button type="button"
+                                class="btn border fw-bold d-flex align-items-center justify-content-center rounded-3 score-btn-${q.id} ${isActive ? 'btn-rating-active' : 'bg-white'}"
+                                style="width: 40px; height: 40px;"
+                                data-value="${score}"
+                                ${disabledAttr}
+                                onclick="toggleQuestionScore(${q.id}, ${score})">
+                            ${score}
+                        </button>
+                    `;
+                }).join('');
+
+                supervisorControlHtml = `
+                    <div class="col-lg-4 d-flex flex-column align-items-lg-end align-items-start gap-1">
+                        <span class="score-label">SUPERVISOR SCORE</span>
+                        <div class="d-flex align-items-center gap-2">
+                            ${buttonsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                supervisorControlHtml = `
+                    <div class="col-lg-4 d-flex flex-column align-items-lg-end align-items-start gap-1">
+                        <span class="score-label">EMPLOYEE RATING</span>
+                        <div class="d-flex align-items-center justify-content-center bg-light border border-gray-200 rounded-3 fw-bold text-dark px-4 py-2 fs-6" style="min-width: 40px; height: 40px;">
+                            ${employeeRating ?? 'N/A'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="py-4 border-bottom border-gray-100 last-border-0">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="category-tag">QUESTION ${escapeHtml(indexStr)}</span>
+                    </div>
+                    <h6 class="fw-bold text-gray-900 fs-6 mb-3">${escapeHtml(q.questionText)}</h6>
+
+                    <div class="row g-3 align-items-start">
+                        <div class="col-lg-8">
+                            <label class="text-muted fs-8 fw-semibold mb-1">EMPLOYEE ANSWER:</label>
+                            <div class="employee-answer-box">
+                                ${escapeHtml(employeeText || (employeeRating ? `Rating given: ${employeeRating}` : 'No answer provided'))}
+                            </div>
+                        </div>
+
+                        ${supervisorControlHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function toggleQuestionScore(questionId, score) {
+        if (!formAnswers[questionId]) {
+            formAnswers[questionId] = { score: null };
+        }
+
+        const currentScore = formAnswers[questionId].score;
+        const newScore = (currentScore === score) ? null : score;
+        formAnswers[questionId].score = newScore;
+
+        const buttons = document.querySelectorAll(`.score-btn-${questionId}`);
+        buttons.forEach(btn => {
+            const btnVal = parseInt(btn.getAttribute("data-value"));
+            if (btnVal === newScore) {
+                btn.classList.add("btn-rating-active");
+                btn.classList.remove("bg-white");
+            } else {
+                btn.classList.remove("btn-rating-active");
+                btn.classList.add("bg-white");
+            }
+        });
+    }
+
+    async function handleFormSubmit() {
+        await submitAssessmentPayload(false);
+    }
+
+    async function saveDraft() {
+        await submitAssessmentPayload(true);
+    }
+
+    async function submitAssessmentPayload(isDraft) {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            // Updated payload structure matching SaveOrSubmitSelfAssessmentReviewPayload
+            const payload = {
+                intervalId: parseInt(currentIntervalId),
+                subjectId: parseInt(currentSubjectId),
+                isDraft: isDraft,
+                reviewScores: Object.keys(formAnswers).map(qId => ({
+                    questionId: parseInt(qId),
+                    supervisorRating: formAnswers[qId].score || null
+                }))
+            };
+
+            const endpoint = `${API_BASE}/api/assignment/self-assessment/review`;
+
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            if (response.status === 401) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return;
+            }
+
+            const result = await response.json();
+
+            if (!response.ok || (result && result.isFailure)) {
+                throw new Error(result?.Message || result?.error || "Gagal menyimpan penilaian self assessment.");
+            }
+
+            alert(isDraft ? "Draft berhasil disimpan!" : "Penilaian berhasil dikirim!");
+            if (!isDraft) {
+                window.location.href = "/PerformanceReview/Supervisor/Assignments";
+            }
+        } catch (err) {
+            console.error("Error submitting self assessment review:", err);
+            alert(err.message || "Terjadi kesalahan saat menyimpan penilaian.");
+        }
+    }
+
+    function navigateToSupervisorAssessment() {
+        window.location.href = `/PerformanceReview/Supervisor/AssignmentDetails/${currentIntervalId}/${currentSubjectId}`;
+    }
+
+    function navigateToPeerReview() {
+        window.location.href = `/PerformanceReview/Supervisor/PeerReviewDetails/${currentIntervalId}/${currentSubjectId}`;
+    }
+
+    function handleCancel() {
+        window.location.href = "/PerformanceReview/Supervisor/Assignments";
+    }
+
+    function getInitials(name) {
+        if (!name) return "--";
+        const parts = name.trim().split(" ");
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function renderSkeletonLoading() {
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        if (actionContainer) {
+            actionContainer.classList.replace("d-flex", "d-none");
+        }
+
+        document.getElementById("questionsWrapper").innerHTML = `
+            <div class="card card-flush bg-white rounded-lg mb-8 shadow-sm p-6">
+                <div class="skeleton-placeholder h-25px w-75 rounded-1 mb-4"></div>
+                <div class="skeleton-placeholder h-50px w-100 rounded-1"></div>
+            </div>
+        `;
+    }
+
+    function renderEmptyState(message) {
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        if (actionContainer) {
+            actionContainer.classList.replace("d-flex", "d-none");
+        }
+
+        document.getElementById("questionsWrapper").innerHTML = `
+            <div class="card card-flush text-center py-12 px-6 border border-dashed border-gray-300 bg-light rounded-2">
+                <i class="bi bi-exclamation-circle fs-3x text-gray-400 mb-3"></i>
+                <div class="text-gray-800 fw-bold fs-5 mb-1">Data Tidak Ditemukan</div>
+                <p class="text-muted fs-7 m-0">${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>

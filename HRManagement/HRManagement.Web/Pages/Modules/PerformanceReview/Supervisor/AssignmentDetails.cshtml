@@ -197,11 +197,11 @@
                 <i class="bi bi-clipboard-check fs-6"></i>
                 <span>Supervisor Assignment</span>
             </button>
-            <button type="button" class="nav-tab-btn inactive-tab" onclick="alert('Navigating to Peer Review...')">
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="navigateToPeerReview()">
                 <i class="bi bi-people fs-6"></i>
                 <span>Peer Review</span>
             </button>
-            <button type="button" class="nav-tab-btn inactive-tab" onclick="alert('Navigating to Self Assessment...')">
+            <button type="button" class="nav-tab-btn inactive-tab" onclick="navigateToSelfAssessment()">
                 <i class="bi bi-person-badge fs-6"></i>
                 <span>Self Assessment</span>
             </button>
@@ -278,6 +278,16 @@
             renderEmptyState("Parameter rute tidak valid atau tidak lengkap.");
         }
     });
+
+    function navigateToPeerReview() {
+        if (!currentIntervalId || !currentSubjectId) return;
+        window.location.href = `/PerformanceReview/Supervisor/PeerReviewDetails/${currentIntervalId}/${currentSubjectId}`;
+    }
+
+    function navigateToSelfAssessment() {
+        if (!currentIntervalId || !currentSubjectId) return;
+        window.location.href = `/PerformanceReview/Supervisor/SelfAssessmentReview/${currentIntervalId}/${currentSubjectId}`;
+    }
 
     function getAuthHeaders() {
         const token = window.aiaAuth && window.aiaAuth.getToken();
@@ -472,11 +482,11 @@
     }
 
     function renderAssessmentDetails(content) {
-        const statusLabel = (content.status || "Not Started").toLowerCase();
+        const statusLabel = (content.status || "locked").toLowerCase();
         const typeLabel = (content.assessment?.assessmentType || "SUPERVISOR ASSESSMENT").replace(/-/g, ' ').toUpperCase();
 
         let auditHtml = "";
-        if (statusLabel !== "not started") {
+        if (statusLabel !== "locked") {
             const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
             let formattedDate = "N/A";
 
