@@ -39,9 +39,23 @@ public class PerformanceReviewPlan : BaseTable
         MarkAsModified(actionerId);
     }
 
-    public void ApplyUpdate()
+    public void ApplyUpdate(
+        string name,
+        string periodType,
+        int durationInMonth,
+        int minReviewDurationInDays,
+        DateTime startDate,
+        DateTime endDate,
+        string status,
+        int actionerId)
     {
-        // ... update properties as needed
-        MarkAsModified(1); // Replace 1 with the actual actionerId
+        Name = UseIfProvided(name, Name);
+        PeriodType = UseIfProvided(periodType, PeriodType);
+        DurationInMonth = durationInMonth == 0 ? DurationInMonth : durationInMonth;
+        MinReviewDurationInDays = minReviewDurationInDays == 0 ? MinReviewDurationInDays : minReviewDurationInDays;
+        StartDate = startDate == default ? StartDate : startDate;
+        EndDate = endDate == default ? EndDate : endDate;
+        Status = UseIfProvided(status, Status);
+        MarkAsModified(actionerId);
     }
 }

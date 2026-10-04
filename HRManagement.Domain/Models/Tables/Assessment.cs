@@ -18,6 +18,8 @@ public class Assessment : BaseTable
     public ICollection<AssessmentQuestion> Questions { get; private set; } = new List<AssessmentQuestion>();
     public ICollection<FillAssignment> FillAssignments { get; set; } = new List<FillAssignment>();
 
+    public ICollection<AssessmentReceiver> Receivers { get; set; } = new List<AssessmentReceiver>();
+
     protected Assessment() { }
 
     public Assessment(
