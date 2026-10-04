@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace HRManagement.Application.Features.PerformanceReview.Assignments.Queries;
 
 public record GetPeerReviewsBySubjectQuery(
+    int SupervisorId,
     int IntervalId,
     int SubjectId
 ) : IRequest<Result<PeerReviewMatrixResponseDto>>;
@@ -28,6 +29,7 @@ internal sealed class GetPeerReviewsBySubjectQueryHandler(
 
         var data = await assignmentRepository
             .GetPeerReviewsBySubjectAsync(
+                request.SupervisorId,
                 request.IntervalId,
                 request.SubjectId,
                 cancellationToken);

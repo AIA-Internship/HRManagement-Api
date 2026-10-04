@@ -214,11 +214,12 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
     public async Task<EmployeeOngoingPerformanceReviewPlanResponseDto?> GetEmployeeOngoingPerformanceReviewPlanAsync(int fillerId, CancellationToken cancellationToken)
     {
         var currentDate = DateTime.UtcNow.Date;
+        //var currentDate = new DateTime(2026, 7, 1);
 
         var planDetail = await _sqldbContext.PerformanceReviewPlans
             .AsNoTracking()
             .Where(p => !p.IsDeleted
-                     && p.Status == "ongoing"
+                     //&& p.Status == "ongoing"
                      && currentDate >= p.StartDate
                      && currentDate <= p.EndDate
                      )

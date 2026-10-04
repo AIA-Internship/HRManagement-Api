@@ -38,6 +38,8 @@ namespace HRManagement.Domain.Models.Response
         public int Id { get; set; }
         public string? TextValue { get; set; }
         public int? RatingValue { get; set; }
+
+        public decimal? SupervisorRating { get; set; }
     }
 
     public class EmployeeMinimalInfoResponseDto

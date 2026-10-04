@@ -32,4 +32,11 @@ public class AssessmentAnswerScore : BaseTable
         ReviewerId = reviewerId ?? ReviewerId;
         MarkAsModified(actionerId);
     }
+
+    public void UpdateScore(decimal newScore, int? modifiedBy)
+    {
+        Score = newScore;
+        MarkAsModified(modifiedBy ?? 0);
+        ModifiedUtcDate = DateTime.UtcNow;
+    }
 }

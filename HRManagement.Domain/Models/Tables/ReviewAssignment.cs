@@ -58,4 +58,11 @@ public class ReviewAssignment : BaseTable
         Status = UseIfProvided(status, Status);
         MarkAsModified(actionerId);
     }
+
+    public void UpdateStatus(string newStatus, int? modifiedBy)
+    {
+        Status = newStatus;
+        MarkAsModified(modifiedBy ?? 0);
+        ModifiedUtcDate = DateTime.UtcNow;
+    }
 }

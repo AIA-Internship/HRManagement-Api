@@ -1,14 +1,10 @@
-﻿using HRManagement.Application.Auth.Permissions;
-using HRManagement.Application.Features.ESS.Employee.Commands;
-using HRManagement.Application.Features.PerformanceReview.Assignments.Queries;
+﻿using HRManagement.Application.Features.PerformanceReview.Assignments.Queries;
 using HRManagement.Application.Features.PerformanceReview.Commands;
 using HRManagement.Application.Features.PerformanceReview.Dashboards.Queries;
-using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HRManagement.Api.Controllers;
 
@@ -110,15 +106,60 @@ public class FillAssignmentController(ISender sender) : BaseApiController(sender
         return Ok(new { AssignmentId = result.Value });
     }
 
+    [HttpGet("intervals/{intervalId:int}/self-assessment-review/subject/{subjectId:int}")]
+    public async Task<IActionResult> GetSupervisorSelfAssessmentReviewBySubject(
+    [FromRoute] int intervalId,
+    [FromRoute] int subjectId,
+    [FromQuery] int? reviewerId,
+    CancellationToken ct)
+    {
+        // If reviewerId is provided and valid (> 0), use it; otherwise fall back to CurrentEmployeeId
+        var effectiveSupervisorId = (reviewerId.HasValue && reviewerId.Value > 0)
+            ? reviewerId.Value
+            : CurrentEmployeeId;
+
+        var query = new GetSupervisorSelfAssessmentReviewQuery(intervalId, effectiveSupervisorId, subjectId);
+        var result = await Sender.Send(query, ct);
+
+        return HandleResult(result);
+    }
+
+    [HttpPost("self-assessment/review")]
+    public async Task<IActionResult> SaveOrSubmitSelfAssessmentReview(
+    [FromBody] SaveOrSubmitSelfAssessmentReviewPayload request,
+    CancellationToken cancellationToken)
+    {
+        var command = new SaveOrSubmitSelfAssessmentReviewCommand(request, CurrentEmployeeId);
+        var result = await Sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { Message = result.Error });
+
+        return Ok(new { ReviewAssignmentId = result.Value });
+    }
+
     [HttpGet("intervals/{intervalId:int}/peer-reviews/subjects/{subjectId:int}")]
     public async Task<IActionResult> GetPeerReviewsBySubject(
     [FromRoute] int intervalId,
     [FromRoute] int subjectId,
     CancellationToken ct)
     {
-        var query = new GetPeerReviewsBySubjectQuery(intervalId, subjectId);
+        var query = new GetPeerReviewsBySubjectQuery(CurrentEmployeeId, intervalId, subjectId);
         var result = await Sender.Send(query, ct);
-
         return HandleResult(result);
+    }
+
+    [HttpPost("peer-reviews/review")]
+    public async Task<IActionResult> SaveOrSubmitPeerReview(
+    [FromBody] SaveOrSubmitPeerReviewReviewPayload request,
+    CancellationToken cancellationToken)
+    {
+        var command = new SaveOrSubmitPeerReviewReviewCommand(request, CurrentEmployeeId);
+        var result = await Sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { Message = result.Error });
+
+        return Ok(new { Message = "Peer review ratings successfully saved." });
     }
 }
