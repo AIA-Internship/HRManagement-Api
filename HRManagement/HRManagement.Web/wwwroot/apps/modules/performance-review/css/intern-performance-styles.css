@@ -1,0 +1,87 @@
+﻿.intern-performance-table {
+    min-width: 850px;
+}
+
+.intern-performance-page .intern-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #f9f9f9 !important;
+    color: #6b7280 !important;
+}
+
+.intern-performance-detail-page .performance-chart {
+    width: 100%;
+    height: 18rem;
+}
+
+.intern-performance-detail-page .performance-chart svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.intern-performance-detail-page .intern-performance-chart-line {
+    fill: none !important;
+    stroke: #D31145 !important;
+    stroke-width: 0.2rem !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.intern-performance-detail-page .intern-performance-chart-point {
+    fill: #D31145 !important;
+    stroke: #ffffff;
+    stroke-width: 0.125rem;
+}
+
+.summary-icon {
+    width: 42px;
+    height: 42px;
+}
+
+.intern-performance-page .rank-number,
+.intern-performance-page .rank-number.top-rank {
+    color: #6b7280 !important;
+    font-weight: 700;
+}
+
+
+.intern-performance-table {
+    min-width: 53.125rem;
+}
+
+
+.intern-performance-page .rank-number {
+    color: #6b7280 !important;
+    font-weight: 700;
+}
+
+.intern-performance-detail-page .performance-chart {
+    width: 100%;
+    height: 18rem;
+}
+
+.intern-performance-detail-page .performance-chart svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.intern-performance-detail-page .intern-performance-chart-line {
+    fill: none !important;
+    stroke: #D31145 !important;
+    stroke-width: 0.2rem !important;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.intern-performance-detail-page .intern-performance-chart-point {
+    fill: #D31145 !important;
+    stroke: #ffffff;
+    stroke-width: 0.125rem;
+}
+
+.summary-icon {
+    width: 2.625rem;
+    height: 2.625rem;
+}

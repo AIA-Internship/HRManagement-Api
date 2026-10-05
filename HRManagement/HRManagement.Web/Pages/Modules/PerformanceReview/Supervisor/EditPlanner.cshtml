@@ -1,0 +1,351 @@
+﻿@page "/PerformanceReview/Supervisor/Planner/Edit"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.EditPlannerModel
+
+@{
+    ViewData["Title"] = "Edit Performance Plan";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/planner-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/edit-planner-styles.css" asp-append-version="true" />
+}
+
+<div id="editPlannerPage" class="d-flex flex-column flex-column-fluid edit-planner-page" data-plan-id="@Request.Query["planId"]">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid px-5 px-lg-10">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="pt-4 pt-lg-6 mb-4">
+                <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                    <li class="breadcrumb-item">Performance Review</li>
+                    <li class="breadcrumb-item">
+                        <a href="/PerformanceReview/Supervisor/Planner"
+                           class="text-muted text-hover-primary">
+                            Planner
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active text-brand" aria-current="page">
+                        Edit
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Header -->
+            <div class="mb-6 mb-lg-8">
+                <h1 class="fw-bold text-gray-900 fs-3 mb-2">
+                    Edit Performance Plan
+                </h1>
+
+                <p class="text-muted fs-6 mb-0">
+                    Update the plan settings, assessment configuration, and score weights.
+                </p>
+            </div>
+
+            <div id="messageContainer" class="alert d-none mb-5"></div>
+
+            <!-- General Settings -->
+            <div class="card card-flush shadow-sm mb-4">
+                <div class="card-header border-0 px-5 px-lg-8 pt-5 pt-lg-6">
+                    <div class="card-title mb-0">
+                        <h2 class="fw-bold text-gray-900 fs-4 mb-0">
+                            <i class="bi bi-sliders2 text-brand me-2"></i>
+                            General Settings
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="card-body px-5 px-lg-8 pt-3 pb-6">
+
+                    <div class="mb-6">
+                        <label class="form-label fs-8 fw-bold text-muted text-uppercase">
+                            Plan Title
+                        </label>
+
+                        <input id="planName"
+                               type="text"
+                               class="form-control form-control-solid fs-7"
+                               placeholder="e.g. 2026 Performance Review"
+                               maxlength="200">
+
+                        <div id="planNameError"
+                             class="text-danger fs-8 mt-2 d-none">
+                        </div>
+                    </div>
+
+                    <div class="separator my-6"></div>
+
+                    <div class="mb-5">
+                        <div class="fw-bold text-gray-800 fs-6 mb-1">
+                            Review Period
+                        </div>
+
+                        <div class="text-muted fs-8">
+                            Choose how often the review is conducted and how long the plan will run.
+                        </div>
+                    </div>
+
+                    <div class="row g-5">
+
+                        <div class="col-md-4">
+                            <label class="form-label fs-8 fw-bold text-muted text-uppercase">
+                                Period Type
+                            </label>
+
+                            <select id="periodType"
+                                    class="form-select form-select-solid fs-7">
+                                <option value="">Select period type</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly</option>
+                            </select>
+
+                            <div class="text-muted fs-8 mt-2">
+                                How often employees are reviewed.
+                            </div>
+
+                            <div id="periodTypeError"
+                                 class="text-danger fs-8 mt-2 d-none">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fs-8 fw-bold text-muted text-uppercase">
+                                Starts From
+                            </label>
+
+                            <input id="startDate"
+                                   type="date"
+                                   class="form-control form-control-solid fs-7">
+
+                            <div class="text-muted fs-8 mt-2">
+                                The plan must start on the first day of a month.
+                            </div>
+
+                            <div id="startDateError"
+                                 class="text-danger fs-8 mt-2 d-none">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fs-8 fw-bold text-muted text-uppercase">
+                                Duration
+                            </label>
+
+                            <div class="input-group">
+                                <input id="durationInMonth"
+                                       type="number"
+                                       class="form-control form-control-solid fs-7"
+                                       min="1"
+                                       step="1"
+                                       placeholder="e.g. 12">
+
+                                <span class="input-group-text bg-light border-0 fs-7">
+                                    months
+                                </span>
+                            </div>
+
+                            <div id="durationHelp"
+                                 class="text-muted fs-8 mt-2">
+                                Select a period type to see the duration rules.
+                            </div>
+
+                            <div id="durationError"
+                                 class="text-danger fs-8 mt-2 d-none">
+                            </div>
+
+                            <div id="endDatePreview"
+                                 class="d-none mt-3 p-3 bg-light-success rounded">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar-check text-success"></i>
+
+                                    <span class="text-success fw-semibold fs-8"
+                                          id="endDatePreviewText">
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessments -->
+            <div class="card card-flush shadow-sm mb-4">
+                <div class="card-header border-0 px-5 px-lg-8 py-5">
+                    <div class="card-title mb-0">
+                        <div>
+                            <h2 class="fw-bold text-gray-900 fs-4 mb-1">
+                                <i class="bi bi-ui-checks text-brand me-2"></i>
+                                Assessments
+                            </h2>
+
+                            <div class="text-muted fs-7">
+                                Select an assessment to configure its questions and participants.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body px-5 px-lg-8 pt-0 pb-6">
+
+                    <!-- Self Assessment -->
+                    <div class="mb-3">
+                        <button type="button"
+                                id="selfAssessmentButton"
+                                class="btn bg-light w-100 text-start p-4 d-flex align-items-center justify-content-between gap-4"
+                                onclick="toggleAssessment('self-assessment')">
+
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="symbol symbol-35px">
+                                    <span class="symbol-label bg-light-success">
+                                        <i class="bi bi-person text-success fs-5"></i>
+                                    </span>
+                                </span>
+
+                                <span>
+                                    <span class="d-block fw-bold text-gray-800 fs-6">
+                                        Self Assessment
+                                    </span>
+
+                                    <span class="d-block text-muted fs-8">
+                                        Individual reflection form
+                                    </span>
+                                </span>
+                            </span>
+
+                            <i id="selfAssessmentIcon"
+                               class="bi bi-chevron-down text-muted fs-6">
+                            </i>
+                        </button>
+
+                        <div id="selfAssessmentConfig"
+                             class="assessment-config bg-white rounded mt-2 p-5">
+                        </div>
+                    </div>
+
+                    <!-- Supervisor Assessment -->
+                    <div class="mb-3">
+                        <button type="button"
+                                id="supervisorAssessmentButton"
+                                class="btn bg-light w-100 text-start p-4 d-flex align-items-center justify-content-between gap-4"
+                                onclick="toggleAssessment('supervisor-assessment')">
+
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="symbol symbol-35px">
+                                    <span class="symbol-label bg-light-warning">
+                                        <i class="bi bi-star text-warning fs-5"></i>
+                                    </span>
+                                </span>
+
+                                <span>
+                                    <span class="d-block fw-bold text-gray-800 fs-6">
+                                        Supervisor Assessment
+                                    </span>
+
+                                    <span class="d-block text-muted fs-8">
+                                        Individual review form
+                                    </span>
+                                </span>
+                            </span>
+
+                            <i id="supervisorAssessmentIcon"
+                               class="bi bi-chevron-down text-muted fs-6">
+                            </i>
+                        </button>
+
+                        <div id="supervisorAssessmentConfig"
+                             class="assessment-config bg-light-warning bg-opacity-10 rounded mt-2 p-5">
+                        </div>
+                    </div>
+
+                    <!-- Peer Review -->
+                    <div>
+                        <button type="button"
+                                id="peerReviewButton"
+                                class="btn bg-light w-100 text-start p-4 d-flex align-items-center justify-content-between gap-4"
+                                onclick="toggleAssessment('peer-review')">
+
+                            <span class="d-flex align-items-center gap-3">
+                                <span class="symbol symbol-35px">
+                                    <span class="symbol-label bg-light-danger">
+                                        <i class="bi bi-people text-danger fs-5"></i>
+                                    </span>
+                                </span>
+
+                                <span>
+                                    <span class="d-block fw-bold text-gray-800 fs-6">
+                                        Peer Review
+                                    </span>
+
+                                    <span class="d-block text-muted fs-8">
+                                        Colleague evaluation module
+                                    </span>
+                                </span>
+                            </span>
+
+                            <i id="peerReviewIcon"
+                               class="bi bi-chevron-down text-muted fs-6">
+                            </i>
+                        </button>
+
+                        <div id="peerReviewConfig"
+                             class="assessment-config bg-light-danger bg-opacity-10 rounded mt-2 p-5">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Score Weights -->
+            <div class="card card-flush shadow-sm mb-8">
+                <div class="card-header border-0 px-5 px-lg-8 py-5">
+                    <div class="card-title mb-0">
+                        <div>
+                            <h2 class="fw-bold text-gray-900 fs-4 mb-1">
+                                <i class="bi bi-pie-chart text-brand me-2"></i>
+                                Score Weight
+                            </h2>
+
+                            <div class="text-muted fs-7">
+                                Set score weights for each intern position.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body px-5 px-lg-8 pt-0 pb-6">
+                    <div id="scoreWeightList"></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex flex-column flex-sm-row justify-content-end gap-3 mb-8">
+                <a href="/PerformanceReview/Supervisor/Planner"
+                   class="btn btn-light fw-bold px-8 py-3">
+                    Cancel
+                </a>
+
+                <button type="button"
+                        id="savePlanButton"
+                        class="btn btn-brand fw-bold px-8 py-3">
+
+                    <span class="indicator-label">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        Update Plan
+                    </span>
+
+                    <span class="indicator-progress d-none">
+                        Updating...
+                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                    </span>
+
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/performance-review/js/edit-planner.js"
+            asp-append-version="true"></script>
+}

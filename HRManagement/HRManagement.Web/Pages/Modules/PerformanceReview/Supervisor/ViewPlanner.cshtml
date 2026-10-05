@@ -1,0 +1,79 @@
+﻿@page "/PerformanceReview/Supervisor/Planner/View"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.ViewPlannerModel
+
+@{
+    ViewData["Title"] = "View Performance Plan";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/planner-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/view-planner-styles.css" asp-append-version="true" />
+}
+
+<div id="viewPlannerPage" class="d-flex flex-column flex-column-fluid view-planner-page" data-plan-id="@Request.Query["planId"]">
+    <div id="viewPlannerLoading" class="view-planner-loading">
+        <div class="view-planner-loading-card">
+            <div class="spinner-border view-planner-loading-spinner mb-5" role="status" aria-hidden="true"></div>
+            <div class="fw-bold text-gray-900 fs-5 mb-2">Loading Performance Plan</div>
+            <div class="text-muted fs-8">Fetching the plan configuration and review setup. This may take a moment.</div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid px-5 px-lg-10">
+            <nav aria-label="breadcrumb" class="pt-4 pt-lg-6 mb-4">
+                <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                    <li class="breadcrumb-item">Performance Review</li>
+                    <li class="breadcrumb-item"><a href="/PerformanceReview/Supervisor/Planner" class="text-muted text-hover-primary">Planner</a></li>
+                    <li class="breadcrumb-item active text-brand" aria-current="page">View</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-end justify-content-between gap-4 mb-6 mb-lg-8">
+                <div>
+                    <div class="d-flex align-items-center flex-wrap gap-3 mb-2">
+                        <h1 id="planTitle" class="fw-bold text-gray-900 fs-3 mb-0">Performance Plan</h1>
+                        <span id="planStatus" class="view-plan-status view-status-default">Loading...</span>
+                    </div>
+                    <p class="text-muted fs-6 mb-0">View the plan settings, assessment configuration, participants, and score weights.</p>
+                </div>
+                <a href="/PerformanceReview/Supervisor/Planner" class="btn btn-light fw-semibold px-6"><i class="bi bi-arrow-left me-2"></i>Back to Planner</a>
+            </div>
+
+            <div id="messageContainer" class="alert mb-5 d-none" role="alert"></div>
+
+            <div class="card card-flush shadow-sm mb-4">
+                <div class="card-header border-0 px-5 px-lg-8 pt-5 pt-lg-6">
+                    <div class="card-title mb-0"><h2 class="fw-bold text-gray-900 fs-4 mb-0"><i class="bi bi-calendar3 text-brand me-2"></i>Plan Information</h2></div>
+                </div>
+                <div class="card-body px-5 px-lg-8 pt-3 pb-6">
+                    <div class="row g-4">
+                        <div class="col-md-6 col-xl"><div class="view-info-card"><div class="view-info-label">Period Type</div><div id="periodType" class="view-info-value">-</div></div></div>
+                        <div class="col-md-6 col-xl"><div class="view-info-card"><div class="view-info-label">Start Date</div><div id="startDate" class="view-info-value">-</div></div></div>
+                        <div class="col-md-6 col-xl"><div class="view-info-card"><div class="view-info-label">End Date</div><div id="endDate" class="view-info-value">-</div></div></div>
+                        <div class="col-md-6 col-xl"><div class="view-info-card"><div class="view-info-label">Duration</div><div id="duration" class="view-info-value">-</div></div></div>
+                        <div class="col-md-6 col-xl"><div class="view-info-card"><div class="view-info-label">Minimum Review Duration</div><div id="minReviewDuration" class="view-info-value">-</div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-flush shadow-sm mb-4">
+                <div class="card-header border-0 px-5 px-lg-8 py-5">
+                    <div class="card-title mb-0"><div><h2 class="fw-bold text-gray-900 fs-4 mb-1"><i class="bi bi-ui-checks text-brand me-2"></i>Assessments</h2><div class="text-muted fs-7">Questions, rating descriptions, and participants configured for this plan.</div></div></div>
+                </div>
+                <div class="card-body px-5 px-lg-8 pt-0 pb-6"><div id="assessmentList"><div class="view-empty">Loading assessment configuration...</div></div></div>
+            </div>
+
+            <div class="card card-flush shadow-sm mb-8">
+                <div class="card-header border-0 px-5 px-lg-8 py-5">
+                    <div class="card-title mb-0"><div><h2 class="fw-bold text-gray-900 fs-4 mb-1"><i class="bi bi-pie-chart text-brand me-2"></i>Score Weight</h2><div class="text-muted fs-7">Score weight distribution for each intern position.</div></div></div>
+                </div>
+                <div class="card-body px-5 px-lg-8 pt-0 pb-6"><div id="scoreWeightList"><div class="view-empty">Loading score weight configuration...</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/performance-review/js/view-planner.js" asp-append-version="true"></script>
+}

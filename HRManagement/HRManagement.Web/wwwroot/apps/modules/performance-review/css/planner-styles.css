@@ -1,0 +1,357 @@
+.assessment-config {
+	border-left: none;
+}
+
+.assessment-section {
+	border: 0.0625rem solid #e1e3e6;
+	border-radius: 0.625rem;
+	background: #ffffff;
+	box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.02);
+}
+
+.assessment-section-header {
+	padding-bottom: 1rem;
+	border-bottom: 0.0625rem solid #eeeeef;
+}
+
+
+.assessment-section-self {
+	border-left: 0.1875rem solid #50b86c;
+}
+
+.assessment-section-supervisor {
+	border-left: 0.1875rem solid #f2c94c;
+}
+
+.assessment-section-peer {
+	border-left: 0.1875rem solid #e06b9a;
+}
+
+.question-row,
+.group-row,
+.weight-role {
+	border: 1px solid #e1e3e6;
+	border-radius: 8px;
+	background: #ffffff;
+}
+
+.assessment-config {
+	border: 1px solid #e1e3e6;
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.assessment-config {
+	max-height: 0;
+	overflow: hidden;
+	opacity: 0;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease;
+}
+
+.assessment-config.is-open {
+	max-height: 100000px;
+	opacity: 1;
+
+	padding-top: 1.25rem !important;
+	padding-bottom: 1.25rem !important;
+	overflow: visible;
+}
+
+.employee-card {
+	border: 1px solid #e1e3e6;
+	background: #ffffff;
+	border-radius: 8px;
+	padding: 10px 12px;
+	min-height: 64px;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.employee-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: #fceff3;
+	color: #d6336c;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 12px;
+	flex-shrink: 0;
+}
+
+.employee-card:hover {
+	border-color: #c9ccd1;
+}
+
+.employee-remove {
+	border: 0;
+	background: transparent;
+	color: #a1a1aa;
+	font-size: 14px;
+	padding: 4px;
+	width: auto;
+	height: auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+	.employee-remove:hover {
+		color: #6b7280;
+	}
+
+.btn-button:hover {
+	background: #c9cbd0 !important;
+	color: #111827 !important;
+}
+
+.add-assessment-button {
+	background: #ffffff;
+	border: 1px dashed #d1d5db !important;
+	border-radius: 8px;
+	color: #6b7280;
+	padding: 14px 16px;
+	transition: all 0.15s ease;
+}
+
+	.add-assessment-button:hover {
+		background: #fafafa;
+		border-color: #9ca3af;
+		color: #374151;
+	}
+
+
+.employee-picker {
+	position: relative;
+	z-index: 100;
+}
+
+.employee-picker-menu {
+	position: absolute;
+	top: calc(100% + 0.375rem);
+	left: 0;
+	right: 0;
+	z-index: 9999;
+	background: #ffffff;
+	border: 0.0625rem solid #e1e3e6;
+	border-radius: 0.5rem;
+	box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+}
+
+.employee-picker-list {
+	max-height: 22rem;
+	overflow-y: auto;
+}
+
+.employee-picker-toolbar {
+	padding: 0.75rem 1rem;
+	border-bottom: 0.0625rem solid #eaeaec;
+	background: #fafafa;
+}
+
+.employee-picker-group + .employee-picker-group {
+	border-top: 0.0625rem solid #f0f0f0;
+}
+
+.employee-picker-group-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.625rem 1rem;
+	background: #f8f8f8;
+	font-weight: 600;
+}
+
+.employee-picker-option {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	padding: 0.625rem 1rem;
+	cursor: pointer;
+}
+
+.employee-picker-option:hover {
+	background: #f7f7f7;
+}
+
+.employee-picker-option input {
+	flex-shrink: 0;
+}
+
+.employee-picker-avatar {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	background: #fceff3;
+	color: #d6336c;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+
+.employee-picker-info {
+	min-width: 0;
+	flex-grow: 1;
+}
+
+.employee-picker-name {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: #374151;
+}
+
+.employee-picker-meta {
+	margin-top: 0.125rem;
+	font-size: 0.6875rem;
+	color: #9ca3af;
+}
+
+.employee-picker-count {
+	font-size: 0.6875rem;
+	color: #9ca3af;
+}
+
+.employee-picker-footer {
+	border-top: 1px solid #eaeaec;
+	margin-top: 6px;
+	padding: 8px 4px 2px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.performance-chart {
+	width: 100%;
+	height: 280px;
+}
+
+.performance-chart svg {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+.chart-line {
+	fill: none;
+	stroke: #D31145;
+	stroke-width: 4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.chart-point {
+	fill: #D31145;
+}
+
+.summary-icon {
+	width: 42px;
+	height: 42px;
+}
+
+.plan-create-option {
+	border: 0.0625rem solid #e1e3e6;
+	border-radius: 0.75rem;
+	background: #ffffff;
+	padding: 1.5rem;
+	transition: all 0.15s ease;
+}
+
+.plan-create-option:hover {
+	border-color: #c9ccd1;
+	background: #fafafa;
+}
+
+.plan-create-icon {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.75rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem;
+}
+
+
+.planner-action-modal {
+	border: 0;
+	border-radius: 0.875rem;
+	box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.12);
+	overflow: hidden;
+}
+
+#activatePlanModal .modal-dialog,
+#deletePlanModal .modal-dialog {
+	max-width: 36rem;
+}
+
+.planner-activate-warning {
+	padding: 1rem;
+	border: 0.0625rem solid #f3c2cc;
+	border-radius: 0.75rem;
+	background: #fff5f7;
+}
+
+.planner-activate-warning-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 0.625rem;
+	background: #fde7ed;
+	color: #D31145;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 1rem;
+}
+
+.planner-activate-changes {
+	border: 0.0625rem solid #e1e3e6;
+	border-radius: 0.75rem;
+	overflow: hidden;
+	background: #ffffff;
+}
+
+.planner-activate-change {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 1rem;
+}
+
+.planner-activate-change + .planner-activate-change {
+	border-top: 0.0625rem solid #eeeeef;
+}
+
+.planner-activate-change > i {
+	font-size: 1rem;
+	margin-top: 0.125rem;
+	flex-shrink: 0;
+}
+
+.planner-delete-warning {
+	padding: 1rem;
+	border: 0.0625rem solid #f1d5db;
+	border-radius: 0.75rem;
+	background: #fff5f6;
+}
+
+.planner-delete-warning-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 0.625rem;
+	background: #fde7eb;
+	color: #c52d4a;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 1rem;
+}
+
