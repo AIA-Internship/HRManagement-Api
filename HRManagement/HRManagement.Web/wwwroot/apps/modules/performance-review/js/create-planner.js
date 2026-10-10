@@ -830,16 +830,13 @@ function renderPeerGroups(sectionId) {
             sectionId: sectionId,
             groupId: group.id
         }
-    )}
+                    )}
 
                                 <div id="peer-group-${sectionId}-${group.id}-selected"
                                      class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 overflow-y-auto overflow-x-hidden"
                                      style="max-height: 20rem;">
                                     ${renderGroupMemberCards(sectionId, group.id)}
                                 </div>
-                            </div>
-
-                            </div>
                             </div>
                         </div>
                     </div>
