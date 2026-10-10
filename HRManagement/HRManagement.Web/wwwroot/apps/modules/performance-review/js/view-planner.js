@@ -170,17 +170,20 @@ function renderGroups(groups) {
 function renderEmployee(employee) {
     const name = employee.fullName || "Unknown Employee";
     const displayId = employee.employeeDisplayId || employee.displayId || "-";
-    const meta = [employee.position, employee.department].filter(Boolean).join(" | ");
+    const role = employee.position || "-";
+
     return `
-        <div class="view-employee-card">
+    <div class="view-employee-card">
             <div class="view-employee-avatar">${escapeHtml(getInitials(name))}</div>
             <div class="min-w-0 flex-grow-1">
                 <div class="view-employee-name text-truncate">${escapeHtml(name)}</div>
-                <div class="view-employee-meta text-truncate">${escapeHtml(displayId)}${meta ? ` | ${escapeHtml(meta)}` : ""}</div>
+                <div class="view-employee-meta text-truncate">${escapeHtml(displayId)} | ${escapeHtml(role)}</div>
             </div>
-        </div>
+        </div >
     `;
 }
+
+
 
 function renderScoreWeights(configurations) {
     const container = document.getElementById("scoreWeightList");

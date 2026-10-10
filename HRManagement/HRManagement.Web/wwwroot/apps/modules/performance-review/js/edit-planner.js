@@ -116,7 +116,7 @@ function showPageLoading() {
                 Loading Performance Plan
             </div>
             <div class="text-muted fs-7 mt-2">
-                Fetching the existing plan configuration...
+                Fetching the existing plan configuration. This may take a moment.
             </div>
         </div>
     `;
