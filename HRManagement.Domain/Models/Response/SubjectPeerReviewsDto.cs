@@ -5,8 +5,13 @@ public class PeerReviewMatrixResponseDto
     public int SubjectId { get; set; }
     public string SubjectName { get; set; } = string.Empty;
     public int IntervalId { get; set; }
-    public List<QuestionHeaderDto> Questions { get; set; } = new();
-    public List<PeerReviewerAnswersDto> Reviewers { get; set; } = new();
+
+    // 👉 Add these two flags to give you full control
+    public bool IsAllCompleted { get; set; }
+    public bool IsSubmitted { get; set; }   // True only if everything is finalized/submitted
+
+    public List<QuestionHeaderDto> Questions { get; set; } = [];
+    public List<PeerReviewerAnswersDto> Reviewers { get; set; } = [];
 }
 
 public class QuestionHeaderDto

@@ -94,41 +94,53 @@ namespace HRManagement.MsSQL.Repositories
             var reviewStatusMap = reviewAssignments
                 .ToDictionary(ra => ra.AssignmentId, ra => ra.Status);
 
-            // 6. Map matrix response
+            // Build the reviewers list first so we can check their statuses
+            var reviewersList = peerAssignments.Select(fa =>
+            {
+                string supervisorStatus = reviewStatusMap.TryGetValue(fa.Id, out var stat) ? stat : "not started";
+
+                return new PeerReviewerAnswersDto
+                {
+                    AssignmentId = fa.Id,
+                    FillerId = fa.FillerId,
+                    FillerName = fa.Filler.FullName,
+                    Status = supervisorStatus,
+                    Answers = answers
+                        .Where(a => a.AssignmentId == fa.Id)
+                        .Select(a => new AnswerDetailDto
+                        {
+                            AnswerId = a.Id,
+                            QuestionId = a.AssessmentQuestionId,
+                            TextValue = a.TextValue,
+                            RatingValue = a.RatingValue,
+                            ReviewScore = answerScores.TryGetValue(a.Id, out var score) ? score : null
+                        })
+                        .ToList()
+                };
+            }).ToList();
+
+            // 1. Are all review assignments filled out / have a status?
+            bool isAllCompleted = reviewersList.Any() && reviewersList.All(r =>
+                r.Status.Equals("scored", StringComparison.OrdinalIgnoreCase) ||
+                r.Status.Equals("done", StringComparison.OrdinalIgnoreCase)
+            );
+
+            // 2. Are they officially submitted/locked? 
+            // (Assumes "submitted" or "scored" means finalized, whereas "draft" or "not started" means editable)
+            bool isSubmitted = reviewersList.Any() && reviewersList.All(r =>
+                r.Status.Equals("scored", StringComparison.OrdinalIgnoreCase) ||
+                r.Status.Equals("submitted", StringComparison.OrdinalIgnoreCase)
+            );
+
             var response = new PeerReviewMatrixResponseDto
             {
                 SubjectId = subjectId,
                 SubjectName = subjectUser.FullName,
                 IntervalId = intervalId,
+                IsAllCompleted = isAllCompleted,
+                IsSubmitted = isSubmitted, // 👉 Pass it here
                 Questions = questions,
-                Reviewers = peerAssignments.Select(fa =>
-                {
-                    // Determine supervisor's review status for this specific peer assignment (fallback to "not started")
-                    string supervisorStatus = reviewStatusMap.TryGetValue(fa.Id, out var stat) ? stat : "not started";
-
-                    return new PeerReviewerAnswersDto
-                    {
-                        AssignmentId = fa.Id,
-                        FillerId = fa.FillerId,
-                        FillerName = fa.Filler.FullName,
-
-                        // CRITICAL: Use the supervisor's review status instead of the peer's fill status ("done")
-                        Status = supervisorStatus,
-
-                        Answers = answers
-                            .Where(a => a.AssignmentId == fa.Id)
-                            .Select(a => new AnswerDetailDto
-                            {
-                                AnswerId = a.Id,
-                                QuestionId = a.AssessmentQuestionId,
-                                TextValue = a.TextValue,
-                                RatingValue = a.RatingValue,
-                                // Pull supervisor's review score from dictionary
-                                ReviewScore = answerScores.TryGetValue(a.Id, out var score) ? score : null
-                            })
-                            .ToList()
-                    };
-                }).ToList()
+                Reviewers = reviewersList
             };
 
             return response;
@@ -734,14 +746,29 @@ namespace HRManagement.MsSQL.Repositories
                         JobTitle = fa.Subject.EmploymentInformation!.PositionName
                     },
 
-                    Reviewers = _sqldbContext.ReviewAssignments
-                        .Where(ra => ra.AssignmentId == fa.Id && !ra.IsDeleted)
-                        .Select(ra => new ReviewerResponseDto
-                        {
-                            Id = ra.Reviewer!.Id,
-                            Name = ra.Reviewer.FullName,
-                            Status = ra.Status
-                        }).ToList()
+                    // 🔥 Conditionally populate Reviewers based on Assessment Type
+                    Reviewers = fa.Assessment.AssessmentType == "supervisor-assessment"
+                        // For Supervisor Assessment: grab the supervisor directly from the Filler relation
+                        ? (fa.Filler != null
+                            ? new List<ReviewerResponseDto>
+                              {
+                                  new ReviewerResponseDto
+                                  {
+                                      Id = fa.Filler.Id,
+                                      Name = fa.Filler.FullName,
+                                      Status = fa.Status
+                                  }
+                              }
+                            : new List<ReviewerResponseDto>())
+                        // For Peer Review / Self Assessment: query the ReviewAssignments mapping table
+                        : _sqldbContext.ReviewAssignments
+                            .Where(ra => ra.AssignmentId == fa.Id && !ra.IsDeleted)
+                            .Select(ra => new ReviewerResponseDto
+                            {
+                                Id = ra.Reviewer!.Id,
+                                Name = ra.Reviewer.FullName,
+                                Status = ra.Status
+                            }).ToList()
                 })
                 .ToListAsync(cancellationToken);
         }

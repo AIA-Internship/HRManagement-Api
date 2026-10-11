@@ -40,6 +40,7 @@ public class DashboardDataDto
     public int SubjectId { get; set; }
     public string SubjectName { get; set; } = string.Empty;
     public string JobTitle { get; set; } = string.Empty;
+    public string Status { get; set; } = "NOT STARTED"; // 🔥 Top-level unified status
     public AssessmentDetailDto? SupervisorAssessment { get; set; }
     public List<AssessmentDetailDto> PeerReviews { get; set; } = new();
     public AssessmentDetailDto? SelfAssessment { get; set; }

@@ -53,27 +53,26 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
                 var peerAssignments = group.Where(x => x.AssessmentType == "peer-review").ToList();
                 var selfAssignments = group.Where(x => x.AssessmentType == "self-assessment").ToList();
 
+                // 🔥 Determine the single employee-level status using the new unified logic
+                string unifiedStatus = GetUnifiedEmployeeStatus(supervisorAssignment, peerAssignments, selfAssignments);
+
                 return new DashboardDataDto
                 {
                     SubjectId = group.Key,
                     SubjectName = sample.Subject?.Name ?? string.Empty,
                     JobTitle = sample.Subject?.JobTitle ?? string.Empty,
+                    Status = unifiedStatus, // 🔥 Top-level status for the frontend
 
-                    SupervisorAssessment = supervisorAssignment == null || supervisorAssignment.Count <= 0
-                        ? null
-                        : new AssessmentDetailDto
-                        {
-                            AssignmentId = supervisorAssignment[0].AssignmentId,
-                            AnswerType = supervisorAssignment[0].AnswerType,
-                            Status = GetSupervisorAssignmentStatus(supervisorAssignment, request.CurrentSupervisorId),
-                            Reviewers = supervisorAssignment[0].Reviewers?
-                                .Where(r => r.Id.HasValue)
-                                .Select(r => new ReviewerDto
-                                {
-                                    Id = r.Id!.Value,
-                                    Name = r.Name
-                                }).ToList() ?? new()
-                        },
+                    SupervisorAssessment = supervisorAssignment.Count == 0 ? null : new AssessmentDetailDto
+                    {
+                        AssignmentId = supervisorAssignment[0].AssignmentId,
+                        AnswerType = supervisorAssignment[0].AnswerType,
+                        Status = GetSupervisorAssignmentStatus(supervisorAssignment, request.CurrentSupervisorId),
+                        Reviewers = supervisorAssignment[0].Reviewers?
+                            .Where(r => r.Id.HasValue)
+                            .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
+                            .ToList() ?? new()
+                    },
 
                     PeerReviews = peerAssignments.Select(p => new AssessmentDetailDto
                     {
@@ -86,18 +85,16 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
                             .ToList() ?? new()
                     }).ToList(),
 
-                    SelfAssessment = selfAssignments == null || selfAssignments.Count <= 0
-                        ? null
-                        : new AssessmentDetailDto
-                        {
-                            AssignmentId = selfAssignments[0].AssignmentId,
-                            AnswerType = selfAssignments[0].AnswerType,
-                            Status = GetEmployeeFillAssignmentReviewStatus(selfAssignments, request.CurrentSupervisorId),
-                            Reviewers = selfAssignments[0].Reviewers?
-                                .Where(r => r.Id.HasValue)
-                                .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
-                                .ToList() ?? new()
-                        }
+                    SelfAssessment = selfAssignments.Count == 0 ? null : new AssessmentDetailDto
+                    {
+                        AssignmentId = selfAssignments[0].AssignmentId,
+                        AnswerType = selfAssignments[0].AnswerType,
+                        Status = GetEmployeeFillAssignmentReviewStatus(selfAssignments, request.CurrentSupervisorId),
+                        Reviewers = selfAssignments[0].Reviewers?
+                            .Where(r => r.Id.HasValue)
+                            .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
+                            .ToList() ?? new()
+                    }
                 };
             })
             .ToList();
@@ -109,6 +106,68 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
             CurrentIntervalId = resolvedIntervalId,
             Assignments = dashboardData
         });
+    }
+
+    public string GetUnifiedEmployeeStatus(
+    List<SupervisorFillAssignmentResponseDto> supervisorAssignments,
+    List<SupervisorFillAssignmentResponseDto> peerAssignments,
+    List<SupervisorFillAssignmentResponseDto> selfAssignments)
+    {
+        var allAssignments = supervisorAssignments
+            .Concat(peerAssignments)
+            .Concat(selfAssignments)
+            .ToList();
+
+        // 1. If absolutely no assessment records exist yet anywhere
+        if (allAssignments.Count == 0)
+        {
+            return "NOT STARTED";
+        }
+
+        // 2. If ANY existing assignment is locked -> LOCKED
+        if (allAssignments.Any(a => a.AssignmentStatus == AssignmentStatusConstants.Locked || a.AssignmentStatus?.ToLower() == "locked"))
+        {
+            return "LOCKED";
+        }
+
+        // 3. If ANY existing assignment is active (In Progress, Drafted, On Review) -> IN PROGRESS
+        bool hasActiveWork = allAssignments.Any(a =>
+            a.AssignmentStatus == AssignmentStatusConstants.InProgress ||
+            a.AssignmentStatus == AssignmentStatusConstants.Drafted ||
+            a.AssignmentStatus == AssignmentStatusConstants.OnReview);
+
+        if (hasActiveWork)
+        {
+            return "IN PROGRESS";
+        }
+
+        // 4. Check structural existence based on your business rules:
+        // - Self Assessment is guaranteed to be 1 (if missing, it hasn't been touched/created yet)
+        // - Supervisor and Peer assignments might exist. If *nothing* from Self or Supervisor has been created yet, it's not fully complete.
+        bool hasSelfAssessment = selfAssignments.Count > 0;
+        bool hasSupervisorAssessment = supervisorAssignments.Count > 0;
+
+        // If critical core components (like Self Assessment) are completely missing/uninstantiated, 
+        // we cannot be "COMPLETED" even if a peer review is finished.
+        if (!hasSelfAssessment || !hasSupervisorAssessment)
+        {
+            return "IN PROGRESS";
+        }
+
+        // 5. Verify that ALL instantiated assignments across all categories are fully completed/done/approved
+        bool allExistingAreCompleted = allAssignments.All(a =>
+            a.AssignmentStatus == AssignmentStatusConstants.Completed ||
+            a.AssignmentStatus == AssignmentStatusConstants.Approved ||
+            a.AssignmentStatus?.ToLower() == "done" ||
+            a.AssignmentStatus?.ToLower() == "completed");
+
+        if (allExistingAreCompleted)
+        {
+            return "COMPLETED";
+        }
+
+        // Fallback default for mixed/partial states
+        return "IN PROGRESS";
     }
 
     public string GetEmployeeFillAssignmentReviewStatus(List<SupervisorFillAssignmentResponseDto> assignments, int currentSupervisorId)

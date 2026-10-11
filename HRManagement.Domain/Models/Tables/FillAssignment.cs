@@ -55,8 +55,18 @@ public class FillAssignment : BaseTable
         }
         else
         {
-            string answerType = Assessment?.AnswerType?.ToLower() ?? "text";
-            calculatedStatus = answerType == "rating" ? "done" : "on review";
+            // Check if it's a supervisor assessment type, or just force "done" for direct supervisor fills
+            string assessmentType = Assessment?.AssessmentType?.ToLower() ?? "";
+
+            if (assessmentType == "supervisor-assessment")
+            {
+                calculatedStatus = "done"; // ✅ Direct supervisor assessment always goes straight to done!
+            }
+            else
+            {
+                string answerType = Assessment?.AnswerType?.ToLower() ?? "text";
+                calculatedStatus = answerType == "rating" ? "done" : "on review";
+            }
         }
 
         this.ApplyUpdate(calculatedStatus, actionerId);

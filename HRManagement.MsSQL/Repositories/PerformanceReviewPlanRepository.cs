@@ -4,6 +4,7 @@ using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HRManagement.MsSQL.Repositories;
 
@@ -74,22 +75,6 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                 .ToList()
                     ))
                     .ToList(),
-                _sqldbContext.Set<EmploymentInformation>()
-                    .Where(e =>
-                        !e.IsDeleted &&
-                        e.StatusCode == 1 &&
-                        e.PositionName == x.SubjectJobTitle)
-                    .Select(e => new EmployeeListResponseDto(
-                        e.Employee.FullName,
-                        e.DisplayId ?? "",
-                        "",
-                        e.DepartmentName ?? "",
-                        e.PositionName ?? "",
-                        null
-                    ))
-                    .ToList()
-            ))
-            .ToList();
 
                 // peer reviews
                 plan.Assessments
@@ -162,7 +147,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                             .ToList(),
 
                             a.Receivers
-                                .Where(r => 
+                                .Where(r =>
                                     !r.IsDeleted &&
                                     r.ReceiverType == "supervisor-assessment")
                                     .Select(r => new EmployeeListResponseDto(
@@ -181,22 +166,6 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                 .ToList()
                     ))
                     .ToList(),
-                _sqldbContext.Set<EmploymentInformation>()
-                    .Where(e =>
-                        !e.IsDeleted &&
-                        e.StatusCode == 1 &&
-                        e.PositionName == "Supervisor")
-                    .Select(e => new EmployeeListResponseDto(
-                        e.Employee.FullName,
-                        e.DisplayId ?? "",
-                        "",
-                        e.DepartmentName ?? "",
-                        e.PositionName ?? "",
-                        null
-                    ))
-                    .ToList()
-            ))
-            .ToList();
 
                 // score weight
                 plan.PerformanceReviewPlanScoreWeights

@@ -9,6 +9,6 @@
         public const string OnReview = "on review";
         public const string Approved = "approved";
         public const string Rejected = "rejected";
-        public const string Completed = "completed";
+        public const string Completed = "done";
     }
 }
