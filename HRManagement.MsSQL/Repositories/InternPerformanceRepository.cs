@@ -21,10 +21,7 @@ public class InternPerformanceRepository: BaseRepository<EmployeeScoreSummary>, 
             .Include(x => x.PerformanceReviewPlanScoreWeights)
             .Where(x =>
                 !x.IsDeleted &&
-                x.Id == planId &&
-                x.Status == "ongoing" &&
-                currentDate >= x.StartDate &&
-                currentDate <= x.EndDate)
+                x.Id == planId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (plan == null)
@@ -75,6 +72,10 @@ public class InternPerformanceRepository: BaseRepository<EmployeeScoreSummary>, 
             })
             .ToListAsync(cancellationToken);
 
+        var weights = plan.PerformanceReviewPlanScoreWeights
+            .Where(w => !w.IsDeleted)
+            .ToList();
+
         var ranking = filteredSummaries
             .GroupBy(x => new
             {
@@ -84,17 +85,49 @@ public class InternPerformanceRepository: BaseRepository<EmployeeScoreSummary>, 
             .Select(group =>
             {
                 var overallScores = group
-                    .Select(x => CalculateOverallScore(
-                        x,
-                        plan.PerformanceReviewPlanScoreWeights
-                            .Where(w => !w.IsDeleted)
-                            .ToList()))
+                    .Select(x =>
+                        CalculateOverallScore(
+                            x,
+                            weights))
+                    .ToList();
+
+                var techScore = group
+                    .Select(x => x.TechScore)
+                    .ToList();
+
+                var softSkillScore = group
+                    .Select(x => x.SoftSkillScore)
+                    .ToList();
+
+                var selfAssessmentScore = group
+                    .Select(x => x.SelfAssessmentScore)
+                    .ToList();
+
+                var peerReviewScore = group
+                    .Select(x => x.PeerReviewScore)
                     .ToList();
 
                 return new
                 {
                     InternId = group.Key.InternId,
                     InternRole = group.Key.InternRole,
+
+                    TechScore = techScore.Any()
+                        ? techScore.Average()
+                        : 0,
+
+                    SoftSkillScore = softSkillScore.Any()
+                        ? softSkillScore.Average()
+                        : 0,
+
+                    SelfAssessmentScore = selfAssessmentScore.Any()
+                        ? selfAssessmentScore.Average()
+                        : 0,
+
+                    PeerReviewScore = peerReviewScore.Any()
+                        ? peerReviewScore.Average()
+                        : 0,
+
                     AverageOverallScore = overallScores.Any()
                         ? overallScores.Average()
                         : 0
@@ -104,25 +137,34 @@ public class InternPerformanceRepository: BaseRepository<EmployeeScoreSummary>, 
                 employees,
                 x => x.InternId,
                 e => e.Id,
-                (x, e) => new InternPerformanceRankingResponseDto(
+                (x, e) => new
+                {
                     x.InternId,
                     e.FullName,
                     x.InternRole,
-                    Math.Round(x.AverageOverallScore, 2),
-                    0))
+                    x.TechScore,
+                    x.SoftSkillScore,
+                    x.SelfAssessmentScore,
+                    x.PeerReviewScore,
+                    x.AverageOverallScore
+                })
             .OrderByDescending(x => x.AverageOverallScore)
             .ToList();
 
         return ranking
-            .Select((x, index) => new InternPerformanceRankingResponseDto(
-                x.InternId,
-                x.FullName,
-                x.InternRole,
-                x.AverageOverallScore,
-                index + 1))
+            .Select((x, index) =>
+                new InternPerformanceRankingResponseDto(
+                    x.InternId,
+                    x.FullName,
+                    x.InternRole,
+                    Math.Round(x.TechScore, 2),
+                    Math.Round(x.SoftSkillScore, 2),
+                    Math.Round(x.SelfAssessmentScore, 2),
+                    Math.Round(x.PeerReviewScore, 2),
+                    Math.Round(x.AverageOverallScore, 2),
+                    index + 1))
             .ToList();
     }
-
     public async Task<InternPerformanceDetailResponseDto?> GetInternPerformanceDetailAsync(long planId,long internId,CancellationToken cancellationToken = default)
     {
         var currentDate = DateTime.UtcNow.Date;

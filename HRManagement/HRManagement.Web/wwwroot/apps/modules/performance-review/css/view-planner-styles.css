@@ -1,0 +1,836 @@
+﻿/* =========================================================
+   VIEW PLANNER
+   Clean, lightweight styling aligned with Create Planner
+   Replaces the previous view-planner-styles.css entirely.
+========================================================= */
+
+.view-planner-page {
+    --vp-brand: #d31145;
+    --vp-text: #27334d;
+    --vp-body: #475467;
+    --vp-muted: #8b95a7;
+    --vp-border: #e1e3e6;
+    --vp-soft-border: #eef0f3;
+    --vp-surface: #ffffff;
+    --vp-subtle: #fafbfc;
+    color: var(--vp-body);
+    font-size: 0.875rem;
+}
+
+    /* Typography: use bold only where hierarchy needs it */
+    .view-planner-page h1,
+    .view-planner-page h2,
+    .view-planner-page h3 {
+        color: var(--vp-text);
+        font-weight: 600 !important;
+        letter-spacing: -0.02em;
+    }
+
+    .view-planner-page h1 {
+        font-size: 1.5rem !important;
+        line-height: 1.4;
+        letter-spacing: -0.035em;
+    }
+
+    .view-planner-page h2 {
+        font-size: 1.0625rem !important;
+        line-height: 1.45;
+    }
+
+    .view-planner-page .fw-bold,
+    .view-planner-page .fw-bolder {
+        font-weight: 600 !important;
+    }
+
+    .view-planner-page .text-gray-900,
+    .view-planner-page .text-gray-800 {
+        color: var(--vp-text) !important;
+    }
+
+    .view-planner-page .text-gray-700 {
+        color: var(--vp-body) !important;
+    }
+
+    .view-planner-page .text-muted {
+        color: var(--vp-muted) !important;
+    }
+
+    .view-planner-page .fs-6 {
+        font-size: 0.9375rem !important;
+    }
+
+    .view-planner-page .fs-7 {
+        font-size: 0.8125rem !important;
+    }
+
+    .view-planner-page .fs-8 {
+        font-size: 0.75rem !important;
+    }
+
+    /* Breadcrumb */
+    .view-planner-page .breadcrumb {
+        font-size: 0.75rem;
+        font-weight: 400 !important;
+    }
+
+    .view-planner-page .breadcrumb-item a {
+        text-decoration: none;
+    }
+
+        .view-planner-page .breadcrumb-item a:hover {
+            color: var(--vp-brand) !important;
+        }
+
+    /* Page heading and back button */
+    .view-planner-page .view-plan-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    .view-planner-page .view-plan-heading {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .view-planner-page .view-plan-title-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+        .view-planner-page .view-plan-title-row h1 {
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+
+    .view-planner-page .view-plan-heading p {
+        max-width: 44rem;
+        margin-top: 0.5rem !important;
+        font-size: 0.8125rem !important;
+        line-height: 1.65;
+    }
+
+    .view-planner-page .view-plan-back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        padding: 0.625rem 0.875rem !important;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.5rem;
+        background: #fff;
+        color: var(--vp-body);
+        font-size: 0.8125rem;
+        font-weight: 500 !important;
+        text-decoration: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+        .view-planner-page .view-plan-back-button:hover {
+            border-color: #c9ccd1;
+            background: #fafafa;
+            color: var(--vp-brand);
+        }
+
+    /* Status badge: names match view-planner.js */
+    .view-planner-page .view-plan-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 0.625rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        line-height: 1.4;
+        text-transform: none;
+        white-space: nowrap;
+    }
+
+    .view-planner-page .view-status-ongoing {
+        border-color: #d9efe0;
+        background: #f0f9f2;
+        color: #267642;
+    }
+
+    .view-planner-page .view-status-completed {
+        border-color: #e5e7eb;
+        background: #f8f9fb;
+        color: #667085;
+    }
+
+    .view-planner-page .view-status-drafted {
+        border-color: #f3e5c6;
+        background: #fffbeb;
+        color: #946200;
+    }
+
+    .view-planner-page .view-status-default {
+        border-color: #e5e7eb;
+        background: #f8f9fb;
+        color: #667085;
+    }
+
+    /* Main page cards */
+    .view-planner-page .card {
+        overflow: hidden;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.75rem;
+        background: var(--vp-surface);
+        box-shadow: 0 1px 3px rgba(16, 24, 40, 0.025) !important;
+    }
+
+    .view-planner-page .card-header {
+        min-height: auto;
+        padding: 1.25rem 1.5rem 0.875rem !important;
+    }
+
+        .view-planner-page .card-header .card-title {
+            margin: 0;
+        }
+
+        .view-planner-page .card-header h2 {
+            margin-bottom: 0.25rem !important;
+        }
+
+        .view-planner-page .card-header .text-muted {
+            font-size: 0.8125rem !important;
+            font-weight: 400 !important;
+            line-height: 1.6;
+        }
+
+        .view-planner-page .card-header .bi {
+            font-size: 0.9375rem;
+        }
+
+    .view-planner-page .card-body {
+        min-width: 0;
+        padding: 0.75rem 1.5rem 1.5rem !important;
+    }
+
+    /* Plan information */
+    .view-planner-page .view-info-card,
+    .view-planner-page .view-detail-card {
+        height: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.5rem;
+        background: #fff;
+    }
+
+    .view-planner-page .view-info-label,
+    .view-planner-page .view-detail-label {
+        margin-bottom: 0.375rem;
+        color: var(--vp-muted);
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.035em;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-info-value,
+    .view-planner-page .view-detail-value {
+        color: var(--vp-text);
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    /* Assessment accordion */
+    .view-planner-page .view-assessment-card {
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.625rem;
+        background: #fff;
+    }
+
+        .view-planner-page .view-assessment-card:last-child {
+            margin-bottom: 0;
+        }
+
+    .view-planner-page .view-assessment-self {
+        border-left: 3px solid #50b86c;
+    }
+
+    .view-planner-page .view-assessment-supervisor {
+        border-left: 3px solid #f2c94c;
+    }
+
+    .view-planner-page .view-assessment-peer {
+        border-left: 3px solid #e06b9a;
+    }
+
+    .view-planner-page .view-assessment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 1rem;
+        padding: 1rem 1.125rem;
+        border: 0;
+        background: #fff;
+        text-align: left;
+        transition: background-color 0.15s ease;
+    }
+
+        .view-planner-page .view-assessment-header:hover {
+            background: #fcfcfd;
+        }
+
+        .view-planner-page .view-assessment-header:focus-visible {
+            outline: 2px solid rgba(211, 17, 69, 0.35);
+            outline-offset: -3px;
+        }
+
+    .view-planner-page .view-assessment-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .view-planner-page .view-assessment-count {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        background: #f5f6f8;
+        color: #667085;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .view-planner-page .view-assessment-header .fw-bold {
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-assessment-header .text-muted {
+        font-size: 0.75rem !important;
+        font-weight: 400 !important;
+    }
+
+    .view-planner-page .view-assessment-body {
+        display: none;
+        padding: 0 1.125rem 1.125rem;
+    }
+
+        .view-planner-page .view-assessment-body.is-open {
+            display: block;
+        }
+
+    /* Assessment subsections */
+    .view-planner-page .view-subsection {
+        overflow: hidden;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.5rem;
+        background: #fff;
+    }
+
+    .view-planner-page .view-subsection-header {
+        padding: 0.75rem 0.875rem;
+        border-bottom: 1px solid var(--vp-soft-border);
+        background: #fafbfc;
+        color: #475467;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-description {
+        padding: 0.875rem;
+        color: var(--vp-body);
+        font-size: 0.8125rem;
+        font-weight: 400;
+        line-height: 1.65;
+    }
+
+    .view-planner-page .view-question-list {
+        padding: 0.125rem 0;
+    }
+
+    .view-planner-page .view-question-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.875rem;
+        border-bottom: 1px solid #f0f1f3;
+    }
+
+        .view-planner-page .view-question-row:last-child {
+            border-bottom: 0;
+        }
+
+    .view-planner-page .view-question-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 0.375rem;
+        background: #f8f9fb;
+        color: #7f8ba0;
+        font-size: 0.6875rem;
+        font-weight: 500;
+    }
+
+    .view-planner-page .view-question-text {
+        color: #344054;
+        font-size: 0.8125rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    .view-planner-page .view-question-type {
+        margin-top: 0.25rem;
+        color: var(--vp-muted);
+        font-size: 0.6875rem;
+        font-weight: 400;
+    }
+
+    /* Employees and peer review groups */
+    .view-planner-page .view-employee-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.625rem;
+        padding: 0.875rem;
+    }
+
+    .view-planner-page .view-employee-card {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        min-width: 0;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.5rem;
+        background: #fff;
+    }
+
+    .view-planner-page .view-employee-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #fceff3;
+        color: var(--vp-brand);
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+
+    .view-planner-page .view-employee-name {
+        color: #344054;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-employee-meta {
+        margin-top: 0.125rem;
+        color: var(--vp-muted);
+        font-size: 0.6875rem;
+        font-weight: 400;
+        line-height: 1.45;
+    }
+
+    .view-planner-page .view-group-card {
+        overflow: hidden;
+        margin: 0.875rem;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.5rem;
+        background: #fff;
+    }
+
+        .view-planner-page .view-group-card + .view-group-card {
+            margin-top: 0;
+        }
+
+        .view-planner-page .view-group-card > .d-flex {
+            margin-bottom: 0 !important;
+            padding: 0.875rem 0.875rem 0;
+        }
+
+    .view-planner-page .view-group-name {
+        color: #344054;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-group-description {
+        margin-top: 0.25rem;
+        color: var(--vp-muted);
+        font-size: 0.75rem;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-group-count {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.375rem;
+        background: #fff;
+        color: #667085;
+        font-size: 0.6875rem;
+        font-weight: 400;
+        white-space: nowrap;
+    }
+
+    /* Score weights */
+    .view-planner-page .view-weight-toolbar {
+        max-width: 24rem;
+        margin-bottom: 1rem;
+    }
+
+        .view-planner-page .view-weight-toolbar .form-label {
+            color: #667085;
+            font-size: 0.75rem;
+            font-weight: 500 !important;
+        }
+
+        .view-planner-page .view-weight-toolbar .form-select {
+            border-color: var(--vp-border);
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 400;
+        }
+
+    .view-planner-page .view-weight-card {
+        overflow: hidden;
+        border: 1px solid var(--vp-border);
+        border-radius: 0.625rem;
+        background: #fff;
+    }
+
+    .view-planner-page .view-weight-header {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid var(--vp-border);
+        background: #fafbfc;
+        color: #344054;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .view-planner-page .view-weight-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .view-planner-page .view-weight-item {
+        padding: 1rem;
+        border-right: 1px solid var(--vp-soft-border);
+    }
+
+        .view-planner-page .view-weight-item:last-child {
+            border-right: 0;
+        }
+
+    .view-planner-page .view-weight-label {
+        margin-bottom: 0.375rem;
+        color: var(--vp-muted);
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+        line-height: 1.5;
+    }
+
+    .view-planner-page .view-weight-value {
+        color: var(--vp-text);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .view-planner-page .view-weight-total {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--vp-soft-border);
+        background: #fafbfc;
+    }
+
+    .view-planner-page .view-weight-total-label {
+        color: #667085;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .view-planner-page .view-weight-total-value {
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+        .view-planner-page .view-weight-total-value.is-valid {
+            color: #16a34a;
+        }
+
+        .view-planner-page .view-weight-total-value.is-invalid {
+            color: var(--vp-brand);
+        }
+
+    /* Empty states and messages */
+    .view-planner-page .view-empty {
+        padding: 1rem;
+        border: 1px dashed #d9dde3;
+        border-radius: 0.5rem;
+        background: #fafbfc;
+        color: var(--vp-muted);
+        font-size: 0.8125rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    .view-planner-page #messageContainer {
+        border-radius: 0.625rem;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+    }
+
+/* Loading overlay */
+.view-planner-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(2px);
+}
+
+    .view-planner-loading.d-none {
+        display: none !important;
+    }
+
+.view-planner-loading-card {
+    min-width: 20rem;
+    padding: 1.75rem 2rem;
+    border: 1px solid var(--vp-border);
+    border-radius: 0.875rem;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.06);
+    text-align: center;
+}
+
+    .view-planner-loading-card .fw-bold {
+        font-weight: 600 !important;
+    }
+
+.view-planner-loading-spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-width: 0.2rem;
+    color: var(--vp-brand);
+}
+
+.view-planner-loading-active {
+    overflow: hidden;
+}
+
+/* Responsive layout */
+@media (max-width: 991.98px) {
+    .view-planner-page .view-employee-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .view-planner-page .view-weight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .view-planner-page .view-weight-item:nth-child(2) {
+        border-right: 0;
+    }
+
+    .view-planner-page .view-weight-item:nth-child(-n+2) {
+        border-bottom: 1px solid var(--vp-soft-border);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .view-planner-page .view-plan-page-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .view-planner-page .view-plan-back-button {
+        align-self: flex-start;
+    }
+
+    .view-planner-page .card-header {
+        padding: 1.125rem 1rem 0.75rem !important;
+    }
+
+    .view-planner-page .card-body {
+        padding: 0.75rem 1rem 1rem !important;
+    }
+
+    .view-planner-page .view-assessment-header {
+        align-items: flex-start;
+        padding: 0.875rem;
+    }
+
+    .view-planner-page .view-assessment-body {
+        padding: 0 0.875rem 0.875rem;
+    }
+
+    .view-planner-page .view-employee-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .view-planner-page .view-group-card {
+        margin: 0.625rem;
+    }
+
+    .view-planner-page .view-weight-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .view-planner-page .view-weight-item,
+    .view-planner-page .view-weight-item:nth-child(2) {
+        border-right: 0;
+        border-bottom: 1px solid var(--vp-soft-border);
+    }
+
+        .view-planner-page .view-weight-item:last-child {
+            border-bottom: 0;
+        }
+
+    .view-planner-loading-card {
+        min-width: 0;
+        width: calc(100% - 2rem);
+        padding: 1.5rem;
+    }
+}
+
+
+
+/* ==========================================
+   VIEW PLANNER - TYPOGRAPHY & SPACING REFINEMENT
+========================================== */
+
+/* Page title */
+.view-planner-page h1 {
+    font-size: 1.75rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.035em;
+    line-height: 1.4;
+}
+
+/* Section headings */
+.view-planner-page h2 {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em;
+    line-height: 1.5;
+}
+
+/* Body text */
+.view-planner-page {
+    font-size: 0.9375rem;
+}
+
+    .view-planner-page .view-info-value,
+    .view-planner-page .view-detail-value {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        line-height: 1.6;
+    }
+
+    .view-planner-page .view-assessment-header .fw-bold {
+        font-size: 0.9375rem !important;
+        font-weight: 600 !important;
+    }
+
+    .view-planner-page .view-question-text,
+    .view-planner-page .view-description {
+        font-size: 0.875rem;
+        line-height: 1.7;
+    }
+
+    .view-planner-page .view-employee-name {
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .view-planner-page .view-group-name {
+        font-size: 0.9375rem;
+        font-weight: 600;
+    }
+
+    /* Metadata: smaller, but still readable */
+    .view-planner-page .view-info-label,
+    .view-planner-page .view-detail-label,
+    .view-planner-page .view-weight-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+    }
+
+    .view-planner-page .view-assessment-header .text-muted,
+    .view-planner-page .view-employee-meta,
+    .view-planner-page .view-group-description {
+        font-size: 0.75rem !important;
+        line-height: 1.5;
+    }
+
+    /* Main card spacing */
+    .view-planner-page .card-header {
+        padding: 1.5rem 2rem 1rem !important;
+    }
+
+    .view-planner-page .card-body {
+        padding: 0.75rem 2rem 1.75rem !important;
+    }
+
+    /* Assessment spacing */
+    .view-planner-page .view-assessment-header {
+        padding: 1.125rem 1.25rem;
+    }
+
+    .view-planner-page .view-assessment-body {
+        padding: 0 1.25rem 1.25rem;
+    }
+
+    /* Back button */
+    .view-planner-page .view-plan-back-button {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.875rem;
+        font-weight: 500 !important;
+    }
+
+/* Mobile spacing */
+@media (max-width: 767.98px) {
+    .view-planner-page h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .view-planner-page .card-header {
+        padding: 1.25rem 1.125rem 0.875rem !important;
+    }
+
+    .view-planner-page .card-body {
+        padding: 0.75rem 1.125rem 1.25rem !important;
+    }
+
+    .view-planner-page .view-assessment-header {
+        padding: 1rem;
+    }
+
+    .view-planner-page .view-assessment-body {
+        padding: 0 1rem 1rem;
+    }
+}
+

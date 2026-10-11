@@ -155,6 +155,25 @@ public class EmployeeController(ISender sender) : BaseApiController(sender)
         return HandleResult(result);
     }
 
+    [HttpGet("list-id")]
+    public async Task<IActionResult> GetAllEmployeesWithIdAsync(CancellationToken ct)
+    {
+        var query = new GetEmployeesListWithIdQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+
+    [HttpGet("employee-roles")]
+    [HasPermission(Permissions.Users.View)]
+    public async Task<IActionResult> GetPositionLookupAsync(CancellationToken ct)
+    {
+        var query = new GetEmployeeRolesQuery();
+        var result = await Sender.Send(query, ct);
+        return HandleResult(result);
+    }
+
+
     [HttpGet("employment-positions/lookup")]
     public async Task<IActionResult> GetPositionNamesLookupAsync(CancellationToken ct)
     {

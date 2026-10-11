@@ -13,4 +13,4 @@ namespace HRManagement.Domain.Models.Payload
         int DurationInMonth
     );
 
-}
+}  

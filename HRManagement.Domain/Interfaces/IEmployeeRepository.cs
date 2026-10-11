@@ -21,4 +21,11 @@ public interface IEmployeeRepository : IBaseRepository<Employee>
     Task<List<string>> GetAllPositionNamesAsync(CancellationToken cancellationToken = default);
     Task<List<EmployeeListResponseDto>> GetEmployeesByPositionAsync(string positionName,CancellationToken cancellationToken);
     Task<List<EmployeeListResponseDto>> GetEmployeesByRoleAsync(string roleName, CancellationToken cancellationToken = default);
+
+    Task<List<PerformanceReviewEmployeeDto>> GetPerformanceReviewEmployeesAsync(
+    CancellationToken cancellationToken = default);
+
+    Task<List<PositionLookupDto>> GetPositionLookupAsync(CancellationToken cancellationToken = default);
+
+
 }

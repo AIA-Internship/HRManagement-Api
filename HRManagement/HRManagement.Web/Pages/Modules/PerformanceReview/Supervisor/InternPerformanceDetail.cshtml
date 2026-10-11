@@ -1,0 +1,205 @@
+﻿@page "/PerformanceReview/Supervisor/InternPerformance/Detail"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.InternPerformanceDetailModel
+
+@{
+    ViewData["Title"] = "Intern Performance History";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/intern-performance-styles.css" ... />
+}
+
+<div class="d-flex flex-column flex-column-fluid intern-performance-detail-page">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid px-5 px-lg-10">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="pt-4 pt-lg-6 mb-4">
+                <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                    <li class="breadcrumb-item">
+                            Performance Review
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/PerformanceReview/Supervisor/InternPerformance" class="text-muted text-hover-primary">
+                            Intern Performance
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active text-brand" aria-current="page">
+                        Intern Performance History
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Header -->
+            <div class="mb-6 mb-lg-8">
+                <h1 id="internName" class="fw-bold text-gray-900 fs-3 mb-2">Loading...</h1>
+                <p id="internRole" class="text-muted fs-6 mb-0">Loading performance history...</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row g-5 g-xl-7 mb-6 mb-lg-8">
+
+                <!-- Peak -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Peak Performance
+                                    </div>
+                                    <div id="peakScore" class="fw-bold text-brand fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div id="peakPeriod" class="text-success fs-8 fw-semibold">
+                                        -
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light-danger d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-award fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lowest -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Lowest Period
+                                    </div>
+                                    <div id="lowestScore" class="fw-bold text-gray-500 fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div id="lowestPeriod" class="text-muted fs-8 fw-semibold">
+                                        -
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-bar-chart fs-2 text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Annual Average -->
+                <div class="col-12 col-md-4">
+                    <div class="card card-flush h-100 shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <div class="text-muted fw-bold text-uppercase fs-7 mb-2">
+                                        Annual Average
+                                    </div>
+                                    <div id="annualAverage" class="fw-bold text-brand fs-2qx mb-1">
+                                        -
+                                    </div>
+                                    <div class="text-danger fs-8 fw-semibold">
+                                        Overall Performance
+                                    </div>
+                                </div>
+
+                                <div class="summary-icon rounded-circle bg-light-danger d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-graph-up-arrow fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Performance Trend -->
+            <div class="card card-flush shadow-sm mb-6 mb-lg-8">
+                <div class="card-header border-0 pt-6 px-6 px-lg-8">
+                    <div class="card-title d-block">
+                        <h2 class="fw-bold text-gray-900 fs-5 mb-1">
+                            Total Average Trend
+                        </h2>
+                        <span id="trendDescription" class="text-muted fs-7">
+                            Performance trajectory
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2 px-6 px-lg-8 pb-8">
+                    <div id="chartLoading" class="text-center py-15">
+                        <span class="spinner-border spinner-border-sm text-secondary me-2"></span>
+                        <span class="text-muted fs-7">Loading performance trend...</span>
+                    </div>
+
+                    <div id="performanceChart" class="performance-chart d-none">
+                        <svg id="trendSvg" viewBox="0 0 1000 280"></svg>
+                    </div>
+
+                    <div id="chartEmpty" class="text-center py-15 d-none">
+                        <i class="bi bi-bar-chart-line fs-2x text-gray-400 d-block mb-3"></i>
+                        <div class="fw-bold text-gray-700 fs-6 mb-1">
+                            No Performance Data
+                        </div>
+                        <div class="text-muted fs-7">
+                            No period performance data is available.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period Breakdown -->
+            <div class="card card-flush shadow-sm">
+                <div class="card-header border-0 pt-6 px-6 px-lg-8">
+                    <div class="card-title">
+                        <h2 id="breakdownTitle" class="fw-bold text-gray-900 fs-5 mb-0">
+                            Performance Breakdown
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2 px-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 mb-0">
+                            <thead>
+                                <tr class="fw-bold text-muted text-uppercase fs-8">
+                                    <th class="ps-6 ps-lg-8 min-w-125px">Period</th>
+                                    <th class="text-center min-w-125px">Technical Score</th>
+                                    <th class="text-center min-w-125px">Soft Skill</th>
+                                    <th class="text-center min-w-150px">Self Assessment</th>
+                                    <th class="text-center min-w-125px">Peer Review</th>
+                                    <th class="text-center min-w-125px pe-6 pe-lg-8">Total Average</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="periodTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-15">
+                                        <span class="spinner-border spinner-border-sm text-secondary me-2"></span>
+                                        <span class="text-muted fs-7">Loading performance data...</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back -->
+            <div class="d-flex justify-content-end mt-6 mb-6">
+                <a href="/PerformanceReview/Supervisor/InternPerformance" class="btn btn-light btn-sm fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/performance-review/js/intern-performance-detail.js" asp-append-version="true"></script>
+}

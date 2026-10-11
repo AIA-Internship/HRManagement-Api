@@ -1,0 +1,87 @@
+﻿.edit-planner-page #messageContainer {
+    border-radius: 0.625rem;
+    line-height: 1.5;
+}
+
+.edit-planner-page.is-disabled {
+    opacity: 0.78;
+}
+
+.edit-planner-page .form-control:focus,
+.edit-planner-page .form-select:focus {
+    border-color: rgba(211, 17, 69, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(211, 17, 69, 0.08);
+}
+
+.assessment-section {
+    position: relative;
+    overflow: visible;
+}
+
+.group-row {
+    position: relative;
+    overflow: visible;
+}
+
+.employee-picker {
+    position: relative;
+}
+
+.employee-picker-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    max-height: 24rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.employee-picker-list {
+    max-height: 18rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.group-row .employee-picker-menu {
+    max-height: 24rem;
+}
+
+.group-members-list {
+    max-height: 20rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.25rem;
+}
+
+.receiver-list {
+    max-height: 20rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+.edit-planner-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(255,255,255,.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.edit-planner-loading.d-none {
+    display: none !important;
+}
+
+.edit-planner-loading-card {
+    min-width: 320px;
+    padding: 2rem;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.12);
+    text-align: center;
+}

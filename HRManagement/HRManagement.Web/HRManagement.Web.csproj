@@ -23,8 +23,4 @@
     <_ContentIncludedByDefault Remove="Pages\Modules\Timesheet\Supervisor\Timesheet.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\apps\modules\performance-review\css\" />
-  </ItemGroup>
-
 </Project>

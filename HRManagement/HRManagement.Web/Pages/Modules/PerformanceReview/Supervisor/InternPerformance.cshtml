@@ -1,0 +1,81 @@
+﻿@page "/PerformanceReview/Supervisor/InternPerformance"
+@model HRManagement.Web.Pages.Modules.PerformanceReview.Supervisor.InternPerformanceModel
+
+@{
+    ViewData["Title"] = "Intern Performance";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/apps/modules/performance-review/css/intern-performance-styles.css" asp-append-version="true" />
+}
+
+<div class="d-flex flex-column flex-column-fluid intern-performance-page">
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-fluid px-5 px-lg-10">
+
+            <nav aria-label="breadcrumb" class="pt-4 pt-lg-6 mb-4">
+                <ol class="breadcrumb text-muted fs-7 fw-semibold mb-0">
+                    <li class="breadcrumb-item">Performance Review</li>
+                    <li class="breadcrumb-item active text-brand" aria-current="page">Intern Performance</li>
+                </ol>
+            </nav>
+
+            <div class="mb-6 mb-lg-8">
+                <h1 class="fw-bold text-gray-900 fs-3 mb-2">Intern Performance Dashboard</h1>
+                <p class="text-muted fs-6 mb-0">See intern's performance ranking for each intern roles.</p>
+            </div>
+
+            <div class="card card-flush shadow-sm">
+                <div class="card-header border-0 pt-5 pt-lg-6 px-5 px-lg-8">
+                    <div class="card-title mb-0">
+                        <h2 class="fw-bold text-gray-900 fs-4 mb-0">Comprehensive Ranking</h2>
+                    </div>
+
+                    <div class="card-toolbar w-100 w-md-auto">
+                        <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 w-100">
+                            <select id="planFilter" class="form-select form-select-solid form-select-sm fs-7 fw-semibold w-100 w-sm-auto">
+                                <option value="">Loading plans...</option>
+                            </select>
+
+                            <select id="roleFilter" class="form-select form-select-solid form-select-sm fs-7 fw-semibold w-100 w-sm-auto" disabled>
+                                <option value="">Loading roles...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-3 px-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 mb-0 intern-performance-table">
+                            <thead>
+                                <tr class="fw-bold text-muted text-uppercase fs-8">
+                                    <th class="ps-5 ps-lg-8 w-75px">Rank</th>
+                                    <th class="min-w-250px">Intern Name</th>
+                                    <th class="text-center min-w-125px">Tech Score</th>
+                                    <th class="text-center min-w-125px">Soft Skill</th>
+                                    <th class="text-center min-w-125px">Self-Assess</th>
+                                    <th class="text-center min-w-125px">Peer Rev</th>
+                                    <th class="text-center min-w-125px pe-5 pe-lg-8">Total Avg</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="rankingTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-15 text-muted fs-7">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Loading intern performance...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/apps/modules/performance-review/js/intern-performance.js" asp-append-version="true"></script>
+}
