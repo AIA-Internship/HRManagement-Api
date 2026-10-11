@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.SeedWork;
@@ -46,7 +47,7 @@ internal sealed class SaveOrSubmitSupervisorAssessmentCommandHandler(
 
         if (assignmentEntity == null)
         {
-            string initialStatus = req.IsDraft ? "drafted" : "in progress";
+            string initialStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.InProgress;
 
             assignmentEntity = new FillAssignment(
                 req.PlanId,
@@ -80,15 +81,18 @@ internal sealed class SaveOrSubmitSupervisorAssessmentCommandHandler(
             return Result.Failure<int>("Akses ditolak: Anda hanya dapat mengisi penilaian atasan untuk penugasan Anda sendiri.");
         }
 
-        string status = assignmentDetail.Status?.ToLower() ?? "not started";
-        if (status == "done" || status == "on review" || status == "submitted")
+        string status = assignmentDetail.Status ?? AssignmentStatusConstant.NotStarted;
+        bool isAlreadyFinalized = string.Equals(status, AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.OnReview, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.PendingReview, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase);
+
+        if (isAlreadyFinalized)
         {
             return Result.Failure<int>("Penilaian atasan ini sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
         }
 
         // 3. Validate Answer Submissions against Assessment Template
-        // CHANGED: validQuestions should ideally be Dictionary<int, string> (QuestionId -> QuestionType)
-        // If ValidQuestionIds is still a HashSet<int>, retrieve QuestionTypes via repository
         var validQuestions = assignmentDetail.ValidQuestions; // Key: QuestionId, Value: QuestionType
         var allowedQuestionIds = validQuestions.Keys.ToHashSet();
 
@@ -115,16 +119,14 @@ internal sealed class SaveOrSubmitSupervisorAssessmentCommandHandler(
                 return Result.Failure<int>($"Pertanyaan ID {answerDto.AssessmentQuestionId} tidak valid untuk penugasan ini.");
             }
 
-            // Determine question type fallback to assignment level answer type
             string questionType = !string.IsNullOrWhiteSpace(qType)
                 ? qType.ToLower()
-                : (assignmentDetail.AnswerType?.ToLower() ?? "text");
+                : (assignmentDetail.AnswerType?.ToLower() ?? AssessmentAnswerTypeConstants.Text);
 
             if (!req.IsDraft)
             {
-                // CHANGED: Flexible validation based on QuestionType
-                bool requiresRating = questionType.Contains("rating");
-                bool requiresText = questionType.Contains("text");
+                bool requiresRating = questionType.Contains(AssessmentAnswerTypeConstants.Rating);
+                bool requiresText = questionType.Contains(AssessmentAnswerTypeConstants.Text);
 
                 if (requiresRating && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
                 {
@@ -137,7 +139,6 @@ internal sealed class SaveOrSubmitSupervisorAssessmentCommandHandler(
                 }
             }
 
-            // CHANGED: Pass raw values directly. UpsertAnswersAsync will handle field sanitization.
             answersToPersist.Add(new AssessmentAnswer(
                 resolvedAssignmentId,
                 answerDto.AssessmentQuestionId,
@@ -151,7 +152,12 @@ internal sealed class SaveOrSubmitSupervisorAssessmentCommandHandler(
         var assignmentAnswerTypes = new Dictionary<int, string> { { resolvedAssignmentId, assignmentDetail.AnswerType } };
         await assignmentRepository.UpsertAnswersAsync(answersToPersist, assignmentAnswerTypes, cancellationToken);
 
-        assignmentEntity.FinalizeSubmission(req.IsDraft, currentUserId);
+        assignmentEntity.FinalizeSubmission(
+            req.IsDraft,
+            assignmentDetail.AssessmentType,
+            assignmentDetail.AnswerType,
+            currentUserId
+        );
         await unitOfWork.CommitAsync(cancellationToken);
 
         return Result.Success(resolvedAssignmentId);

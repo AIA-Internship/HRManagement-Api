@@ -13,17 +13,17 @@ namespace HRManagement.Api.Controllers;
 [Route("api/assignment")]
 public class FillAssignmentController(ISender sender) : BaseApiController(sender)
 {
-    [HttpPost("review/submit")]
-    public async Task<IActionResult> SubmitTextReview(
-    [FromBody] SubmitTextReviewPayload request,
-    CancellationToken cancellationToken)
-    {
-        var command = new SubmitTextReviewCommand(request, CurrentEmployeeId);
-        var result = await Sender.Send(command, cancellationToken);
+    //[HttpPost("review/submit")]
+    //public async Task<IActionResult> SubmitTextReview(
+    //[FromBody] SubmitTextReviewPayload request,
+    //CancellationToken cancellationToken)
+    //{
+    //    var command = new SubmitTextReviewCommand(request, CurrentEmployeeId);
+    //    var result = await Sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return BadRequest(new { Message = result.Error });
-        return Ok(new { ReviewAssignmentId = result.Value });
-    }
+    //    if (result.IsFailure) return BadRequest(new { Message = result.Error });
+    //    return Ok(new { ReviewAssignmentId = result.Value });
+    //}
 
     [HttpGet("{assignmentId:int}")]
     public async Task<IActionResult> GetAssignmentDetailByIdAsync(

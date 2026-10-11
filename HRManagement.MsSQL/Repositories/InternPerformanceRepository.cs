@@ -1,4 +1,5 @@
 ﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
@@ -386,8 +387,8 @@ public class InternPerformanceRepository: BaseRepository<EmployeeScoreSummary>, 
             {
                 "technical" => summary.TechScore,
                 "soft-skill" => summary.SoftSkillScore,
-                "self-assessment" => summary.SelfAssessmentScore,
-                "peer-review" => summary.PeerReviewScore,
+                AssessmentTypeConstant.SelfAssessment => summary.SelfAssessmentScore,
+                AssessmentTypeConstant.PeerReview => summary.PeerReviewScore,
                 _ => 0
             };
 

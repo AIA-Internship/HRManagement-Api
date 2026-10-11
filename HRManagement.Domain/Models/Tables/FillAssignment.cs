@@ -1,4 +1,6 @@
-﻿namespace HRManagement.Domain.Models.Tables;
+﻿using HRManagement.Domain.Models.Constants;
+
+namespace HRManagement.Domain.Models.Tables;
 
 public class FillAssignment : BaseTable
 {
@@ -8,7 +10,7 @@ public class FillAssignment : BaseTable
     public int FillerId { get; private set; }
     public int SubjectId { get; private set; }
     public int AssessmentId { get; private set; }
-    public string Status { get; private set; } = string.Empty;
+    public string Status { get; private set; } = AssignmentStatusConstant.NotStarted;
 
     public PerformanceReviewPlanInterval Interval { get; set; } = null!;
     public Employee Filler { get; set; } = null!;
@@ -34,7 +36,7 @@ public class FillAssignment : BaseTable
         FillerId = fillerId;
         SubjectId = subjectId;
         AssessmentId = assessmentId;
-        Status = status;
+        Status = string.IsNullOrWhiteSpace(status) ? AssignmentStatusConstant.NotStarted : status;
         MarkAsCreated(actionerId);
         MarkAsModified(actionerId);
     }
@@ -45,27 +47,30 @@ public class FillAssignment : BaseTable
         MarkAsModified(actionerId);
     }
 
-    public void FinalizeSubmission(bool isDraft, int actionerId)
+    public void FinalizeSubmission(bool isDraft, string? assessmentType, string? answerType, int actionerId)
     {
         string calculatedStatus;
 
         if (isDraft)
         {
-            calculatedStatus = "drafted";
+            calculatedStatus = AssignmentStatusConstant.InProgress;
         }
         else
         {
-            // Check if it's a supervisor assessment type, or just force "done" for direct supervisor fills
-            string assessmentType = Assessment?.AssessmentType?.ToLower() ?? "";
+            string normAssessmentType = assessmentType?.ToLower() ?? string.Empty;
+            string normAnswerType = answerType?.ToLower() ?? AssessmentAnswerTypeConstants.Text;
 
-            if (assessmentType == "supervisor-assessment")
+            // Supervisor assessment submissions are immediately finalized/completed
+            if (normAssessmentType == AssessmentTypeConstant.SupervisorAssessment.ToLower())
             {
-                calculatedStatus = "done"; // ✅ Direct supervisor assessment always goes straight to done!
+                calculatedStatus = AssignmentStatusConstant.Completed;
             }
             else
             {
-                string answerType = Assessment?.AnswerType?.ToLower() ?? "text";
-                calculatedStatus = answerType == "rating" ? "done" : "on review";
+                // Self and Peer assessments go directly to Completed for ratings or PendingReview for text feedback
+                calculatedStatus = normAnswerType == AssessmentAnswerTypeConstants.Rating
+                    ? AssignmentStatusConstant.Completed
+                    : AssignmentStatusConstant.PendingReview;
             }
         }
 

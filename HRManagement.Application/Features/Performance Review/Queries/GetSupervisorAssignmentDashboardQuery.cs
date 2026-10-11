@@ -37,7 +37,6 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
         }
 
         // 2. Resolve Active PlanId and IntervalId metadata from rawData or request
-        // Assumes SupervisorFillAssignmentResponseDto includes PlanId/IntervalId property
         var sampleRecord = rawData.First();
         int? resolvedIntervalId = request.IntervalId ?? sampleRecord.IntervalId;
         int? resolvedPlanId = sampleRecord.PlanId;
@@ -49,11 +48,11 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
             {
                 var sample = group.First();
 
-                var supervisorAssignment = group.Where(x => x.AssessmentType == "supervisor-assessment").ToList();
-                var peerAssignments = group.Where(x => x.AssessmentType == "peer-review").ToList();
-                var selfAssignments = group.Where(x => x.AssessmentType == "self-assessment").ToList();
+                var supervisorAssignment = group.Where(x => x.AssessmentType == AssessmentTypeConstant.SupervisorAssessment).ToList();
+                var peerAssignments = group.Where(x => x.AssessmentType == AssessmentTypeConstant.PeerReview).ToList();
+                var selfAssignments = group.Where(x => x.AssessmentType == AssessmentTypeConstant.SelfAssessment).ToList();
 
-                // 🔥 Determine the single employee-level status using the new unified logic
+                // Determine single employee-level status
                 string unifiedStatus = GetUnifiedEmployeeStatus(supervisorAssignment, peerAssignments, selfAssignments);
 
                 return new DashboardDataDto
@@ -61,13 +60,13 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
                     SubjectId = group.Key,
                     SubjectName = sample.Subject?.Name ?? string.Empty,
                     JobTitle = sample.Subject?.JobTitle ?? string.Empty,
-                    Status = unifiedStatus, // 🔥 Top-level status for the frontend
+                    Status = unifiedStatus,
 
                     SupervisorAssessment = supervisorAssignment.Count == 0 ? null : new AssessmentDetailDto
                     {
                         AssignmentId = supervisorAssignment[0].AssignmentId,
                         AnswerType = supervisorAssignment[0].AnswerType,
-                        Status = GetSupervisorAssignmentStatus(supervisorAssignment, request.CurrentSupervisorId),
+                        Status = GetAssignmentStatusLabel(supervisorAssignment),
                         Reviewers = supervisorAssignment[0].Reviewers?
                             .Where(r => r.Id.HasValue)
                             .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
@@ -78,7 +77,7 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
                     {
                         AssignmentId = p.AssignmentId,
                         AnswerType = p.AnswerType,
-                        Status = GetEmployeeFillAssignmentReviewStatus(peerAssignments, request.CurrentSupervisorId),
+                        Status = GetAssignmentStatusLabel(new List<SupervisorFillAssignmentResponseDto> { p }),
                         Reviewers = p.Reviewers?
                             .Where(r => r.Id.HasValue)
                             .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
@@ -89,7 +88,7 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
                     {
                         AssignmentId = selfAssignments[0].AssignmentId,
                         AnswerType = selfAssignments[0].AnswerType,
-                        Status = GetEmployeeFillAssignmentReviewStatus(selfAssignments, request.CurrentSupervisorId),
+                        Status = GetAssignmentStatusLabel(selfAssignments),
                         Reviewers = selfAssignments[0].Reviewers?
                             .Where(r => r.Id.HasValue)
                             .Select(r => new ReviewerDto { Id = r.Id!.Value, Name = r.Name })
@@ -118,50 +117,42 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
             .Concat(selfAssignments)
             .ToList();
 
-        // 1. If absolutely no assessment records exist yet anywhere
+        // 1. If absolutely no assessment records exist yet anywhere -> NOT STARTED
         if (allAssignments.Count == 0)
         {
             return "NOT STARTED";
         }
 
         // 2. If ANY existing assignment is locked -> LOCKED
-        if (allAssignments.Any(a => a.AssignmentStatus == AssignmentStatusConstants.Locked || a.AssignmentStatus?.ToLower() == "locked"))
+        if (allAssignments.Any(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Locked)))
         {
             return "LOCKED";
         }
 
-        // 3. If ANY existing assignment is active (In Progress, Drafted, On Review) -> IN PROGRESS
+        // 3. If ALL existing rows are untouched ("Not Started") -> NOT STARTED
+        // (Even if self-assessment exists, if it and any on-demand records are NotStarted, the whole thing is Not Started)
+        if (allAssignments.All(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.NotStarted)))
+        {
+            return "NOT STARTED";
+        }
+
+        // 4. If ANY existing assignment has active work (In Progress, Pending Review, On Review) -> IN PROGRESS
         bool hasActiveWork = allAssignments.Any(a =>
-            a.AssignmentStatus == AssignmentStatusConstants.InProgress ||
-            a.AssignmentStatus == AssignmentStatusConstants.Drafted ||
-            a.AssignmentStatus == AssignmentStatusConstants.OnReview);
+            IsStatus(a.AssignmentStatus, AssignmentStatusConstant.InProgress) ||
+            IsStatus(a.AssignmentStatus, AssignmentStatusConstant.PendingReview) ||
+            IsStatus(a.AssignmentStatus, AssignmentStatusConstant.OnReview));
 
         if (hasActiveWork)
         {
             return "IN PROGRESS";
         }
 
-        // 4. Check structural existence based on your business rules:
-        // - Self Assessment is guaranteed to be 1 (if missing, it hasn't been touched/created yet)
-        // - Supervisor and Peer assignments might exist. If *nothing* from Self or Supervisor has been created yet, it's not fully complete.
-        bool hasSelfAssessment = selfAssignments.Count > 0;
-        bool hasSupervisorAssessment = supervisorAssignments.Count > 0;
+        // 5. If everything that has been instantiated so far is completed or reviewed -> COMPLETED
+        bool allCompleted = allAssignments.All(a =>
+            IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Completed) ||
+            IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Reviewed));
 
-        // If critical core components (like Self Assessment) are completely missing/uninstantiated, 
-        // we cannot be "COMPLETED" even if a peer review is finished.
-        if (!hasSelfAssessment || !hasSupervisorAssessment)
-        {
-            return "IN PROGRESS";
-        }
-
-        // 5. Verify that ALL instantiated assignments across all categories are fully completed/done/approved
-        bool allExistingAreCompleted = allAssignments.All(a =>
-            a.AssignmentStatus == AssignmentStatusConstants.Completed ||
-            a.AssignmentStatus == AssignmentStatusConstants.Approved ||
-            a.AssignmentStatus?.ToLower() == "done" ||
-            a.AssignmentStatus?.ToLower() == "completed");
-
-        if (allExistingAreCompleted)
+        if (allCompleted)
         {
             return "COMPLETED";
         }
@@ -170,165 +161,63 @@ internal sealed class GetSupervisorAssignmentDashboardQueryHandler(
         return "IN PROGRESS";
     }
 
-    public string GetEmployeeFillAssignmentReviewStatus(List<SupervisorFillAssignmentResponseDto> assignments, int currentSupervisorId)
+    public string GetAssignmentStatusLabel(List<SupervisorFillAssignmentResponseDto> assignments)
     {
         if (assignments.Count <= 0)
-        {
-            return "NO_ASSIGNMENTS";
-        }
-
-        if (assignments.All(a => a.AssignmentStatus == AssignmentStatusConstants.Locked))
-        {
-            return "LOCKED";
-        }
-
-        // Flatten all reviewers across all peer review assignments for this subject
-        var allReviewers = assignments
-            .SelectMany(a => a.Reviewers ?? new List<ReviewerResponseDto>())
-            .Where(r => r.Id.HasValue)
-            .ToList();
-
-        // If no reviewers exist anywhere, it's not started
-        if (allReviewers.Count == 0)
         {
             return "NOT STARTED";
         }
 
-        // Check if ALL assignments are Rating type
-        bool isAllRating = assignments.All(a => a.AnswerType == AssignmentAnswerTypeConstants.Rating);
-
-        // Determine overall status flags
-        bool allInProgress = assignments.All(a =>
-            a.AssignmentStatus == AssignmentStatusConstants.InProgress ||
-            a.AssignmentStatus == AssignmentStatusConstants.Drafted ||
-            a.AssignmentStatus == AssignmentStatusConstants.OnReview);
-
-        bool allCompleted = assignments.All(a =>
-            a.AssignmentStatus == AssignmentStatusConstants.Completed ||
-            a.AssignmentStatus == AssignmentStatusConstants.Approved);
-
-        // IN PROGRESS RULES
-        if (allInProgress)
+        if (assignments.All(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Locked)))
         {
-            if (isAllRating)
-            {
-                return "IN PROGRESS";
-            }
+            return "LOCKED";
+        }
 
-            // For Text or Mixed, apply the ownership rules
-            bool allByMe = allReviewers.All(r => r.Id == currentSupervisorId);
-            var distinctOtherReviewerIds = allReviewers.Where(r => r.Id != currentSupervisorId).Select(r => r.Id).Distinct().ToList();
-            bool allBySomeoneElseSingle = distinctOtherReviewerIds.Count == 1 && allReviewers.All(r => r.Id != currentSupervisorId);
+        if (assignments.All(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.NotStarted)))
+        {
+            return "NOT STARTED";
+        }
 
-            if (allByMe)
-            {
-                return "IN PROGRESS BY ME";
-            }
-            if (allBySomeoneElseSingle)
-            {
-                return "IN PROGRESS BY SOMEONE ELSE";
-            }
+        if (assignments.Any(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.InProgress)))
+        {
             return "IN PROGRESS";
         }
 
-        // COMPLETED RULES
-        if (allCompleted)
+        if (assignments.Any(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.PendingReview)))
         {
-            if (isAllRating)
-            {
-                return "COMPLETED";
-            }
+            return "PENDING REVIEW";
+        }
 
-            // For Text or Mixed, apply the ownership rules
-            bool allByMe = allReviewers.All(r => r.Id == currentSupervisorId);
-            var distinctOtherReviewerIds = allReviewers.Where(r => r.Id != currentSupervisorId).Select(r => r.Id).Distinct().ToList();
-            bool allBySomeoneElseSingle = distinctOtherReviewerIds.Count == 1 && allReviewers.All(r => r.Id != currentSupervisorId);
+        if (assignments.Any(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.OnReview)))
+        {
+            return "ON REVIEW";
+        }
 
-            if (allByMe)
-            {
-                return "COMPLETED BY ME";
-            }
-            if (allBySomeoneElseSingle)
-            {
-                return "COMPLETED BY SOMEONE ELSE";
-            }
+        if (assignments.All(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Reviewed)))
+        {
+            return "REVIEWED";
+        }
+
+        if (assignments.All(a => IsStatus(a.AssignmentStatus, AssignmentStatusConstant.Completed)))
+        {
             return "COMPLETED";
         }
 
-        return "";
+        return "IN PROGRESS";
     }
 
-    public string GetSupervisorAssignmentStatus(List<SupervisorFillAssignmentResponseDto> assignments, int currentSupervisorId)
+    private bool IsStatus(object? statusValue, string targetStatus)
     {
-        if (assignments.Count <= 0)
+        if (statusValue == null) return false;
+
+        if (statusValue is string strVal)
         {
-            return "NO ASSIGNMENTS";
+            // Case-insensitive comparison and handling spaces/underscores robustly
+            return string.Equals(strVal, targetStatus, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(strVal.Replace(" ", ""), targetStatus.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(strVal.Replace("_", " "), targetStatus, StringComparison.OrdinalIgnoreCase);
         }
 
-        if (assignments.All(a => a.AssignmentStatus == AssignmentStatusConstants.Locked))
-        {
-            return "LOCKED";
-        }
-
-        // 1. Not Started: If no reviewers exist across all relevant assignments
-        if (assignments.All(a => a.Reviewers == null || a.Reviewers.Count <= 0))
-        {
-            return "NOT STARTED";
-        }
-
-        // Flatten all reviewers for easy analysis
-        var allReviewers = assignments.SelectMany(a => a.Reviewers ?? new List<ReviewerResponseDto>()).ToList();
-
-        // Check flags for statuses
-        bool hasInProgress = assignments.Any(a => a.AssignmentStatus == AssignmentStatusConstants.InProgress ||
-                                                  a.AssignmentStatus == AssignmentStatusConstants.Drafted ||
-                                                  a.AssignmentStatus == AssignmentStatusConstants.OnReview);
-
-        bool hasCompleted = assignments.Any(a => a.AssignmentStatus == AssignmentStatusConstants.Completed ||
-                                                 a.AssignmentStatus == AssignmentStatusConstants.Approved);
-
-        // If at least 1 is in progress and NONE are completed yet
-        if (hasInProgress && !hasCompleted)
-        {
-            bool onlyMe = allReviewers.Count > 0 && allReviewers.All(r => r.Id == currentSupervisorId);
-            bool onlyOthers = allReviewers.Count > 0 && allReviewers.All(r => r.Id != currentSupervisorId);
-            bool bothMeAndOthers = allReviewers.Any(r => r.Id == currentSupervisorId) && allReviewers.Any(r => r.Id != currentSupervisorId);
-
-            if (onlyMe) return "IN PROGRESS BY ME";
-            if (onlyOthers) return "IN PROGRESS BY OTHERS";
-            if (bothMeAndOthers) return "IN PROGRESS BY ME AND OTHERS";
-
-            return "IN PROGRESS";
-        }
-
-        // If at least 1 is completed
-        if (hasCompleted)
-        {
-            bool onlyMe = allReviewers.Count > 0 && allReviewers.All(r => r.Id == currentSupervisorId);
-            bool onlyOthers = allReviewers.Count > 0 && allReviewers.All(r => r.Id != currentSupervisorId);
-            bool bothMeAndOthers = allReviewers.Any(r => r.Id == currentSupervisorId) && allReviewers.Any(r => r.Id != currentSupervisorId);
-
-            if (onlyMe) return "COMPLETED BY ME";
-            if (onlyOthers) return "COMPLETED BY OTHERS";
-            if (bothMeAndOthers) return "COMPLETED BY ME AND OTHERS";
-
-            return "COMPLETED";
-        }
-
-        // Fallback if reviewers exist but statuses don't match standard workflow states
-        if (allReviewers.All(r => r.Id == currentSupervisorId))
-        {
-            return "COMPLETED BY ME";
-        }
-        if (allReviewers.All(r => r.Id != currentSupervisorId))
-        {
-            return "COMPLETED BY OTHERS";
-        }
-        if (allReviewers.Any(r => r.Id == currentSupervisorId) && allReviewers.Any(r => r.Id != currentSupervisorId))
-        {
-            return "COMPLETED BY ME AND OTHERS";
-        }
-
-        return "";
+        return false;
     }
 }

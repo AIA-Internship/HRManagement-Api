@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.SeedWork;
@@ -48,7 +49,7 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
 
             if (reviewAssignment == null)
             {
-                string initialStatus = req.IsDraft ? "drafted" : "in progress";
+                string initialStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.OnReview;
 
                 // Fetch metadata directly using your new repository method
                 var (reviewerRoleId, reviewerJobTitle) = await assignmentRepository.GetReviewerMetadataAsync(currentUserId, cancellationToken);
@@ -72,8 +73,11 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
             {
                 reviewAssignmentId = reviewAssignment.Id;
 
-                string currentStatus = reviewAssignment.Status?.ToLower() ?? "not started";
-                if (currentStatus == "done" || currentStatus == "submitted")
+                string currentStatus = reviewAssignment.Status ?? "";
+                bool isAlreadyFinalized = string.Equals(currentStatus, AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                                          string.Equals(currentStatus, AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase);
+
+                if (isAlreadyFinalized)
                 {
                     return Result.Failure<int>("Review self-assessment ini sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
                 }
@@ -112,7 +116,7 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
             // 4. Upsert Scores and Finalize Status
             await assignmentRepository.UpsertAnswerScoresAsync(reviewAssignmentId, scoresToPersist, cancellationToken);
 
-            string finalStatus = req.IsDraft ? "drafted" : "scored";
+            string finalStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.Completed;
             reviewAssignment.UpdateStatus(finalStatus, currentUserId);
 
             await unitOfWork.CommitAsync(cancellationToken);

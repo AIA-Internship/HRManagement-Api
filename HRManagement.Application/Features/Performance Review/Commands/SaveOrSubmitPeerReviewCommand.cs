@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.SeedWork;
@@ -43,8 +44,13 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
         var assignmentsToProcess = validAssignments.Where(a => incomingAssignmentIds.Contains(a.Id));
         foreach (var assignment in assignmentsToProcess)
         {
-            string status = assignment.Status?.ToLower() ?? "not started";
-            if (status == "done" || status == "on review" || status == "submitted")
+            string status = assignment.Status ?? AssignmentStatusConstant.NotStarted;
+            bool isAlreadyFinalized = string.Equals(status, AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                                      string.Equals(status, AssignmentStatusConstant.OnReview, StringComparison.OrdinalIgnoreCase) ||
+                                      string.Equals(status, AssignmentStatusConstant.PendingReview, StringComparison.OrdinalIgnoreCase) ||
+                                      string.Equals(status, AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase);
+
+            if (isAlreadyFinalized)
             {
                 return Result.Failure($"Penilaian untuk beberapa rekan kerja sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
             }
@@ -55,12 +61,12 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
         foreach (var peerReviewDto in payload.PeerReviews)
         {
             var matchedAssignment = validAssignments.First(a => a.Id == peerReviewDto.AssignmentId);
-            if (matchedAssignment.Status?.Equals("Submitted", StringComparison.OrdinalIgnoreCase) == true)
+            if (string.Equals(matchedAssignment.Status, AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(matchedAssignment.Status, AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase))
             {
                 return Result.Failure($"Penugasan ID {matchedAssignment.Id} sudah dikirim dan tidak dapat diubah.");
             }
 
-            // CHANGED: Use ValidQuestions dictionary
             var validQuestions = matchedAssignment.ValidQuestions;
             var allowedQuestionIds = validQuestions.Keys.ToHashSet();
 
@@ -85,16 +91,14 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
                     return Result.Failure($"Pertanyaan ID {answerDto.AssessmentQuestionId} tidak valid untuk penugasan ini.");
                 }
 
-                // Resolve question type (fallback to assessment-level type)
                 string questionType = !string.IsNullOrWhiteSpace(qType)
                     ? qType.ToLower()
-                    : (matchedAssignment.AnswerType?.ToLower() ?? "text");
+                    : (matchedAssignment.AnswerType?.ToLower() ?? AssessmentAnswerTypeConstants.Text);
 
                 if (!payload.IsDraft)
                 {
-                    // CHANGED: Flexible per-question type checks
-                    bool requiresRating = questionType.Contains("rating");
-                    bool requiresText = questionType.Contains("text");
+                    bool requiresRating = questionType.Contains(AssessmentAnswerTypeConstants.Rating);
+                    bool requiresText = questionType.Contains(AssessmentAnswerTypeConstants.Text);
 
                     if (requiresRating && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
                     {
@@ -107,7 +111,6 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
                     }
                 }
 
-                // CHANGED: Pass raw values directly. UpsertAnswersAsync handles value sanitization.
                 answersToPersist.Add(new AssessmentAnswer(
                     peerReviewDto.AssignmentId,
                     answerDto.AssessmentQuestionId,
@@ -126,9 +129,18 @@ internal sealed class SaveOrSubmitPeerReviewCommandHandler(
             assignmentIdsToUpdate,
             cancellationToken
         );
+
         foreach (var assignment in assignments)
         {
-            assignment.FinalizeSubmission(payload.IsDraft, currentUserId);
+            // 👉 Match with the validation DTO to securely grab AssessmentType and AnswerType
+            var matchingValidation = validAssignments.First(v => v.Id == assignment.Id);
+
+            assignment.FinalizeSubmission(
+                payload.IsDraft,
+                matchingValidation.AssessmentType,
+                matchingValidation.AnswerType,
+                currentUserId
+            );
         }
 
         await unitOfWork.CommitAsync(cancellationToken);

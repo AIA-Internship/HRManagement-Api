@@ -126,7 +126,7 @@
                 return null; 
             }
 
-            const response = await fetch(`${API_BASE}/api/plan/ongoing`, {
+            const response = await fetch(`${API_BASE}/api/plan/me/ongoing`, {
                 method: "GET",
                 headers: {
                     "Accept": "application/json",

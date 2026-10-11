@@ -242,7 +242,7 @@
         const skeleton = document.getElementById("skeletonContainer");
         if (skeleton) skeleton.remove();
 
-        if (assessment.answerType !== "rating" && assessment.answerType !== "text") {
+        if (assessment.answerType !== "rating" && assessment.answerType !== "free-text") {
             renderEmptyState(`Tipe jawaban '${assessment.answerType}' tidak valid atau belum didukung oleh sistem.`);
             return;
         }
@@ -256,7 +256,7 @@
 
         if (assessment.answerType === "rating") {
             renderRatingLayout(assessment.questions, cardContainer, isEditable);
-        } else if (assessment.answerType === "text") {
+        } else if (assessment.answerType === "free-text") {
             renderTextLayout(assessment.questions, cardContainer, isEditable);
             setTimeout(autoGrowAllTextareas, 50);
         }
@@ -398,13 +398,13 @@
     }
 
     function buildPayload(isDraftValue) {
-        const mode = (currentAssignmentData.assessment?.answerType || "text").toLowerCase();
+        const mode = (currentAssignmentData.assessment?.answerType || "free-text").toLowerCase();
 
         const answersPayload = (currentAssignmentData.assessment?.questions || []).map(q => {
             let currentVal = "";
             if (q.answer) {
                 if (typeof q.answer === 'object') {
-                    currentVal = mode === "text" ? q.answer.textValue : q.answer.ratingValue;
+                    currentVal = mode === "free-text" ? q.answer.textValue : q.answer.ratingValue;
                 } else {
                     currentVal = q.answer;
                 }
@@ -412,7 +412,7 @@
 
             return {
                 assessmentQuestionId: q.id,
-                textValue: mode === "text" ? (String(currentVal || "")) : null,
+                textValue: mode === "free-text" ? (String(currentVal || "")) : null,
                 ratingValue: mode === "rating" ? (parseInt(currentVal, 10) || null) : null
             };
         });

@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.SeedWork;
@@ -38,8 +39,13 @@ internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
             return Result.Failure("Akses ditolak: Anda hanya dapat mengisi penilaian mandiri untuk akun Anda sendiri.");
         }
 
-        string status = assignmentDetail.Status?.ToLower() ?? "not started";
-        if (status == "done" || status == "on review" || status == "submitted")
+        string status = assignmentDetail.Status ?? AssignmentStatusConstant.NotStarted;
+        bool isAlreadyFinalized = string.Equals(status, AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.OnReview, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.PendingReview, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(status, AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase);
+
+        if (isAlreadyFinalized)
         {
             return Result.Failure("Penilaian mandiri ini sudah dikirimkan sebelumnya dan tidak dapat diubah kembali.");
         }
@@ -74,13 +80,13 @@ internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
             // Resolve question type with fallback to assignment answer type
             string questionType = !string.IsNullOrWhiteSpace(qType)
                 ? qType.ToLower()
-                : (assignmentDetail.AnswerType?.ToLower() ?? "text");
+                : (assignmentDetail.AnswerType?.ToLower() ?? AssessmentAnswerTypeConstants.Text);
 
             if (!payload.IsDraft)
             {
                 // Flexible per-question validation
-                bool requiresRating = questionType.Contains("rating");
-                bool requiresText = questionType.Contains("text");
+                bool requiresRating = questionType.Contains(AssessmentAnswerTypeConstants.Rating);
+                bool requiresText = questionType.Contains(AssessmentAnswerTypeConstants.Text);
 
                 if (requiresRating && (!answerDto.RatingValue.HasValue || answerDto.RatingValue < 1 || answerDto.RatingValue > 5))
                 {
@@ -114,7 +120,13 @@ internal sealed class SaveOrSubmitSelfAssessmentCommandHandler(
         var assignmentToUpdate = assignments.FirstOrDefault();
         if (assignmentToUpdate != null)
         {
-            assignmentToUpdate.FinalizeSubmission(payload.IsDraft, currentUserId);
+            // 👉 Pass the metadata explicitly retrieved from assignmentDetail
+            assignmentToUpdate.FinalizeSubmission(
+                payload.IsDraft,
+                assignmentDetail.AssessmentType,
+                assignmentDetail.AnswerType,
+                currentUserId
+            );
         }
 
         await unitOfWork.CommitAsync(cancellationToken);

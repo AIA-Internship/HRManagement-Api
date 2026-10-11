@@ -376,9 +376,14 @@
                 }
 
                 peerReviewPayload = result.content;
-                const reviewers = peerReviewPayload.reviewers || [];
+                
+                // --- FILTER OUT REVIEWERS WITH NO ANSWERS SUBMITTED YET ---
+                const rawReviewers = peerReviewPayload.reviewers || [];
+                const submittedReviewers = rawReviewers.filter(r => Array.isArray(r.answers) && r.answers.length > 0);
+                
+                // Keep the filtered list in our working payload subset
+                peerReviewPayload.filteredReviewers = submittedReviewers;
 
-                // If all peer reviews are completed and submitted, hide save/submit buttons and lock interactions
                 try {
                     const actionContainer = document.getElementById("actionButtonsContainer");
                     const saveBtn = document.getElementById("btnSaveDraft");
@@ -388,13 +393,12 @@
                     const isSubmitted = Boolean(peerReviewPayload.isSubmitted);
                     const locked = allCompleted && isSubmitted;
 
-                    // Always show the action container so the Back button remains visible.
                     if (actionContainer) {
                         actionContainer.classList.remove("d-none");
                         actionContainer.classList.add("d-flex");
                     }
 
-                    if (locked) {
+                    if (locked || submittedReviewers.length === 0) {
                         if (saveBtn) saveBtn.classList.add("d-none");
                         if (submitBtn) submitBtn.classList.add("d-none");
                     } else {
@@ -405,13 +409,14 @@
                     console.warn("Unable to toggle action button visibility:", e);
                 }
 
-                if (reviewers.length === 0) {
-                    renderEmptyState("Belum ada reviewer yang ditugaskan.");
+                if (submittedReviewers.length === 0) {
+                    renderEmptyState("Belum ada reviewer yang mengumpulkan jawaban peer review.");
+                    document.getElementById("reviewersHeaderCard").classList.add("d-none");
                     return;
                 }
 
                 supervisorRatings = {};
-                reviewers.forEach(r => {
+                submittedReviewers.forEach(r => {
                     (r.answers || []).forEach(a => {
                         const validId = a.answerId ?? a.id;
                         const score = a.supervisorRating ?? a.reviewScore;
@@ -422,7 +427,7 @@
                     });
                 });
 
-                selectedReviewerIds = reviewers.slice(0, currentMaxVisible).map(r => r.fillerId);
+                selectedReviewerIds = submittedReviewers.slice(0, currentMaxVisible).map(r => r.fillerId);
 
                 renderReviewersChecklist();
                 renderMatrixGrid();
@@ -436,7 +441,7 @@
         function renderReviewersChecklist() {
             const card = document.getElementById("reviewersHeaderCard");
             const container = document.getElementById("reviewersBadgeContainer");
-            const reviewers = peerReviewPayload.reviewers || [];
+            const reviewers = peerReviewPayload.filteredReviewers || [];
 
             container.innerHTML = "";
 
@@ -482,10 +487,10 @@
             if (!gridContainer || !peerReviewPayload) return;
 
             const questions = peerReviewPayload.questions || [];
-            const activeReviewers = (peerReviewPayload.reviewers || []).filter(r => selectedReviewerIds.includes(r.fillerId));
+            const activeReviewers = (peerReviewPayload.filteredReviewers || []).filter(r => selectedReviewerIds.includes(r.fillerId));
 
             if (activeReviewers.length === 0 || questions.length === 0) {
-                renderEmptyState("Data pertanyaan atau reviewer tidak tersedia.");
+                renderEmptyState("Data pertanyaan atau reviewer dengan jawaban tidak tersedia.");
                 return;
             }
 
@@ -634,7 +639,7 @@
             const cell = textarea.closest('.matrix-grid-cell');
             if (!cell) return;
 
-            const activeReviewers = (peerReviewPayload?.reviewers || []).filter(r => selectedReviewerIds.includes(r.fillerId));
+            const activeReviewers = (peerReviewPayload?.filteredReviewers || []).filter(r => selectedReviewerIds.includes(r.fillerId));
             const totalColumns = 1 + activeReviewers.length;
 
             const gridItems = Array.from(matrixGrid.children);
@@ -672,7 +677,7 @@
             toggleSubmitLoading(true, isDraft);
 
             const reviewScores = [];
-            const allReviewers = peerReviewPayload.reviewers || [];
+            const allReviewers = peerReviewPayload.filteredReviewers || [];
 
             Object.keys(supervisorRatings).forEach(key => {
                 const parts = key.split('_');
@@ -772,6 +777,28 @@
             return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
         }
 
+        function renderEmptyState(message) {
+            document.getElementById("matrixSkeleton")?.classList.add("d-none");
+            document.getElementById("questionsWrapper")?.classList.add("d-none");
+            document.getElementById("reviewersHeaderCard")?.classList.add("d-none");
+            
+            const gridContainer = document.getElementById("matrixGrid");
+            if (gridContainer) {
+                gridContainer.innerHTML = `<div class="p-8 text-center text-muted">${escapeHtml(message)}</div>`;
+                document.getElementById("questionsWrapper")?.classList.remove("d-none");
+            }
+        }
+
+        function showSkeleton() {
+            document.getElementById("matrixSkeleton")?.classList.remove("d-none");
+            document.getElementById("questionsWrapper")?.classList.add("d-none");
+            document.getElementById("reviewersHeaderCard")?.classList.add("d-none");
+        }
+
+        function hideSkeleton() {
+            document.getElementById("matrixSkeleton")?.classList.add("d-none");
+        }
+
         function escapeHtml(str) {
             if (!str) return "";
             return String(str)
@@ -780,26 +807,6 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
-        }
-
-        function renderEmptyState(message) {
-            hideSkeleton();
-            const wrapper = document.getElementById("questionsWrapper");
-            const gridContainer = document.getElementById("matrixGrid");
-            if (gridContainer && wrapper) {
-                gridContainer.innerHTML = `<div class="p-8 text-center text-muted fs-6">${escapeHtml(message)}</div>`;
-                gridContainer.style.gridTemplateColumns = "1fr";
-                wrapper.classList.remove("d-none");
-            }
-        }
-
-        function showSkeleton() {
-            document.getElementById("matrixSkeleton")?.classList.remove("d-none");
-            document.getElementById("questionsWrapper")?.classList.add("d-none");
-        }
-
-        function hideSkeleton() {
-            document.getElementById("matrixSkeleton")?.classList.add("d-none");
         }
     </script>
 }

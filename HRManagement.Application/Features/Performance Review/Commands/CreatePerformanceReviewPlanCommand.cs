@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.SeedWork;
 using MediatR;
@@ -40,13 +41,13 @@ internal sealed class CreatePerformanceReviewPlanCommandHandler(
             if (!assessment.Questions.Any())
                 return Result.Failure($"Assessment '{assessment.AssessmentType}' must have at least one question.");
 
-            if (assessment.AssessmentType != "peer-review"
+            if (assessment.AssessmentType != AssessmentTypeConstant.PeerReview
                 && !assessment.ReceiverIds.Any())
             {
                 return Result.Failure($"{assessment.AssessmentType} must have at least one receiver.");
             }
 
-            if (assessment.AssessmentType == "peer-review"
+            if (assessment.AssessmentType == AssessmentTypeConstant.PeerReview
                 && (assessment.Groups == null || !assessment.Groups.Any()))
             {
                 return Result.Failure("Peer review must have at least one group.");

@@ -1,4 +1,5 @@
 ﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
@@ -35,7 +36,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
                 // self assessments
                 plan.Assessments
-                    .Where(a => !a.IsDeleted && a.AssessmentType == "self-assessment")
+                    .Where(a => !a.IsDeleted && a.AssessmentType == AssessmentTypeConstant.SelfAssessment)
                     .Select(a => new SelfAssessmentDto(
                         a.Id,
                         a.SubjectJobTitle ?? "",
@@ -58,7 +59,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                             a.Receivers
                                 .Where(r =>
                                     !r.IsDeleted &&
-                                    r.ReceiverType == "self-assessment")
+                                    r.ReceiverType == AssessmentTypeConstant.SelfAssessment)
                                     .Select(r => new EmployeeListResponseDto(
                                      
                                         r.Employee.FullName,
@@ -79,7 +80,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
                 // peer reviews
                 plan.Assessments
-                    .Where(a => a.AssessmentType == "peer-review" && !a.IsDeleted)
+                    .Where(a => a.AssessmentType == AssessmentTypeConstant.PeerReview && !a.IsDeleted)
                     .Select(a => new PeerReviewDto(
                         a.Id,
                         a.SubjectJobTitle ?? "",
@@ -128,7 +129,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
                 // supervisor
                 plan.Assessments
-                    .Where(a => !a.IsDeleted && a.AssessmentType == "supervisor-assessment")
+                    .Where(a => !a.IsDeleted && a.AssessmentType == AssessmentTypeConstant.SupervisorAssessment)
                     .Select(a => new SupervisorAssessmentDto(
                         a.Id,
                         a.SubjectJobTitle ?? "",
@@ -150,7 +151,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                             a.Receivers
                                 .Where(r =>
                                     !r.IsDeleted &&
-                                    r.ReceiverType == "supervisor-assessment")
+                                    r.ReceiverType == AssessmentTypeConstant.SupervisorAssessment)
                                     .Select(r => new EmployeeListResponseDto(
                                 
                                         r.Employee.FullName,
@@ -941,7 +942,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
             if (string.Equals(
                     assessment.AssessmentType,
-                    "peer-review",
+                    AssessmentTypeConstant.PeerReview,
                     StringComparison.OrdinalIgnoreCase))
             {
                 var activeGroups = assessment.Groups
@@ -1032,7 +1033,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
                 if (string.Equals(
                         assessment.AssessmentType,
-                        "self-assessment",
+                        AssessmentTypeConstant.SelfAssessment,
                         StringComparison.OrdinalIgnoreCase))
                 {
                     fillerId = subjectId;
@@ -1045,7 +1046,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
 
                 else if (string.Equals(
                              assessment.AssessmentType,
-                             "supervisor-assessment",
+                             AssessmentTypeConstant.SupervisorAssessment,
                              StringComparison.OrdinalIgnoreCase))
                 {
                     var supervisorId =
@@ -1053,14 +1054,23 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                             .EmploymentInformation?
                             .SupervisorId;
 
+                    //if (!supervisorId.HasValue)
+                    //{
+                    //    _logger.LogWarning(
+                    //        "Activation failed. Employee {EmployeeId} has no SupervisorId for assessment {AssessmentId}.",
+                    //        subjectId,
+                    //        assessment.Id);
+
+                    //    return false;
+                    //}
+
                     if (!supervisorId.HasValue)
                     {
-                        _logger.LogWarning(
-                            "Activation failed. Employee {EmployeeId} has no SupervisorId for assessment {AssessmentId}.",
-                            subjectId,
-                            assessment.Id);
+                        _logger.LogInformation(
+                            "Skipping supervisor-assessment for Employee {EmployeeId} because they have no supervisor.",
+                            subjectId);
 
-                        return false;
+                        continue; // This skips to the next receiver instead of crashing or failing the plan
                     }
 
                     fillerId = supervisorId.Value;
@@ -1235,7 +1245,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                         receiverAssignment.FillerId,
                         receiverAssignment.SubjectId,
                         receiverAssignment.Assessment.Id,
-                        "not started",
+                        AssignmentStatusConstant.NotStarted,
                         actionerId)
                     {
                         Interval = interval
@@ -1261,7 +1271,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                         peerReviewAssignment.FillerId,
                         peerReviewAssignment.SubjectId,
                         peerReviewAssignment.Assessment.Id,
-                        "not started",
+                        AssignmentStatusConstant.NotStarted,
                         actionerId)
                     {
                         Interval = interval
@@ -1397,6 +1407,7 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .Where(fa => fa.IntervalId == intervalId
                      && fa.SubjectId == employeeId
                      && fa.Assessment.AssessmentType == assessmentType
+                     && (fa.Status == AssignmentStatusConstant.Reviewed || fa.Status == AssignmentStatusConstant.Completed)
                      && !fa.IsDeleted)
             .Select(fa => fa.Filler)
             .Where(e => e != null)

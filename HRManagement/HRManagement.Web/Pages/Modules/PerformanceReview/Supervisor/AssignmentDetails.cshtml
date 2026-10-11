@@ -340,15 +340,40 @@
             if (!response.ok) throw new Error("Gagal mengambil data supervisor.");
 
             const result = await response.json();
-            if (result && !result.isError && Array.isArray(result.content)) {
-                reviewerList = result.content;
-                renderReviewerDropdown(reviewerList);
-            } else {
-                renderReviewerDropdown([]);
+            let reviewers = (result && !result.isError && Array.isArray(result.content)) ? result.content : [];
+
+            // --- ALWAYS INCLUDE THE LOGGED-IN USER IF MISSING ---
+            const currentUser = getLoggedInUserInfo();
+            if (currentUser && currentUser.id) {
+                // Check using string conversion to avoid type mismatches (e.g., string "5" vs number 5)
+                const exists = reviewers.some(r => String(r.id) === String(currentUser.id));
+                if (!exists) {
+                    reviewers.unshift({
+                        id: currentUser.id,
+                        fullName: currentUser.fullName,
+                        positionName: currentUser.positionName
+                    });
+                }
             }
+
+            // --- SAFEGUARD: REMOVE ANY DUPLICATE IDS ---
+            const uniqueMap = new Map();
+            reviewers.forEach(r => {
+                if (r && r.id != null) {
+                    uniqueMap.set(String(r.id), r);
+                }
+            });
+            reviewerList = Array.from(uniqueMap.values());
+
+            renderReviewerDropdown(reviewerList);
+
         } catch (err) {
             console.error("Error fetching reviewers:", err);
-            renderReviewerDropdown([]);
+        
+            // Fallback: Show at least the logged-in user if request fails
+            const currentUser = getLoggedInUserInfo();
+            reviewerList = currentUser && currentUser.id ? [currentUser] : [];
+            renderReviewerDropdown(reviewerList);
         }
     }
 
@@ -372,7 +397,8 @@
 
     function renderReviewerDropdown(reviewers) {
         const select = document.getElementById("supervisorSelect");
-        if (!reviewers.length) {
+
+        if (!reviewers || reviewers.length === 0) {
             select.innerHTML = `<option value="">Tidak ada supervisor</option>`;
             document.getElementById("supervisorInitials").innerText = "--";
             currentSupervisorId = null;
@@ -380,10 +406,18 @@
         }
 
         select.innerHTML = reviewers.map(r => `
-            <option value="${r.id}">
-                ${escapeHtml(r.fullName)} ${r.positionName ? `(${r.positionName})` : ''}
+            <option value="${r.id}" ${currentSupervisorId == r.id ? 'selected' : ''}>
+                ${escapeHtml(r.fullName)}
             </option>
         `).join('');
+
+        // If currentSupervisorId isn't set yet, default to the logged-in user if available, otherwise the first item
+        if (!currentSupervisorId) {
+            const currentUser = getLoggedInUserInfo();
+            const found = currentUser && reviewers.some(r => parseInt(r.id) === currentUser.id);
+            currentSupervisorId = found ? currentUser.id : reviewers[0].id;
+            select.value = currentSupervisorId;
+        }
 
         updateSupervisorAvatar();
     }
@@ -487,7 +521,7 @@
 
         let auditHtml = "";
         if (statusLabel !== "locked") {
-            const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
+            const verb = (statusLabel === "in progress") ? "Saved" : "Submitted";
             let formattedDate = "N/A";
 
             if (content.modifiedUtcDate) {
@@ -524,7 +558,7 @@
         const isOwner = loggedInEmpId !== null && loggedInEmpId === activeSupervisorId;
 
         // Editable only if the record belongs to the logged in user AND status is editable
-        const isEditable = isOwner && (statusLabel === "not started" || statusLabel === "drafted");
+        const isEditable = isOwner && (statusLabel === "not started" || statusLabel === "in progress");
 
         wrapper.innerHTML = `
             <div id="activeCardContainer" class="card card-flush bg-white rounded-lg shadow-sm d-flex flex-column gap-2 px-6 py-4"></div>
@@ -773,6 +807,18 @@
                 <p class="text-muted fs-7 m-0">${escapeHtml(message)}</p>
             </div>
         `;
+    }
+
+    function getLoggedInUserInfo() {
+        const userInfo = window.aiaAuth && window.aiaAuth.getUserInfo();
+
+        if (!userInfo) return null;
+
+        return {
+            id: userInfo.EmployeeId ? parseInt(userInfo.EmployeeId) : null,
+            fullName: userInfo.fullName || "Current User",
+            positionName: userInfo.JobTitle || userInfo.Position || ""
+        };
     }
 
     function escapeHtml(str) {

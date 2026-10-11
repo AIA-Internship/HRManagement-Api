@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using HRManagement.Domain.Models.Constants;
 
 
 namespace HRManagement.MsSQL.Repositories
@@ -22,7 +23,7 @@ namespace HRManagement.MsSQL.Repositories
                 .AsNoTracking()
                 .Where(x =>
                     x.PlanId == planId &&
-                    x.AssessmentType == "self-assessment" &&
+                    x.AssessmentType == AssessmentTypeConstant.SelfAssessment &&
                     !x.IsDeleted)
                 .Select(x => new SelfAssessmentDto(
                     x.Id,
@@ -65,7 +66,7 @@ namespace HRManagement.MsSQL.Repositories
                 .AsNoTracking()
                 .Where(x =>
                     x.PlanId == planId &&
-                    x.AssessmentType == "peer-review" &&
+                    x.AssessmentType == AssessmentTypeConstant.PeerReview &&
                     !x.IsDeleted)
                 .Select(x => new PeerReviewDto(
                     x.Id,
@@ -117,7 +118,7 @@ namespace HRManagement.MsSQL.Repositories
                 .AsNoTracking()
                 .Where(x =>
                     x.PlanId == planId &&
-                    x.AssessmentType == "supervisor-assessment" &&
+                    x.AssessmentType == AssessmentTypeConstant.SupervisorAssessment &&
                     !x.IsDeleted)
                 .Select(x => new SupervisorAssessmentDto(
                     x.Id,

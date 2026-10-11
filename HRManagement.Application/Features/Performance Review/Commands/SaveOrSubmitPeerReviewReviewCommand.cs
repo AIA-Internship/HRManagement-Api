@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Payload;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.Domain.SeedWork;
@@ -73,7 +74,7 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
 
             // Fetch reviewer metadata once in case we need to create new review assignments
             var (reviewerRoleId, reviewerJobTitle) = await assignmentRepository.GetReviewerMetadataAsync(currentUserId, cancellationToken);
-            string initialStatus = req.IsDraft ? "drafted" : "scored";
+            string initialStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.Reviewed;
 
             // 4. Process each peer assignment's review scores and status
             foreach (var group in scoresByAssignment)
@@ -100,8 +101,8 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
                 }
                 else
                 {
-                    string currentStatus = reviewAssignment.Status?.ToLower() ?? "not started";
-                    if (currentStatus == "scored" && !req.IsDraft)
+                    string currentStatus = reviewAssignment.Status?.ToLower() ?? AssignmentStatusConstant.NotStarted;
+                    if (currentStatus == AssignmentStatusConstant.Reviewed && !req.IsDraft)
                     {
                         // Optional: prevent overwriting final submission unless intended
                     }

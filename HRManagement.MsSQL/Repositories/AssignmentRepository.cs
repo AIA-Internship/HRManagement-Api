@@ -1,4 +1,5 @@
 ﻿using HRManagement.Domain.Interfaces;
+using HRManagement.Domain.Models.Constants;
 using HRManagement.Domain.Models.Response;
 using HRManagement.Domain.Models.Tables;
 using HRManagement.MsSQL.Base;
@@ -30,123 +31,122 @@ namespace HRManagement.MsSQL.Repositories
         }
 
         public async Task<PeerReviewMatrixResponseDto?> GetPeerReviewsBySubjectAsync(int supervisorId, int intervalId, int subjectId, CancellationToken cancellationToken)
-        {
-            // 1. Fetch all peer-review fill assignments targeting this subject in the specific interval
-            var peerAssignments = await _sqldbContext.FillAssignments
-                .AsNoTracking()
-                .Include(fa => fa.Assessment)
-                    .ThenInclude(a => a.Questions)
-                .Include(fa => fa.Filler)
-                .Include(fa => fa.Subject)
-                .Where(fa => fa.IntervalId == intervalId
-                         && fa.SubjectId == subjectId
-                         && fa.Assessment.AssessmentType == "peer-review"
-                         && !fa.IsDeleted)
-                .ToListAsync(cancellationToken);
-
-            if (!peerAssignments.Any())
-                return null;
-
-            var subjectUser = peerAssignments.First().Subject;
-            var assignmentIds = peerAssignments.Select(fa => fa.Id).ToList();
-
-            // 2. Fetch questions from the associated assessment template
-            var questions = peerAssignments
-                .SelectMany(fa => fa.Assessment.Questions)
-                .Where(q => !q.IsDeleted)
-                .DistinctBy(q => q.Id)
-                .OrderBy(q => q.QuestionOrder)
-                .Select(q => new QuestionHeaderDto
-                {
-                    QuestionId = q.Id,
-                    QuestionText = q.QuestionText,
-                    QuestionOrder = q.QuestionOrder,
-                    QuestionType = q.QuestionType
-                })
-                .ToList();
-
-            // 3. Fetch all answers submitted by the peers for these assignments
-            var answers = await _sqldbContext.AssessmentAnswers
-                .AsNoTracking()
-                .Where(aa => assignmentIds.Contains(aa.AssignmentId) && !aa.IsDeleted)
-                .ToListAsync(cancellationToken);
-
-            var answerIds = answers.Select(a => a.Id).ToList();
-
-            // 4. Fetch the supervisor's ReviewAssignments linked to each of these peer fill assignments
-            var reviewAssignments = await _sqldbContext.ReviewAssignments
-                .AsNoTracking()
-                .Where(ra => !ra.IsDeleted
-                          && ra.IntervalId == intervalId
-                          && assignmentIds.Contains(ra.AssignmentId)
-                          && ra.ReviewerId == supervisorId)
-                .ToListAsync(cancellationToken);
-
-            var reviewAssignmentIds = reviewAssignments.Select(ra => ra.Id).ToList();
-
-            // 5. Fetch supervisor's assessment answer scores tied to these review assignments
-            var answerScores = await _sqldbContext.AssessmentAnswerScores
-                .AsNoTracking()
-                .Where(s => reviewAssignmentIds.Contains(s.ReviewAssignmentId) && !s.IsDeleted && s.ReviewerId == supervisorId)
-                .ToDictionaryAsync(s => s.AssessmentAnswerId, s => (decimal?)s.Score, cancellationToken);
-
-            // Create a dictionary map for quick status lookup per peer assignment ID: AssignmentId -> Review Status
-            var reviewStatusMap = reviewAssignments
-                .ToDictionary(ra => ra.AssignmentId, ra => ra.Status);
-
-            // Build the reviewers list first so we can check their statuses
-            var reviewersList = peerAssignments.Select(fa =>
             {
-                string supervisorStatus = reviewStatusMap.TryGetValue(fa.Id, out var stat) ? stat : "not started";
+                // 1. Fetch all peer-review fill assignments targeting this subject in the specific interval
+                var peerAssignments = await _sqldbContext.FillAssignments
+                    .AsNoTracking()
+                    .Include(fa => fa.Assessment)
+                        .ThenInclude(a => a.Questions)
+                    .Include(fa => fa.Filler)
+                    .Include(fa => fa.Subject)
+                    .Where(fa => fa.IntervalId == intervalId
+                             && fa.SubjectId == subjectId
+                             && fa.Assessment.AssessmentType == AssessmentTypeConstant.PeerReview
+                             && !fa.IsDeleted)
+                    .ToListAsync(cancellationToken);
 
-                return new PeerReviewerAnswersDto
+                if (!peerAssignments.Any())
+                    return null;
+
+                var subjectUser = peerAssignments.First().Subject;
+                var assignmentIds = peerAssignments.Select(fa => fa.Id).ToList();
+
+                // 2. Fetch questions from the associated assessment template
+                var questions = peerAssignments
+                    .SelectMany(fa => fa.Assessment.Questions)
+                    .Where(q => !q.IsDeleted)
+                    .DistinctBy(q => q.Id)
+                    .OrderBy(q => q.QuestionOrder)
+                    .Select(q => new QuestionHeaderDto
+                    {
+                        QuestionId = q.Id,
+                        QuestionText = q.QuestionText,
+                        QuestionOrder = q.QuestionOrder,
+                        QuestionType = q.QuestionType
+                    })
+                    .ToList();
+
+                // 3. Fetch all answers submitted by the peers for these assignments
+                var answers = await _sqldbContext.AssessmentAnswers
+                    .AsNoTracking()
+                    .Where(aa => assignmentIds.Contains(aa.AssignmentId) && !aa.IsDeleted)
+                    .ToListAsync(cancellationToken);
+
+                var answerIds = answers.Select(a => a.Id).ToList();
+
+                // 4. Fetch the supervisor's ReviewAssignments linked to each of these peer fill assignments
+                var reviewAssignments = await _sqldbContext.ReviewAssignments
+                    .AsNoTracking()
+                    .Where(ra => !ra.IsDeleted
+                              && ra.IntervalId == intervalId
+                              && assignmentIds.Contains(ra.AssignmentId)
+                              && ra.ReviewerId == supervisorId)
+                    .ToListAsync(cancellationToken);
+
+                var reviewAssignmentIds = reviewAssignments.Select(ra => ra.Id).ToList();
+
+                // 5. Fetch supervisor's assessment answer scores tied to these review assignments
+                var answerScores = await _sqldbContext.AssessmentAnswerScores
+                    .AsNoTracking()
+                    .Where(s => reviewAssignmentIds.Contains(s.ReviewAssignmentId) && !s.IsDeleted && s.ReviewerId == supervisorId)
+                    .ToDictionaryAsync(s => s.AssessmentAnswerId, s => (decimal?)s.Score, cancellationToken);
+
+                // Create a dictionary map for quick status lookup per peer assignment ID: AssignmentId -> Review Status
+                var reviewStatusMap = reviewAssignments
+                    .ToDictionary(ra => ra.AssignmentId, ra => ra.Status);
+
+                // Build the reviewers list first so we can check their statuses
+                var reviewersList = peerAssignments.Select(fa =>
                 {
-                    AssignmentId = fa.Id,
-                    FillerId = fa.FillerId,
-                    FillerName = fa.Filler.FullName,
-                    Status = supervisorStatus,
-                    Answers = answers
-                        .Where(a => a.AssignmentId == fa.Id)
-                        .Select(a => new AnswerDetailDto
-                        {
-                            AnswerId = a.Id,
-                            QuestionId = a.AssessmentQuestionId,
-                            TextValue = a.TextValue,
-                            RatingValue = a.RatingValue,
-                            ReviewScore = answerScores.TryGetValue(a.Id, out var score) ? score : null
-                        })
-                        .ToList()
+                    string supervisorStatus = reviewStatusMap.TryGetValue(fa.Id, out var stat) ? stat : AssignmentStatusConstant.NotStarted;
+
+                    return new PeerReviewerAnswersDto
+                    {
+                        AssignmentId = fa.Id,
+                        FillerId = fa.FillerId,
+                        FillerName = fa.Filler.FullName,
+                        Status = supervisorStatus,
+                        Answers = answers
+                            .Where(a => a.AssignmentId == fa.Id)
+                            .Select(a => new AnswerDetailDto
+                            {
+                                AnswerId = a.Id,
+                                QuestionId = a.AssessmentQuestionId,
+                                TextValue = a.TextValue,
+                                RatingValue = a.RatingValue,
+                                ReviewScore = answerScores.TryGetValue(a.Id, out var score) ? score : null
+                            })
+                            .ToList()
+                    };
+                }).ToList();
+
+                // 1. Are all review assignments filled out / completed?
+                bool isAllCompleted = reviewersList.Any() && reviewersList.All(r =>
+                    r.Status.Equals(AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                    r.Status.Equals(AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase)
+                );
+
+                // 2. Are they officially submitted/finalized? 
+                bool isSubmitted = reviewersList.Any() && reviewersList.All(r =>
+                    r.Status.Equals(AssignmentStatusConstant.Completed, StringComparison.OrdinalIgnoreCase) ||
+                    r.Status.Equals(AssignmentStatusConstant.Reviewed, StringComparison.OrdinalIgnoreCase)
+                );
+
+                var response = new PeerReviewMatrixResponseDto
+                {
+                    SubjectId = subjectId,
+                    SubjectName = subjectUser.FullName,
+                    IntervalId = intervalId,
+                    IsAllCompleted = isAllCompleted,
+                    IsSubmitted = isSubmitted,
+                    Questions = questions,
+                    Reviewers = reviewersList
                 };
-            }).ToList();
 
-            // 1. Are all review assignments filled out / have a status?
-            bool isAllCompleted = reviewersList.Any() && reviewersList.All(r =>
-                r.Status.Equals("scored", StringComparison.OrdinalIgnoreCase) ||
-                r.Status.Equals("done", StringComparison.OrdinalIgnoreCase)
-            );
+                return response;
+            }
 
-            // 2. Are they officially submitted/locked? 
-            // (Assumes "submitted" or "scored" means finalized, whereas "draft" or "not started" means editable)
-            bool isSubmitted = reviewersList.Any() && reviewersList.All(r =>
-                r.Status.Equals("scored", StringComparison.OrdinalIgnoreCase) ||
-                r.Status.Equals("submitted", StringComparison.OrdinalIgnoreCase)
-            );
-
-            var response = new PeerReviewMatrixResponseDto
-            {
-                SubjectId = subjectId,
-                SubjectName = subjectUser.FullName,
-                IntervalId = intervalId,
-                IsAllCompleted = isAllCompleted,
-                IsSubmitted = isSubmitted, // 👉 Pass it here
-                Questions = questions,
-                Reviewers = reviewersList
-            };
-
-            return response;
-        }
-
-        public async Task<FillAssignment?> FindAssignmentAsync(
+    public async Task<FillAssignment?> FindAssignmentAsync(
         int planId,
         int intervalId,
         int fillerId,
@@ -188,7 +188,7 @@ namespace HRManagement.MsSQL.Repositories
                           && fa.FillerId == supervisorId
                           && fa.SubjectId == subjectId
                           && fa.IntervalId == intervalId
-                          && fa.Assessment.AssessmentType == "supervisor-assessment")
+                          && fa.Assessment.AssessmentType == AssessmentTypeConstant.SupervisorAssessment)
                 .Select(fa => new FillAssignmentDetailResponseDto
                 {
                     AssignmentId = fa.Id,
@@ -267,7 +267,7 @@ namespace HRManagement.MsSQL.Repositories
                 .AsNoTracking()
                 .Where(a => !a.IsDeleted
                          && a.PlanId == interval.PlanId
-                         && a.AssessmentType == "supervisor-assessment"
+                         && a.AssessmentType == AssessmentTypeConstant.SupervisorAssessment
                          && (a.SubjectRoleId == null || a.SubjectRoleId == subjectEmployee.RoleId)
                          && (a.SubjectJobTitle == null || a.SubjectJobTitle == subjectEmployee.EmploymentInformation.PositionName))
                 .Select(a => new AssessmentDetailResponseDto
@@ -307,7 +307,7 @@ namespace HRManagement.MsSQL.Repositories
                 FillerId = supervisorId,
                 SubjectId = subjectId,
                 AssessmentId = assessmentTemplate.Id,
-                Status = "not started",
+                Status = AssignmentStatusConstant.NotStarted,
 
                 Subject = new EmployeeMinimalInfoResponseDto
                 {
@@ -333,12 +333,12 @@ namespace HRManagement.MsSQL.Repositories
                                         && fa.IntervalId == intervalId
                                         && fa.SubjectId == subjectId
                                         && fa.FillerId == subjectId
-                                        && fa.Assessment.AssessmentType == "self-assessment",
+                                        && fa.Assessment.AssessmentType == AssessmentTypeConstant.SelfAssessment,
                                         cancellationToken);
 
             if (employeeAssignment == null)
             {
-                // Fallback if no self-assessment assignment exists yet: check template & interval to return "not started" shell
+                // Fallback if no self-assessment assignment exists yet: check template & interval to return AssignmentStatusConstant.NotStarted shell
                 return await GetUnstartedSelfAssessmentShellAsync(supervisorId, subjectId, intervalId, cancellationToken);
             }
 
@@ -361,8 +361,8 @@ namespace HRManagement.MsSQL.Repositories
                     .ToListAsync(cancellationToken);
             }
 
-            // Determine the review status for the supervisor (fallback to "not started")
-            string supervisorReviewStatus = reviewAssignment?.Status ?? "not started";
+            // Determine the review status for the supervisor (fallback to AssignmentStatusConstant.NotStarted)
+            string supervisorReviewStatus = reviewAssignment?.Status ?? AssignmentStatusConstant.NotStarted;
 
             // Build a lookup map for supervisor scores: AssessmentAnswerId -> Supervisor Rating Score
             var supervisorScoresMap = answerScores
@@ -457,7 +457,7 @@ namespace HRManagement.MsSQL.Repositories
                 .AsNoTracking()
                 .Where(a => !a.IsDeleted
                          && a.PlanId == interval.PlanId
-                         && a.AssessmentType == "self-assessment"
+                         && a.AssessmentType == AssessmentTypeConstant.SelfAssessment
                          && (a.SubjectRoleId == null || a.SubjectRoleId == subjectEmployee.RoleId)
                          && (a.SubjectJobTitle == null || a.SubjectJobTitle == subjectEmployee.EmploymentInformation.PositionName))
                 .Select(a => new AssessmentDetailResponseDto
@@ -495,7 +495,7 @@ namespace HRManagement.MsSQL.Repositories
                 FillerId = subjectId,
                 SubjectId = subjectId,
                 AssessmentId = assessmentTemplate.Id,
-                Status = "not started",
+                Status = AssignmentStatusConstant.NotStarted,
                 Subject = new EmployeeMinimalInfoResponseDto
                 {
                     Id = subjectEmployee.Id,
@@ -560,9 +560,9 @@ namespace HRManagement.MsSQL.Repositories
         }
 
         public async Task<List<AssignmentValidationResponseDto>> GetAssignmentsForValidationAsync(
-        int intervalId,
-        int fillerId,
-        CancellationToken cancellationToken)
+    int intervalId,
+    int fillerId,
+    CancellationToken cancellationToken)
         {
             // 1. Fetch raw projected assignments and question lists from database
             var rawData = await _sqldbContext.FillAssignments
@@ -575,11 +575,12 @@ namespace HRManagement.MsSQL.Repositories
                     fa.Id,
                     fa.Status,
                     fa.FillerId,
-                    AnswerType = fa.Assessment.AnswerType,
+                    AssessmentType = fa.Assessment.AssessmentType, // 👈 Project AssessmentType directly
+                    fa.Assessment.AnswerType,
                     Questions = fa.Assessment.Questions
                         .Where(q => !q.IsDeleted)
                         .Select(q => new { q.Id, q.QuestionType })
-                        .ToList() // Fetches questions as a list into memory
+                        .ToList()
                 })
                 .ToListAsync(cancellationToken);
 
@@ -588,14 +589,13 @@ namespace HRManagement.MsSQL.Repositories
                 item.Id,
                 item.Status,
                 item.FillerId,
+                item.AssessmentType, // 👈 Reference the projected property name here
                 item.AnswerType,
-                item.Questions.ToDictionary(q => q.Id, q => q.QuestionType) // Builds Dictionary in memory
+                item.Questions.ToDictionary(q => q.Id, q => q.QuestionType)
             )).ToList();
         }
 
-        public async Task<AssignmentValidationResponseDto?> GetAssignmentForValidationAsync(
-        int assignmentId,
-        CancellationToken cancellationToken)
+        public async Task<AssignmentValidationResponseDto?> GetAssignmentForValidationAsync(int assignmentId, CancellationToken cancellationToken)
         {
             // 1. Fetch raw flattened or projected data from database
             var result = await _sqldbContext.FillAssignments
@@ -606,11 +606,12 @@ namespace HRManagement.MsSQL.Repositories
                     fa.Id,
                     fa.Status,
                     fa.FillerId,
-                    AnswerType = fa.Assessment.AnswerType,
+                    fa.Assessment.AssessmentType, // 👉 Add this here
+                    fa.Assessment.AnswerType,
                     Questions = fa.Assessment.Questions
                         .Where(q => !q.IsDeleted)
                         .Select(q => new { q.Id, q.QuestionType })
-                        .ToList() // Client evaluation boundary for questions list
+                        .ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -620,11 +621,12 @@ namespace HRManagement.MsSQL.Repositories
             var questionsDict = result.Questions
                 .ToDictionary(q => q.Id, q => q.QuestionType);
 
-            // 3. Return your DTO
+            // 3. Return your DTO (ensure your DTO constructor accepts AssessmentType)
             return new AssignmentValidationResponseDto(
                 result.Id,
                 result.Status,
                 result.FillerId,
+                result.AssessmentType, // 👉 Pass it to your DTO
                 result.AnswerType,
                 questionsDict
             );
@@ -747,7 +749,7 @@ namespace HRManagement.MsSQL.Repositories
                     },
 
                     // 🔥 Conditionally populate Reviewers based on Assessment Type
-                    Reviewers = fa.Assessment.AssessmentType == "supervisor-assessment"
+                    Reviewers = fa.Assessment.AssessmentType == AssessmentTypeConstant.SupervisorAssessment
                         // For Supervisor Assessment: grab the supervisor directly from the Filler relation
                         ? (fa.Filler != null
                             ? new List<ReviewerResponseDto>
@@ -783,7 +785,7 @@ namespace HRManagement.MsSQL.Repositories
                 .Where(fa => !fa.IsDeleted
                           && fa.FillerId == fillerId
                           && fa.IntervalId == intervalId
-                          && fa.Assessment.AssessmentType == "peer-review")
+                          && fa.Assessment.AssessmentType == AssessmentTypeConstant.PeerReview)
                 .Select(fa => new FillAssignmentDetailResponseDto
                 {
                     AssignmentId = fa.Id,
@@ -911,7 +913,7 @@ namespace HRManagement.MsSQL.Repositories
                                         && fa.IntervalId == intervalId
                                         && fa.SubjectId == subjectId
                                         && fa.FillerId == subjectId
-                                        && fa.Assessment.AssessmentType == "self-assessment",
+                                        && fa.Assessment.AssessmentType == AssessmentTypeConstant.SelfAssessment,
                                    cancellationToken);
         }
 
@@ -976,7 +978,7 @@ namespace HRManagement.MsSQL.Repositories
                 .Where(fa => !fa.IsDeleted
                           && fa.IntervalId == intervalId
                           && fa.SubjectId == subjectId
-                          && fa.Assessment.AssessmentType == "peer-review")
+                          && fa.Assessment.AssessmentType == AssessmentTypeConstant.PeerReview)
                 .ToListAsync(cancellationToken);
         }
 
