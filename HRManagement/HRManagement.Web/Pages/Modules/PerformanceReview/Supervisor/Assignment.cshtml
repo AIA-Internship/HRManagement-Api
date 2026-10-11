@@ -199,32 +199,24 @@
             };
         }
 
-        // --- LOOKUP API CALLS ---
-
         async function loadPlanLookups() {
             try {
                 const headers = getAuthHeaders();
                 if (!headers) return;
-
                 const response = await fetch(`${API_BASE}/api/plans/lookup`, { headers });
                 if (response.status === 401) { window.aiaAuth.signOut(); return; }
                 if (!response.ok) throw new Error("Failed to load plans");
-
                 const result = await response.json();
                 const plans = result.content || result;
-
                 const planSelect = document.getElementById("planSelect");
                 planSelect.innerHTML = `<option value="">Select Plan...</option>`;
-
                 plans.forEach(plan => {
                     const opt = document.createElement("option");
                     opt.value = plan.planId;
                     opt.textContent = plan.name;
                     planSelect.appendChild(opt);
                 });
-            } catch (err) {
-                console.error("Error loading plans lookup:", err);
-            }
+            } catch (err) { console.error("Error loading plans:", err); }
         }
 
         async function populateIntervalsForPlan(planId, targetIntervalId = null) {
@@ -234,18 +226,14 @@
                 intervalSelect.disabled = true;
                 return;
             }
-
             try {
                 const headers = getAuthHeaders();
                 if (!headers) return;
-
                 const response = await fetch(`${API_BASE}/api/plans/${planId}/intervals`, { headers });
                 if (response.status === 401) { window.aiaAuth.signOut(); return; }
                 if (!response.ok) throw new Error("Failed to load intervals");
-
                 const result = await response.json();
                 const intervals = result.content || result;
-
                 intervalSelect.innerHTML = `<option value="">Select Interval...</option>`;
                 intervals.forEach(item => {
                     const opt = document.createElement("option");
@@ -255,49 +243,34 @@
                     opt.textContent = `Interval #${item.intervalNumber} (${start} - ${end})`;
                     intervalSelect.appendChild(opt);
                 });
-
                 intervalSelect.disabled = false;
-
-                if (targetIntervalId) {
-                    intervalSelect.value = targetIntervalId;
-                }
-            } catch (err) {
-                console.error("Error loading intervals:", err);
-            }
+                if (targetIntervalId) intervalSelect.value = targetIntervalId;
+            } catch (err) { console.error("Error loading intervals:", err); }
         }
 
         async function loadPositionLookups() {
             try {
                 const headers = getAuthHeaders();
                 if (!headers) return;
-
                 const response = await fetch(`${API_BASE}/api/employee/employment-positions/lookup`, { headers });
                 if (response.status === 401) { window.aiaAuth.signOut(); return; }
                 if (!response.ok) throw new Error("Failed to load positions");
-
                 const result = await response.json();
                 const positions = result.content || result;
-
                 const roleSelect = document.getElementById("roleSelect");
                 roleSelect.innerHTML = `<option value="ALL">All Positions</option>`;
-
                 positions.forEach(pos => {
                     const opt = document.createElement("option");
                     opt.value = typeof pos === 'string' ? pos : pos.name || pos.positionName;
-                    opt.textContent = typeof pos === 'string' ? pos : pos.name || pos.positionName;
+                    opt.textContent = opt.value;
                     roleSelect.appendChild(opt);
                 });
-            } catch (err) {
-                console.error("Error loading positions lookup:", err);
-            }
+            } catch (err) { console.error("Error loading positions:", err); }
         }
-
-        // --- USER EVENT HANDLERS ---
 
         async function onPlanUserChanged() {
             const planId = document.getElementById("planSelect").value;
             await populateIntervalsForPlan(planId);
-
             const intervalSelect = document.getElementById("intervalSelect");
             if (intervalSelect.options.length > 1) {
                 intervalSelect.selectedIndex = 1;
@@ -313,33 +286,22 @@
                 renderEmptyState("Please select an interval.");
                 return;
             }
-
             await loadSupervisorDashboard(intervalId);
         }
-
-        // --- DASHBOARD DATA & RENDERING ---
 
         async function loadSupervisorDashboard(intervalId = null) {
             renderSkeletonState();
             try {
                 const headers = getAuthHeaders();
                 if (!headers) return;
-
                 const url = new URL(`${API_BASE}/api/assignment/supervisor/dashboard`);
-                if (intervalId) {
-                    url.searchParams.append("intervalId", intervalId);
-                }
+                if (intervalId) url.searchParams.append("intervalId", intervalId);
 
-                const response = await fetch(url.toString(), {
-                    method: "GET",
-                    headers: headers
-                });
-
+                const response = await fetch(url.toString(), { method: "GET", headers });
                 if (response.status === 401) { window.aiaAuth.signOut(); return; }
                 if (!response.ok) throw new Error("Failed to fetch dashboard data");
 
                 const apiResult = await response.json();
-
                 if (!apiResult || apiResult.isError || !apiResult.content) {
                     rawAssignmentsData = [];
                     activeIntervalId = null;
@@ -348,10 +310,9 @@
                 }
 
                 const data = apiResult.content;
-
                 activeIntervalId = data.currentIntervalId || intervalId || (data.assignments?.[0]?.intervalId) || null;
                 const currentPlanId = data.currentPlanId || (data.assignments?.[0]?.planId);
-                rawAssignmentsData = Array.isArray(data) ? data : (data.assignments || []);
+                rawAssignmentsData = data.assignments || [];
 
                 if (!intervalId && currentPlanId && activeIntervalId) {
                     document.getElementById("planSelect").value = currentPlanId;
@@ -359,16 +320,13 @@
                 }
 
                 renderDashboardList();
-
             } catch (error) {
                 console.error(error);
                 renderEmptyState("An error occurred while loading supervisor assignments.");
             }
         }
 
-        function handleFilterChange() {
-            renderDashboardList();
-        }
+        function handleFilterChange() { renderDashboardList(); }
 
         function toggleSort() {
             sortAscending = !sortAscending;
@@ -377,9 +335,7 @@
         }
 
         function handleCardClick(url) {
-            if (url && url !== '#') {
-                window.location.href = url;
-            }
+            if (url && url !== '#') window.location.href = url;
         }
 
         function renderDashboardList() {
@@ -391,8 +347,10 @@
             let filtered = rawAssignmentsData.filter(item => {
                 const matchesName = !searchTerm || (item.subjectName || "").toLowerCase().includes(searchTerm);
                 const matchesRole = selectedRole === "ALL" || item.jobTitle === selectedRole;
-                const itemStatus = item.supervisorAssessment?.status || 'NOT STARTED';
-                const matchesStatus = selectedStatus === "ALL" || itemStatus.toUpperCase() === selectedStatus.toUpperCase();
+                
+                // 🔥 Read the single unified status property directly from the item
+                const itemStatus = (item.status || 'NOT STARTED').toUpperCase();
+                const matchesStatus = selectedStatus === "ALL" || itemStatus.includes(selectedStatus.toUpperCase());
 
                 return matchesName && matchesRole && matchesStatus;
             });
@@ -412,22 +370,24 @@
 
             const itemsHtml = filtered.map(item => {
                 const initials = getInitials(item.subjectName);
-                const hasAssessment = Boolean(item.supervisorAssessment);
-                const status = (item.supervisorAssessment?.status || 'NOT STARTED').toUpperCase();
+                
+                // 🔥 Single source of truth for status text & styling badge classes
+                const statusLabel = (item.status || 'NOT STARTED').toUpperCase();
 
                 let badgeClass = 'badge-status-started';
-                if (status === 'DONE' || status === 'COMPLETED') badgeClass = 'badge-status-done';
-                if (status === 'IN PROGRESS') badgeClass = 'badge-status-progress';
+                if (statusLabel.includes('COMPLETED') || statusLabel.includes('DONE')) {
+                    badgeClass = 'badge-status-done';
+                } else if (statusLabel.includes('IN PROGRESS')) {
+                    badgeClass = 'badge-status-progress';
+                }
 
                 const subjectId = item.subjectId;
                 const intervalId = activeIntervalId;
-
                 const actionUrl = (intervalId && subjectId)
                     ? `/PerformanceReview/Supervisor/AssignmentDetails/${intervalId}/${subjectId}`
                     : '#';
 
                 const disabledClass = (!intervalId || !subjectId) ? 'disabled-card' : '';
-                const statusLabel = hasAssessment ? status : 'NOT STARTED';
 
                 return `
                     <div class="card card-flush bg-white rounded-2 shadow-xs mb-2 assignment-card ${disabledClass}"

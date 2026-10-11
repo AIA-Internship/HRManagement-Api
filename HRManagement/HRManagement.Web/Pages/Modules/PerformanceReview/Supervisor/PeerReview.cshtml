@@ -11,8 +11,8 @@
         --border: #e5e7eb;
         --foreground: #111827;
         --muted-foreground: #4b5563;
-        --destructive: #dc2626;          /* <-- Defined right here */
-        --destructive-hover: #b91c1c;    /* <-- Defined right here */
+        --destructive: #dc2626; /* <-- Defined right here */
+        --destructive-hover: #b91c1c; /* <-- Defined right here */
         --transparent-hover: #f1f5f9;
         --border-gray: #cbd5e1;
     }
@@ -66,17 +66,17 @@
         transition: all 0.15s ease-in-out;
     }
 
-    .rating-btn.active {
-        background-color: var(--destructive) !important;
-        color: #ffffff !important;
-        border-color: var(--destructive) !important;
-    }
+        .rating-btn.active {
+            background-color: var(--destructive) !important;
+            color: #ffffff !important;
+            border-color: var(--destructive) !important;
+        }
 
-    .rating-btn.interactive:hover {
-        border-color: var(--destructive);
-        color: var(--destructive);
-        background-color: #fef2f2;
-    }
+        .rating-btn.interactive:hover {
+            border-color: var(--destructive);
+            color: var(--destructive);
+            background-color: #fef2f2;
+        }
 
     /* Peer Selection Badges */
     .peer-badge {
@@ -93,11 +93,11 @@
         transition: all 0.15s ease-in-out;
     }
 
-    .peer-badge.matrix-selected {
-        border-color: var(--destructive);
-        background-color: #fef2f2;
-        color: var(--destructive);
-    }
+        .peer-badge.matrix-selected {
+            border-color: var(--destructive);
+            background-color: #fef2f2;
+            color: var(--destructive);
+        }
 
     .peer-badge-check {
         font-weight: 700;
@@ -126,20 +126,20 @@
         cursor: pointer;
     }
 
-    .nav-tab-btn.active-tab {
-        background-color: #fce8e6;
-        color: var(--destructive);
-        border-color: #f5c6cb;
-    }
+        .nav-tab-btn.active-tab {
+            background-color: #fce8e6;
+            color: var(--destructive);
+            border-color: #f5c6cb;
+        }
 
-    .nav-tab-btn.inactive-tab {
-        background-color: var(--destructive);
-        color: #ffffff;
-    }
+        .nav-tab-btn.inactive-tab {
+            background-color: var(--destructive);
+            color: #ffffff;
+        }
 
-    .nav-tab-btn.inactive-tab:hover {
-        background-color: var(--destructive-hover);
-    }
+            .nav-tab-btn.inactive-tab:hover {
+                background-color: var(--destructive-hover);
+            }
 
     .avatar-circle {
         width: 38px;
@@ -166,6 +166,7 @@
         0% {
             background-position: 200% 0;
         }
+
         100% {
             background-position: -200% 0;
         }
@@ -291,9 +292,9 @@
         });
 
         function getAuthHeaders() {
-            const token = window.xxxAuth && window.xxxAuth.getToken();
+            const token = window.aiaAuth && window.aiaAuth.getToken();
             if (!token) {
-                window.xxxAuth && window.xxxAuth.signOut();
+                window.aiaAuth && window.aiaAuth.signOut();
                 return null;
             }
             return {
@@ -377,6 +378,33 @@
                 peerReviewPayload = result.content;
                 const reviewers = peerReviewPayload.reviewers || [];
 
+                // If all peer reviews are completed and submitted, hide save/submit buttons and lock interactions
+                try {
+                    const actionContainer = document.getElementById("actionButtonsContainer");
+                    const saveBtn = document.getElementById("btnSaveDraft");
+                    const submitBtn = document.getElementById("btnSubmit");
+
+                    const allCompleted = Boolean(peerReviewPayload.isAllCompleted);
+                    const isSubmitted = Boolean(peerReviewPayload.isSubmitted);
+                    const locked = allCompleted && isSubmitted;
+
+                    // Always show the action container so the Back button remains visible.
+                    if (actionContainer) {
+                        actionContainer.classList.remove("d-none");
+                        actionContainer.classList.add("d-flex");
+                    }
+
+                    if (locked) {
+                        if (saveBtn) saveBtn.classList.add("d-none");
+                        if (submitBtn) submitBtn.classList.add("d-none");
+                    } else {
+                        if (saveBtn) saveBtn.classList.remove("d-none");
+                        if (submitBtn) submitBtn.classList.remove("d-none");
+                    }
+                } catch (e) {
+                    console.warn("Unable to toggle action button visibility:", e);
+                }
+
                 if (reviewers.length === 0) {
                     renderEmptyState("Belum ada reviewer yang ditugaskan.");
                     return;
@@ -415,8 +443,7 @@
             reviewers.forEach(rev => {
                 const isSelected = selectedReviewerIds.includes(rev.fillerId);
                 const selectedClass = isSelected ? "matrix-selected" : "";
-                
-                // Track supervisor status completion
+
                 const statusLower = (rev.status || "").toLowerCase();
                 const statusClass = (statusLower === "scored" || statusLower === "done") ? "status-complete" : "status-partial";
                 const checkMark = isSelected ? "✓" : "+";
@@ -476,6 +503,7 @@
                 `;
             });
 
+            const locked = Boolean(peerReviewPayload && peerReviewPayload.isAllCompleted && peerReviewPayload.isSubmitted);
             const sortedQuestions = [...questions].sort((a, b) => a.questionOrder - b.questionOrder);
 
             sortedQuestions.forEach(q => {
@@ -508,12 +536,19 @@
                         let supRatingButtonsHtml = "";
                         for (let i = 1; i <= 5; i++) {
                             const activeClass = (i === currentSupRating) ? "active" : "";
-                            supRatingButtonsHtml += `
-                                <div class="rating-btn interactive ${activeClass}"
-                                     style="cursor: pointer;"
-                                     onclick="setSupervisorRating(${q.questionId}, ${rev.fillerId}, ${i})">
-                                    ${i}
-                                </div>`;
+                            if (locked) {
+                                supRatingButtonsHtml += `
+                                    <div class="rating-btn ${activeClass}" style="cursor: default; opacity: 0.6;">
+                                        ${i}
+                                    </div>`;
+                            } else {
+                                supRatingButtonsHtml += `
+                                    <div class="rating-btn interactive ${activeClass}"
+                                         style="cursor: pointer;"
+                                         onclick="setSupervisorRating(${q.questionId}, ${rev.fillerId}, ${i})">
+                                        ${i}
+                                    </div>`;
+                            }
                         }
 
                         html += `
@@ -661,7 +696,6 @@
                 }
             });
 
-            // Payload structure matching SaveOrSubmitPeerReviewPayload
             const payload = {
                 intervalId: currentIntervalId,
                 subjectId: currentSubjectId,
@@ -687,7 +721,6 @@
                 if (!isDraft) {
                     window.location.href = "/PerformanceReview/Supervisor/Assignments";
                 } else {
-                    // Refresh current data to reflect updated statuses/drafts
                     await loadPeerReviewData(currentIntervalId, currentSubjectId);
                 }
             } catch (err) {
