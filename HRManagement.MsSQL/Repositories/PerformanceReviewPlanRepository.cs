@@ -227,19 +227,76 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
             .ToListAsync(cancellationToken);
     }
 
+    private static string EvaluateAssignmentsSummaryStatus(bool isLocked, DateTime startDate, IEnumerable<string?> assignmentStatuses)
+    {
+        if (isLocked || DateTime.UtcNow < startDate)
+            return "Locked";
+
+        var statuses = assignmentStatuses
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s!.Trim().ToLowerInvariant())
+            .ToList();
+
+        if (!statuses.Any())
+            return "Not Started";
+
+        // If any assignment is still not started or in progress, the overall task status cannot be "Pending Review" or "Completed" yet
+        if (statuses.Any(s => s == "not started"))
+            return "Not Started";
+
+        if (statuses.Any(s => s == "in progress" || s == "drafted"))
+            return "In Progress";
+
+        // If all items are explicitly reviewed
+        if (statuses.All(s => s == "reviewed"))
+            return "Reviewed";
+
+        // If all items are explicitly completed
+        if (statuses.All(s => s == "completed"))
+            return "Completed";
+
+        // If all remaining active items are pending review
+        if (statuses.All(s => s == "pending review"))
+            return "Pending Review";
+
+        // If there's a mix containing "on review" or "reviewed"
+        if (statuses.Any(s => s == "on review") || statuses.Any(s => s == "reviewed"))
+            return "On Review";
+
+        return "In Progress";
+    }
+
+    private string EvaluateIncomingReviewStatus(bool isLocked, List<string> incomingStatuses)
+    {
+        if (isLocked) return "Locked";
+        if (!incomingStatuses.Any()) return "Not Started";
+
+        if (incomingStatuses.All(s => s.Equals("Reviewed", StringComparison.OrdinalIgnoreCase) ||
+                                      s.Equals("Completed", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "Reviewed";
+        }
+
+        if (incomingStatuses.Any(s => s.Equals("Pending Review", StringComparison.OrdinalIgnoreCase) ||
+                                      s.Equals("On Review", StringComparison.OrdinalIgnoreCase) ||
+                                      s.Equals("Reviewed", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "Pending Review";
+        }
+
+        return "In Progress";
+    }
+
     public async Task<EmployeeOngoingPerformanceReviewPlanResponseDto?> GetEmployeeOngoingPerformanceReviewPlanAsync(int fillerId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Current fillerId: {FillerId}", fillerId);
         var currentDate = DateTime.UtcNow.Date;
-        //var currentDate = new DateTime(2026, 7, 1);
 
         var planDetail = await _sqldbContext.PerformanceReviewPlans
             .AsNoTracking()
             .Where(p => !p.IsDeleted
-                     //&& p.Status == "ongoing"
                      && currentDate >= p.StartDate
-                     && currentDate <= p.EndDate
-                     )
+                     && currentDate <= p.EndDate)
             .Select(p => new EmployeeOngoingPerformanceReviewPlanResponseDto
             {
                 PlanId = p.Id,
@@ -249,22 +306,21 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
 
-
-                // 1. Navigate from Plan -> Intervals (Sorted chronologically on DB level)
                 Intervals = p.Intervals
                     .Where(i => !i.IsDeleted)
                     .OrderBy(i => i.IntervalNumber)
-                    .Select(i => new PerformanceReviewPlanIntervalResponseDto
+                    .Select(p_i => new PerformanceReviewPlanIntervalResponseDto
                     {
-                        Id = i.Id,
-                        PlanId = i.PlanId,
-                        IntervalNumber = i.IntervalNumber,
-                        StartDate = i.StartDate,
-                        DueDate = i.DueDate,
-                        EndDate = i.EndDate,
-                        Status = i.Status,
+                        Id = p_i.Id,
+                        PlanId = p_i.PlanId,
+                        IntervalNumber = p_i.IntervalNumber,
+                        StartDate = p_i.StartDate,
+                        DueDate = p_i.DueDate,
+                        EndDate = p_i.EndDate,
+                        Status = p_i.Status,
 
-                        Assignments = i.FillAssignments
+                        // Your outgoing task assignments
+                        Assignments = p_i.FillAssignments
                             .Where(fa => !fa.IsDeleted && fa.FillerId == fillerId)
                             .Select(fa => new FillAssignmentResponseDto
                             {
@@ -272,7 +328,6 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                 SubjectId = fa.SubjectId,
                                 AssessmentId = fa.AssessmentId,
                                 Status = fa.Status,
-
                                 Assessment = fa.Assessment != null && !fa.Assessment.IsDeleted
                                     ? new AssessmentBriefResponseDto
                                     {
@@ -286,12 +341,33 @@ public class PerformanceReviewPlanRepository : BaseRepository<PerformanceReviewP
                                     }
                                     : null
                             })
+                            .ToList(),
+
+                        // NEW: Just pull the status strings of records where YOU are the subject (incoming reviews)
+                        IncomingAssignmentStatuses = p_i.FillAssignments
+                            .Where(fa => !fa.IsDeleted && fa.SubjectId == fillerId)
+                            .Select(fa => fa.Status)
                             .ToList()
                     })
                     .ToList()
             })
             .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (planDetail is null) return null;
+
+        // --- EVALUATE SUMMARY STATUSES IN MEMORY ---
+        foreach (var interval in planDetail.Intervals)
+        {
+            var isLocked = interval.Status.Equals("Locked", StringComparison.OrdinalIgnoreCase);
+
+            // 1. Evaluate your outgoing task list status
+            var myTaskStatuses = interval.Assignments.Select(a => a.Status).ToList();
+            interval.AssignmentsSummaryStatus = EvaluateAssignmentsSummaryStatus(isLocked, interval.StartDate, myTaskStatuses);
+
+            // 2. Evaluate your incoming review status (using the fetched status strings)
+            interval.IncomingReviewStatus = EvaluateIncomingReviewStatus(isLocked, interval.IncomingAssignmentStatuses);
+        }
 
         return planDetail;
     }

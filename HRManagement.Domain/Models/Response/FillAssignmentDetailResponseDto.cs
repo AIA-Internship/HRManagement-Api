@@ -12,6 +12,7 @@ namespace HRManagement.Domain.Models.Response
         public int FillerId { get; set; }
         public int SubjectId { get; set; }
         public int AssessmentId { get; set; }
+        public int? ReviewerId { get; set; }
         public string Status { get; set; } = string.Empty;
         public string ModifiedBy { get; set; } = string.Empty;
         public DateTime? ModifiedUtcDate { get; set; }
@@ -25,6 +26,7 @@ namespace HRManagement.Domain.Models.Response
         public int Id { get; set; }
         public string AnswerType { get; set; } = string.Empty;
         public string AssessmentType { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public int? FillerRoleId { get; set; }
         public string? FillerJobTitle { get; set; }
         public int? SubjectRoleId { get; set; }

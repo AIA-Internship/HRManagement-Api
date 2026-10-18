@@ -13,18 +13,6 @@ namespace HRManagement.Api.Controllers;
 [Route("api/assignment")]
 public class FillAssignmentController(ISender sender) : BaseApiController(sender)
 {
-    //[HttpPost("review/submit")]
-    //public async Task<IActionResult> SubmitTextReview(
-    //[FromBody] SubmitTextReviewPayload request,
-    //CancellationToken cancellationToken)
-    //{
-    //    var command = new SubmitTextReviewCommand(request, CurrentEmployeeId);
-    //    var result = await Sender.Send(command, cancellationToken);
-
-    //    if (result.IsFailure) return BadRequest(new { Message = result.Error });
-    //    return Ok(new { ReviewAssignmentId = result.Value });
-    //}
-
     [HttpGet("{assignmentId:int}")]
     public async Task<IActionResult> GetAssignmentDetailByIdAsync(
     [FromRoute] int assignmentId, 
@@ -113,14 +101,8 @@ public class FillAssignmentController(ISender sender) : BaseApiController(sender
     [FromQuery] int? reviewerId,
     CancellationToken ct)
     {
-        // If reviewerId is provided and valid (> 0), use it; otherwise fall back to CurrentEmployeeId
-        var effectiveSupervisorId = (reviewerId.HasValue && reviewerId.Value > 0)
-            ? reviewerId.Value
-            : CurrentEmployeeId;
-
-        var query = new GetSupervisorSelfAssessmentReviewQuery(intervalId, effectiveSupervisorId, subjectId);
+        var query = new GetSupervisorSelfAssessmentReviewQuery(intervalId, subjectId);
         var result = await Sender.Send(query, ct);
-
         return HandleResult(result);
     }
 

@@ -22,6 +22,9 @@
         public DateTime DueDate { get; set; }
         public DateTime EndDate { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string AssignmentsSummaryStatus { get; set; } = string.Empty;
+        public string IncomingReviewStatus { get; set; } = string.Empty;
+        public List<string> IncomingAssignmentStatuses { get; set; } = [];
 
         // Nested assignments inside the interval
         public List<FillAssignmentResponseDto> Assignments { get; set; } = new();

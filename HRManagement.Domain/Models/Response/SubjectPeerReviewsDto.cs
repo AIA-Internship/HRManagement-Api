@@ -28,6 +28,9 @@ public class PeerReviewerAnswersDto
     public int FillerId { get; set; }
     public string FillerName { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+
+    public string? ModifiedBy { get; set; } = string.Empty;
+    public DateTime? ModifiedUtcDate { get; set; }
     public List<AnswerDetailDto> Answers { get; set; } = new();
 }
 

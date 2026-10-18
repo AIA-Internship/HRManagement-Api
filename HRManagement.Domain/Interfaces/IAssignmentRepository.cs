@@ -53,7 +53,6 @@ namespace HRManagement.Domain.Interfaces
         Task<List<AssessmentAnswer>> GetAnswersByIdsAsync(List<int> answerIds, CancellationToken cancellationToken);
 
         Task<FillAssignmentDetailResponseDto?> GetSupervisorSelfAssessmentReviewAsync(
-        int supervisorId,
         int subjectId,
         int intervalId,
         CancellationToken cancellationToken);

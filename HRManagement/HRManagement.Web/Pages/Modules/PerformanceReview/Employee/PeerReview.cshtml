@@ -379,24 +379,21 @@
                 globalAssignments = apiResult.content;
                 selectedAssignmentIds = globalAssignments.slice(0, currentMaxVisible).map(a => a.assignmentId);
 
-                // --- Audit Tracking Engine (Finds Most Recent Status & Timestamp) ---
                 let baselineAssessment = globalAssignments[0]?.assessment;
                 if (baselineAssessment && baselineAssessment.assessmentType) {
                     document.getElementById("assessmentTitle").innerText = baselineAssessment.assessmentType.replace('-', ' ').toUpperCase();
                 }
 
-                // Check for overall submitted flag vs drafted context
-                const isSubmitted = globalAssignments.some(a => String(a.status).toLowerCase() === "done" || String(a.status).toLowerCase() === "on review");
-                const hasAnyDrafts = globalAssignments.some(a => String(a.status).toLowerCase() === "drafted");
+                // --- Synchronized Status Engine (Matching Self Assessment logic) ---
+                const statusLabel = (globalAssignments[0]?.status || "not started").toLowerCase();
+                const isEditable = (statusLabel === "not started" || statusLabel === "drafted" || statusLabel === "in progress");
 
-                if (isSubmitted || hasAnyDrafts) {
-                    const verb = isSubmitted ? "Submitted" : "Saved";
-
-                    // Filter down to valid modification timestamps to isolate the truest recent record
+                // Audit Tracking Engine
+                if (statusLabel !== "not started") {
+                    const verb = (statusLabel === "drafted") ? "Saved" : "Submitted";
                     const elementsWithDates = globalAssignments.filter(a => a.modifiedUtcDate);
 
                     if (elementsWithDates.length > 0) {
-                        // Sort records descendingly by datetime stamp
                         elementsWithDates.sort((a, b) => {
                             const dateA = new Date(a.modifiedUtcDate.endsWith('Z') ? a.modifiedUtcDate : a.modifiedUtcDate + 'Z');
                             const dateB = new Date(b.modifiedUtcDate.endsWith('Z') ? b.modifiedUtcDate : b.modifiedUtcDate + 'Z');
@@ -418,7 +415,7 @@
                             </span>`;
 
                         document.getElementById("assessmentMeta").innerHTML = `
-                            <span>Select up to 3 peers to compare and complete your evaluations.</span>
+                            <span>Select up to 3 peers to compare and complete your evaluations. Peer Review status: ${statusLabel.toUpperCase()}</span>
                             ${auditHtml}
                         `;
                     }
@@ -427,17 +424,17 @@
                 renderPeersChecklist();
                 renderMatrixView();
 
-                document.getElementById("actionButtonsContainer").classList.replace("d-none", "d-flex");
+                const actionContainer = document.getElementById("actionButtonsContainer");
+                actionContainer.classList.replace("d-none", "d-flex");
 
-                if (isSubmitted) {
-                    document.getElementById("btnSave").classList.add("d-none");
-                    document.getElementById("btnSubmit").classList.add("d-none");
-                    // Update text if finalized but keep meta structure
+                if (!isEditable) {
+                    const saveBtn = document.getElementById("btnSave");
+                    const submitBtn = document.getElementById("btnSubmit");
+                    if (saveBtn) saveBtn.remove();
+                    if (submitBtn) submitBtn.remove();
+
                     const textSpan = document.getElementById("assessmentMeta").querySelector("span");
                     if (textSpan) textSpan.innerText = "This peer review assessment has already been finalized and submitted.";
-                } else {
-                    document.getElementById("btnSave").classList.remove("d-none");
-                    document.getElementById("btnSubmit").classList.remove("d-none");
                 }
 
             } catch (error) {
@@ -525,7 +522,10 @@
             if (assignment && assignment.assessment && assignment.assessment.questions) {
                 const question = assignment.assessment.questions.find(q => q.id === questionId);
                 if (question) {
-                    question.answer = value;
+                    if (!question.answer || typeof question.answer !== 'object') {
+                        question.answer = { textValue: null, ratingValue: null };
+                    }
+                    question.answer.textValue = value;
 
                     const badgeEl = document.getElementById(`badge-${assignmentId}`);
                     if (badgeEl) {
@@ -542,12 +542,14 @@
             if (assignment && assignment.assessment && assignment.assessment.questions) {
                 const question = assignment.assessment.questions.find(q => q.id === questionId);
                 if (question) {
-                    const stringRating = String(ratingValue);
+                    if (!question.answer || typeof question.answer !== 'object') {
+                        question.answer = { textValue: null, ratingValue: null };
+                    }
 
-                    if (question.answer === stringRating) {
-                        question.answer = "";
+                    if (question.answer.ratingValue === ratingValue) {
+                        question.answer.ratingValue = null;
                     } else {
-                        question.answer = stringRating;
+                        question.answer.ratingValue = ratingValue;
                     }
 
                     renderPeersChecklist();
@@ -585,7 +587,12 @@
             if (!baselineAssessment || !baselineAssessment.questions) return;
 
             const sortedQuestions = [...baselineAssessment.questions].sort((a, b) => a.questionOrder - b.questionOrder);
-            const mode = (baselineAssessment.answerType || "text").toLowerCase();
+            const mode = (baselineAssessment.answerType || "free-text").toLowerCase();
+
+            // Match Self Assessment status rule for editability
+            const statusLabel = (globalAssignments[0]?.status || "not started").toLowerCase();
+            const isEditable = (statusLabel === "not started" || statusLabel === "drafted" || statusLabel === "in progress");
+            const disabledAttr = !isEditable ? "disabled" : "";
 
             sortedQuestions.forEach(baseQ => {
                 gridHtml += `<div class="matrix-grid-cell" style="border: 0.25px solid #cccccc"><div class="matrix-question-text">${escapeHtml(baseQ.questionText)}</div></div>`;
@@ -596,16 +603,13 @@
                     let answerValue = "";
                     if (peerQ.answer) {
                         if (typeof peerQ.answer === 'object') {
-                            answerValue = mode === "text" ? (peerQ.answer.textValue || "") : (peerQ.answer.ratingValue || "");
+                            answerValue = mode === "free-text" ? (peerQ.answer.textValue || "") : (peerQ.answer.ratingValue || "");
                         } else {
                             answerValue = peerQ.answer;
                         }
                     }
 
-                    const isSubmitted = globalAssignments.some(a => String(a.status).toLowerCase() === "done" || String(a.status).toLowerCase() === "on review");
-                    const disabledAttr = isSubmitted ? "disabled" : "";
-
-                    if (mode === "text") {
+                    if (mode === "free-text") {
                         gridHtml += `
                             <div class="matrix-grid-cell d-flex" style="border: 0.25px solid #cccccc">
                                 <textarea
@@ -621,8 +625,8 @@
 
                         for (let i = 1; i <= 5; i++) {
                             const activeClass = (i === activeRating) ? "active" : "";
-                            const clickHandler = isSubmitted ? "" : `onclick="handleRatingSelect(${assignment.assignmentId}, ${baseQ.id}, ${i})"`;
-                            const inlineStyle = isSubmitted ? "style='cursor: default; opacity: 0.8;'" : "";
+                            const clickHandler = !isEditable ? "" : `onclick="handleRatingSelect(${assignment.assignmentId}, ${baseQ.id}, ${i})"`;
+                            const inlineStyle = !isEditable ? "style='cursor: default; opacity: 0.8;'" : "";
 
                             ratingButtonsHtml += `
                                 <div class="rating-btn ${activeClass}" ${inlineStyle} ${clickHandler}>
@@ -675,22 +679,29 @@
             return {
                 isDraft: isDraftValue,
                 peerReviews: globalAssignments.map(assignment => {
-                    const mode = (assignment.assessment?.answerType || "text").toLowerCase();
+                    const mode = (assignment.assessment?.answerType || "free-text").toLowerCase();
 
                     const answersPayload = (assignment.assessment?.questions || []).map(q => {
-                        let currentVal = "";
+                        let textVal = "";
+                        let ratingVal = null;
+
                         if (q.answer) {
                             if (typeof q.answer === 'object') {
-                                currentVal = mode === "text" ? q.answer.textValue : q.answer.ratingValue;
+                                textVal = q.answer.textValue || "";
+                                ratingVal = q.answer.ratingValue || null;
                             } else {
-                                currentVal = q.answer;
+                                if (mode === "rating") {
+                                    ratingVal = parseInt(q.answer, 10) || null;
+                                } else {
+                                    textVal = String(q.answer || "");
+                                }
                             }
                         }
 
                         return {
                             assessmentQuestionId: q.id,
-                            textValue: mode === "text" ? (String(currentVal || "")) : null,
-                            ratingValue: mode === "rating" ? (parseInt(currentVal, 10) || null) : null
+                            textValue: mode === "free-text" ? textVal : null,
+                            ratingValue: mode === "rating" ? ratingVal : null
                         };
                     });
 

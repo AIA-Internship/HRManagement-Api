@@ -60,9 +60,10 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
                 }
             }
 
-            // 3. Group incoming scores by their target FillAssignment ID
+            // 3. (Optional to keep for score mapping) Group incoming scores by their target FillAssignment ID
             var scoresByAssignment = req.ReviewScores
-                .GroupBy(score => answerToAssignmentMap[score.AssessmentAnswerId]);
+                .GroupBy(score => answerToAssignmentMap[score.AssessmentAnswerId])
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             // Fetch existing ReviewAssignments for this supervisor across these fill assignments
             var existingReviewAssignments = await assignmentRepository.FindReviewAssignmentsByAssignmentIdsAsync(
@@ -72,19 +73,18 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
 
             var reviewAssignmentMap = existingReviewAssignments.ToDictionary(ra => ra.AssignmentId);
 
-            // Fetch reviewer metadata once in case we need to create new review assignments
+            // Fetch reviewer metadata once for creating review assignments
             var (reviewerRoleId, reviewerJobTitle) = await assignmentRepository.GetReviewerMetadataAsync(currentUserId, cancellationToken);
             string initialStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.Reviewed;
 
-            // 4. Process each peer assignment's review scores and status
-            foreach (var group in scoresByAssignment)
+            // 4. Process ALL peer assignments (Locks/claims all of them for this supervisor at once)
+            foreach (var fillAssignment in peerFillAssignments)
             {
-                int fillAssignmentId = group.Key;
-                var fillAssignment = peerFillAssignments.First(fa => fa.Id == fillAssignmentId);
+                int fillAssignmentId = fillAssignment.Id;
 
                 if (!reviewAssignmentMap.TryGetValue(fillAssignmentId, out var reviewAssignment))
                 {
-                    // Create and lock/claim the ReviewAssignment for this supervisor
+                    // Create and lock/claim the ReviewAssignment for this supervisor for EVERY peer
                     reviewAssignment = new ReviewAssignment(
                         planId: fillAssignment.PlanId,
                         intervalId: req.IntervalId,
@@ -99,29 +99,31 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
                     await assignmentRepository.AddReviewAssignmentAsync(reviewAssignment, cancellationToken);
                     await unitOfWork.CommitAsync(cancellationToken); // Commit to generate ID for ReviewAssignment
                 }
-                else
+
+                // Check if this specific peer has incoming scores in the request payload
+                if (scoresByAssignment.TryGetValue(fillAssignmentId, out var assignmentScores))
                 {
-                    string currentStatus = reviewAssignment.Status?.ToLower() ?? AssignmentStatusConstant.NotStarted;
-                    if (currentStatus == AssignmentStatusConstant.Reviewed && !req.IsDraft)
-                    {
-                        // Optional: prevent overwriting final submission unless intended
-                    }
+                    var scoresToPersist = assignmentScores.Select(s => new AssessmentAnswerScore(
+                        reviewAssignmentId: reviewAssignment.Id,
+                        assessmentAnswerId: s.AssessmentAnswerId,
+                        score: s.Score,
+                        reviewerId: currentUserId,
+                        actionerId: currentUserId
+                    )).ToList();
+
+                    // Upsert scores for this peer
+                    await assignmentRepository.UpsertAnswerScoresAsync(reviewAssignment.Id, scoresToPersist, cancellationToken);
                 }
 
-                // Build scores list for this specific review assignment
-                var scoresToPersist = group.Select(s => new AssessmentAnswerScore(
-                    reviewAssignmentId: reviewAssignment.Id,
-                    assessmentAnswerId: s.AssessmentAnswerId,
-                    score: s.Score,
-                    reviewerId: currentUserId,
-                    actionerId: currentUserId
-                )).ToList();
-
-                // Upsert scores
-                await assignmentRepository.UpsertAnswerScoresAsync(reviewAssignment.Id, scoresToPersist, cancellationToken);
-
-                // Update status (locks/claims or marks as drafted/scored)
+                // Update supervisor review status
                 reviewAssignment.UpdateStatus(initialStatus, currentUserId);
+
+                // --- ADD THIS BLOCK IF THE PEER'S FILL ASSIGNMENT SHOULD ALSO UPDATE ---
+                if (!req.IsDraft)
+                {
+                    // If the supervisor fully submits, mark the peer's fill assignment as Completed/Reviewed
+                    fillAssignment.ApplyUpdate(AssignmentStatusConstant.Reviewed, currentUserId);
+                }
             }
 
             await unitOfWork.CommitAsync(cancellationToken);

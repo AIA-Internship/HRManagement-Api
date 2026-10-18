@@ -121,9 +121,9 @@
         async function getOngoingPlanData() {
             const API_BASE = "https://localhost:7089";
             const token = window.aiaAuth && window.aiaAuth.getToken();
-            if (!token) { 
-                window.aiaAuth && window.aiaAuth.signOut(); 
-                return null; 
+            if (!token) {
+                window.aiaAuth && window.aiaAuth.signOut();
+                return null;
             }
 
             const response = await fetch(`${API_BASE}/api/plan/me/ongoing`, {
@@ -137,7 +137,7 @@
             if (response.status === 401) { window.aiaAuth.signOut(); return null; }
             if (response.status === 404) return null;
             if (!response.ok) throw new Error("Failed to fetch ongoing plan");
-            const parsed = await response.json()
+            const parsed = await response.json();
             return parsed;
         }
 
@@ -145,7 +145,7 @@
             try {
                 const apiResult = await getOngoingPlanData();
 
-                console.log("apiResult", apiResult)
+                console.log("apiResult", apiResult);
 
                 if (!apiResult || apiResult.isError || !apiResult.content) {
                     renderEmptyState("No active performance review plans found for this period.");
@@ -164,46 +164,31 @@
 
                 const now = new Date();
 
-                // Refactored to leverage the direct structural timeline arrays from API
+                // Replace your old map logic inside initializeAssignmentsPage() with this:
                 const mappedIntervals = plan.intervals.map(interval => {
-                    const isLocked = interval.status.toLowerCase() === 'locked' || now < new Date(interval.startDate);
-                    
+                    // Determine lock state from backend interval status or time comparison
+                    const isLocked = (interval.status || "").toLowerCase() === 'locked' || now < new Date(interval.startDate);
+
                     let friendlyLabel = `Interval ${interval.intervalNumber}`;
                     const sDate = new Date(interval.startDate);
-                    
+
                     if (plan.periodType.toLowerCase() === 'monthly') {
                         friendlyLabel = sDate.toLocaleString('default', { month: 'long', year: 'numeric' });
                     } else if (plan.periodType.toLowerCase() === 'quarterly') {
                         friendlyLabel = `Quarter ${Math.floor(sDate.getMonth() / 3) + 1} ${sDate.getFullYear()}`;
                     }
 
-                    // Derived state calculation logic based on nested internal properties
-                    let overallStatus = isLocked ? 'locked' : 'not-started';
-                    const assignments = interval.assignments || [];
+                    // Read the pre-calculated summary status straight from the backend property!
+                    let overallStatus = isLocked ? 'locked' : (interval.assignmentsSummaryStatus || 'not-started').toLowerCase().replace(/\s+/g, '-');
+                    let incomingStatus = isLocked ? 'locked' : (interval.incomingReviewStatus || 'not-started').toLowerCase().replace(/\s+/g, '-');
 
-                    if (!isLocked && assignments.length > 0) {
-                        const statuses = assignments.map(a => String(a.status).toLowerCase().trim());
-                        console.log(assignments, statuses)
-                        if (statuses.every(s => s === 'done')) {
-                            overallStatus = 'done';
-                            console.log(1)
-                        } else if (statuses.every(s => s === 'on review' || s === 'done')) {
-                            overallStatus = 'on-review';
-                        } else if (statuses.some(s => s === 'drafted' || s === 'on review')) {
-                            overallStatus = 'in-progress';
-                        } else if (statuses.every(s => s === 'not started')) {
-                            overallStatus = 'not-started';
-                        } else {
-                            overallStatus = 'not-started';
-                        }
-                    }
-                    
                     return {
                         period: friendlyLabel,
                         intervalId: interval.id,
                         status: overallStatus,
+                        incomingReviewStatus: incomingStatus,
                         locked: isLocked,
-                        assignments: assignments
+                        assignments: interval.assignments || []
                     };
                 });
 
@@ -218,25 +203,35 @@
             const container = document.getElementById("assignmentsContainer");
             const itemsHtml = intervals.map((item) => {
                 const badgeStyles = {
-                    'done': 'badge-status-done',
+                    'completed': 'badge-status-done',
+                    'reviewed': 'badge-status-done',
                     'on-review': 'badge-status-review',
+                    'pending-review': 'badge-status-review',
                     'in-progress': 'badge-status-progress',
                     'not-started': 'badge-status-started',
                     'locked': 'badge-status-locked'
                 };
 
                 const badgeLabels = {
-                    'done': 'Done',
+                    'completed': 'Completed',
+                    'reviewed': 'Reviewed',
                     'on-review': 'On Review',
+                    'pending-review': 'Pending Review',
                     'in-progress': 'In Progress',
                     'not-started': 'Not Started',
                     'locked': 'LOCKED'
                 };
 
-                console.log(item.status)
+                // 1. My Tasks Status & Styling
+                const taskStatusKey = item.status;
+                const taskBadgeClass = badgeStyles[taskStatusKey] || 'badge-light-secondary';
+                const taskLabelText = badgeLabels[taskStatusKey] || 'Not Started';
 
-                const badgeClass = badgeStyles[item.status] || 'badge-light-secondary';
-                const labelText = badgeLabels[item.status] || 'Not Started';
+                // 2. Official Review Status & Styling
+                const incomingStatusKey = (item.incomingReviewStatus || item.status).toLowerCase().replace(/\s+/g, '-');
+                const reviewBadgeClass = badgeStyles[incomingStatusKey] || 'badge-light-secondary';
+                const reviewLabelText = badgeLabels[incomingStatusKey] || 'Not Started';
+
                 const rowBackgroundClass = item.locked ? 'bg-locked-row' : 'bg-white';
 
                 const selfAsst = item.assignments.find(a => a.assessment && a.assessment.assessmentType === 'self-assessment');
@@ -249,12 +244,21 @@
                     <div class="d-flex align-items-center justify-content-between py-5 px-6 border-bottom border-gray-100 ${rowBackgroundClass}">
                         <div class="d-flex align-items-center gap-4 flex-grow-1">
                             <div>
-                                <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex flex-wrap align-items-center gap-3">
                                     <h3 class="fs-6 fw-bold text-gray-900 m-0">${escapeHtml(item.period)}</h3>
+                                    
                                     ${!item.locked ? `
-                                    <span class="badge ${badgeClass} fw-bold px-3 py-2 rounded-1 fs-7" style="letter-spacing: 0.2px;">
-                                        ${escapeHtml(labelText)}
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2 ms-2">
+                                        <!-- Tasks Badge (Icon Removed) -->
+                                        <span class="badge ${taskBadgeClass} d-inline-flex align-items-center fw-semibold px-3 py-2 rounded-1 fs-7 border">
+                                            <span>Tasks: <strong>${escapeHtml(taskLabelText)}</strong></span>
+                                        </span>
+
+                                        <!-- Review Status Badge (Icon Removed) -->
+                                        <span class="badge ${reviewBadgeClass} d-inline-flex align-items-center fw-semibold px-3 py-2 rounded-1 fs-7 border" title="Official review status of evaluations written about you">
+                                            <span>Your Performance Reviews: <strong>${escapeHtml(reviewLabelText)}</strong></span>
+                                        </span>
+                                    </div>
                                     ` : ''}
                                 </div>
                             </div>

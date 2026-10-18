@@ -3,9 +3,6 @@ using HRManagement.Domain.Interfaces;
 using HRManagement.Domain.Models.Response;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HRManagement.Application.Features.PerformanceReview.Assignments.Queries;
 

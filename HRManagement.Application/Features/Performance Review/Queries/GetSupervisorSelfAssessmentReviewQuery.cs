@@ -8,7 +8,6 @@ namespace HRManagement.Application.Features.PerformanceReview.Assignments.Querie
 
 public record GetSupervisorSelfAssessmentReviewQuery(
     int IntervalId,
-    int SupervisorId,
     int SubjectId
 ) : IRequest<Result<FillAssignmentDetailResponseDto>>;
 
@@ -22,15 +21,13 @@ internal sealed class GetSupervisorSelfAssessmentReviewQueryHandler(
         CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "Executing handler: {HandlerName} for Interval ID: {IntervalId}, Supervisor ID: {SupervisorId}, Subject ID: {SubjectId}",
+            "Executing handler: {HandlerName} for Interval ID: {IntervalId}, Subject ID: {SubjectId}",
             nameof(GetSupervisorSelfAssessmentReviewQueryHandler),
             request.IntervalId,
-            request.SupervisorId,
             request.SubjectId);
 
         var data = await assignmentRepository
             .GetSupervisorSelfAssessmentReviewAsync(
-                request.SupervisorId,
                 request.SubjectId,
                 request.IntervalId,
                 cancellationToken);

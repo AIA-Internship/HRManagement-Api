@@ -336,21 +336,63 @@
     }
 
     function renderAssessmentDetails(content) {
-        const statusLabel = (content.status || "Not Started").toLowerCase();
+        const rawStatus = (content.assessment?.status || "Not Started").trim().toLowerCase();
         
+        // --- MATCHED AUDIT BADGE GENERATION ---
+        let auditHtml = "";
+        const statusLabel = (content.status || "Not Started").toLowerCase();
+        if (statusLabel !== "not started" && content.modifiedBy && content.modifiedUtcDate) {
+            const verb = (statusLabel === "in progress" || statusLabel === "on review") ? "Saved" : "Submitted";
+            const dateObj = new Date(content.modifiedUtcDate.endsWith('Z') ? content.modifiedUtcDate : content.modifiedUtcDate + 'Z');
+            const formattedDate = dateObj.toLocaleString(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+
+            auditHtml = `
+                <span class="badge badge-light-dark border border-gray-300 px-3 py-1.5 fs-7 ms-md-2 text-muted fw-normal">
+                    Last ${verb}&nbsp;at&nbsp;<strong>${escapeHtml(formattedDate)}</strong>&nbsp;by&nbsp;<strong>${escapeHtml(content.modifiedBy)}</strong>
+                </span>`;
+        }
+
         document.getElementById("assessmentTitle").innerText = "SELF ASSESSMENT REVIEW";
         document.getElementById("assessmentMeta").innerHTML = `
-            <span>Review employee answers. Status: ${statusLabel.toUpperCase()}</span>
+            <span>Review employee answers. Status: ${escapeHtml(content.status || "Not Started").toUpperCase()}</span>
+            ${auditHtml}
         `;
 
         const wrapper = document.getElementById("questionsWrapper");
+        const actionContainer = document.getElementById("actionButtonsContainer");
+        const saveBtn = document.getElementById("btnSave");
+        const submitBtn = document.getElementById("btnSubmit");
+
+        // Allowed statuses where supervisor can review submitted answers
+        const validStatuses = ["pending review", "on review", "reviewed", "completed"];
+        const isSubmittedForReview = validStatuses.includes(rawStatus);
+
+        // If the employee hasn't submitted yet (e.g. "Not Started", "In Progress", "Drafted"), 
+        // render a blank slate message instead of the questions.
+        if (!isSubmittedForReview) {
+            wrapper.innerHTML = `
+                <div class="card card-flush text-center py-12 px-6 border border-dashed border-gray-300 bg-white rounded-2 shadow-sm">
+                    <i class="bi bi-clock-history fs-3x text-muted mb-3"></i>
+                    <div class="text-gray-800 fw-bold fs-5 mb-1">Awaiting Submission</div>
+                    <p class="text-muted fs-7 m-0">Employee hasn't submitted their self review yet.</p>
+                </div>
+            `;
+            
+            if (actionContainer) actionContainer.classList.replace("d-flex", "d-none");
+            return;
+        }
+
+        // Otherwise, render questions normally for review
         const questions = content.questions || content.assessment?.questions || [];
         if (questions.length === 0) {
             renderEmptyState("Tidak ada pertanyaan dalam evaluasi ini.");
             return;
         }
 
-        const isEditable = (statusLabel === "not started" || statusLabel === "drafted" || statusLabel === "in progress");
+        const isEditable = (rawStatus === "pending review" || rawStatus === "on review");
 
         wrapper.innerHTML = `
             <div id="activeCardContainer" class="card card-flush bg-white rounded-lg shadow-sm d-flex flex-column gap-2 px-6 py-4"></div>
@@ -358,10 +400,6 @@
         const cardContainer = document.getElementById("activeCardContainer");
 
         renderQuestions(questions, cardContainer, isEditable);
-
-        const actionContainer = document.getElementById("actionButtonsContainer");
-        const saveBtn = document.getElementById("btnSave");
-        const submitBtn = document.getElementById("btnSubmit");
 
         actionContainer.classList.replace("d-none", "d-flex");
 
@@ -388,9 +426,10 @@
             formAnswers[q.id] = { score: existingSupervisorScore };
 
             const isTextType = q.questionType === "text" || employeeText.length > 0;
-            let supervisorControlHtml = "";
+            let rightControlHtml = "";
 
             if (isTextType) {
+                // --- FREE TEXT: Supervisor Score Buttons on the Right ---
                 const buttonsHtml = [1, 2, 3, 4, 5].map(score => {
                     const isActive = existingSupervisorScore === score;
                     const disabledAttr = isEditable ? "" : "disabled";
@@ -407,7 +446,7 @@
                     `;
                 }).join('');
 
-                supervisorControlHtml = `
+                rightControlHtml = `
                     <div class="col-lg-4 d-flex flex-column align-items-lg-end align-items-start gap-1">
                         <span class="score-label">SUPERVISOR SCORE</span>
                         <div class="d-flex align-items-center gap-2">
@@ -416,12 +455,42 @@
                     </div>
                 `;
             } else {
-                supervisorControlHtml = `
+                // --- RATING TYPE: Employee Rating Styled Like the Score Buttons on the Right ---
+                const ratingButtonsHtml = [1, 2, 3, 4, 5].map(score => {
+                    const isEmployeeChoice = employeeRating === score;
+
+                    return `
+                        <div class="btn border fw-bold d-flex align-items-center justify-content-center rounded-3 ${isEmployeeChoice ? 'btn-rating-active' : 'bg-light text-muted'}"
+                             style="width: 40px; height: 40px; cursor: default;">
+                            ${score}
+                        </div>
+                    `;
+                }).join('');
+
+                rightControlHtml = `
                     <div class="col-lg-4 d-flex flex-column align-items-lg-end align-items-start gap-1">
                         <span class="score-label">EMPLOYEE RATING</span>
-                        <div class="d-flex align-items-center justify-content-center bg-light border border-gray-200 rounded-3 fw-bold text-dark px-4 py-2 fs-6" style="min-width: 40px; height: 40px;">
-                            ${employeeRating ?? 'N/A'}
+                        <div class="d-flex align-items-center gap-2">
+                            ${ratingButtonsHtml}
                         </div>
+                    </div>
+                `;
+            }
+
+            // --- LEFT SIDE CONTENT ---
+            let leftContentHtml = "";
+            if (isTextType) {
+                leftContentHtml = `
+                    <label class="text-muted fs-8 fw-semibold mb-1">EMPLOYEE ANSWER:</label>
+                    <div class="employee-answer-box">
+                        ${escapeHtml(employeeText || 'No answer provided')}
+                    </div>
+                `;
+            } else {
+                // If it's a rating question, left side only displays the question text cleanly (or an optional helper message)
+                leftContentHtml = `
+                    <div class="text-muted fs-7">
+                        <em>Employee evaluated this question using a numerical rating scale.</em>
                     </div>
                 `;
             }
@@ -435,13 +504,10 @@
 
                     <div class="row g-3 align-items-start">
                         <div class="col-lg-8">
-                            <label class="text-muted fs-8 fw-semibold mb-1">EMPLOYEE ANSWER:</label>
-                            <div class="employee-answer-box">
-                                ${escapeHtml(employeeText || (employeeRating ? `Rating given: ${employeeRating}` : 'No answer provided'))}
-                            </div>
+                            ${leftContentHtml}
                         </div>
 
-                        ${supervisorControlHtml}
+                        ${rightControlHtml}
                     </div>
                 </div>
             `;

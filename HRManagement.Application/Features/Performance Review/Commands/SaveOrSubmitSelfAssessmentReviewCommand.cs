@@ -119,6 +119,9 @@ namespace HRManagement.Application.Features.PerformanceReview.Commands
             string finalStatus = req.IsDraft ? AssignmentStatusConstant.InProgress : AssignmentStatusConstant.Completed;
             reviewAssignment.UpdateStatus(finalStatus, currentUserId);
 
+            string fillAssignmentNewStatus = req.IsDraft ? AssignmentStatusConstant.OnReview : AssignmentStatusConstant.Reviewed;
+            selfFillAssignment.ApplyUpdate(fillAssignmentNewStatus, currentUserId);
+
             await unitOfWork.CommitAsync(cancellationToken);
 
             return Result.Success(reviewAssignmentId);
